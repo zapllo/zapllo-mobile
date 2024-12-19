@@ -8,7 +8,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import React from 'react';
 
-//
+
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,

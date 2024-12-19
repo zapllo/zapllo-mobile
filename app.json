@@ -3,6 +3,7 @@
     "name": "zapllpMobile",
     "slug": "zapllpMobile",
     "version": "1.0.0",
+    "newArchEnabled": true,
 
     "scheme": "zapllpMobile",
     "web": {

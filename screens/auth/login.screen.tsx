@@ -129,6 +129,7 @@ export default function Loginscreen() {
             </TouchableOpacity>
 
 
+
             <TouchableOpacity
               className={`p-2.5 mt-16 rounded-full w-11/12 h-14 items-center flex justify-center ${isFormValid ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
               onPress={()=> router.push("(routes)/home" as any )}

@@ -62,7 +62,17 @@ function RootLayoutNav() {
           <Stack.Screen name='(routes)/login/index'/>
           <Stack.Screen name='(routes)/signup/pageOne/index'/>
           <Stack.Screen name='(routes)/signup/pageTwo/index'/>
-
+          <Stack.Screen name='(routes)/home/index'/>
+          <Stack.Screen name='(routes)/HomeComponent/AIAssistant/index'/>
+          <Stack.Screen name='(routes)/HomeComponent/Attendance/index'/>
+          <Stack.Screen name='(routes)/HomeComponent/CRM/index'/>
+          <Stack.Screen name='(routes)/HomeComponent/Events/index'/>
+          <Stack.Screen name='(routes)/HomeComponent/Intranet/index'/>
+          <Stack.Screen name='(routes)/HomeComponent/Leaves/index'/>
+          <Stack.Screen name='(routes)/HomeComponent/Tasks/index'/>
+          <Stack.Screen name='(routes)/HomeComponent/Tutorials/index'/>
+          <Stack.Screen name='(routes)/HomeComponent/WABA/index'/>
+          <Stack.Screen name='(routes)/HomeComponent/Workflows/index'/>
         </Stack>
       )
     }

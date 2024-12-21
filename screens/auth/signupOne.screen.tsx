@@ -221,7 +221,7 @@ export default function SignUpscreen() {
 
                         {/* when password error occurs then show red color */}
                         {error.password && (
-                            <View className="flex-row items-center gap-1 mt-1">
+                            <View className="flex-row items-center gap-1 w-[82%] ">
                                 <Entypo name="cross" size={18} color={"red"} />
                                 <Text className="text-red-500 text-xs">
                                     {error.password}
@@ -241,7 +241,7 @@ export default function SignUpscreen() {
 
                         {/* when confirm password occurs  */}
                         {error.confirmPassword && (
-                            <View className="flex-row items-center gap-1 mt-1">
+                            <View className="flex-row items-center gap-1 w-[82%]">
                                 <Entypo name="cross" size={18} color={"red"} />
                                 <Text className="text-red-500 text-xs">
                                     {error.confirmPassword}

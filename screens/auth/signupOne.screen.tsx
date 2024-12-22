@@ -1,11 +1,10 @@
-import { ScrollView, Text, View, Image, SafeAreaView, StyleSheet, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 import React, { useState } from "react";
+import { Text, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, View, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Entypo } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { GradientText } from "~/components/GradientText";
 import { Dropdown } from 'react-native-element-dropdown';
 import InputContainer from "~/components/InputContainer";
-
 
 export default function SignUpscreen() {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -23,7 +22,8 @@ export default function SignUpscreen() {
     const [userName, setUserName] = useState({
         firstName: "",
         lastName: ""
-    });
+    }); 
+    const [isDropdownOpen,setIsDropdownOpen] = useState(false);
 
     const data = [
         { label: '+91', value: '1', icon: require("~/assets/sign-in/india.png") },
@@ -48,20 +48,20 @@ export default function SignUpscreen() {
         if (!passwordSpecialCharecter.test(password)) {
             setError({
                 ...error,
-                password: "Write at least one special charecter"
+                password: "Write at least one special character"
             });
             setUserInfo({ ...userInfo, password: "" });
 
         } else if (!passwordOneNumber.test(password)) {
             setError({
                 ...error,
-                password: "write atleast one number"
+                password: "Write at least one number"
             });
             setUserInfo({ ...userInfo, password: "" });
         } else if (!passwordSixValue.test(password)) {
             setError({
                 ...error,
-                password: "write at least 6 charecters "
+                password: "Write at least 6 characters"
             });
             setUserInfo({ ...userInfo, password: "" });
         } else {
@@ -71,7 +71,6 @@ export default function SignUpscreen() {
             });
         }
         setUserInfo({ ...userInfo, password: value })
-
     };
 
     const handleConfirmPasswordValidation = (value: string) => {
@@ -116,7 +115,7 @@ export default function SignUpscreen() {
     }
 
     return (
-        <SafeAreaView className="bg-[#05071E] h-full">
+        <SafeAreaView className="bg-[#05071E] h-full w-full">
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
                 className="flex-1"
@@ -126,16 +125,16 @@ export default function SignUpscreen() {
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
                 >
-                    <View className="p-4 flex items-center w-full h-full">
+                    <View className="flex items-center w-full h-full">
                         {/* starting banner */}
-                        <View className="flex-row items-center justify-center mb-4">
-                            <Image className="w-16 h-8" source={require("~/assets/sign-in/teamsLogo.png")} resizeMode="contain" />
-                            <Text className="text-white font-bold text-lg ml-2">Zapplo Teams</Text>
+                        <View className="flex-row mt-14 items-center justify-center mb-9">
+                            <Image className="h-9" source={require("~/assets/sign-in/teamsLogo.png")} resizeMode="contain" />
+                            <Text className="text-white mt-2 text-xl">Zapplo Teams</Text>
                         </View>
 
                         {/* middle banner */}
-                        <View className="flex items-center justify-center gap-3 mb-6">
-                            <Text className="text-white font-bold text-xl">Let’s Get Started</Text>
+                        <View className="flex items-center justify-center gap-4 mb-6">
+                            <Text className="text-white text-2xl">Let’s Get Started</Text>
                             <Text className="text-white font-light text-sm">Let's get started by filling out the form below.</Text>
                         </View>
 
@@ -158,35 +157,92 @@ export default function SignUpscreen() {
                         />
 
                         {/* drop down numbers and phone numbers */}
-                        <View className="w-[69%] flex-row items-center justify-center gap-2 mb-4">
+                        <View className="w-[69%] flex flex-row  items-center justify-center gap-2 mb-4">
                         <Dropdown
-                        style={styles.dropdown}
-                        placeholderStyle={styles.placeholderStyle}
-                        selectedTextStyle={styles.selectedTextStyle}
-                        inputSearchStyle={styles.inputSearchStyle}
-                        iconStyle={styles.iconStyle}
-                        data={data}
-                        search
-                        maxHeight={300}
-                        labelField="label"
-                        valueField="value"
-                        placeholder="Select item"
-                        searchPlaceholder="Search..."
-                        value={numberValue}
-                        onChange={(item: any) => {
-                            setNumberValue(item.value);
-                        }}
-                        renderLeftIcon={() => {
-                            const selectedItem = data.find((item) => item.value === numberValue);
-                            return (
-                                <Image
-                                    source={selectedItem?.icon}
-                                    style={{ width: 15, height: 20, marginRight: 5 }}
-                                    resizeMode="contain"
-                                />
-                            );
-                        }}
-                    />
+                            style={{
+                                borderWidth: 1,
+                                borderColor: '#37384B',
+                                borderRadius: 29,
+                                backgroundColor: '#05071E',
+                                paddingHorizontal: 12,
+                                paddingVertical: 10,
+                                height: 55,
+                                marginTop:27,
+                                width: 100,
+                            }}
+                            placeholderStyle={{
+                                fontSize: 14,
+                                color: '#787CA5',
+                            }}
+                            selectedTextStyle={{
+                                fontSize: 10,
+                                color: '#FFFFFF',
+                                marginLeft:2
+                                
+                            }}
+                            inputSearchStyle={{
+                                fontSize: 14,
+                                color: '#FFFFFF',
+                            }}
+                            iconStyle={[
+                                {
+                                    width: 20,
+                                    height: 20,
+                                    transform: [{ rotate: isDropdownOpen ? '180deg' : '0deg' }],
+                                },
+                            ]}
+                            containerStyle={{backgroundColor:"#05071E", borderColor:"#37384B"}}
+                            data={data}
+                            labelField="label"
+                            valueField="value"
+                            placeholder="Select Code"
+                            value={numberValue}
+                            onFocus={() => setIsDropdownOpen(true)} // Handle open state
+                            onBlur={() => setIsDropdownOpen(false)} // Handle close state
+                            onChange={(item) => setNumberValue(item.value)} // Handle selection
+                            renderLeftIcon={() => {
+                                const selectedItem = data.find((item) => item.value === numberValue);
+                                return (
+                                    <Image
+                                        source={selectedItem?.icon}
+                                        style={{ width: 15, height: 20, marginRight: 5 }}
+                                        resizeMode="contain"
+                                    />
+                                );
+                            }}
+                            renderItem={(item) => {
+                                const isSelected = item.value === numberValue;
+                                return (
+                                    <TouchableOpacity
+                                        style={[
+                                            {
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                padding: 10,
+                                                backgroundColor: isSelected ? '#4e5278' : '#05071E',
+                                            },
+                                        ]}
+                                        onPress={() => setNumberValue(item.value)}
+                                    >
+                                        <Image
+                                            source={item.icon }
+                                            style={{ width: 15, height: 20, marginRight: 10 }}
+                                            resizeMode="contain"
+                                        />
+                                        <Text
+                                            style={{
+                                                fontSize: 14,
+                                                color: isSelected ? '#FFFFFF' : '#787CA5',
+                                                fontWeight: isSelected ? 'bold' : 'normal',
+                                            }}
+                                        >
+                                            {item.label}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            }}
+                            
+                        />
 
                             {/* numbers */}
                             <InputContainer
@@ -196,7 +252,6 @@ export default function SignUpscreen() {
                                 placeholder="7863983914"
                                 keyboardType="numeric"
                                 className="flex-1 p-2 text-[#787CA5] text-sm"
-                                
                             />
                         </View>
 
@@ -221,7 +276,7 @@ export default function SignUpscreen() {
 
                         {/* when password error occurs then show red color */}
                         {error.password && (
-                            <View className="flex-row items-center gap-1 w-[82%] ">
+                            <View className="flex-row items-center gap-1 w-[82%]">
                                 <Entypo name="cross" size={18} color={"red"} />
                                 <Text className="text-red-500 text-xs">
                                     {error.password}
@@ -239,7 +294,7 @@ export default function SignUpscreen() {
                             className="flex-1 p-2 text-[#787CA5] text-sm"
                         />
 
-                        {/* when confirm password occurs  */}
+                        {/* when confirm password occurs */}
                         {error.confirmPassword && (
                             <View className="flex-row items-center gap-1 w-[82%]">
                                 <Entypo name="cross" size={18} color={"red"} />
@@ -251,25 +306,25 @@ export default function SignUpscreen() {
 
                         {/* button next */}
                         <TouchableOpacity
-                            className={`p-2.5 mt-16 rounded-full w-11/12 h-14 items-center flex justify-center ${isFormValid ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
+                            className={`p-2.5  mt-12 rounded-full w-11/12 h-16 items-center flex justify-center ${isFormValid ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
                             onPress={() => router.push("/(routes)/signup/pageTwo" as any)}
                         >
                             {
                                 buttonSpinner ? (
                                     <ActivityIndicator size="small" color={"white"} />
                                 ) : (
-                                    <Text className="text-white text-center text-sm font-bold">
-                                        Next
+                                    <Text className="text-white text-center ">
+                                        Create Work Space
                                     </Text>
                                 )
                             }
                         </TouchableOpacity>
 
                         {/* go to the login page */}
-                        <View className="flex-row items-center justify-end mt-10 gap-1">
-                            <Text className="text-white font-light text-xs">Already a </Text>
+                        <View className="flex-row items-center justify-end mt-4 gap-1 mb-8">
+                            <Text className="text-white font-light">Already a </Text>
                             <GradientText text="Zapllonian" />
-                            <Text className="text-white text-xs">? </Text>
+                            <Text className="text-white">? </Text>
                             <TouchableOpacity onPress={() => router.push("/(routes)/login" as any)}>
                                 <Text className="text-white">Log In Here</Text>
                             </TouchableOpacity>
@@ -281,36 +336,4 @@ export default function SignUpscreen() {
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
-};
-
-const styles = StyleSheet.create({
-        dropdown: {
-          borderWidth: 1,
-          borderColor: '#37384B',
-          padding: 10,
-          marginTop: 25,
-          borderRadius: 35,
-          position:"relative",
-          width:100,
-          height:52
-          
-      },
-
-      placeholderStyle: {
-        fontSize: 16,
-      },
-      selectedTextStyle: {
-        fontSize: 10,
-        color:"#787CA5",
-        fontWeight:700
-      },
-      iconStyle: {
-        width: 20,
-        height: 20,
-      },
-      inputSearchStyle: {
-        height: 40,
-        fontSize: 16,
-        marginRight: 5,
-      },
-})
+}

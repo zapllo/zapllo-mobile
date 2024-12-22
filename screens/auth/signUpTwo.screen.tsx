@@ -5,21 +5,18 @@ import { router } from "expo-router";
 import { GradientText } from "~/components/GradientText";
 import InputContainer from "~/components/InputContainer";
 
+
 export default function SignUpTwoScreen() {
-    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+ 
     const [buttonSpinner, setButtonSpinner] = useState(false);
-    const [userInfo, setUserInfo] = useState({
-        email: '',
-        password: '',
-    });
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState({
-        password: "",
-        confirmPassword: "",
-        whatsAppNumber: ""
-    });
     const [companyName, setCompanyName] = useState("");
     const [description, setDescription] = useState("");
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isIndustryDropdownOpen, setIsIndustryDropdownOpen] = useState(false);
+    const [isTeamSizeDropdownOpen, setIsTeamSizeDropdownOpen] = useState(false);
+    const [selectedIndustry, setSelectedIndustry] = useState(null); // Selected value for Industry dropdown
+    const [selectedTeamSize, setSelectedTeamSize] = useState(null); // Selected value for Team Size dropdown
+
 
     const data = [
         { id: 1, item: "Sales", selected: false },
@@ -59,7 +56,7 @@ export default function SignUpTwoScreen() {
     ];
 
     const teamsData = [
-        { label: '1-10', value: '1', icon: require("~/assets/sign-in/india.png") },
+        { label: '1-10', value: '1', },
         { label: '11-20', value: '2' },
         { label: '21-30', value: '3' },
         { label: '31-50', value: '4' },
@@ -80,14 +77,51 @@ export default function SignUpTwoScreen() {
     teamSize !== null;
 
 
-    const renderDropdownItem = (item: any, selectedValue: any) => {
-        const isSelected = item.value === selectedValue;
-        return (
-            <View style={[styles.itemStyle, isSelected && styles.selectedItemStyle]}>
-                <Text style={styles.itemTextStyle}>{item.label}</Text>
-            </View>
-        );
-    };
+const renderIndustryItem = (item: any) => {
+    const isSelected = item.value === selectedIndustry;
+
+    return (
+        <TouchableOpacity
+            style={[
+                styles.itemStyle,
+                isSelected && styles.selectedDropdownItemStyle, // Apply selected item style
+            ]}
+            onPress={() => setSelectedIndustry(item.value)} // Update selected item
+        >
+            <Text
+                style={[
+                    styles.itemTextStyle,
+                    isSelected && styles.selectedTextStyle, // Apply selected text style
+                ]}
+            >
+                {item.label}
+            </Text>
+        </TouchableOpacity>
+    );
+};
+
+const renderTeamSizeItem = (item: any) => {
+    const isSelected = item.value === selectedTeamSize;
+
+    return (
+        <TouchableOpacity
+            style={[
+                styles.itemStyle,
+                isSelected && styles.selectedDropdownItemStyle, // Apply selected item style
+            ]}
+            onPress={() => setSelectedTeamSize(item.value)} // Update selected item
+        >
+            <Text
+                style={[
+                    styles.itemTextStyle,
+                    isSelected && styles.selectedTextStyle, // Apply selected text style
+                ]}
+            >
+                {item.label}
+            </Text>
+        </TouchableOpacity>
+    );
+};
     const handleNext = () => {
         // Handle next action
     };
@@ -96,24 +130,24 @@ export default function SignUpTwoScreen() {
         <SafeAreaView className="bg-[#05071E] h-full w-full  items-center ">
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
-               className="w-full"
+               className="flex-1 w-full"
             >
                 <ScrollView
-                className="w-full h-full "
                     contentContainerStyle={{ flexGrow: 1 }}
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
                 >
-                    <View className="p-4 h-full w-full items-center">
+                    <View className=" h-full w-full items-center">
+
                         {/* starting banner */}
-                        <View className="flex-row items-center justify-center mb-4">
-                            <Image className="w-12 h-8" source={require("~/assets/sign-in/teamsLogo.png")} resizeMode="contain" />
-                            <Text className="text-white font-bold text-lg ml-2">Zapplo Teams</Text>
+                        <View className="flex-row w-full items-center justify-center mb-9 mt-14">
+                            <Image className="w-12 h-9" source={require("~/assets/sign-in/teamsLogo.png")} resizeMode="contain" />
+                            <Text className="text-white  text-xl ml-2 mt-2">Zapplo Teams</Text>
                         </View>
 
                         {/* middle banner */}
-                        <View className="flex items-center justify-center gap-3 mb-6">
-                            <Text className="text-white font-bold text-xl">Create Your Workspace</Text>
+                        <View className="flex items-center justify-center gap-6 w-full mb-6">
+                            <Text className="text-white  text-2xl">Create Your Workspace</Text>
                             <Text className="text-white font-light text-sm">Let's get started by filling out the form below.</Text>
                         </View>
 
@@ -127,59 +161,63 @@ export default function SignUpTwoScreen() {
                         />
 
                     {/* drop down Business Industry names */}
-                    <View style={styles.input}>
-                        <Text style={[styles.baseName, { fontFamily: "Nunito_400Regular" }]}>Business Industry</Text>
+                        {/* drop down Business Industry names */}
+                        <View style={styles.input}>
+                            <Text style={[styles.baseName, { fontFamily: "Nunito_400Regular" }]}>Business Industry</Text>
                         <Dropdown
                             style={styles.dropdown}
                             placeholderStyle={styles.placeholderStyle}
                             selectedTextStyle={styles.selectedTextStyle}
                             inputSearchStyle={styles.inputSearchStyle}
-                            renderItem={(item) => renderDropdownItem(item, item.value)}
-                            iconStyle={styles.iconStyle}
+                            renderItem={renderIndustryItem} // Render Industry dropdown items
                             data={industryData}
-                            search
-                            maxHeight={300}
+                            maxHeight={200}
                             labelField="label"
                             valueField="value"
-                            placeholder="Business Industry"
-                            searchPlaceholder="Search..."
-                            value={selectIndustry}
-                            onChange={(item: any) => {
-                                setSelectIndustry(item.value);
-                            }}
+                            placeholder="Select an Industry"
+                            value={selectedIndustry} // Bind selected value
+                            onChange={(item: any) => setSelectedIndustry(item.value)} // Update selected value
+                            onFocus={() => setIsIndustryDropdownOpen(true)} // Set dropdown as open
+                            onBlur={() => setIsIndustryDropdownOpen(false)} // Set dropdown as closed
+                            iconStyle={{
+                                transform: [{ rotate: isIndustryDropdownOpen ? "180deg" : "0deg" }],
+                            }} // Rotate the icon dynamically
+                            containerStyle={styles.dropdownMenu}
                         />
-                    </View>
 
-                    {/* drop down team size names */}
-                    <View style={styles.input}>
-                        <Text style={[styles.baseName, { fontFamily: "Nunito_400Regular" }]}>Team Size</Text>
-                        <Dropdown
+                        </View>
+
+                        {/* drop down team size names */}
+                        <View style={styles.input}>
+                            <Text style={[styles.baseName, { fontFamily: "Nunito_400Regular" }]}>Team Size</Text>
+                            <Dropdown
                             style={styles.dropdown}
                             placeholderStyle={styles.placeholderStyle}
                             selectedTextStyle={styles.selectedTextStyle}
                             inputSearchStyle={styles.inputSearchStyle}
-                            renderItem={(item) => renderDropdownItem(item, item.value)}
-                            iconStyle={styles.iconStyle}
+                            renderItem={renderTeamSizeItem} // Render Team Size dropdown items
                             data={teamsData}
-                            search
-                            maxHeight={300}
+                            maxHeight={200}
                             labelField="label"
                             valueField="value"
-                            placeholder="Team Size"
-                            searchPlaceholder="Search..."
-                            value={teamSize}
-                            onChange={(item: any) => {
-                                setTeamSize(item.value);
-                            }}
+                            placeholder="Select a Team Size"
+                            value={selectedTeamSize} // Bind selected value
+                            onChange={(item: any) => setSelectedTeamSize(item.value)} // Update selected value
+                            onFocus={() => setIsTeamSizeDropdownOpen(true)} // Set dropdown as open
+                            onBlur={() => setIsTeamSizeDropdownOpen(false)} // Set dropdown as closed
+                            iconStyle={{
+                                transform: [{ rotate: isTeamSizeDropdownOpen ? "180deg" : "0deg" }],
+                            }} // Rotate the icon dynamically
+                            containerStyle={styles.dropdownMenu}
                         />
-                    </View>
 
+                        </View>
                         {/* Description */}
                         <View style={[styles.input, { height: 100, justifyContent: "flex-start", alignItems: "flex-start" }]}>
                         <TextInput
                             multiline
                             
-                            style={[styles.inputSome,{ textAlignVertical: 'top', paddingTop: 10 }]}
+                            style={[styles.inputSome,{ textAlignVertical: 'top', paddingTop: 10,width:"100%" }]}
                             value={description}
                             onChangeText={(value) => setDescription(value)}
                             placeholder="Description"
@@ -187,16 +225,16 @@ export default function SignUpTwoScreen() {
                         ></TextInput>
                         </View>
 
-                        <View className="flex items-center justify-center gap-3 mb-6">
+                        <View className="flex items-center justify-center gap-3 mt-6 mb-6">
                             <Text className="text-white font-light text-sm ">Select the categories that are relevant to your business</Text>
                         </View>
 
                         {/* Render buttons without scrolling */}
-                        <View className="flex-row flex-wrap justify-start gap-1 w-full mb-4">
+                        <View className="flex-row flex-wrap justify-start gap-1 ml-10 w-full mb-4">
                             {selectedItem.map((item) => (
                                 <TouchableOpacity
                                     key={item.id}
-                                    className={`w-1/4 h-10 m-1 rounded-full items-center justify-center ${item.selected ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
+                                    className={`w-[105px] h-9 m-1 rounded-full items-center justify-center ${item.selected ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
                                     onPress={() => onSelect(item)}
                                 >
                                     <Text className="text-white text-xs">{item.item}</Text>
@@ -210,14 +248,14 @@ export default function SignUpTwoScreen() {
 
                         {/* button sign up */}
                         <TouchableOpacity
-                            className={`p-2.5 mt-16 rounded-full w-11/12 h-14 items-center flex justify-center ${isFormValid ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
+                            className={`p-2.5 mt-3 rounded-full w-11/12 h-16 items-center flex justify-center ${isFormValid ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
                             onPress={() => router.push("" as any)}
                         >
                             {
                                 buttonSpinner ? (
                                     <ActivityIndicator size="small" color={"white"} />
                                 ) : (
-                                    <Text className="text-white text-center text-sm font-bold">
+                                    <Text className="text-white text-center ">
                                         Sign Up
                                     </Text>
                                 )
@@ -225,10 +263,10 @@ export default function SignUpTwoScreen() {
                         </TouchableOpacity>
 
                         {/* go to the login page */}
-                        <View className="flex-row items-center justify-end mt-10 gap-1">
-                            <Text className="text-white font-light text-xs">Already a </Text>
+                        <View className="flex-row items-center justify-end mt-4 mb-10 gap-1">
+                            <Text className="text-white font-light">Already a </Text>
                             <GradientText text="Zapllonian" />
-                            <Text className="text-white text-xs">? </Text>
+                            <Text className="text-white ">? </Text>
                             <TouchableOpacity onPress={() => router.push("/(routes)/login" as any)}>
                                 <Text className="text-white">Log In Here</Text>
                             </TouchableOpacity>
@@ -241,7 +279,9 @@ export default function SignUpTwoScreen() {
 }
 
 const styles = StyleSheet.create({
-
+    selectedDropdownItemStyle: {
+        backgroundColor: "#4e5278", // Background color for selected item
+    },
 
 
   input:{
@@ -249,7 +289,6 @@ const styles = StyleSheet.create({
     borderColor: '#37384B',
     padding: 10,
     marginTop: 25,
-    
     borderRadius: 35,
     width:"90%",
     height:57,
@@ -273,27 +312,24 @@ const styles = StyleSheet.create({
     color:"#787CA5",
     fontSize:12
   },
- 
-
 
     dropdown: {
         position:"absolute",
         width:"100%",
-        height:52,
-        
-        
+        height:50,
     },
     itemStyle: {
         padding: 15,
-        borderBottomColor:"gray",
+        borderBottomColor:"#37384B",
         borderBottomWidth:1,
         
     },
     itemTextStyle: {
-        color: '#FFFFFF', // Text color for each item
+        color: '#787CA5',
     },
     selectedItemStyle: {
-        backgroundColor: '#a492d8', // Background color for selected item
+        backgroundColor: '#4e5278',
+
     },
 
     placeholderStyle: {
@@ -317,6 +353,23 @@ const styles = StyleSheet.create({
       fontSize: 16,
       marginRight: 5,
       borderColor:"white"
+    },
+    dropdownMenu: {
+        backgroundColor: "#05071E", 
+        borderColor: "#37384B", 
+        borderWidth: 1, 
+        borderBottomEndRadius: 15, 
+        borderBottomStartRadius:15,  
+        margin:8,
+         
+    },
+    dropdownMenuTwo: {
+        backgroundColor: "#05071E", 
+        borderColor: "#37384B", 
+        borderWidth: 1, 
+        borderBottomEndRadius: 15, 
+        borderBottomStartRadius:15,
+        margin:8,
     },
 
 

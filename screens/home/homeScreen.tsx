@@ -30,7 +30,11 @@ const HomeScreen: React.FC = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView className="bg-primary flex-1 p-3">
-        <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+        <ScrollView 
+        contentContainerStyle={{ paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        >
           <View className="w-full h-20 flex flex-row justify-between p-4 items-center ">
             <Image className="w-7 h-7" source={require("~/assets/home/logo.png")}/>
             <Text className=" text-xl pl-4 text-[#e3dcdc]">My Business Apps</Text>

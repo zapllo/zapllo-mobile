@@ -27,14 +27,14 @@ export default function SignUpscreen() {
     const [isDropdownOpen,setIsDropdownOpen] = useState(false);
 
     const data = [
-        { label: '+91', value: '1', icon: require("~/assets/sign-in/india.png") },
-        { label: '+222', value: '2' },
-        { label: '+102', value: '3' },
-        { label: '+100', value: '4' },
-        { label: '+69', value: '5' },
-        { label: '++100', value: '6' },
-        { label: '+11', value: '7' },
-        { label: '+12', value: '8' },
+        { label: '+91', value: '+91', icon: require("~/assets/sign-in/india.png") },
+        { label: '+222', value: '+222' },
+        { label: '+102', value: '+102' },
+        { label: '+100', value: '+100' },
+        { label: '+69', value: '+69' },
+        { label: '++100', value: '++100' },
+        { label: '+11', value: '+11' },
+        { label: '+12', value: '+12' },
     ];
 
     const [numberValue, setNumberValue] = useState(data[0]?.value || null);
@@ -111,8 +111,24 @@ export default function SignUpscreen() {
 
     const isFormValid = isEmailValid(userInfo.email) && !error.password && areNamesValid() && confirmPassword === userInfo.password && (!error.whatsAppNumber && whatsAppNumber.length > 0);
 
+
+
+
+    //handle sign in to pass the next page 
     const handleNext = () => {
-        // Handle next action
+        const dataToSend = {
+            whatsappNo:whatsAppNumber,
+            email: userInfo.email,
+            password: userInfo.password,
+            firstName: userName.firstName,
+            lastName: userName.lastName,
+            country: numberValue, 
+        };
+    
+        router.push({
+            pathname: "/(routes)/signup/pageTwo",
+            params: { data: JSON.stringify(dataToSend) }, 
+        });
     }
 
     return (
@@ -332,7 +348,8 @@ export default function SignUpscreen() {
                         {/* button next */}
                         <TouchableOpacity
                             className={`p-2.5  mt-12 rounded-full w-11/12 h-16 items-center flex justify-center ${isFormValid ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
-                            onPress={() => router.push("/(routes)/signup/pageTwo" as any)}
+                            onPress={handleNext} // Use handleNext function here
+                         
                         >
                             {
                                 buttonSpinner ? (

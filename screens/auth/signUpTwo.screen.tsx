@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Text, View, Image, SafeAreaView, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
 import { Dropdown } from 'react-native-element-dropdown';
-import { router } from "expo-router";
+import { router,useRouter, useLocalSearchParams } from "expo-router";
 import { GradientText } from "~/components/GradientText";
 import InputContainer from "~/components/InputContainer";
-
+import axios from "axios"
 
 export default function SignUpTwoScreen() {
  
@@ -15,9 +15,15 @@ export default function SignUpTwoScreen() {
     const [isTeamSizeDropdownOpen, setIsTeamSizeDropdownOpen] = useState(false);
     const [selectedIndustry, setSelectedIndustry] = useState(null); // Selected value for Industry dropdown
     const [selectedTeamSize, setSelectedTeamSize] = useState(null); // Selected value for Team Size dropdown
+    const router = useRouter();
+    const { data } = useLocalSearchParams(); // Use useLocalSearchParams instead
+    const initialData = data ? JSON.parse(data as any ) : {}; // Parse received data
 
+    const [userData, setUserData] = useState({
+        ...initialData, 
+    });
 
-    const data = [
+    const categoriesData = [
         { id: 1, item: "Sales", selected: false },
         { id: 2, item: "Marketing", selected: false },
         { id: 3, item: "HR/Admin", selected: false },
@@ -27,7 +33,7 @@ export default function SignUpTwoScreen() {
         { id: 7, item: "Admin", selected: false },
         { id: 8, item: "UI/UX", selected: false },
     ];
-    const [selectedItem, setSelectedItem] = useState(data);
+    const [selectedItem, setSelectedItem] = useState(categoriesData);
 
     const onSelect = (item: any) => {
         const newItem = selectedItem.map((val) => {
@@ -41,25 +47,25 @@ export default function SignUpTwoScreen() {
     };
 
     const industryData = [
-        { label: 'Retail/E-Commerce', value: '1' },
-        { label: 'Technology', value: '2' },
-        { label: 'Service Provider', value: '3' },
-        { label: 'Healthcare(Doctors/Clinics/Physicians/Hospital)', value: '4' },
-        { label: 'Logistics', value: '5' },
-        { label: 'Financial Consultants', value: '6' },
-        { label: 'Trading', value: '7' },
-        { label: 'Education', value: '8' },
-        { label: 'Manufacturing', value: '9' },
-        { label: 'Real Estate/Construction/Interior/Architects', value: '10' },
-        { label: 'Others', value: '11' },
+        { label: 'Retail/E-Commerce', value: 'Retail/E-Commerce' },
+        { label: 'Technology', value: 'Technology' },
+        { label: 'Service Provider', value: 'Service Provider' },
+        { label: 'Healthcare(Doctors/Clinics/Physicians/Hospital)', value: 'Healthcare(Doctors/Clinics/Physicians/Hospital)' },
+        { label: 'Logistics', value: 'Logistics' },
+        { label: 'Financial Consultants', value: 'Financial Consultants' },
+        { label: 'Trading', value: 'Trading' },
+        { label: 'Education', value: 'Education' },
+        { label: 'Manufacturing', value: 'Manufacturing' },
+        { label: 'Real Estate/Construction/Interior/Architects', value: 'Real Estate/Construction/Interior/Architects' },
+        { label: 'Others', value: 'Others' },
     ];
 
     const teamsData = [
-        { label: '1-10', value: '1', },
-        { label: '11-20', value: '2' },
-        { label: '21-30', value: '3' },
-        { label: '31-50', value: '4' },
-        { label: '51+', value: '5' },
+        { label: '1-10', value: '1-10', },
+        { label: '11-20', value: '11-20' },
+        { label: '21-30', value: '21-30' },
+        { label: '31-50', value: '31-50' },
+        { label: '51+', value: '51+' },
     ];
 
 
@@ -69,54 +75,86 @@ export default function SignUpTwoScreen() {
     selectedTeamSize !== null;
 
 
-const renderIndustryItem = (item: any) => {
-    const isSelected = item.value === selectedIndustry;
 
-    return (
-        <TouchableOpacity
-            style={[
-                styles.itemStyle,
-                isSelected && styles.selectedDropdownItemStyle, // Apply selected item style
-            ]}
-            onPress={() => setSelectedIndustry(item.value)} // Update selected item
-        >
-            <Text
+
+    const renderIndustryItem = (item: any) => {
+        const isSelected = item.value === selectedIndustry;
+
+        return (
+            <TouchableOpacity
                 style={[
-                    styles.itemTextStyle,
-                    isSelected && styles.selectedTextStyle, // Apply selected text style
+                    styles.itemStyle,
+                    isSelected && styles.selectedDropdownItemStyle, // Apply selected item style
                 ]}
+                onPress={() => setSelectedIndustry(item.value)} // Update selected item
             >
-                {item.label}
-            </Text>
-        </TouchableOpacity>
-    );
-};
-
-const renderTeamSizeItem = (item: any) => {
-    const isSelected = item.value === selectedTeamSize;
-
-    return (
-        <TouchableOpacity
-            style={[
-                styles.itemStyle,
-                isSelected && styles.selectedDropdownItemStyle, // Apply selected item style
-            ]}
-            onPress={() => setSelectedTeamSize(item.value)} // Update selected item
-        >
-            <Text
-                style={[
-                    styles.itemTextStyle,
-                    isSelected && styles.selectedTextStyle, // Apply selected text style
-                ]}
-            >
-                {item.label}
-            </Text>
-        </TouchableOpacity>
-    );
-};
-    const handleNext = () => {
-        // Handle next action
+                <Text
+                    style={[
+                        styles.itemTextStyle,
+                        isSelected && styles.selectedTextStyle, // Apply selected text style
+                    ]}
+                >
+                    {item.label}
+                </Text>
+            </TouchableOpacity>
+        );
     };
+
+    const renderTeamSizeItem = (item: any) => {
+        const isSelected = item.value === selectedTeamSize;
+
+        return (
+            <TouchableOpacity
+                style={[
+                    styles.itemStyle,
+                    isSelected && styles.selectedDropdownItemStyle, // Apply selected item style
+                ]}
+                onPress={() => setSelectedTeamSize(item.value)} // Update selected item
+            >
+                <Text
+                    style={[
+                        styles.itemTextStyle,
+                        isSelected && styles.selectedTextStyle, // Apply selected text style
+                    ]}
+                >
+                    {item.label}
+                </Text>
+            </TouchableOpacity>
+        );
+    };
+
+
+    const handleSignUp = async () => {
+        const categories = selectedItem
+            .filter((item) => item.selected) // Only include selected categories
+            .map((item) => item.item);
+    
+        const payload = {
+            ...userData, 
+            companyName, 
+            industry: selectedIndustry,
+            teamSize: selectedTeamSize,
+            description,
+            categories, 
+        };
+    
+        console.log("Payload to send:", payload); // Debugging: Check the payload
+    
+        await axios
+            .post("https://zapllo.com/api/users/signup", payload)
+            .then((res) => {
+                console.log("Response from server:", res.data);
+                alert("Sign-up successful!");
+                // router.push("/success"); // Navigate to success page
+            })
+            .catch((err) => {
+                console.error("Error during sign-up:", err);
+                alert("An error occurred. Please try again.");
+            });
+    };
+    
+    
+
 
     return (
         <SafeAreaView className="bg-[#05071E] h-full w-full  items-center ">
@@ -241,7 +279,7 @@ const renderTeamSizeItem = (item: any) => {
                         {/* button sign up */}
                         <TouchableOpacity
                             className={`p-2.5 mt-3 rounded-full w-11/12 h-16 items-center flex justify-center ${isFormValid ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
-                            onPress={() => router.push("" as any)}
+                            onPress={handleSignUp}
                         >
                             {
                                 buttonSpinner ? (

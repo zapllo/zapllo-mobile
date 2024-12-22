@@ -124,7 +124,7 @@ export default function Loginscreen() {
               className="self-end mr-5 mt-2"
               onPress={()=>router.push("/(routes)/forgot-PassWord" as any)}
             >
-              <Text className="text-white font-thin text-sm">Forgot password?</Text>
+              <Text className="text-white font-thin text-sm ">Forgot password?</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

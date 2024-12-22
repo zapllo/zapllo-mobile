@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import {Text} from "react-native";
 import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
@@ -17,16 +17,11 @@ export const GradientText: React.FC<gradientProps> = ({ text, textStyle }) => {
         colors={["#815BF5", "#FC8929"]}
         
       >
-        <Text style={[textStyle, { opacity: 0 }]} className="font-thin">{text}</Text>
+        <Text style={[textStyle, { opacity: 0 }]} >{text}</Text>
       </LinearGradient>
     </MaskedView>
   );
 }
 
-const styles = StyleSheet.create({
-  extrathinText: {
-    fontSize: 10, // Adjust the size as needed for "extrathin"
-    fontWeight: '100', // Use a light font weight for extrathin
-  },
-});
+
 

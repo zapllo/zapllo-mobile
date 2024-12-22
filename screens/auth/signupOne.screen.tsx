@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Text, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, View, Image, TouchableOpacity, ActivityIndicator } from "react-native";
-import { Entypo } from "@expo/vector-icons";
+import { Entypo, Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { GradientText } from "~/components/GradientText";
 import { Dropdown } from 'react-native-element-dropdown';
@@ -8,6 +8,7 @@ import InputContainer from "~/components/InputContainer";
 
 export default function SignUpscreen() {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
     const [buttonSpinner, setButtonSpinner] = useState(false);
     const [userInfo, setUserInfo] = useState({
         email: '',
@@ -135,7 +136,7 @@ export default function SignUpscreen() {
                         {/* middle banner */}
                         <View className="flex items-center justify-center gap-4 mb-6">
                             <Text className="text-white text-2xl">Let’s Get Started</Text>
-                            <Text className="text-white font-light text-sm">Let's get started by filling out the form below.</Text>
+                            <Text className="text-white font-light ">Let's get started by filling out the form below.</Text>
                         </View>
 
                         {/* first name */}
@@ -265,6 +266,7 @@ export default function SignUpscreen() {
                         />
 
                         {/* password input */}
+                        <View className="relative items-center w-full">
                         <InputContainer
                             label="Password"
                             value={userInfo.password}
@@ -273,6 +275,17 @@ export default function SignUpscreen() {
                             secureTextEntry={!isPasswordVisible}
                             className="flex-1 p-2 text-[#787CA5] text-sm"
                         />
+                            <TouchableOpacity
+                                className="absolute top-12 right-10"
+                                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                                >
+                                {isPasswordVisible ? (
+                                <Ionicons name="eye-off-outline" size={23} color={"#FFFFFF"} />
+                                ) : (
+                                <Ionicons name="eye-outline" size={23} color={"#FFFFFF"} />
+                                )}
+                            </TouchableOpacity>
+                        </View>
 
                         {/* when password error occurs then show red color */}
                         {error.password && (
@@ -285,14 +298,26 @@ export default function SignUpscreen() {
                         )}
 
                         {/* confirm password */}
+                        <View className="relative items-center w-full">
                         <InputContainer
                             label="Confirm Password"
                             value={confirmPassword}
                             onChangeText={handleConfirmPasswordValidation}
                             placeholder="**********"
-                            secureTextEntry={!isPasswordVisible}
+                            secureTextEntry={!isConfirmPasswordVisible}
                             className="flex-1 p-2 text-[#787CA5] text-sm"
                         />
+                                                    <TouchableOpacity
+                                className="absolute top-12 right-10"
+                                onPress={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}
+                                >
+                                {isConfirmPasswordVisible ? (
+                                <Ionicons name="eye-off-outline" size={23} color={"#FFFFFF"} />
+                                ) : (
+                                <Ionicons name="eye-outline" size={23} color={"#FFFFFF"} />
+                                )}
+                            </TouchableOpacity>
+                        </View>
 
                         {/* when confirm password occurs */}
                         {error.confirmPassword && (
@@ -321,12 +346,12 @@ export default function SignUpscreen() {
                         </TouchableOpacity>
 
                         {/* go to the login page */}
-                        <View className="flex-row items-center justify-end mt-4 gap-1 mb-8">
-                            <Text className="text-white font-light">Already a </Text>
+                        <View className="flex-row items-center justify-end mt-6  mb-20">
+                            <Text className="text-white font-light mr-1">Already a </Text>
                             <GradientText text="Zapllonian" />
-                            <Text className="text-white">? </Text>
+                            <Text className="text-white mr-1">? </Text>
                             <TouchableOpacity onPress={() => router.push("/(routes)/login" as any)}>
-                                <Text className="text-white">Log In Here</Text>
+                                <Text className="text-white font-semibold">Log In Here</Text>
                             </TouchableOpacity>
                         </View>
 

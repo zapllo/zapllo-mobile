@@ -11,7 +11,6 @@ export default function SignUpTwoScreen() {
     const [buttonSpinner, setButtonSpinner] = useState(false);
     const [companyName, setCompanyName] = useState("");
     const [description, setDescription] = useState("");
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isIndustryDropdownOpen, setIsIndustryDropdownOpen] = useState(false);
     const [isTeamSizeDropdownOpen, setIsTeamSizeDropdownOpen] = useState(false);
     const [selectedIndustry, setSelectedIndustry] = useState(null); // Selected value for Industry dropdown
@@ -63,18 +62,11 @@ export default function SignUpTwoScreen() {
         { label: '51+', value: '5' },
     ];
 
-    const [selectIndustry, setSelectIndustry] = useState(null);
-    const [teamSize, setTeamSize] = useState(null);
-
-    const isEmailValid = (email: string) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    };
 
     const isFormValid = 
     companyName.trim() !== "" && 
-    selectIndustry !== null && 
-    teamSize !== null;
+    selectedIndustry !== null && 
+    selectedTeamSize !== null;
 
 
 const renderIndustryItem = (item: any) => {
@@ -148,7 +140,7 @@ const renderTeamSizeItem = (item: any) => {
                         {/* middle banner */}
                         <View className="flex items-center justify-center gap-6 w-full mb-6">
                             <Text className="text-white  text-2xl">Create Your Workspace</Text>
-                            <Text className="text-white font-light text-sm">Let's get started by filling out the form below.</Text>
+                            <Text className="text-white font-light ">Let's get started by filling out the form below.</Text>
                         </View>
 
                         {/* Company Name */}
@@ -226,7 +218,7 @@ const renderTeamSizeItem = (item: any) => {
                         </View>
 
                         <View className="flex items-center justify-center gap-3 mt-6 mb-6">
-                            <Text className="text-white font-light text-sm ">Select the categories that are relevant to your business</Text>
+                            <Text className="text-white font-light ">Select the categories that are relevant to your business</Text>
                         </View>
 
                         {/* Render buttons without scrolling */}
@@ -263,12 +255,12 @@ const renderTeamSizeItem = (item: any) => {
                         </TouchableOpacity>
 
                         {/* go to the login page */}
-                        <View className="flex-row items-center justify-end mt-4 mb-10 gap-1">
-                            <Text className="text-white font-light">Already a </Text>
+                        <View className="flex-row items-center justify-end mt-4 mb-10 ">
+                            <Text className="text-white font-light mr-1">Already a </Text>
                             <GradientText text="Zapllonian" />
-                            <Text className="text-white ">? </Text>
+                            <Text className="text-white mr-1">? </Text>
                             <TouchableOpacity onPress={() => router.push("/(routes)/login" as any)}>
-                                <Text className="text-white">Log In Here</Text>
+                                <Text className="text-white font-semibold">Log In Here</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

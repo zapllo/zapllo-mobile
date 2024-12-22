@@ -31,9 +31,9 @@ const HomeScreen: React.FC = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView className="bg-primary flex-1 p-3">
         <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-          <View className="w-full h-20 flex flex-row justify-between p-4 items-center justify-center">
+          <View className="w-full h-20 flex flex-row justify-between p-4 items-center ">
             <Image className="w-7 h-7" source={require("~/assets/home/logo.png")}/>
-            <Text className="text-[22px] pl-4 text-[#e3dcdc]">My Apps</Text>
+            <Text className=" text-xl pl-4 text-[#e3dcdc]">My Business Apps</Text>
             <ProfileButton/>
           </View>
 

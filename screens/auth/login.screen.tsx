@@ -151,12 +151,12 @@ export default function Loginscreen() {
               />
             </View>
 
-            <View className="flex flex-row gap-2 justify-end mt-10 items-center">
-              <Text className="text-white font-extralight">Not a</Text>
+            <View className="flex flex-row justify-end mt-10 items-center">
+              <Text className="text-white font-extralight mr-1">Not a</Text>
               <GradientText text="Zapllonian"/>
-              <Text className="text-white font-extralight">? </Text>
+              <Text className="text-white font-extralight ">? </Text>
               <TouchableOpacity onPress={()=> router.push("/(routes)/signup/pageOne" as any)}>
-                <Text className="text-white">Register Here</Text>
+                <Text className="text-white font-semibold">Register Here</Text>
               </TouchableOpacity>
             </View>
           </View>

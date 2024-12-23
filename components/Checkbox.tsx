@@ -1,10 +1,8 @@
 import { Entypo } from '@expo/vector-icons';
 import React, { useRef } from 'react';
-import { TouchableOpacity, Text, View, StyleSheet, Animated } from 'react-native';
-
+import { TouchableOpacity, Text, View, StyleSheet, Animated, Linking } from 'react-native';
 
 interface CheckboxProps {
-  text: any;
   onPress: () => void;
   isChecked: boolean;
   containerStyle?: object;
@@ -13,11 +11,9 @@ interface CheckboxProps {
 }
 
 const Checkbox: React.FC<CheckboxProps> = ({
-  text,
   onPress,
   isChecked,
   containerStyle,
-  textStyle,
   checkboxStyle,
 }) => {
   const animatedWidth = useRef(new Animated.Value(0)).current;
@@ -27,8 +23,16 @@ const Checkbox: React.FC<CheckboxProps> = ({
     Animated.timing(animatedWidth, {
       toValue: toValue,
       duration: 500,
-      useNativeDriver: false,
+      useNativeDriver: false, // Consider changing to true if applicable
     }).start();
+  };
+
+  const openTermsOfService = () => {
+    Linking.openURL('https://zapllo.com/terms');
+  };
+
+  const openPrivacyPolicy = () => {
+    Linking.openURL('https://zapllo.com/privacypolicy');
   };
 
   return (
@@ -42,12 +46,23 @@ const Checkbox: React.FC<CheckboxProps> = ({
           styles.checkbox,
           isChecked && styles.checkboxSelected,
           checkboxStyle,
-        ]}>
+        ]}
+        accessibilityLabel="Checkbox"
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: isChecked }}
+      >
         <Animated.View style={{ width: animatedWidth }}>
           <Entypo name="check" size={25} style={{ color: '#815BF5' }} />
         </Animated.View>
       </TouchableOpacity>
-      <Text style={[styles.checkboxText, textStyle]}>{text}</Text>
+      <View>
+        <Text style={styles.checkboxText}>
+          By clicking continue, you agree to our{' '}
+          <Text style={styles.link} onPress={openTermsOfService}>Terms of Service</Text>
+          {' '}and{' '}
+          <Text style={styles.link} onPress={openPrivacyPolicy}>Privacy Policy</Text>.
+        </Text>
+      </View>
     </View>
   );
 };
@@ -55,10 +70,11 @@ const Checkbox: React.FC<CheckboxProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    gap: 12,
   },
   checkbox: {
-    backgroundColor:"#37384B",
+    backgroundColor: '#37384B',
     borderWidth: 1,
     borderRadius: 5,
     height: 25,
@@ -68,11 +84,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#37384B',
   },
   checkboxText: {
-    fontSize: 11,
-    marginLeft: 10,
-    color:"white",
-    fontWeight:"200",
-    paddingLeft:5
+    fontSize: 14,
+    color: 'white',
+    fontWeight: '400',
+    paddingLeft: 5,
+  },
+  link: {
+    color: '#815BF5',
+    textDecorationLine: 'underline',
   },
 });
 

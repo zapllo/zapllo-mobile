@@ -42,11 +42,11 @@ const HomeScreen: React.FC = () => {
           </View>
 
           {/* Progress Bar with Gradient */}
-          <View className=" w-full pt-5 pl-5 pr-5 my-3 bg-[#10122d] opacity-60 rounded-xl items-center flex h-44 border border-[#272943]  flex-col gap-6">
+          <View className=" w-full pt-5 pl-5 pr-5 my-3 bg-[#10122d] opacity-60 rounded-xl items-center flex h-44 border border-[#37384B]  flex-col gap-6">
 
             <View className='flex w-full  justify-between items-center flex-row'>
               <Text className='text-white text-lg '>App Usage Progress</Text>
-              <TouchableOpacity className='bg-[#383e91] w-14 h-14 rounded-full items-center justify-center '>
+              <TouchableOpacity className=' border-white bg-primary w-[50px] h-[40px] rounded-full items-center justify-center '>
                 <Feather name="arrow-up-right" size={24} color="#e3dcdc" />
               </TouchableOpacity>
             </View>
@@ -74,21 +74,21 @@ const HomeScreen: React.FC = () => {
           {componentsData.map((item) => (
             <TouchableOpacity
               key={item.id}
-              className="p-4 pt-5 pl-12 pr-12 my-3 bg-[#10122d] opacity-60 rounded-xl items-start flex flex-row justify-center h-44 border border-[#272943]"
+              className="p-4 pt-5 pl-12 pr-12 my-3 rounded-2xl items-start flex flex-row justify-center h-48 border border-[#37384B]"
               onPress={() => {
                 console.log(`Navigating to: ${item.screen}`);
                 router.push(item.screen);
               }} 
             >
               <View className='flex w-full items-start gap-3'>
-                <Image className='h-12 w-12' source={require("~/assets/HomeComponents/Attendance.png")}/>
+                <Image className='h-14 w-14' source={require("~/assets/HomeComponents/Attendance.png")}/>
                 <View className='w-ull'>
                   <Text className="text-lg text-[#e3dcdc]">{item.title}</Text>
                   <Text className="text-sm font-thin text-[#a9a9a9]">{item.description}</Text> 
                 </View>
               </View>
 
-              <TouchableOpacity className='bg-[#383e91] w-14 h-14 rounded-full items-center justify-center '>
+              <TouchableOpacity className=' border border-white  w-[50px] h-[40px] rounded-full items-center justify-center '>
                 <Feather name="arrow-up-right" size={24} color="#e3dcdc" />
               </TouchableOpacity>
             </TouchableOpacity>

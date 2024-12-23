@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
         position:"relative"
       },
       baseName:{
-        color:"white",
+        color:"#787CA5",
         position:"absolute",
         top:-9,
         left:25,

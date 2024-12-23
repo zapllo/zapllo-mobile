@@ -170,14 +170,14 @@ export default function SignUpTwoScreen() {
                     <View className=" h-full w-full items-center">
 
                         {/* starting banner */}
-                        <View className="flex-row w-full items-center justify-center mb-9 mt-14">
+                        <View className="flex-row w-full items-center justify-center mb-9 mt-[4.6rem]">
                             <Image className="w-12 h-9" source={require("~/assets/sign-in/teamsLogo.png")} resizeMode="contain" />
-                            <Text className="text-white  text-xl ml-2 mt-2">Zapplo Teams</Text>
+                            <Text className="text-white font-semibold text-xl ml-2 mt-2">Zapllo Teams</Text>
                         </View>
 
                         {/* middle banner */}
-                        <View className="flex items-center justify-center gap-6 w-full mb-6">
-                            <Text className="text-white  text-2xl">Create Your Workspace</Text>
+                        <View className="flex items-center justify-center gap-6 w-full mb-2">
+                            <Text className="text-white font-semibold text-2xl">Create Your Workspace</Text>
                             <Text className="text-white font-light ">Let's get started by filling out the form below.</Text>
                         </View>
 
@@ -255,31 +255,47 @@ export default function SignUpTwoScreen() {
                         ></TextInput>
                         </View>
 
-                        <View className="flex items-center justify-center gap-3 mt-6 mb-6">
-                            <Text className="text-white font-light ">Select the categories that are relevant to your business</Text>
+                        <View className="flex items-start gap-3 mt-6 mb-6 w-[90%]">
+                            <Text className="text-white mt-1 font-light">Select the categories that are relevant to your business</Text>
                         </View>
 
                         {/* Render buttons without scrolling */}
-                        <View className="flex-row flex-wrap justify-start gap-1 ml-10 w-full mb-4">
-                            {selectedItem.map((item) => (
-                                <TouchableOpacity
-                                    key={item.id}
-                                    className={`w-[105px] h-9 m-1 rounded-full items-center justify-center ${item.selected ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
-                                    onPress={() => onSelect(item)}
-                                >
-                                    <Text className="text-white text-xs">{item.item}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
+                        <View style={{ flexWrap: 'wrap', flexDirection: 'row', justifyContent: 'flex-start', width: '90%',gap:5,alignItems:"flex-start" }}>
+    {selectedItem.map((item) => (
+        <TouchableOpacity
+            key={item.id}
+            style={{
+                width: 69, // Fixed width in pixels
+                height: 30, // Fixed height in pixels
+                 // Spacing between buttons
+                borderRadius: 40, // Rounded corners
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: item.selected ? '#815BF5' : '#37384B',
+                marginRight:3,
+                marginTop:3,
+                padding:3,
+                minWidth:65,
+                maxWidth:69
+            }}
+            onPress={() => onSelect(item)}
+        >
+            <Text style={{ color: '#FFFFFF', fontSize: 12 }}>{item.item}</Text>
+        </TouchableOpacity>
+    ))}
+</View>
 
-                        <View className="flex items-center  gap-3 mb-6">
-                            <Text className="text-white font-light text-xs text-center">Don't worry you can add more later in the Settings panel</Text>
+
+
+                        <View className="flex items-start w-[90%] mt-4  mb-4">
+                            <Text className="text-white  font-light text-[12px] ">Don't worry you can add more later in the Settings panel</Text>
                         </View>
 
                         {/* button sign up */}
                         <TouchableOpacity
-                            className={`p-2.5 mt-3 rounded-full w-11/12 h-16 items-center flex justify-center ${isFormValid ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
+                            className={`p-2.5 mt-3 rounded-full w-[89%] h-[3.6rem] items-center flex justify-center ${isFormValid ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
                             onPress={handleSignUp}
+                            
                         >
                             {
                                 buttonSpinner ? (
@@ -326,7 +342,7 @@ const styles = StyleSheet.create({
     
   },
   baseName:{
-    color:"white",
+    color:"#787CA5",
     position:"absolute",
     top:-9,
     left:25,

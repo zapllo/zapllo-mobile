@@ -13,7 +13,6 @@ export default function Loginscreen() {
     email: '',
     password: '',
   });
-  const [required, setRequired] = useState("");
   const [error, setError] = useState({
     password: "",
   });
@@ -64,7 +63,7 @@ export default function Loginscreen() {
   }
 
   return (
-    <SafeAreaView className="w-full h-full bg-primary items-center flex-1">
+    <SafeAreaView className="w-full h-full bg-primary items-center flex-1 ">
       <KeyboardAvoidingView className="w-full" behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <ScrollView 
             className="w-full h-full flex-grow"
@@ -72,11 +71,11 @@ export default function Loginscreen() {
             showsHorizontalScrollIndicator={false}
         >
           <View className="items-center h-full w-full">
-            <Image className="h-20 w-1/2 mt-16 mb-20" source={require("~/assets/sign-in/sign_in.png")} resizeMode="contain" />
+            <Image className="h-22 w-1/2 mt-[4.6rem] mb-[5.3rem]" source={require("~/assets/sign-in/sign_in.png")} resizeMode="contain" />
 
-            <View className="flex items-center mb-3 flex-row gap-2 ">
+            <View className="flex items-center mb-5 flex-row gap-2 ">
               <Image className="h-9" source={require("~/assets/sign-in/teamsLogo.png")} resizeMode="contain" />
-              <Text className="text-center text-xl text-white mt-2">Zapllo Teams</Text>
+              <Text className="text-center text-xl font-semibold text-white mt-2">Zapllo Teams</Text>
             </View>
 
             <InputContainer
@@ -84,7 +83,7 @@ export default function Loginscreen() {
               value={userInfo.email}
               onChangeText={(value) => setUserInfo({ ...userInfo, email: value })}
               placeholder="Email Address"
-              className=" p-2.5  rounded-full w-11/12 h-14 text-[#787CA5] text-sm"
+              className=" p-2.5  rounded-full w-11/12 h-14 text-[#787CA5] "
             />
             
             <View className="relative items-center w-full">
@@ -94,7 +93,7 @@ export default function Loginscreen() {
                 onChangeText={handlePasswordValidation}
                 placeholder="**********"
                 secureTextEntry={!isPasswordVisible}
-                className="  p-2.5  rounded-full w-11/12 h-14 text-[#787CA5] text-sm"
+                className="  p-2.5  rounded-full w-11/12 h-14 text-[#787CA5] "
               />
             
               <TouchableOpacity
@@ -128,30 +127,29 @@ export default function Loginscreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              className={`p-2.5 mt-16 mb-7 rounded-full w-11/12 h-16 items-center flex justify-center ${isFormValid ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
+              className={`p-2.5 mt-16 mb-10 rounded-full w-[89%] h-[3.6rem] items-center flex justify-center ${isFormValid ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
               onPress={()=> router.push("(routes)/home" as any )}
             >
               {
                 buttonSpinner ? (
                   <ActivityIndicator size="small" color={"white"} />
                 ) : (
-                  <Text className="text-white text-center text-sm">
+                  <Text className="text-white font-semibold text-center text-sm">
                     Login
                   </Text>
                 )
               }
             </TouchableOpacity>
 
-            <View className="w-[90%] mb-14">
+            <View className="w-[80%] mb-14 mr-7">
               <Checkbox
-                text="By clicking continue, you agree to our Terms of Service and Privacy Policy."
                 isChecked={isChecked}
                 onPress={() => setIsChecked(!isChecked)}
                 
               />
             </View>
 
-            <View className="flex flex-row justify-end mt-10 items-center">
+            <View className="flex flex-row justify-end mt-10 mb-10 items-center">
               <Text className="text-white font-extralight mr-1">Not a</Text>
               <GradientText text="Zapllonian"/>
               <Text className="text-white font-extralight ">? </Text>

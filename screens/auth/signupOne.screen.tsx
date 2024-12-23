@@ -144,14 +144,14 @@ export default function SignUpscreen() {
                 >
                     <View className="flex items-center w-full h-full">
                         {/* starting banner */}
-                        <View className="flex-row mt-14 items-center justify-center mb-9">
+                        <View className="flex-row mt-[4.6rem] items-center justify-center mb-9">
                             <Image className="h-9" source={require("~/assets/sign-in/teamsLogo.png")} resizeMode="contain" />
-                            <Text className="text-white mt-2 text-xl">Zapplo Teams</Text>
+                            <Text className="text-white mt-2 text-2xl font-semibold">Zapllo Teams</Text>
                         </View>
 
                         {/* middle banner */}
-                        <View className="flex items-center justify-center gap-4 mb-6">
-                            <Text className="text-white text-2xl">Let’s Get Started</Text>
+                        <View className="flex items-center justify-center gap-4 mb-4">
+                            <Text className="text-white text-2xl font-semibold">Let’s Get Started</Text>
                             <Text className="text-white font-light ">Let's get started by filling out the form below.</Text>
                         </View>
 
@@ -161,7 +161,7 @@ export default function SignUpscreen() {
                             value={userName.firstName}
                             onChangeText={(value) => setUserName({ ...userName, firstName: value })}
                             placeholder="First Name"
-                            className="flex-1 p-2 text-[#787CA5] text-sm"
+                            className="flex-1  text-[#787CA5]"
                         />
 
                         {/* last name */}
@@ -170,7 +170,7 @@ export default function SignUpscreen() {
                             value={userName.lastName}
                             onChangeText={(value) => setUserName({ ...userName, lastName: value })}
                             placeholder="Last Name"
-                            className="flex-1 p-2 text-[#787CA5] text-sm"
+                            className="flex-1  text-[#787CA5] text-sm"
                         />
 
                         {/* drop down numbers and phone numbers */}
@@ -184,8 +184,10 @@ export default function SignUpscreen() {
                                 paddingHorizontal: 12,
                                 paddingVertical: 10,
                                 height: 55,
-                                marginTop:27,
+                                marginTop: 27,
                                 width: 100,
+                                
+
                             }}
                             placeholderStyle={{
                                 fontSize: 14,
@@ -193,13 +195,8 @@ export default function SignUpscreen() {
                             }}
                             selectedTextStyle={{
                                 fontSize: 10,
-                                color: '#FFFFFF',
-                                marginLeft:2
-                                
-                            }}
-                            inputSearchStyle={{
-                                fontSize: 14,
-                                color: '#FFFFFF',
+                                color: '#787CA5',
+                                marginLeft: 2,
                             }}
                             iconStyle={[
                                 {
@@ -208,7 +205,13 @@ export default function SignUpscreen() {
                                     transform: [{ rotate: isDropdownOpen ? '180deg' : '0deg' }],
                                 },
                             ]}
-                            containerStyle={{backgroundColor:"#05071E", borderColor:"#37384B"}}
+                            containerStyle={{
+                                backgroundColor: '#05071E',
+                                borderColor: '#37384B',
+                                borderRadius: 20, 
+                                overflow: 'hidden', 
+                               
+                            }}
                             data={data}
                             labelField="label"
                             valueField="value"
@@ -236,13 +239,15 @@ export default function SignUpscreen() {
                                                 flexDirection: 'row',
                                                 alignItems: 'center',
                                                 padding: 10,
-                                                backgroundColor: isSelected ? '#4e5278' : '#05071E',
+                                                borderBottomColor:"#4e5278",
+                                                backgroundColor: isSelected ? '#4e5278' : 'transparent',
+                                                borderBottomWidth:1,
                                             },
                                         ]}
                                         onPress={() => setNumberValue(item.value)}
                                     >
                                         <Image
-                                            source={item.icon }
+                                            source={item.icon}
                                             style={{ width: 15, height: 20, marginRight: 10 }}
                                             resizeMode="contain"
                                         />
@@ -258,8 +263,13 @@ export default function SignUpscreen() {
                                     </TouchableOpacity>
                                 );
                             }}
+                               
+                                
                             
                         />
+
+                            
+                        
 
                             {/* numbers */}
                             <InputContainer
@@ -278,7 +288,7 @@ export default function SignUpscreen() {
                             value={userInfo.email}
                             onChangeText={(value) => setUserInfo({ ...userInfo, email: value })}
                             placeholder="Email Address"
-                            className="flex-1 p-2 text-[#787CA5] text-sm"
+                            className="flex-1  text-[#787CA5]"
                         />
 
                         {/* password input */}
@@ -289,7 +299,7 @@ export default function SignUpscreen() {
                             onChangeText={handlePasswordValidation}
                             placeholder="**********"
                             secureTextEntry={!isPasswordVisible}
-                            className="flex-1 p-2 text-[#787CA5] text-sm"
+                            className="flex-1  text-[#787CA5] "
                         />
                             <TouchableOpacity
                                 className="absolute top-12 right-10"
@@ -321,9 +331,9 @@ export default function SignUpscreen() {
                             onChangeText={handleConfirmPasswordValidation}
                             placeholder="**********"
                             secureTextEntry={!isConfirmPasswordVisible}
-                            className="flex-1 p-2 text-[#787CA5] text-sm"
+                            className="flex-1  text-[#787CA5] "
                         />
-                                                    <TouchableOpacity
+                         <TouchableOpacity
                                 className="absolute top-12 right-10"
                                 onPress={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}
                                 >
@@ -347,15 +357,14 @@ export default function SignUpscreen() {
 
                         {/* button next */}
                         <TouchableOpacity
-                            className={`p-2.5  mt-12 rounded-full w-11/12 h-16 items-center flex justify-center ${isFormValid ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
-                            onPress={handleNext} // Use handleNext function here
-                         
+                            className={`p-2.5  mt-12 rounded-full w-[89%] h-[3.6rem] items-center flex justify-center ${isFormValid ? "bg-[#815BF5]" : "bg-[#37384B]"}`}
+                            onPress={handleNext} 
                         >
                             {
                                 buttonSpinner ? (
                                     <ActivityIndicator size="small" color={"white"} />
                                 ) : (
-                                    <Text className="text-white text-center ">
+                                    <Text className="text-white  text-center font-semibold ">
                                         Create Work Space
                                     </Text>
                                 )

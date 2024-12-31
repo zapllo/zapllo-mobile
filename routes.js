@@ -1,0 +1,15 @@
+export const Route = {
+    //bottomTab
+    MAIN: "MAIN",
+    DASHBOARD: "DASHBOARD",
+    MATERIALTOPBAR:"MATERIALTOBBAR",
+  
+    //LOGIN
+    LOGIN: "LOGIN",
+    SIGNUP: "SIGNUP",
+
+    //STACKS
+    HOME_STACK: "HOMESTACK",
+    AUTHENTICATION_STACK: "AUTHENTICATIONSTACK",
+  };
+  

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,12 @@ import {
   Modal,
   Dimensions,
   LayoutRectangle,
-} from "react-native";
-import { TextInput } from "react-native-paper";
-import { Ionicons } from "@expo/vector-icons";
+} from 'react-native';
+import { TextInput } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
 
-const screenWidth = Dimensions.get("window").width;
-const screenHeight = Dimensions.get("window").height;
+const screenWidth = Dimensions.get('window').width;
+const screenHeight = Dimensions.get('window').height;
 
 interface DropdownProps {
   label: string;
@@ -22,7 +22,7 @@ interface DropdownProps {
 }
 
 const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect }) => {
-  const [selectedValue, setSelectedValue] = useState<string>("");
+  const [selectedValue, setSelectedValue] = useState<string>('');
   const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
   const [dropdownPosition, setDropdownPosition] = useState<LayoutRectangle>({
     x: 0,
@@ -37,7 +37,7 @@ const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect }) => {
       setDropdownPosition({
         x,
         y: y + height, // Ensure dropdown is below TextInput
-        width: width , // Adjust dropdown width slightly less than TextInput
+        width: width, // Adjust dropdown width slightly less than TextInput
         height,
       });
       setIsDropdownVisible(true);
@@ -59,20 +59,20 @@ const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect }) => {
           style={styles.input}
           placeholder={label}
           placeholderTextColor="#787CA5"
-          textColor="#FFFFFF"
+          textColor="#fff"
           editable={false}
           value={selectedValue}
           theme={{
             roundness: 25,
             colors: {
-              primary: "#787CA5",
-              background: "#37384B",
+              primary: '#787CA5',
+              background: '#37384B',
             },
           }}
           right={
             <TextInput.Icon
               size={40}
-              icon={isDropdownVisible ? "menu-up" : "menu-down"}
+              icon={isDropdownVisible ? 'menu-up' : 'menu-down'}
               onPress={handleOpenDropdown}
             />
           }
@@ -83,32 +83,30 @@ const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect }) => {
         visible={isDropdownVisible}
         transparent
         animationType="fade"
-        onRequestClose={() => setIsDropdownVisible(false)}
-      >
-        <TouchableOpacity
-          style={styles.overlay}
-          onPress={() => setIsDropdownVisible(false)}
-        />
+        onRequestClose={() => setIsDropdownVisible(false)}>
+        <TouchableOpacity style={styles.overlay} onPress={() => setIsDropdownVisible(false)} />
         <View
           style={[
             styles.dropdown,
             {
               top: dropdownPosition.y,
-              left: dropdownPosition.x +15 ,
-              width: dropdownPosition.width -30,
+              left: dropdownPosition.x + 15,
+              width: dropdownPosition.width - 30,
               maxHeight: 250, // Limit dropdown height for scrolling
             },
-          ]}
-        >
+          ]}>
           <FlatList
             data={options}
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.option}
-                onPress={() => handleSelect(item)}
-              >
-                <Text style={styles.optionText}>{item}</Text>
+              <TouchableOpacity style={styles.option} onPress={() => handleSelect(item)}>
+                <Text
+                  style={[
+                    styles.optionText,
+                    { color: selectedValue === item ? '#fff' : '#787CA5' },
+                  ]}>
+                  {item}
+                </Text>
                 {selectedValue === item && (
                   <Ionicons name="checkmark-circle" size={24} color="#fff" />
                 )}
@@ -132,32 +130,31 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   input: {
-    backgroundColor: "#05071E",
+    backgroundColor: '#05071E',
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    // backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   dropdown: {
-    position: "absolute",
-    backgroundColor: "#1C1C28",
-    borderRadius:8,
+    position: 'absolute',
+    backgroundColor: '#05071E',
+    borderRadius: 8,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: "#37384B",
+    borderColor: '#37384B',
     zIndex: 10,
   },
   option: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 8,
     borderBottomWidth: 0.5,
-    borderBottomColor: "#41416E",
+    borderBottomColor: '#37384B',
   },
   optionText: {
     fontSize: 16,
-    color: "#FFFFFF",
   },
 });

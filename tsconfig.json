@@ -1,0 +1,24 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "jsx": "react-native", // Enable JSX for React Native
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["*"]
+    },
+    "esModuleInterop": true, // Ensure ES module compatibility
+    "allowSyntheticDefaultImports": true, // Allow default imports
+    "skipLibCheck": true, // Skip library checking for better performance
+    "moduleResolution": "node",
+    "target": "esnext",
+    "resolveJsonModule": true
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
+  ]
+}

@@ -66,7 +66,7 @@ const ProfileScreen: React.FC = () => {
                         <View className="flex flex-row w-full justify-start gap-4 items-center">
                             <View className="bg-white h-16 w-16 rounded-full "></View>
                             <View className=" flex flex-col gap-1 items-start">
-                                <Text className="text-white text-xl">Shubhodeep Banerjee</Text>
+                                <Text className="text-white text-xl font-medium">Shubhodeep Banerjee</Text>
                                 <Text className=" text-white w-16 text-center bg-[#815BF5] p-1 rounded-lg text-xs">Admin</Text>
                             </View>
                         </View>
@@ -220,7 +220,7 @@ const ProfileScreen: React.FC = () => {
                             {/* Tutorials */}
                             <View className="w-full items-center gap-5">
                             <TouchableOpacity className="flex  pr-2 flex-row items-center justify-between w-full">
-                                <Text className="text-white">Tutorials</Text>
+                                <Text className="text-white text-base">Tutorials</Text>
                                 <Image 
                                 source={require("../../assets/commonAssets/smallGoto.png")}
                                 className="w-3 h-3 mb-1"
@@ -232,7 +232,7 @@ const ProfileScreen: React.FC = () => {
                             {/* My Tickets */}
                             <View className="w-full items-center gap-5 mt-4">
                             <TouchableOpacity className="flex  pr-2 flex-row items-center justify-between w-full">
-                                <Text className="text-white">My Tickets</Text>
+                                <Text className="text-white text-base">My Tickets</Text>
                                 <Image 
                                 source={require("../../assets/commonAssets/smallGoto.png")}
                                 className="w-3 h-3 mb-1"
@@ -244,7 +244,7 @@ const ProfileScreen: React.FC = () => {
                             {/* Raise a Tickets*/}
                            <View className="w-full items-center gap-5 mt-4">
                             <TouchableOpacity className="flex  pr-2 flex-row items-center justify-between w-full">
-                                <Text className="text-white">Raise a Tickets</Text>
+                                <Text className="text-white text-base">Raise a Tickets</Text>
                                 <Image 
                                 source={require("../../assets/commonAssets/smallGoto.png")}
                                 className="w-3 h-3 mb-1"
@@ -256,7 +256,7 @@ const ProfileScreen: React.FC = () => {
                             {/* Mobile App */}
                             <View className="w-full items-center gap-5 mt-4">
                             <TouchableOpacity className="flex  pr-2 flex-row items-center justify-between w-full">
-                                <Text className="text-white">Mobile App</Text>
+                                <Text className="text-white text-base">Mobile App</Text>
                                 <Image 
                                 source={require("../../assets/commonAssets/smallGoto.png")}
                                 className="w-3 h-3 mb-1"
@@ -269,7 +269,7 @@ const ProfileScreen: React.FC = () => {
                             {/* Events */}
                             <View className="w-full items-center gap-5 mt-4">
                             <TouchableOpacity className="flex  pr-2 flex-row items-center justify-between w-full">
-                                <Text className="text-white">Events</Text>
+                                <Text className="text-white text-base">Events</Text>
                                 <Image 
                                 source={require("../../assets/commonAssets/smallGoto.png")}
                                 className="w-3 h-3 mb-1"
@@ -281,7 +281,7 @@ const ProfileScreen: React.FC = () => {
                             {/* Time zone */}
                             <View className="w-full items-center gap-5 mt-4">
                             <TouchableOpacity className="flex  pr-2 flex-row items-center justify-between w-full">
-                                <Text className="text-white">Time zone</Text>
+                                <Text className="text-white text-base">Time zone</Text>
                                 <Image 
                                 source={require("../../assets/commonAssets/smallGoto.png")}
                                 className="w-3 h-3 mb-1"
@@ -293,7 +293,7 @@ const ProfileScreen: React.FC = () => {
                             {/* Change Language */}
                             <View className="w-full items-center gap-5 mt-4">
                             <TouchableOpacity className="flex  pr-2 flex-row items-center justify-between w-full">
-                                <Text className="text-white">Change Language</Text>
+                                <Text className="text-white text-base">Change Language</Text>
                                 <Image 
                                 source={require("../../assets/commonAssets/smallGoto.png")}
                                 className="w-3 h-3 mb-1"

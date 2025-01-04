@@ -47,7 +47,7 @@ const componentsData: HomeScreenComponents[] = [
   {
     id: '4',
     title: 'Zapllo Intranet',
-    screen: '(routes)/HomeComponent/Intranet',
+    screen: '(routes)/settings',
     description: 'Manage all your Important Company Links',
   },
   {

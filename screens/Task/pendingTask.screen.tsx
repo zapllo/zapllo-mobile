@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   ScrollView,
   Keyboard,
   TextInput,
+  Image,
+  KeyboardEvent,
 } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
 import { DashboardStackParamList } from "~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack";
@@ -37,13 +39,52 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
   const [search, setSearch] = useState("");
   const [showMainModal, setShowMainModal] = useState(true);
   const [showProgressModal, setShowProgressModal] = useState(false);
+  const [triggerProgressModal, setTriggerProgressModal] = useState(false);
+  const [description, setDescription] = useState("");
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Function to handle opening progress modal
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      (event: KeyboardEvent) => {
+        setKeyboardHeight(event.endCoordinates.height);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
+  const handleShowProgressModal = useCallback(() => {
+    setShowProgressModal(true);
+    setTriggerProgressModal(false);
+  }, []);
+
+  useEffect(() => {
+    if (triggerProgressModal) {
+      timerRef.current = setTimeout(handleShowProgressModal, 500);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [triggerProgressModal, handleShowProgressModal]);
+
   const handleMoveToProgress = () => {
     setShowMainModal(false);
-    setTimeout(() => {
-      setShowProgressModal(true);
-    }, 300); // Slight delay ensures smooth transition
+    setTriggerProgressModal(true);
   };
 
   return (
@@ -62,14 +103,19 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
       {/* Main Modal */}
       <Modal
         isVisible={showMainModal}
-        onBackdropPress={() => setShowMainModal(false)}
+        onBackdropPress={null as any} // Prevent closing when clicking outside
         style={{ margin: 0, justifyContent: "flex-end" }}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
       >
         <View className="bg-[#0A0D28] p-5 rounded-t-3xl pb-20">
-          <View className="flex flex-row justify-between items-center w-full h-20">
-            <Text className="text-white text-xl font-semibold mb-4">Task Progress</Text>
+          <View className="flex flex-row justify-between items-center w-full mb-14 mt-2">
+            <Text className="text-white text-xl font-semibold">Task Progress</Text>
             <TouchableOpacity onPress={() => setShowMainModal(false)}>
-              <AntDesign name="close" size={15} color="#ffffff" />
+              <Image
+                source={require("../../assets/commonAssets/cross.png")}
+                className="w-8 h-8"
+              />
             </TouchableOpacity>
           </View>
 
@@ -81,9 +127,7 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
               <Text className="text-white text-base font-medium">Move to Progress</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              className="bg-[#007B5B] p-4 rounded-full items-center"
-            >
+            <TouchableOpacity className="bg-[#007B5B] p-4 rounded-full items-center">
               <Text className="text-white text-base font-medium">Move to Completed</Text>
             </TouchableOpacity>
           </View>
@@ -93,25 +137,60 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
       {/* Progress Modal */}
       <Modal
         isVisible={showProgressModal}
-        onBackdropPress={() => setShowProgressModal(false)}
+        onBackdropPress={null as any} // Prevent closing when clicking outside
         style={{ margin: 0, justifyContent: "flex-end" }}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
+        useNativeDriver={false}
       >
-        <View className="bg-[#0A0D28] p-5 rounded-t-3xl pb-20">
-          <View className="flex flex-row justify-between items-center w-full h-20">
-            <Text className="text-white text-xl font-semibold mb-4">In Progress</Text>
+        <View
+          className="bg-[#0A0D28] p-5 rounded-t-3xl pb-20"
+          style={{ marginBottom: keyboardHeight }}
+        >
+          <View className="flex flex-row justify-between items-center w-full mb-6 mt-2">
+            <Text className="text-white text-xl font-semibold">In Progress</Text>
             <TouchableOpacity onPress={() => setShowProgressModal(false)}>
-              <AntDesign name="close" size={15} color="#ffffff" />
+              <Image
+                source={require("../../assets/commonAssets/cross.png")}
+                className="w-8 h-8"
+              />
             </TouchableOpacity>
           </View>
 
-          <Text className="text-white text-sm mb-4">
-            The task has been successfully moved to progress.
-          </Text>
-          <TouchableOpacity
-            onPress={() => setShowProgressModal(false)}
-            className="bg-[#815BF5] p-4 rounded-full items-center"
+          {/* Description */}
+          <View
+            className="border-[#37384B] border rounded-2xl pl-6 pr-6 mb-8"
+            style={{ height: 150, justifyContent: "flex-start", alignItems: "flex-start" }}
           >
-            <Text className="text-white text-base font-medium">Close</Text>
+            <TextInput
+              multiline
+              className="text-white"
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Description"
+              placeholderTextColor="#787CA5"
+              style={{ textAlignVertical: 'top', paddingTop: 11, width: "100%", paddingBottom: 11 }}
+            />
+
+
+          </View>
+          {/* file and image upload */}
+          <View className="w-full ">
+            
+            <View className=" w-full gap-2 items-center flex flex-row">
+                <Image source={require("../../assets/commonAssets/fileLogo.png")} className="w-5 h-6"/>
+                <Text className="text-[#787CA5] text-sm">Files</Text>
+            </View>
+
+            <View className=" w-full flex flex-row items-center gap-3 pl-5 pt-1">
+              <Image source={require("../../assets/commonAssets/fileUploadContainer.png")} className="h-24 w-24"/>
+              <Image source={require("../../assets/commonAssets/fileUploadContainer.png")} className="h-24 w-24"/>
+              <Image source={require("../../assets/commonAssets/fileUploadContainer.png")} className="h-24 w-24"/>
+            </View>
+          </View>
+
+          <TouchableOpacity className=" w-full h-16 bg-[#37384B] mt-10 items-center justify-center rounded-full">
+            <Text className=" text-white text-xl">Update Task</Text>
           </TouchableOpacity>
         </View>
       </Modal>
@@ -142,7 +221,12 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
                 className="w-[72%] border border-[#37384B] p-4 text-[#787CA5] rounded-full"
                 placeholderTextColor="#787CA5"
               />
-              <View className="bg-[#37384B] w-14 h-14 rounded-full"></View>
+              <View className="bg-[#37384B] w-14 h-14 rounded-full">
+                <Image
+                  source={require("../../assets/commonAssets/filter.png")}
+                  className="w-full h-full"
+                />
+              </View>
             </View>
 
             {/* Task Boxes */}

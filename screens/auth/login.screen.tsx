@@ -183,7 +183,8 @@ const Loginscreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               Platform.OS === 'ios' ? { padding: 7 } : { padding: 2 },
             ]}
             disabled={!email || !password || buttonSpinner}
-            onPress={handleLogin}>
+            onPress={handleLogin}
+            >
             {buttonSpinner ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (

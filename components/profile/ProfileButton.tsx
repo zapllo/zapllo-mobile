@@ -1,10 +1,14 @@
-import { View, Text, Image } from "react-native";
+import { View, Text, Image, TouchableOpacity } from "react-native";
 import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 
 export default function ProfileButton() {
   return (
-    <View className="h-[3.2rem] w-[3.2rem] rounded-full">
+    <TouchableOpacity 
+    className="h-[3.2rem] w-[3.2rem] rounded-full"
+    onPress={()=>router.push("(routes)/profile" as any)}
+    >
       <LinearGradient
         colors={['#815BF5', '#FC8929']}
         start={{ x: 0, y: 0 }}
@@ -19,6 +23,6 @@ export default function ProfileButton() {
       >
         <View className="bg-white h-12 w-12 rounded-full border-2 border-primary"></View>
       </LinearGradient>
-    </View>
+    </TouchableOpacity>
   );
 }

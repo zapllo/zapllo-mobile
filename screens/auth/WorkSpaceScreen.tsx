@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { TextInput } from 'react-native-paper';
+import { View, StyleSheet, Text, TouchableOpacity, Platform,TextInput, ScrollView } from 'react-native';
 import Dropdown from '~/components/Dropdown';
+import InputContainer from '~/components/InputContainer';
 
 interface WorkSpaceScreenProps {
   handleChange: (field: string, value: string) => void;
@@ -97,29 +97,24 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
   };
 
   return (
-    <View className="px-5">
-      <Text style={styles.title}>Create Your Workspace</Text>
-      <Text style={styles.subtitle}>Let’s get started by filling out the form below.</Text>
+    <View className="items-center pb-4">
+      <Text className="text-center text-2xl font-semibold text-white">Create Your Workspace</Text>
+      <Text className="my-2 text-center font-light text-white">
+        Let's get started by filling out the form below.
+      </Text>
 
-      <TextInput
+      <InputContainer
         label="Company Name"
-        mode="outlined"
-        style={styles.input}
-        textColor="#FFFFFF"
+        placeholder="Company Name"
         value={formData?.companyName}
         onChangeText={(text) => handleChange('companyName', text)}
-        error={!!errors.companyName}
-        theme={{
-          roundness: 25,
-          colors: {
-            primary: '#787CA5',
-            background: '#37384B',
-          },
-        }}
+        passwordError={''}
       />
-      {errors.companyName && <Text style={styles.errorText}>{errors.companyName}</Text>}
+      {errors.companyName && (
+        <Text className=" mt-2 text-sm text-[#FF6F61]">{errors.companyName}</Text>
+      )}
 
-      <View style={styles.dropdownView}>
+      <View className="flex-1 items-center justify-center bg-[#05071E]">
         <Dropdown
           label="Business Industry"
           options={businessOptions}
@@ -132,128 +127,140 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
         options={teamSizeOptions}
         onSelect={(value) => setTeamSize(value)}
       />
+      <View
+        style={[
+          styles.input,
+          { height: 100, justifyContent: 'flex-start', alignItems: 'flex-start' },
+        ]}>
+        <TextInput
+          multiline
+          style={[styles.inputSome, { textAlignVertical: 'top', width: '100%',backgroundColor:'05071E' }]}
+          value={formData.description}
+          onChangeText={(text) => handleChange('description', text)}
+          placeholder="Description"
+          placeholderTextColor="#787CA5"
+        />
+      </View>
 
-      <TextInput
-        label="Description"
-        mode="outlined"
-        placeholder="Description"
-        placeholderTextColor="#787CA5"
-        textColor="#FFFFFF"
-        style={[styles.input, { height: 100 }]}
-        multiline
-        value={formData?.description}
-        onChangeText={(text) => handleChange('description', text)}
-        error={!!errors.description}
-        theme={{
-          roundness: 25,
-          colors: {
-            primary: '#787CA5',
-            background: '#37384B',
-          },
-        }}
-      />
-      {errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
-
-      <Text style={styles.categoryTitle}>
+      <Text className="mb-2 px-8 pt-2 text-lg font-semibold text-white">
         Select the categories that are relevant to your business
       </Text>
 
-      <View style={styles.categoriesContainer}>
+      <View className="flex-row flex-wrap justify-center gap-2 ">
         {categories.map((category, index) => (
           <TouchableOpacity
             key={index}
-            style={
-              selectedCategories.includes(category)
-                ? styles.selectedCategoryChip
-                : styles.categoryChip
-            }
+            className={`mb-2 rounded-full ${
+              selectedCategories.includes(category) ? 'bg-purple-600' : 'bg-gray-700'
+            } ${Platform.OS === 'ios' ? 'px-4 py-2.5' : 'px-3.5 py-2'}`}
             onPress={() => toggleCategory(category)}>
-            <Text style={styles.categoryText} numberOfLines={1}>
+            <Text className="text-sm font-medium text-white" numberOfLines={1}>
               {category}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {errors.categories && <Text style={styles.errorText}>{errors.categories}</Text>}
+      {errors.categories && (
+        <Text className="mt-2 text-sm text-[#FF6F61]">{errors.categories}</Text>
+      )}
 
-      <Text style={styles.footerText}>
-        Don’t worry you can add more later in the Settings panel
-      </Text>
+      <View className="mb-4 mt-2 flex w-[90%] items-center">
+        <Text className="text-[12px]  font-light text-white">
+          Don't worry you can add more later in the Settings panel
+        </Text>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  title: {
-    color: '#fff',
-    fontSize: 23,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 10,
-    fontFamily: 'PathwayExtreme-Bold',
+  selectedDropdownItemStyle: {
+    backgroundColor: '#4e5278', // Background color for selected item
   },
-  subtitle: {
-    color: '#fff',
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
+
   input: {
-    marginBottom: 15,
-    backgroundColor: '#05071E',
+    borderWidth: 1,
+    borderColor: '#37384B',
+    padding: 10,
+    marginTop: 20,
+    borderRadius: 35,
+    width: '90%',
+    height: 57,
+    position: 'relative',
   },
-  dropdownView: {
+  baseName: {
+    color: '#787CA5',
+    position: 'absolute',
+    top: -9,
+    left: 25,
+    backgroundColor: '#05071E',
+    paddingRight: 5,
+    paddingLeft: 5,
+    fontSize: 10,
+    fontWeight: 200,
+  },
+  inputSome: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#05071E',
+    padding: 8,
+    color:'#fff',
+    fontSize: 12,
   },
-  categoryTitle: {
-    color: '#fff',
-    fontSize: 17,
-    marginBottom: 10,
-    fontWeight: '600',
+
+  dropdown: {
+    position: 'absolute',
+    width: '100%',
+    height: 50,
   },
-  categoriesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start', // Align boxes to the start
-    gap: 8, // Adds consistent spacing between boxes
+  itemStyle: {
+    padding: 15,
+    borderBottomColor: '#37384B',
+    borderBottomWidth: 1,
   },
-  categoryChip: {
-    backgroundColor: '#37384B',
-    paddingVertical: 4, // Slightly smaller padding for better scaling
-    paddingHorizontal: 12, // Adjust to balance box size with text
-    borderRadius: 20, // Higher radius for a pill-shaped look
-    marginBottom: 8, // Spacing for wrapping
+  itemTextStyle: {
+    color: '#787CA5',
   },
-  selectedCategoryChip: {
-    backgroundColor: '#815BF5',
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    marginBottom: 8,
+  selectedItemStyle: {
+    backgroundColor: '#4e5278',
   },
-  categoryText: {
-    color: '#fff',
+
+  placeholderStyle: {
     fontSize: 13,
-    fontWeight: '500',
+    color: '#787CA5',
+    fontWeight: 300,
+    paddingLeft: 22,
   },
-  errorText: {
-    color: '#FF6F61',
-    fontSize: 12,
-    marginBottom: 10,
+  selectedTextStyle: {
+    fontSize: 13,
+    color: '#787CA5',
+    fontWeight: 300,
+    paddingLeft: 22,
   },
-  footerText: {
-    color: '#FFFFFF',
-    textAlign: 'center',
-    fontSize: 12,
-    marginTop:5,
-    marginBottom: 20,
-    fontWeight: '400',
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+    marginRight: 5,
+    borderColor: 'white',
+  },
+  dropdownMenu: {
+    backgroundColor: '#05071E',
+    borderColor: '#37384B',
+    borderWidth: 1,
+    borderBottomEndRadius: 15,
+    borderBottomStartRadius: 15,
+    margin: 8,
+  },
+  dropdownMenuTwo: {
+    backgroundColor: '#05071E',
+    borderColor: '#37384B',
+    borderWidth: 1,
+    borderBottomEndRadius: 15,
+    borderBottomStartRadius: 15,
+    margin: 8,
   },
 });
-
 export default WorkSpaceScreen;

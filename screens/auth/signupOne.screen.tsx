@@ -24,22 +24,18 @@ import { ActivityIndicator } from 'react-native';
 import { GradientText } from '~/components/GradientText';
 import { Ionicons } from '@expo/vector-icons';
 import CountryPicker from 'react-native-country-picker-modal';
+import InputContainer from '~/components/InputContainer';
+import { Dropdown } from 'react-native-element-dropdown';
 
 const { width, height } = Dimensions.get('window');
 
 // Utility for scaling sizes
-const scale = (size: number) => (width / 375) * size; // Base screen width of 375
 const verticalScale = (size: number) => (height / 812) * size; // Base screen height of 812
 interface SignupScreenProps {
   navigation: {
     navigate: (route: string) => void;
   };
 }
-const scaleFontSize = (size: number) => {
-  const baseScale = (width / 375) * size; // Adjust for screen width
-  return Platform.OS === 'ios' ? baseScale : baseScale * 0.95; // Slightly smaller on Android
-};
-
 const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const dispatch = useDispatch<AppDispatch>();
 
@@ -49,6 +45,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [businessIndustry, setBusinessIndustry] = useState<string>('Select Industry');
   const [teamSize, setTeamSize] = useState<string>('Select Team Size');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -64,14 +61,20 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
   const [confirmPasswordError, setConfirmPasswordError] = useState<string>('');
   const [isConfirmPasswordTouched, setIsConfirmPasswordTouched] = useState<boolean>(false);
-  const [countryCode, setCountryCode] = useState('IN'); // Default to India
-  const [callingCode, setCallingCode] = useState('+91');
-  const [phoneNumber, setPhoneNumber] = useState('');
-
-  const onSelect = (country: any) => {
-    setCountryCode(country.cca2);
-    setCallingCode(`+${country.callingCode[0]}`);
-  };
+  // const [countryCode, setCountryCode] = useState('IN'); // Default to India
+  // const [callingCode, setCallingCode] = useState('+91');
+  // const [phoneNumber, setPhoneNumber] = useState('');
+  const data = [
+    { label: '+91', value: '+91', icon: require('~/assets/sign-in/india.png') },
+    { label: '+222', value: '+222' },
+    { label: '+102', value: '+102' },
+    { label: '+100', value: '+100' },
+    { label: '+69', value: '+69' },
+    { label: '++100', value: '++100' },
+    { label: '+11', value: '+11' },
+    { label: '+12', value: '+12' },
+  ];
+  const [numberValue, setNumberValue] = useState(data[0]?.value || null);
 
   const handleChange = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -183,342 +186,278 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
-          <Image
-            className="h-9 self-center"
-            style={{ marginVertical: verticalScale(25) }}
-            source={require('../../assets/sign-in/logo.png')}
-            resizeMode="contain"
-          />
-          {!showWorkspace && (
-            <View className="px-5">
-              <View className="mb-4 flex items-center justify-center gap-4">
-                <Text className="text-2xl font-semibold text-white">Let’s Get Started</Text>
-                <Text className="mb-4 font-light text-white">
-                  Let's get started by filling out the form below.
-                </Text>
-              </View>
-              <TextInput
-                label="First Name"
-                mode="outlined"
-                placeholder="First Name"
-                placeholderTextColor="#787CA5"
-                textColor="#FFFFFF"
-                style={styles.input}
-                value={formData.firstName}
-                onChangeText={(text) => handleChange('firstName', text)}
-                theme={{
-                  roundness: 25,
-                  colors: {
-                    primary: '#787CA5',
-                    background: '#37384B',
-                  },
-                }}
-              />
-              <TextInput
-                label="Last Name"
-                mode="outlined"
-                placeholder="Last Name"
-                placeholderTextColor="#787CA5"
-                textColor="#FFFFFF"
-                style={styles.input}
-                value={formData.lastName}
-                onChangeText={(text) => handleChange('lastName', text)}
-                theme={{
-                  roundness: 25,
-                  colors: {
-                    primary: '#787CA5',
-                    background: '#37384B',
-                  },
-                }}
-              />
-
-              <View style={styles.row}>
-                <TextInput
-                  label="+91"
-                  mode="outlined"
-                  style={[styles.input, styles.phoneCode]}
-                  editable={false}
-                  theme={{ roundness: 25 }}
-                  right={<TextInput.Icon icon={'menu-down'} size={25} color="#787CA5" />}
-                />
-                <TextInput
-                  label="WhatsApp Number"
-                  mode="outlined"
-                  textColor="#FFFFFF"
-                  placeholderTextColor="#787CA5"
-                  style={[styles.input, styles.phoneNumber]}
-                  value={formData.phone}
-                  onChangeText={(text) => handleChange('phone', text)}
-                  keyboardType="phone-pad"
-                  theme={{ roundness: 25 }}
-                />
-              </View>
-
-              <TextInput
-                label="Email Address"
-                mode="outlined"
-                placeholder="Email Address"
-                placeholderTextColor="#787CA5"
-                textColor="#FFFFFF"
-                style={styles.input}
-                value={formData.email}
-                onChangeText={(text) => handleChange('email', text)}
-                keyboardType="email-address"
-                theme={{
-                  roundness: 25,
-                  colors: {
-                    primary: '#787CA5',
-                    background: '#37384B',
-                  },
-                }}
-              />
-
-              <TextInput
-                label="Password"
-                mode="outlined"
-                placeholder="**********"
-                placeholderTextColor="#787CA5"
-                textColor="#FFFFFF"
-                style={styles.input}
-                secureTextEntry={!passwordVisible}
-                textContentType="none"
-                value={formData.password}
-                onChangeText={handlePasswordValidation}
-                right={
-                  <TextInput.Icon
-                    icon={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
-                    size={25}
-                    color="#fff"
-                    onPress={() => setPasswordVisible(!passwordVisible)}
-                  />
-                }
-                theme={{
-                  roundness: 25,
-                  colors: {
-                    primary: error ? '#EE4848' : '#787CA5',
-                    background: '#37384B',
-                  },
-                }}
-              />
-              {isPasswordTouched && (
-                <>
-                  {error ? (
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        marginLeft: 10,
-                        marginTop: verticalScale(-10),
-                        marginBottom: verticalScale(5),
-                      }}>
-                      <Ionicons name="close-circle" size={16} color="#EE4848" />
-                      <Text style={styles.invalidText}>{error}</Text>
-                    </View>
-                  ) : (
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        marginLeft: 10,
-                        marginTop: verticalScale(-10),
-                        marginBottom: verticalScale(5),
-                      }}>
-                      <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
-                      <Text style={styles.validText}>Password is valid!</Text>
-                    </View>
-                  )}
-                </>
-              )}
-
-              <TextInput
-                label="Confirm Password"
-                mode="outlined"
-                placeholder="**********"
-                placeholderTextColor="#787CA5"
-                textColor="#FFFFFF"
-                style={styles.input}
-                secureTextEntry={!confirmPasswordVisible}
-                value={formData.confirmPassword}
-                onChangeText={handleConfirmPasswordValidation}
-                right={
-                  <TextInput.Icon
-                    icon={confirmPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
-                    size={25}
-                    color="#fff"
-                    onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
-                  />
-                }
-                theme={{
-                  roundness: 25,
-                  colors: {
-                    primary: confirmPasswordError ? '#EE4848' : '#787CA5',
-                    background: '#37384B',
-                  },
-                }}
-              />
-              {isConfirmPasswordTouched && (
-                <>
-                  {confirmPasswordError ? (
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        marginLeft: 10,
-                        marginTop: verticalScale(-10),
-                        marginBottom: verticalScale(5),
-                      }}>
-                      <Ionicons name="close-circle" size={16} color="#EE4848" />
-                      <Text style={styles.invalidText}>{confirmPasswordError}</Text>
-                    </View>
-                  ) : (
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        marginLeft: 10,
-                        marginTop: verticalScale(-10),
-                        marginBottom: verticalScale(5),
-                      }}>
-                      <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
-                      <Text style={styles.validText}>Password matched!</Text>
-                    </View>
-                  )}
-                </>
-              )}
-            </View>
-          )}
-
-          {showWorkspace && (
-            <WorkSpaceScreen
-              handleChange={handleChange}
-              formData={formData}
-              selectedCategories={selectedCategories}
-              setSelectedCategories={setSelectedCategories}
-              teamSize={teamSize}
-              setTeamSize={setTeamSize}
-              businessIndustry={businessIndustry}
-              setBusinessIndustry={setBusinessIndustry}
-            />
-          )}
-
           <View>
-            <Button
-              mode="contained"
-              style={[
-                styles.button,
-                {
-                  backgroundColor: '#37384B',
-                },
-                Platform.OS === 'ios' ? { padding: 7 } : { padding: 2 },
-              ]}
-              onPress={handleNextOrSignUp}
-              disabled={buttonSpinner} // Disable button while loading
-            >
-              {buttonSpinner ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : showWorkspace ? (
-                'Sign Up'
-              ) : (
-                'Create Work Space'
-              )}
-            </Button>
-          </View>
-          <View style={styles.registerContainer}>
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={styles.registerText}>Already a </Text>
-              <GradientText text="Zapllonian" textStyle={styles.registerText} />
+            <Image
+              className="h-9 self-center"
+              style={{ marginVertical: verticalScale(25) }}
+              source={require('../../assets/sign-in/logo.png')}
+              resizeMode="contain"
+            />
+            {!showWorkspace && (
+              <View className="flex h-full w-full items-center">
+                <View className="mb-4 flex items-center justify-center gap-4">
+                  <Text className="text-2xl font-semibold text-white">Let’s Get Started</Text>
+                  <Text className="font-light text-white ">
+                    Let's get started by filling out the form below.
+                  </Text>
+                </View>
+
+                {/* first name */}
+                <InputContainer
+                  label="First Name"
+                  value={formData.firstName}
+                  onChangeText={(text) => handleChange('firstName', text)}
+                  placeholder="First Name"
+                  className="flex-1  text-[#787CA5]"
+                  passwordError={''}
+                />
+
+                {/* last name */}
+                <InputContainer
+                  label="Last Name"
+                  value={formData.lastName}
+                  onChangeText={(text) => handleChange('lastName', text)}
+                  placeholder="Last Name"
+                  passwordError={''}
+                  className="flex-1  text-sm text-[#787CA5]"
+                />
+
+                {/* drop down numbers and phone numbers */}
+                <View className="mb-4 flex w-[69%]  flex-row items-center justify-center gap-2">
+                  <Dropdown
+                    style={{
+                      borderWidth: 1,
+                      borderColor: '#37384B',
+                      borderRadius: 29,
+                      backgroundColor: '#05071E',
+                      paddingHorizontal: 12,
+                      paddingVertical: 10,
+                      height: 55,
+                      marginTop: 27,
+                      width: 100,
+                    }}
+                    placeholderStyle={{
+                      fontSize: 14,
+                      color: '#787CA5',
+                    }}
+                    selectedTextStyle={{
+                      fontSize: 10,
+                      color: '#787CA5',
+                      marginLeft: 2,
+                    }}
+                    iconStyle={[
+                      {
+                        width: 20,
+                        height: 20,
+                        transform: [{ rotate: isDropdownOpen ? '180deg' : '0deg' }],
+                      },
+                    ]}
+                    containerStyle={{
+                      backgroundColor: '#05071E',
+                      borderColor: '#37384B',
+                      borderRadius: 20,
+                      overflow: 'hidden',
+                    }}
+                    data={data}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select Code"
+                    value={numberValue}
+                    onFocus={() => setIsDropdownOpen(true)} // Handle open state
+                    onBlur={() => setIsDropdownOpen(false)} // Handle close state
+                    onChange={(item) => setNumberValue(item.value)} // Handle selection
+                    renderLeftIcon={() => {
+                      const selectedItem = data.find((item) => item.value === numberValue);
+                      return (
+                        <Image
+                          source={selectedItem?.icon}
+                          style={{ width: 15, height: 20, marginRight: 5 }}
+                          resizeMode="contain"
+                        />
+                      );
+                    }}
+                    renderItem={(item) => {
+                      const isSelected = item.value === numberValue;
+                      return (
+                        <TouchableOpacity
+                          style={[
+                            {
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              padding: 10,
+                              borderBottomColor: '#4e5278',
+                              backgroundColor: isSelected ? '#4e5278' : 'transparent',
+                              borderBottomWidth: 1,
+                            },
+                          ]}
+                          onPress={() => setNumberValue(item.value)}>
+                          <Image
+                            source={item.icon}
+                            style={{ width: 15, height: 20, marginRight: 10 }}
+                            resizeMode="contain"
+                          />
+                          <Text
+                            style={{
+                              fontSize: 14,
+                              color: isSelected ? '#FFFFFF' : '#787CA5',
+                              fontWeight: isSelected ? 'bold' : 'normal',
+                            }}>
+                            {item.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    }}
+                  />
+
+                  {/* numbers */}
+                  <InputContainer
+                    label="WhatsApp Number"
+                    value={formData.phone}
+                    onChangeText={(text) => handleChange('phone', text)}
+                    placeholder="7863983914"
+                    keyboardType="numeric"
+                    className="flex-1 p-2 text-sm text-[#787CA5]"
+                    passwordError={''}
+                  />
+                </View>
+
+                {/* email input */}
+                <InputContainer
+                  label="Email Address"
+                  value={formData.email}
+                  onChangeText={(text) => handleChange('email', text)}
+                  placeholder="Email Address"
+                  className="flex-1  text-[#787CA5]"
+                  passwordError={''}
+                />
+
+                {/* password input */}
+                <View className="relative w-full items-center">
+                  <InputContainer
+                    label="Password"
+                    value={formData.password}
+                    onChangeText={handlePasswordValidation}
+                    placeholder="**********"
+                    secureTextEntry={!passwordVisible}
+                    className="flex-1  text-[#787CA5]"
+                    passwordError={error}
+                  />
+                  <TouchableOpacity
+                    className="absolute right-12 top-12"
+                    onPress={() => setPasswordVisible(!passwordVisible)}>
+                    {passwordVisible ? (
+                      <Ionicons name="eye-off-outline" size={23} color={'#FFFFFF'} />
+                    ) : (
+                      <Ionicons name="eye-outline" size={23} color={'#FFFFFF'} />
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {isPasswordTouched && (
+                  <>
+                    {error ? (
+                      <View className="ml-8 mt-2 flex-row self-start">
+                        <Ionicons name="close-circle" size={16} color="#EE4848" />
+                        <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500">
+                          {error}
+                        </Text>
+                      </View>
+                    ) : (
+                      <View className="ml-8 mt-2 flex-row self-start">
+                        <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
+                        <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500">
+                          Password is valid!
+                        </Text>
+                      </View>
+                    )}
+                  </>
+                )}
+
+                {/* confirm password */}
+                <View className="relative w-full items-center">
+                  <InputContainer
+                    label="Confirm Password"
+                    secureTextEntry={!confirmPasswordVisible}
+                    value={formData.confirmPassword}
+                    onChangeText={handleConfirmPasswordValidation}
+                    placeholder="**********"
+                    className="flex-1  text-[#787CA5]"
+                    passwordError={confirmPasswordError}
+                  />
+                  <TouchableOpacity
+                    className="absolute right-12 top-12"
+                    onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}>
+                    {confirmPasswordVisible ? (
+                      <Ionicons name="eye-off-outline" size={23} color={'#FFFFFF'} />
+                    ) : (
+                      <Ionicons name="eye-outline" size={23} color={'#FFFFFF'} />
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {isConfirmPasswordTouched && (
+                  <>
+                    {confirmPasswordError ? (
+                      <View className="ml-8 mt-2 flex-row self-start">
+                        <Ionicons name="close-circle" size={16} color="#EE4848" />
+                        <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500">
+                          {confirmPasswordError}
+                        </Text>
+                      </View>
+                    ) : (
+                      <View className="ml-8 mt-2 flex-row self-start">
+                        <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
+                        <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500">
+                          Password is valid!
+                        </Text>
+                      </View>
+                    )}
+                  </>
+                )}
+              </View>
+            )}
+
+            {showWorkspace && (
+              <WorkSpaceScreen
+                handleChange={handleChange}
+                formData={formData}
+                selectedCategories={selectedCategories}
+                setSelectedCategories={setSelectedCategories}
+                teamSize={teamSize}
+                setTeamSize={setTeamSize}
+                businessIndustry={businessIndustry}
+                setBusinessIndustry={setBusinessIndustry}
+              />
+            )}
+            <View className="w-full px-4">
+              <TouchableOpacity
+                className={`flex h-[3.6rem] items-center justify-center rounded-full ${
+                  showWorkspace ? 'bg-[#815BF5]' : 'bg-[#37384B]'
+                }`}
+                onPress={handleNextOrSignUp}>
+                {buttonSpinner ? (
+                  <ActivityIndicator size="small" color={'white'} />
+                ) : (
+                  <Text className="text-center font-semibold text-white">
+                    {showWorkspace ? 'Sign Up' : 'Create Work Space'}
+                  </Text>
+                )}
+              </TouchableOpacity>
+              <View className="flex-row items-center justify-center bg-primary py-5">
+                <View className="flex-row">
+                  <Text className="text-base font-bold text-white">Already a </Text>
+                  <GradientText text="Zapllonian" textStyle={{ fontSize: 16, fontWeight: '400' }} />
+                </View>
+                <TouchableOpacity onPress={() => router.push('/(routes)/login' as any)}>
+                  <Text className="text-base font-extrabold text-white">? Login Here</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <TouchableOpacity onPress={() => router.push('/(routes)/login' as any)}>
-              <Text style={styles.registerLink}>? Login Here</Text>
-            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    // flex: 1,
-    height: '100%',
-    backgroundColor: '#05071E',
-    paddingHorizontal: scale(10),
-    paddingVertical: verticalScale(30),
-  },
-  logo: {
-    height: verticalScale(30),
-    width: scale(200),
-    alignSelf: 'center',
-    marginVertical: verticalScale(25),
-  },
-  subtitle: {
-    color: '#fff',
-    fontSize: scaleFontSize(20), // Platform-adjusted scaling
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: verticalScale(5),
-  },
-  description: {
-    color: '#fff',
-    textAlign: 'center',
-    marginTop: verticalScale(5),
-    marginBottom: verticalScale(25),
-    fontSize: scaleFontSize(14),
-  },
-  input: {
-    marginBottom: verticalScale(20),
-    backgroundColor: '#05071E',
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: verticalScale(15),
-  },
-  phoneCode: {
-    flex: 1,
-    marginRight: scale(10),
-  },
-  phoneNumber: {
-    flex: 3,
-  },
-  button: {
-    marginTop: verticalScale(10),
-    backgroundColor: '#37384B',
-    borderRadius: scale(25),
-    marginHorizontal: scale(8),
-  },
-  registerContainer: {
-    marginTop: verticalScale(25),
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  registerText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  registerLink: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  highlight: {
-    color: '#FF9800',
-  },
-  link: {
-    color: '#4E86E4',
-    textDecorationLine: 'underline',
-    fontSize: scale(12),
-  },
-  validText: {
-    color: '#4CAF50',
-    fontSize: 13,
-    alignSelf: 'flex-start',
-    marginLeft: scale(5),
-  },
-  invalidText: {
-    color: '#F44336',
-    fontSize: 13,
-    alignSelf: 'flex-start',
-    marginLeft: scale(5),
-  },
-});
 
 export default SignupScreen;

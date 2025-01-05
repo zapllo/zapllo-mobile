@@ -93,9 +93,11 @@ export default function DashboardScreen() {
                 <View className="w-1/2 h-full bg-[#D85570] rounded-3xl p-5 flex flex-col ">
 
                   <View className="flex items-start "> 
-                    <Text className="text-white font-medium">Pending Tasks</Text>
+                  <TouchableOpacity className="" onPress={() => navigation.navigate("EmployeeWise")}>
+                    <Text className="text-white font-medium">Overdue Tasks</Text>
                     <Text className=" text-white font-semibold" style={{fontSize:34}}>26</Text>
                     <Text className=" text-xs text-white pt-2 w-[40vw]">25th December, 2024</Text>
+                    </TouchableOpacity>
                   </View>
 
                   <View className="flex items-start flex-row mt-3">

@@ -22,7 +22,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
   return (
     <TouchableOpacity onPress={() => setModalVisible(true)}>
-      <View className="w-[90%] h-52 border border-[#37384B] p-4 rounded-3xl items-center mt-5 gap-6">
+      <View className="w-[90%] self-center h-52 border border-[#37384B] p-4 rounded-3xl items-center mt-5 gap-6">
         <Modal
           isVisible={modalVisible}
           onBackdropPress={() => setModalVisible(false)}
@@ -223,14 +223,14 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
               <Text className="text-[#EF4444] text-lg">{dueDate}</Text>
             </View>
 
-            <View className="flex flex-col">
+            <View className="flex flex-col max-w-28">
               <Text className="text-[#787CA5] text-xs">Assigned to</Text>
               <Text className="text-[#D85570]">{assignedTo}</Text>
             </View>
           </View>
 
           <View className="flex gap-3">
-            <View className="flex flex-col">
+            <View className="flex flex-col max-w-28">
               <Text className="text-[#787CA5] text-xs">Assigned by</Text>
               <Text className="text-[#815BF5] mt-1">{assignedBy}</Text>
             </View>

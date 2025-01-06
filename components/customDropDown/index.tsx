@@ -102,13 +102,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderColor: "#37384B",
     backgroundColor: "#05071E",
+    position: 'relative',  // Make sure the button container stays in place
   },
   dropdownButtonText: {
     color: "#787CA5",
     fontSize: 14,
+    flex: 1,  // This allows the text to take up space
   },
   dropdownIcon: {
+    alignSelf: 'center',  // Ensures the icon is centered
     marginLeft: 10,
+    marginRight: 5,  // Adjust to prevent overflow
   },
   dropdownMenu: {
     backgroundColor: "#05071E",
@@ -132,3 +136,4 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
 });
+;

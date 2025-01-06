@@ -9,7 +9,6 @@ import {
   Keyboard,
   TouchableOpacity,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Navbar from '~/components/navbar';
 import CustomDropdown from '~/components/customDropDown';
 import { NavigationProp } from '@react-navigation/core';
@@ -23,6 +22,8 @@ import { backend_Host } from '~/config';
 import { Image } from 'react-native';
 import moment from 'moment';
 import getDateRange from '~/utils/GetDateRange';
+import TaskCard from '~/components/TaskComponents/TaskCard';
+import TaskStatusCard from '~/components/TaskComponents/TaskCountSection';
 
 interface Task {
   _id: string;
@@ -33,6 +34,7 @@ interface Task {
   description: string;
   assignedUser: { firstName: string; lastName: string }[];
 }
+
 
 type TaskStatus = 'Overdue' | 'Pending' | 'InProgress' | 'Completed' | 'In Time' | 'Delayed';
 
@@ -238,71 +240,45 @@ export default function DashboardScreen() {
             {/* Content */}
             <View className="flex gap-2.5 flex-col h-full items-center w-full p-4.2 pt-1 mb-32">
 
-              {/* task count */}
-              <View className="flex flex-col items-center w-[90%] mb-4 gap-5 ">
+              <View className="flex flex-col items-center w-[90%] mb-4 gap-5">
                 {/* 1st row */}
-                <View className=" flex flex-row gap-5 items-center">
-                  {/* overdue */}
-                  <View className="p-5 items-start gap-4 flex flex-row border border-[#37384B] rounded-3xl w-1/2 ">
-                    <Image className="w-8 h-8" source={require("../../../../../assets/commonAssets/overdue.png")}/>
-                    <View className="flex flex-col  items-center">
-                    <Text className="text-white text-sm">Overdue</Text>
-                    <Text className="text-white text-4xl font-bold">07</Text>
-                    </View>                  
-                  </View>
-
-                  {/* pending */}
-                  <View className="p-5 items-start gap-4 flex flex-row border border-[#37384B] rounded-3xl w-1/2 ">
-                    <Image className="w-8 h-8" source={require("../../../../../assets/Tasks/overdue.png")}/>
-                    <View className="flex flex-col  items-center">
-                    <Text className="text-white text-sm">Pending</Text>
-                    <Text className="text-white text-4xl font-bold">07</Text>
-                    </View>                  
-                  </View>
-
+                <View className="flex flex-row gap-5 items-center">
+                  <TaskStatusCard
+                    imageSource={require("../../../../../assets/commonAssets/overdue.png")}
+                    status="Overdue"
+                    count="07"
+                  />
+                  <TaskStatusCard
+                    imageSource={require("../../../../../assets/Tasks/overdue.png")}
+                    status="Pending"
+                    count="07"
+                  />
                 </View>
                 {/* 2nd row */}
-                <View className=" flex flex-row gap-5 items-center">
-                  {/* In Progress */}
-                  <View className="p-5 items-start gap-4 flex flex-row border border-[#37384B] rounded-3xl w-1/2 ">
-                    <Image className="h-8 w-8" source={require("../../../../../assets/commonAssets/Progress.png")}/>
-                    <View className="flex flex-col  items-center">
-                    <Text className="text-white text-sm">In Progress</Text>
-                    <Text className="text-white text-4xl font-bold">07</Text>
-                    </View>                  
-                  </View>
-
-                  {/* Completed */}
-                  <View className="p-5 items-start gap-4 flex flex-row border border-[#37384B] rounded-3xl w-1/2 ">
-                    <Image className="h-8 w-8" source={require("../../../../../assets/commonAssets/Completed.png")}/>
-                    <View className="flex flex-col  items-center">
-                    <Text className="text-white text-sm">Completed</Text>
-                    <Text className="text-white text-4xl font-bold">07</Text>
-                    </View>                  
-                  </View>
-
+                <View className="flex flex-row gap-5 items-center">
+                  <TaskStatusCard
+                    imageSource={require("../../../../../assets/commonAssets/Progress.png")}
+                    status="In Progress"
+                    count="07"
+                  />
+                  <TaskStatusCard
+                    imageSource={require("../../../../../assets/commonAssets/Completed.png")}
+                    status="Completed"
+                    count="07"
+                  />
                 </View>
-
                 {/* 3rd row */}
-                <View className=" flex flex-row gap-5 items-center">
-                  {/* In Time */}
-                  <View className="p-5 items-start gap-4 flex flex-row border border-[#37384B] rounded-3xl w-1/2 ">
-                    <Image className="h-8 w-8" source={require("../../../../../assets/commonAssets/inTime.png")}/>
-                    <View className="flex flex-col  items-center">
-                    <Text className="text-white text-sm">In Time</Text>
-                    <Text className="text-white text-4xl font-bold">07</Text>
-                    </View>                  
-                  </View>
-
-                  {/* Delayed */}
-                  <View className="p-5 items-start gap-4 flex flex-row border border-[#37384B] rounded-3xl w-1/2 ">
-                    <Image className="h-8 w-8" source={require("../../../../../assets/commonAssets/Delayed.png")}/>
-                    <View className="flex flex-col  items-center">
-                    <Text className="text-white text-sm">Delayed</Text>
-                    <Text className="text-white text-4xl font-bold">07</Text>
-                    </View>                  
-                  </View>
-
+                <View className="flex flex-row gap-5 items-center">
+                  <TaskStatusCard
+                    imageSource={require("../../../../../assets/commonAssets/inTime.png")}
+                    status="In Time"
+                    count="07"
+                  />
+                  <TaskStatusCard
+                    imageSource={require("../../../../../assets/commonAssets/Delayed.png")}
+                    status="Delayed"
+                    count="07"
+                  />
                 </View>
               </View>
 
@@ -311,226 +287,60 @@ export default function DashboardScreen() {
 
 
               {/* Row 1 */}
-              <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
-                <View className="flex h-full w-1/2 flex-col rounded-3xl bg-[#FC842C] p-5 ">
-                  <View className="flex items-start ">
-                    <Text className="font-medium text-white">Today’s Task</Text>
-                    <Text className=" font-semibold text-white" style={{ fontSize: 34 }}>
-                      {taskCounts.Today}
-                    </Text>
-                    <Text className=" w-[40vw] pt-2 text-xs text-white">
-                      {tasks.length > 0 && formatDate(tasks[0].dueDate)}
-                    </Text>
-                  </View>
-                  <View className="mt-3 flex items-start">
-                    <View className="flex w-full flex-row items-center justify-center pt-9">
-                      {tasks
-                        .filter((task) => isToday(task.dueDate))
-                        .slice(0, 2)
-                        .map((task, index) => (
-                          <View key={task._id} className="relative flex flex-row">
-                            <View
-                              className="-m-1.5 h-9 w-9 rounded-full border"
-                              style={{
-                                borderColor: colors[index % colors.length],
-                                backgroundColor: colors[index % colors.length],
-                              }}>
-                              <Text className=" mt-2 text-center text-sm font-medium text-black">
-                                {getInitials(task?.assignedUser)}
-                              </Text>
-                            </View>
-                          </View>
-                        ))}
+              <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5 mb-1">
 
-                      {tasks.filter((task) => isToday(task.dueDate)).length > 2 && (
-                        <View className="relative flex flex-row">
-                          <View
-                            className="h-9 w-9 items-center justify-center rounded-full"
-                            style={{
-                              backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
-                            }}>
-                            <Text className="text-center font-bold text-black">
-                              +{tasks.filter((task) => isToday(task.dueDate)).length - 2}
-                            </Text>
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                  <View className=" flex h-9 w-9 items-center justify-center self-end rounded-full border border-white ">
-                    <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                  </View>
-                </View>
+                {/* Today’s Task */}
+                {/* Pending Tasks */}
+                <TaskCard
+                title="Today’s Task"
+                count={taskCounts.Today}
+                tasks={tasks}
+                status="Today"
+                backgroundColor="#FC842C"
+                borderColor="#FC842C"
+                />
+                
 
-                <View className="flex h-full w-1/2 flex-col rounded-3xl bg-[#D85570] p-5 ">
-                  <View className="flex items-start ">
-                    <Text className="font-medium text-white">Overdue Tasks</Text>
-                    <Text className=" font-semibold text-white" style={{ fontSize: 34 }}>
-                      {taskCounts.Overdue} {/* Dynamic task count */}
-                    </Text>
-                    <Text className=" w-[40vw] pt-2 text-xs text-white">
-                      {tasks.length > 0 && formatDate(tasks[1]?.dueDate)} {/* Formatted Due Date */}
-                    </Text>
-                  </View>
-                  <View className="mt-3 flex flex-row items-start">
-                    <View className="flex w-full flex-row  pt-9">
-                      {/* Display the first two initials with different colors */}
-                      {tasks
-                        .filter((task) => task.status === 'Overdue') // Filter by status
-                        .slice(0, 2) // Show only the first two users
-                        .map((task, index) => (
-                          <View key={task._id} className="relative flex flex-row">
-                            <View
-                              className="-m-1.5 h-9 w-9 rounded-full border"
-                              style={{
-                                borderColor: colors[index % colors.length], // Assign a color from the array
-                                backgroundColor: colors[index % colors.length], // Set background color
-                              }}>
-                              <Text className=" mt-2 text-center text-sm font-medium text-black">
-                                {getInitials(task?.assignedUser)} {/* Display initials */}
-                              </Text>
-                            </View>
-                          </View>
-                        ))}
-
-                      {/* Show the + with full circle if there are more than 2 users */}
-                      {tasks.filter((task) => task.status === 'Overdue').length > 2 && (
-                        <View className="relative -mt-1 flex flex-row">
-                          <View
-                            className="h-9 w-9 items-center justify-center rounded-full"
-                            style={{
-                              backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
-                            }}>
-                            <Text className="text-center font-bold text-black">
-                              +{tasks.filter((task) => task.status === 'Overdue').length - 2}
-                            </Text>
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                  <TouchableOpacity>
-                    <View className=" flex h-9 w-9 items-center justify-center self-end rounded-full border border-white">
-                      <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                    </View>
-                  </TouchableOpacity>
-                </View>
+                {/* Overdue Tasks */}
+                <TaskCard
+                title="Overdue Tasks"
+                count={taskCounts.Today}
+                tasks={tasks}
+                status="Overdue"
+                backgroundColor="#D85570"
+                borderColor="#D85570"
+                />
               </View>
+              {/* row 2 */}
+              <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5 mb-1">
+                {/* Pending Tasks */}
+                <TaskCard
+                title="Pending Tasks"
+                count={taskCounts.Pending}
+                tasks={tasks}
+                status="Pending"
+                backgroundColor="#FDB314"
+                borderColor="#FDB314"
+              />
 
-              <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
-                <View className="flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5 ">
-                  <View className="flex items-start ">
-                    <Text className="font-medium text-white">Pending Tasks</Text>
-                    <Text className=" font-semibold text-white" style={{ fontSize: 34 }}>
-                      {taskCounts.Pending} {/* Dynamic task count */}
-                    </Text>
-                    <Text className=" w-[40vw] pt-2 text-xs text-white">25th December, 2024</Text>
-                  </View>
-                  <View className="mt-3 flex flex-row items-start">
-                    <View className="flex w-full flex-row  pt-9">
-                      {tasks
-                        .filter((task) => task.status === 'Pending') // Filter by status
-                        .slice(0, 2) // Show only the first two users
-                        .map((task, index) => (
-                          <View key={task._id} className="relative flex flex-row">
-                            <View
-                              className="-m-1.5 h-9 w-9 rounded-full border"
-                              style={{
-                                borderColor: colors[index % colors.length], // Assign a color from the array
-                                backgroundColor: colors[index % colors.length], // Set background color
-                              }}>
-                              <Text className=" mt-2 text-center text-sm font-medium text-black">
-                                {getInitials(task?.assignedUser)} {/* Display initials */}
-                              </Text>
-                            </View>
-                          </View>
-                        ))}
-                      {tasks.filter((task) => task.status === 'Pending').length > 2 && (
-                        <View className="relative -mt-1 flex flex-row">
-                          <View
-                            className="h-9 w-9 items-center justify-center rounded-full"
-                            style={{
-                              backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
-                            }}>
-                            <Text className="text-center font-bold text-black">
-                              +{tasks.filter((task) => task.status === 'Pending').length - 2}
-                            </Text>
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                  <TouchableOpacity
-                    className=""
-                    onPress={() => {
-                      const pendingTasks = tasks.filter((task) => task.status === 'Pending'); 
-                      navigation.navigate('PendingTask', { pendingTasks }); 
-                    }}>
-                    <View className="-mt-9 flex h-9 w-9 items-center justify-center self-end rounded-full border border-white">
-                      <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                    </View>
-                  </TouchableOpacity>
-                </View>
-                <View className="flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5 ">
-                  <View className="flex items-start ">
-                    <Text className="w-[50vh] font-medium text-white">In Progress Tasks</Text>
-                    <Text className=" font-semibold text-white" style={{ fontSize: 34 }}>
-                      {taskCounts.InProgress} {/* Dynamic task count */}
-                    </Text>
-                    <Text className=" w-[40vw] pt-2 text-xs text-white">25th December, 2024</Text>
-                  </View>
-                  <View className="mt-3 flex flex-row items-start">
-                    <View className="flex w-full flex-row  pt-9">
-                      {/* Display the first two initials with different colors */}
-                      {tasks
-                        .filter((task) => task.status === 'InProgress') // Filter by status
-                        .slice(0, 2) // Show only the first two users
-                        .map((task, index) => (
-                          <View key={task._id} className="relative flex flex-row">
-                            <View
-                              className="-m-1.5 h-9 w-9 rounded-full border"
-                              style={{
-                                borderColor: colors[index % colors.length], // Assign a color from the array
-                                backgroundColor: colors[index % colors.length], // Set background color
-                              }}>
-                              <Text className=" mt-2 text-center text-sm font-medium text-black">
-                                {getInitials(task?.assignedUser)} {/* Display initials */}
-                              </Text>
-                            </View>
-                          </View>
-                        ))}
-
-                      {/* Show the + with full circle if there are more than 2 users */}
-                      {tasks.filter((task) => task.status === 'InProgress').length > 2 && (
-                        <View className="relative -mt-1 flex flex-row">
-                          <View
-                            className="h-9 w-9 items-center justify-center rounded-full"
-                            style={{
-                              backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
-                            }}>
-                            <Text className="text-center font-bold text-black">
-                              +{tasks.filter((task) => task.status === 'InProgress').length - 2}
-                            </Text>
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                  <TouchableOpacity>
-                    <View className=" -mt-1 flex h-9 w-9 items-center justify-center self-end rounded-full border border-white">
-                      <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                    </View>
-                  </TouchableOpacity>
-                </View>
+                {/* In Progress Tasks */}
+                <TaskCard
+                title="In Progress Tasks"
+                count={taskCounts.Overdue}
+                tasks={tasks}
+                status="Pending"
+                backgroundColor="#A914DD"
+                borderColor="#A914DD"
+              />
               </View>
 
               {/* Full Width Card */}
-              <View className="mb-2 mt-2 h-[160px] w-[93%] rounded-3xl bg-[#007B5B] p-4">
+              <View className="mb-2 mt-2 h-[167px] w-[93%] rounded-3xl bg-[#007B5B] p-5 pt-7 pb-7 ">
                 <View className=" flex w-full flex-row items-center justify-between">
                   <Text className="text-white ">Completed Tasks</Text>
                   <Text className="text-xs text-white">22-12-2024 to 28-12-2024</Text>
                 </View>
-                <Text className=" mt-2 font-semibold text-white" style={{ fontSize: 34 }}>
+                <Text className=" mt-2  text-white" style={{ fontSize: 34 }}>
                   {taskCounts.Completed}
                 </Text>
 
@@ -542,12 +352,12 @@ export default function DashboardScreen() {
                       .map((task, index) => (
                         <View key={task._id} className="relative flex flex-row">
                           <View
-                            className="-m-1.5 h-9 w-9 rounded-full border"
+                            className="-m-1 h-9 w-9 rounded-full border border-[#007B5B]"
                             style={{
-                              borderColor: colors[index % colors.length], // Assign a color from the array
+                              borderColor:"#007B5B",
                               backgroundColor: colors[index % colors.length], // Set background color
                             }}>
-                            <Text className=" mt-2 text-center text-sm font-medium text-black">
+                            <Text className=" mt-2 text-center text-sm  text-black">
                               {getInitials(task?.assignedUser)} {/* Display initials */}
                             </Text>
                           </View>
@@ -556,11 +366,11 @@ export default function DashboardScreen() {
                     {tasks.filter((task) => task.status === 'Completed').length > 2 && (
                       <View className="relative -mt-1 flex flex-row">
                         <View
-                          className="h-9 w-9 items-center justify-center rounded-full"
+                          className="h-8 w-8 items-center justify-center rounded-full"
                           style={{
                             backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
                           }}>
-                          <Text className="text-center font-bold text-black">
+                          <Text className="text-center font-medium text-black">
                             +{tasks.filter((task) => task.status === 'Completed').length - 2}
                           </Text>
                         </View>
@@ -568,116 +378,34 @@ export default function DashboardScreen() {
                     )}
                   </View>
 
-                  <View className=" flex h-9 w-9 items-center justify-center rounded-full border border-white ">
+                  <View className=" flex h-8 w-8 items-center justify-center rounded-full border border-white ">
                     <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                   </View>
                 </View>
               </View>
+
+              {/* row 3  */}
               <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
-                <View className="flex h-full w-1/2 flex-col rounded-3xl bg-[#815BF5] p-5 ">
-                  <View className="flex items-start ">
-                    <Text className="font-medium text-white">In Time Task</Text>
-                    <Text className=" font-semibold text-white" style={{ fontSize: 34 }}>
-                      {taskCounts.Pending} {/* Dynamic task count */}
-                    </Text>
-                    <Text className=" w-[40vw] pt-2 text-xs text-white">
-                      {tasks.length > 0 && formatDate(tasks[0].dueDate)} {/* Formatted Due Date */}
-                    </Text>
-                  </View>
-                  <View className="mt-3 flex items-start">
-                    <View className="flex w-full flex-row items-center justify-center pt-9">
-                      {tasks
-                        .filter((task) => task.status === 'In Time') // Filter by status
-                        .slice(0, 2) // Show only the first two users
-                        .map((task, index) => (
-                          <View key={task._id} className="relative flex flex-row">
-                            <View
-                              className="-m-1.5 h-9 w-9 rounded-full border"
-                              style={{
-                                borderColor: colors[index % colors.length], // Assign a color from the array
-                                backgroundColor: colors[index % colors.length], // Set background color
-                              }}>
-                              <Text className=" mt-2 text-center text-sm font-medium text-black">
-                                {getInitials(task?.assignedUser)} {/* Display initials */}
-                              </Text>
-                            </View>
-                          </View>
-                        ))}
 
-                      {/* Show the + with full circle if there are more than 2 users */}
-                      {tasks.filter((task) => task.status === 'In Time').length > 2 && (
-                        <View className="relative flex flex-row">
-                          <View
-                            className="h-9 w-9 items-center justify-center rounded-full"
-                            style={{
-                              backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
-                            }}>
-                            <Text className="text-center font-bold text-black">
-                              +{tasks.filter((task) => task.status === 'Pending').length - 2}
-                            </Text>
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                    <View className=" flex h-9 w-9 items-center justify-center self-end rounded-full border border-white ">
-                      <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                    </View>
-                  </View>
-                </View>
-
-                <View className="flex h-full w-1/2 flex-col rounded-3xl bg-[#DE7560] p-5 ">
-                  <View className="flex items-start ">
-                    <Text className="font-medium text-white">Delayed Tasks</Text>
-                    <Text className=" font-semibold text-white" style={{ fontSize: 34 }}>
-                      {taskCounts.Delayed} {/* Dynamic task count */}
-                    </Text>
-                    <Text className=" w-[40vw] pt-2 text-xs text-white">
-                      {tasks.length > 0 && formatDate(tasks[1]?.dueDate)} {/* Formatted Due Date */}
-                    </Text>
-                  </View>
-                  <View className="mt-3 flex flex-row items-start">
-                    <View className="flex w-full flex-row  pt-9">
-                      {/* Display the first two initials with different colors */}
-                      {tasks
-                        .filter((task) => task.status === 'Delayed') // Filter by status
-                        .slice(0, 2) // Show only the first two users
-                        .map((task, index) => (
-                          <View key={task._id} className="relative flex flex-row">
-                            <View
-                              className="-m-1.5 h-9 w-9 rounded-full border"
-                              style={{
-                                borderColor: colors[index % colors.length], // Assign a color from the array
-                                backgroundColor: colors[index % colors.length], // Set background color
-                              }}>
-                              <Text className=" mt-2 text-center text-sm font-medium text-black">
-                                {getInitials(task?.assignedUser)} {/* Display initials */}
-                              </Text>
-                            </View>
-                          </View>
-                        ))}
-
-                      {/* Show the + with full circle if there are more than 2 users */}
-                      {tasks.filter((task) => task.status === 'Delayed').length > 2 && (
-                        <View className="relative -mt-1 flex flex-row">
-                          <View
-                            className="h-9 w-9 items-center justify-center rounded-full"
-                            style={{
-                              backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
-                            }}>
-                            <Text className="text-center font-bold text-black">
-                              +{tasks.filter((task) => task.status === 'Delayed').length - 2}
-                            </Text>
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                  <TouchableOpacity>
-                    <View className=" -mt-1 flex h-9 w-9 items-center justify-center self-end rounded-full border border-white">
-                      <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                    </View>
-                  </TouchableOpacity>
-                </View>
+                {/* In Time Task */}
+                <TaskCard
+                title="In Time Task"
+                count={taskCounts.Today}
+                tasks={tasks}
+                status="Pending"
+                backgroundColor="#815BF5"
+                borderColor="#815BF5"
+              />
+                
+                {/* Delayed Tasks */}
+                <TaskCard
+                title="Delayed Tasks"
+                count={taskCounts.Today}
+                tasks={tasks}
+                status="Pending"
+                backgroundColor="#DE7560"
+                borderColor="#DE7560"
+              />
               </View>
             </View>
           </ScrollView>

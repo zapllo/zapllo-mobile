@@ -187,7 +187,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
           <Image
-            className="h-9 self-center"
+            className="h-9 self-center mt-16"
             style={{ marginVertical: verticalScale(25) }}
             source={require('../../assets/sign-in/logo.png')}
             resizeMode="contain"
@@ -195,7 +195,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
           {!showWorkspace && (
             <>
             <View className="flex h-full w-full items-center">
-              <View className="mb-4 flex items-center justify-center gap-4">
+              <View className="mb-4 flex items-center justify-center gap-4 ">
                 <Text className="text-2xl font-semibold text-white">Let’s Get Started</Text>
                 <Text className="font-light text-white ">
                   Let's get started by filling out the form below.

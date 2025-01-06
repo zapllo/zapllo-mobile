@@ -55,7 +55,7 @@ const componentsData: HomeScreenComponents[] = [
   {
     id: '4',
     title: 'Zapllo Intranet',
-    screen: '(routes)/HomeComponent/Intranet',
+    screen: '(routes)/settings',
     description: 'Manage all your Important Company Links',
   },
   {
@@ -127,15 +127,16 @@ const HomeScreen: React.FC = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView className="flex-1 bg-primary p-3">
+      <SafeAreaView className="flex-1 bg-primary">
+      <Navbar title="My Business Apps" />
         <ScrollView
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 20 ,padding:14}}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
-          <Navbar title="My Business Apps" />
+          
 
           {/* Progress Bar with Gradient */}
-          <View className=" my-3 flex h-36 w-full flex-col items-center gap-6 rounded-xl border border-[#37384B] bg-[#10122d] bg-opacity-50 pl-5  pr-5 pt-5">
+          <View className=" my-3 flex h-36 w-full flex-col items-center gap-6 rounded-2xl border border-[#37384B] bg-[#10122d] bg-opacity-50 pl-5  pr-5 pt-5">
             <View className="flex w-full  flex-row items-center justify-between">
               <Text className="text-lg text-white ">App Usage Progress</Text>
               <TouchableOpacity>
@@ -190,7 +191,7 @@ const HomeScreen: React.FC = () => {
           {componentsData.map((item) => (
             <TouchableOpacity
               key={item.id}
-              className="my-3 flex h-44 flex-row items-start justify-center rounded-2xl border border-[#37384B] p-4 pl-12 pr-12 pt-5"
+              className="my-3 flex h-44 flex-row items-start justify-center rounded-3xl border border-[#37384B] p-4 pl-12 pr-12 pt-5"
               onPress={() => {
                 console.log(`Navigating to: ${item.screen}`);
                 router.push(item.screen);

@@ -146,13 +146,13 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
         Select the categories that are relevant to your business
       </Text>
 
-      <View className="flex-row flex-wrap justify-center gap-2 ">
+      <View className="flex-row flex-wrap justify-start px-10 items-center gap-2 ">
         {categories.map((category, index) => (
           <TouchableOpacity
             key={index}
             className={`mb-2 rounded-full ${
               selectedCategories.includes(category) ? 'bg-purple-600' : 'bg-gray-700'
-            } ${Platform.OS === 'ios' ? 'px-4 py-2.5' : 'px-3.5 py-2'}`}
+            } ${Platform.OS === 'ios' ? 'px-4 py-2.5' : 'px-4 py-3'}`}
             onPress={() => toggleCategory(category)}>
             <Text className="text-sm font-medium text-white" numberOfLines={1}>
               {category}
@@ -165,7 +165,7 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
         <Text className="mt-2 text-sm text-[#FF6F61]">{errors.categories}</Text>
       )}
 
-      <View className="mb-4 mt-2 flex w-[90%] items-center">
+      <View className="mb-4 mt-2.5 flex w-[90%] items-center">
         <Text className="text-[12px]  font-light text-white">
           Don't worry you can add more later in the Settings panel
         </Text>

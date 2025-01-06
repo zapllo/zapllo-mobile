@@ -21,6 +21,8 @@ import { useFocusEffect } from 'expo-router';
 import axios from 'axios';
 import { backend_Host } from '~/config';
 import { Image } from 'react-native';
+import moment from 'moment';
+import getDateRange from '~/utils/GetDateRange';
 
 interface Task {
   _id: string;
@@ -44,7 +46,7 @@ interface TaskStatusCounts {
   Today: number; // Add Today to the interface
 }
 const daysData = [
-  { label: 'Today', value: 'Overdue' },
+  { label: 'Today', value: 'Today' },
   { label: 'Yesterday', value: 'Yesterday' },
   { label: 'This Week', value: 'This Week' },
   { label: 'Last Week', value: 'Last Week' },
@@ -57,8 +59,9 @@ const daysData = [
 ];
 
 export default function DashboardScreen() {
-  const { isLoggedIn, token } = useSelector((state: RootState) => state.auth);
+  const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
   const [tasks, setTasks] = useState<Task[]>([]); // Store tasks fetched from API
+  const [tasksData, setTasksData] = useState<Task[]>([]);
   const [taskCounts, setTaskCounts] = useState<TaskStatusCounts>({
     Overdue: 0,
     Pending: 0,
@@ -68,9 +71,47 @@ export default function DashboardScreen() {
     Delayed: 0,
     Today: 0,
   });
+  const [tasksCountData, setTaskCountsData] = useState<TaskStatusCounts>({
+    Overdue: 0,
+    Pending: 0,
+    InProgress: 0,
+    Completed: 0,
+    'In Time': 0,
+    Delayed: 0,
+    Today: 0,
+  });
 
-  const [selectedTeamSize, setSelectedTeamSize] = useState(null);
+  // task?.assignedUser?._id === currentUser?._id;
+
+  // console.log('useerrrr>🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳', JSON.stringify(userData?.data?._id, null, 2));
+
+  const [selectedTeamSize, setSelectedTeamSize] = useState('');
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
+
+  const filterTasksByDate = (tasks: Task[], dateRange: any) => {
+    const { startDate, endDate } = dateRange;
+    if (!Object.keys(startDate).length || !Object.keys(endDate).length) {
+      return tasks;
+    }
+    return tasks.filter((task) => {
+      const taskDueDate = moment(task.dueDate);
+      return taskDueDate.isSameOrAfter(startDate) && taskDueDate.isBefore(endDate);
+    });
+  };
+
+  useEffect(() => {
+    const dateRange = getDateRange(selectedTeamSize);
+    const myTasksByDate = filterTasksByDate(tasksData, dateRange);
+    setTasks(myTasksByDate);
+    setTaskCounts(countStatuses(myTasksByDate));
+  }, [selectedTeamSize]);
+
+  // const myTasksCounts = countStatuses(myTasks
+
+  //*****Delegated */
+  // (task.user?._id === currentUser?._id &&
+  //   task.assignedUser?._id !== currentUser?._id) ||
+  // task.assignedUser?._id === currentUser?._id;
 
   const countStatuses = (tasks: Task[]): TaskStatusCounts => {
     return tasks.reduce(
@@ -123,9 +164,22 @@ export default function DashboardScreen() {
             },
           });
           const tasksData = Array.isArray(response.data?.data) ? response.data?.data : [];
-          console.log('Tasks fetched:', tasksData);
-          setTasks(tasksData);
-          setTaskCounts(countStatuses(tasksData)); // Update task counts
+          const filteredTask = tasksData.filter(
+            (e: { assignedUser: any; _id: any }) => e?.assignedUser?._id === userData?.data?._id
+          );
+
+          // console.log(
+          //   'Tasks fetched:😀😀😀😀😀😀',
+          //   JSON.stringify(
+          //     filteredTask,
+          //     null,
+          //     2
+          //   )
+          // );
+          setTasks(filteredTask);
+          setTasksData(filteredTask);
+          setTaskCountsData(countStatuses(filteredTask)); // Update task counts
+          setTaskCounts(countStatuses(filteredTask)); // Update task counts
         } catch (error) {
           console.error('Error fetching tasks:', error);
         }
@@ -144,10 +198,6 @@ export default function DashboardScreen() {
       day: 'numeric', // '25'
     });
   };
-
-  {
-    console.log(tasks);
-  }
 
   const getInitials = (assignedUser: { firstName?: string; lastName?: string }): string => {
     const firstInitial = assignedUser?.firstName ? assignedUser.firstName[0].toUpperCase() : ''; // Check if firstName exists
@@ -168,7 +218,7 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
-      <Navbar title="Dashboard" />
+      <Navbar title="My Tasks" />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView
@@ -246,7 +296,7 @@ export default function DashboardScreen() {
                       {taskCounts.Overdue} {/* Dynamic task count */}
                     </Text>
                     <Text className=" w-[40vw] pt-2 text-xs text-white">
-                      {tasks.length > 0 && formatDate(tasks[1].dueDate)} {/* Formatted Due Date */}
+                      {tasks.length > 0 && formatDate(tasks[1]?.dueDate)} {/* Formatted Due Date */}
                     </Text>
                   </View>
                   <View className="mt-3 flex flex-row items-start">
@@ -286,7 +336,7 @@ export default function DashboardScreen() {
                       )}
                     </View>
                   </View>
-                  <TouchableOpacity className="" onPress={() => navigation.navigate('PendingTask')}>
+                  <TouchableOpacity>
                     <View className=" flex h-9 w-9 items-center justify-center self-end rounded-full border border-white">
                       <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                     </View>
@@ -336,9 +386,13 @@ export default function DashboardScreen() {
                         </View>
                       )}
                     </View>
-                    
                   </View>
-                  <TouchableOpacity className="" onPress={() => navigation.navigate('PendingTask')}>
+                  <TouchableOpacity
+                    className=""
+                    onPress={() => {
+                      const pendingTasks = tasks.filter((task) => task.status === 'Pending'); 
+                      navigation.navigate('PendingTask', { pendingTasks }); 
+                    }}>
                     <View className="-mt-9 flex h-9 w-9 items-center justify-center self-end rounded-full border border-white">
                       <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                     </View>
@@ -382,14 +436,14 @@ export default function DashboardScreen() {
                               backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
                             }}>
                             <Text className="text-center font-bold text-black">
-                              +{tasks.filter((task) => task.status === 'Pending').length - 2}
+                              +{tasks.filter((task) => task.status === 'InProgress').length - 2}
                             </Text>
                           </View>
                         </View>
                       )}
                     </View>
                   </View>
-                  <TouchableOpacity className="" onPress={() => navigation.navigate('PendingTask')}>
+                  <TouchableOpacity>
                     <View className=" -mt-1 flex h-9 w-9 items-center justify-center self-end rounded-full border border-white">
                       <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                     </View>
@@ -404,12 +458,12 @@ export default function DashboardScreen() {
                   <Text className="text-xs text-white">22-12-2024 to 28-12-2024</Text>
                 </View>
                 <Text className=" mt-2 font-semibold text-white" style={{ fontSize: 34 }}>
-                  {taskCounts.Completed} 
+                  {taskCounts.Completed}
                 </Text>
 
                 <View className="flex w-full flex-row items-center justify-between gap-20 pt-5">
                   <View className="relative flex flex-row ">
-                     {tasks
+                    {tasks
                       .filter((task) => task.status === 'Completed') // Filter by status
                       .slice(0, 2) // Show only the first two users
                       .map((task, index) => (
@@ -505,7 +559,7 @@ export default function DashboardScreen() {
                       {taskCounts.Delayed} {/* Dynamic task count */}
                     </Text>
                     <Text className=" w-[40vw] pt-2 text-xs text-white">
-                      {tasks.length > 0 && formatDate(tasks[1].dueDate)} {/* Formatted Due Date */}
+                      {tasks.length > 0 && formatDate(tasks[1]?.dueDate)} {/* Formatted Due Date */}
                     </Text>
                   </View>
                   <View className="mt-3 flex flex-row items-start">
@@ -545,7 +599,7 @@ export default function DashboardScreen() {
                       )}
                     </View>
                   </View>
-                  <TouchableOpacity className="" onPress={() => navigation.navigate('PendingTask')}>
+                  <TouchableOpacity>
                     <View className=" -mt-1 flex h-9 w-9 items-center justify-center self-end rounded-full border border-white">
                       <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                     </View>

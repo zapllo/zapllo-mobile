@@ -7,6 +7,7 @@ import DelegatedTaskScreen from "~/app/(routes)/HomeComponent/Tasks/DelegatedTas
 import AllTaskScreen from "~/app/(routes)/HomeComponent/Tasks/AllTaskScreen";
 import { Ionicons } from "@expo/vector-icons";
 import DashboardStack from "~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack";
+import TaskStack from "~/app/(routes)/HomeComponent/Tasks/TaskStack";
 
 
 const Tab = createBottomTabNavigator();
@@ -58,7 +59,7 @@ export default function TasksScreen() {
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardStack} />
-      <Tab.Screen name="My Task" component={MyTaskScreen} />
+      <Tab.Screen name="My Task" component={TaskStack} />
       <Tab.Screen name="Delegated Task" component={DelegatedTaskScreen} />
       <Tab.Screen name="All Task" component={AllTaskScreen} />
     </Tab.Navigator>

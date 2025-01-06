@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ScrollView,
   Text,
@@ -7,8 +7,9 @@ import {
   Image,
   TouchableWithoutFeedback,
   Keyboard,
+  ActivityIndicator,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProfileButton from '~/components/profile/ProfileButton';
 import Feather from 'react-native-vector-icons/Feather';
@@ -17,6 +18,8 @@ import Navbar from '~/components/navbar';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import axios from 'axios';
+import { backend_Host } from '~/config';
 
 type HomeScreenComponents = {
   title: string;
@@ -24,6 +27,11 @@ type HomeScreenComponents = {
   screen: any;
   description: string;
 };
+
+interface ChecklistItem {
+  _id: string; // Assuming each item has a unique `_id`
+  name: string; // Example property, you can add more properties as needed
+}
 
 const componentsData: HomeScreenComponents[] = [
   {
@@ -72,10 +80,50 @@ const componentsData: HomeScreenComponents[] = [
 
 const HomeScreen: React.FC = () => {
   const router = useRouter();
-  const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
-  const progress = 0.7; // Set progress (70%)
+  // const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
+  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]); // Typed state for checklist items
+  const [progress, setProgress] = useState<string[]>([]); // Typed state for completed checklist item IDs
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  console.log('okkkkkkkk', isLoggedIn, token, userData);
+  // Function to fetch checklist items from the API
+  const fetchChecklistItems = useCallback(() => {
+    axios
+      .get(`${backend_Host}/checklist/get`)
+      .then((response) => {
+        setChecklistItems(response?.data?.checklistItems);
+        console.log('object', response?.data?.checklistItems);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  // Use useFocusEffect to call fetchChecklistItems when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      fetchChecklistItems(); // Trigger API call when the screen is focused
+    }, [fetchChecklistItems]) // Dependency array ensures the effect only runs when focus changes
+  );
+
+  const calculateProgress = () => {
+    if (!checklistItems.length) return 0;
+    const completedCount = checklistItems.filter((item) => progress.includes(item._id)).length;
+    const progressPercentage = (completedCount / checklistItems.length) * 100;
+    return Math.round(progressPercentage);
+  };
+
+  const progressPercentage = calculateProgress();
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
+
+  if (error) {
+    return <Text>Error: {error}</Text>;
+  }
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -109,18 +157,34 @@ const HomeScreen: React.FC = () => {
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
                   borderRadius: 5,
                 }}>
-                <LinearGradient
-                  colors={['#815BF5', '#FC8929']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={{
-                    width: `${progress * 100}%`,
-                    height: '100%',
-                    borderRadius: 5,
-                  }}
-                />
+                {loading ? (
+                  <ActivityIndicator
+                    size="large"
+                    color="#FC8929"
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      marginLeft: -20, // Adjust for centering
+                      marginTop: -20, // Adjust for centering
+                    }}
+                  />
+                ) : (
+                  <LinearGradient
+                    colors={['#815BF5', '#FC8929']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={{
+                      width: `${progressPercentage}%`, // Dynamically set the width based on progress
+                      height: '100%',
+                      borderRadius: 5,
+                    }}
+                  />
+                )}
               </View>
-              <Text className=" text-xs font-thin text-[#787CA5]">55% Completed</Text>
+              <Text className="text-xs font-thin text-[#787CA5]">
+                {loading ? 'Loading...' : `${progressPercentage}% Completed`}
+              </Text>
             </View>
           </View>
 

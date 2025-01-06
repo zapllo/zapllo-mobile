@@ -6,8 +6,8 @@ import EmployeeWiseScreen from "~/screens/Task/EmployeeWise.screen";
 
 export type DashboardStackParamList = {
   DashboardHome: undefined;
-  PendingTask: undefined;
-  EmployeeWise:undefined;
+  PendingTask: { pendingTasks: Task[] };
+  // EmployeeWise:undefined;
 };
 
 const Stack = createStackNavigator<DashboardStackParamList>();
@@ -17,7 +17,7 @@ const DashboardStack = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="DashboardHome" component={DashboardScreen} />
       <Stack.Screen name="PendingTask" component={PendingTaskScreen} />
-      <Stack.Screen name="EmployeeWise" component={EmployeeWiseScreen}/>
+      {/* <Stack.Screen name="EmployeeWise" component={EmployeeWiseScreen}/> */}
 
     </Stack.Navigator>
   );

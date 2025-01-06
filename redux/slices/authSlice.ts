@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 interface AuthState {
   isLoggedIn: boolean;
   token: string | null;
-  userData: Record<string, any> | null; // Adjust type based on your user data structure
+  userData: Record<string, any> | null;
 }
 
 const initialState: AuthState = {

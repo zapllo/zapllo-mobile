@@ -63,6 +63,79 @@ export default function DashboardScreen() {
 
             {/* Content */}
             <View className="flex gap-2.5 flex-col h-full items-center w-full p-4.2 pt-1 mb-32">
+
+              {/* task count */}
+              <View className="flex flex-col items-center w-[90%] mb-4 gap-5 ">
+                {/* 1st row */}
+                <View className=" flex flex-row gap-5 items-center">
+                  {/* overdue */}
+                  <View className="p-5 items-start gap-4 flex flex-row border border-[#37384B] rounded-3xl w-1/2 ">
+                    <Image className="w-8 h-8" source={require("../../../../../assets/commonAssets/overdue.png")}/>
+                    <View className="flex flex-col  items-center">
+                    <Text className="text-white text-sm">Overdue</Text>
+                    <Text className="text-white text-4xl font-bold">07</Text>
+                    </View>                  
+                  </View>
+
+                  {/* pending */}
+                  <View className="p-5 items-start gap-4 flex flex-row border border-[#37384B] rounded-3xl w-1/2 ">
+                    <Image className="w-8 h-8" source={require("../../../../../assets/Tasks/overdue.png")}/>
+                    <View className="flex flex-col  items-center">
+                    <Text className="text-white text-sm">Pending</Text>
+                    <Text className="text-white text-4xl font-bold">07</Text>
+                    </View>                  
+                  </View>
+
+                </View>
+                {/* 2nd row */}
+                <View className=" flex flex-row gap-5 items-center">
+                  {/* In Progress */}
+                  <View className="p-5 items-start gap-4 flex flex-row border border-[#37384B] rounded-3xl w-1/2 ">
+                    <Image className="h-8 w-8" source={require("../../../../../assets/commonAssets/Progress.png")}/>
+                    <View className="flex flex-col  items-center">
+                    <Text className="text-white text-sm">In Progress</Text>
+                    <Text className="text-white text-4xl font-bold">07</Text>
+                    </View>                  
+                  </View>
+
+                  {/* Completed */}
+                  <View className="p-5 items-start gap-4 flex flex-row border border-[#37384B] rounded-3xl w-1/2 ">
+                    <Image className="h-8 w-8" source={require("../../../../../assets/commonAssets/Completed.png")}/>
+                    <View className="flex flex-col  items-center">
+                    <Text className="text-white text-sm">Completed</Text>
+                    <Text className="text-white text-4xl font-bold">07</Text>
+                    </View>                  
+                  </View>
+
+                </View>
+
+                {/* 3rd row */}
+                <View className=" flex flex-row gap-5 items-center">
+                  {/* In Time */}
+                  <View className="p-5 items-start gap-4 flex flex-row border border-[#37384B] rounded-3xl w-1/2 ">
+                    <Image className="h-8 w-8" source={require("../../../../../assets/commonAssets/inTime.png")}/>
+                    <View className="flex flex-col  items-center">
+                    <Text className="text-white text-sm">In Time</Text>
+                    <Text className="text-white text-4xl font-bold">07</Text>
+                    </View>                  
+                  </View>
+
+                  {/* Delayed */}
+                  <View className="p-5 items-start gap-4 flex flex-row border border-[#37384B] rounded-3xl w-1/2 ">
+                    <Image className="h-8 w-8" source={require("../../../../../assets/commonAssets/Delayed.png")}/>
+                    <View className="flex flex-col  items-center">
+                    <Text className="text-white text-sm">Delayed</Text>
+                    <Text className="text-white text-4xl font-bold">07</Text>
+                    </View>                  
+                  </View>
+
+                </View>
+              </View>
+
+
+
+
+
               {/* Row 1 */}
               <View className="flex-row flex items-start gap-2.5 justify-center w-[90%] h-[14rem]">
                 <View className="w-1/2 h-full bg-[#FC842C] rounded-3xl p-5 flex flex-col ">

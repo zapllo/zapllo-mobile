@@ -49,12 +49,12 @@ const ProfileScreen: React.FC = () => {
   console.log('userrrr', userData?.data?.profilePic);
 
   return (
-    <SafeAreaView className="h-full w-full bg-[#05071E]">
+    <SafeAreaView className="h-full w-full flex-1 bg-[#05071E]">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1">
+        className="w-full">
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
+          className="h-full w-full flex-grow"
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
           {/* Navbar */}
@@ -64,9 +64,9 @@ const ProfileScreen: React.FC = () => {
           />
 
           {/* container */}
-          <View className="mb-12 ml-5 mr-5 mt-3 flex h-full  w-[90%] items-center">
+          <View className="mb-12 mt-3 flex h-full   w-full items-center">
             {/*profile photo name and role */}
-            <View className="flex w-full flex-row items-center justify-start gap-4">
+            <View className="flex w-[90%] flex-row items-center justify-start gap-4">
               <View className="h-16 w-16 rounded-full bg-white ">
                 {(userData?.data?.profilePic || userData?.user?.profilePic) && (
                   <Image
@@ -86,25 +86,31 @@ const ProfileScreen: React.FC = () => {
               </View>
             </View>
 
+            
+            <View className="flex w-[90%] flex-row items-center justify-start gap-4">
             {/* line */}
             <View className="mb-9 mt-9 h-0.5 w-full bg-[#37384B]"></View>
+            </View>
+
 
             {/* Account Information */}
-            <View className="w-full ">
-              <Text className="text-start text-sm text-[#787CA5] ">Account Information</Text>
-
+            <View className="w-full">
+            
+              <Text className="text-start text-sm text-[#787CA5] ml-7 ">Account Information</Text>
+              
+              <View className='w-full flex items-center'>
               {/* mail */}
               <InputContainer
                 label="Email"
                 placeholder=""
-                className=" h-14   w-full rounded-full p-2.5 text-[#787CA5] "
+                className="flex-1 text-sm text-[#787CA5]"
                 value={userData?.user?.email || userData?.data?.email}
                 passwordError={''}
                 onChangeText={()=>{''}}
               />
 
               {/* numbers */}
-              <View className="mt-1 flex w-[69%]  flex-row items-center  gap-2">
+              <View className="mt-1 flex w-[69%]  flex-row items-center justify-center gap-3">
                 <Dropdown
                   style={{
                     borderWidth: 1,
@@ -203,21 +209,25 @@ const ProfileScreen: React.FC = () => {
               </View>
 
               {/* change pasword buttons */}
-              <TouchableOpacity
-                className={`mt-6 flex  h-[3.6rem] w-full items-center justify-center rounded-full bg-[#37384B] p-2.5`}>
-                {buttonSpinner ? (
-                  <ActivityIndicator size="small" color={'white'} />
-                ) : (
-                  <Text className="text-center  font-semibold text-white ">Change Password</Text>
-                )}
-              </TouchableOpacity>
+              
+                <TouchableOpacity
+                  className={`mt-6 flex  h-[3.7rem] w-[90%] items-center justify-center rounded-full bg-[#37384B] p-2.5`}>
+                  {buttonSpinner ? (
+                    <ActivityIndicator size="small" color={'white'} />
+                  ) : (
+                    <Text className="text-center  font-semibold text-white ">Change Password</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+
             </View>
 
-            {/* line */}
-            <View className="mb-9 mt-9 h-0.5 w-full bg-[#37384B]"></View>
+
 
             {/* supports */}
-            <View className=" flex w-full flex-col items-start gap-2">
+            <View className=" flex w-[90%] flex-col items-start gap-2">
+            {/* line */}
+            <View className="mb-9 mt-9 h-0.5 w-full bg-[#37384B]"></View>
               <Text className="text-xs text-[#787CA5]">Support</Text>
 
               {/* Tutorials */}
@@ -307,7 +317,7 @@ const ProfileScreen: React.FC = () => {
 
             {/* LOGOUT */}
             <TouchableOpacity
-              className={`mt-8 flex  h-[3.6rem] w-full items-center justify-center rounded-full bg-[#EF4444] p-2.5`}>
+              className={`mt-8 flex  h-[3.7rem] w-[90%] items-center justify-center rounded-full bg-[#EF4444] p-2.5`}>
               {buttonSpinner ? (
                 <ActivityIndicator size="small" color={'white'} />
               ) : (

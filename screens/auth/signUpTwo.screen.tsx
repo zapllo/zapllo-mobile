@@ -174,7 +174,7 @@ export default function SignUpTwoScreen() {
             {/* starting banner */}
             <View className="mb-9 mt-[4.6rem] w-full flex-row items-center justify-center">
               <Image
-                className="h-9 w-12"
+                className="h-9 w-12 mt-16"
                 source={require('~/assets/sign-in/teamsLogo.png')}
                 resizeMode="contain"
               />

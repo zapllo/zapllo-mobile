@@ -111,7 +111,7 @@ export default function Loginscreen() {
   return (
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary ">
       <KeyboardAvoidingView
-        className="w-full"
+        className=" w-full"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView
           className="h-full w-full flex-grow"
@@ -137,7 +137,7 @@ export default function Loginscreen() {
               value={userInfo.email}
               onChangeText={(value) => setUserInfo({ ...userInfo, email: value })}
               placeholder="Email Address"
-              className="h-14  w-11/12 rounded-full p-2.5 text-[#787CA5]"
+              className="flex-1  text-sm text-[#787CA5]"
               passwordError={''}
             />
 
@@ -148,7 +148,7 @@ export default function Loginscreen() {
                 onChangeText={handlePasswordValidation}
                 placeholder="**********"
                 secureTextEntry={!isPasswordVisible}
-                className="h-14  w-11/12 rounded-full p-2.5 text-[#787CA5]"
+                className="flex-1  text-sm text-[#787CA5]"
                 passwordError={error?.password}
               />
 

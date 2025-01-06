@@ -139,12 +139,8 @@ const HomeScreen: React.FC = () => {
           <View className=" my-3 flex h-36 w-full flex-col items-center gap-6 rounded-2xl border border-[#37384B] bg-[#10122d] bg-opacity-50 pl-5  pr-5 pt-5">
             <View className="flex w-full  flex-row items-center justify-between">
               <Text className="text-lg text-white ">App Usage Progress</Text>
-              <TouchableOpacity>
-                <MaterialCommunityIcons
-                  name="arrow-top-right-thin-circle-outline"
-                  size={35}
-                  color="#e3dcdc"
-                />
+              <TouchableOpacity className='border border-white w-8 h-8 items-center justify-center flex rounded-full'>
+                <Image className='w-3 h-3' source={require("../../assets/HomeComponents/goto.png")}/>
               </TouchableOpacity>
             </View>
 
@@ -207,12 +203,8 @@ const HomeScreen: React.FC = () => {
                 </View>
               </View>
 
-              <TouchableOpacity>
-                <MaterialCommunityIcons
-                  name="arrow-top-right-thin-circle-outline"
-                  size={35}
-                  color="#e3dcdc"
-                />
+              <TouchableOpacity className='border mt-1 ml-5 border-white w-8 h-8 items-center justify-center flex rounded-full'>
+                <Image className='w-3 h-3' source={require("../../assets/HomeComponents/goto.png")}/>
               </TouchableOpacity>
             </TouchableOpacity>
           ))}

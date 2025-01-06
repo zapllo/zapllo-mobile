@@ -5,6 +5,8 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import NavbarTwo from "~/components/navbarTwo";
 import { useNavigation } from "expo-router";
 import { TouchableOpacity } from "react-native";
+import { useSelector } from "react-redux";
+import { RootState } from "~/redux/store";
 
 // Define the type for your navigation
 type RootStackParamList = {
@@ -14,6 +16,10 @@ type NavigationProp = StackNavigationProp<RootStackParamList, "(routes)/home/ind
 
 
 export default function SettingScreen() {
+    const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
+
+    console.log(">>>>>>",userData)
+
   const navigation = useNavigation<NavigationProp>();
   return (
     <SafeAreaView className="bg-[#05071E] h-full w-full">

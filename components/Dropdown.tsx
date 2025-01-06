@@ -9,11 +9,10 @@ import {
   Dimensions,
   LayoutRectangle,
 } from 'react-native';
-import { TextInput } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import InputContainer from '~/components/InputContainer';  // Assuming InputContainer is in components folder
 
 const screenWidth = Dimensions.get('window').width;
-const screenHeight = Dimensions.get('window').height;
 
 interface DropdownProps {
   label: string;
@@ -36,8 +35,8 @@ const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect }) => {
     inputRef.current?.measureInWindow((x, y, width, height) => {
       setDropdownPosition({
         x,
-        y: y + height, // Ensure dropdown is below TextInput
-        width: width, // Adjust dropdown width slightly less than TextInput
+        y: y + height, // Ensure dropdown is below InputContainer
+        width: width, // Adjust dropdown width slightly less than InputContainer
         height,
       });
       setIsDropdownVisible(true);
@@ -53,28 +52,23 @@ const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect }) => {
   return (
     <View style={styles.container}>
       <View ref={inputRef} style={styles.inputWrapper}>
-        <TextInput
+        {/* Pass the icon as the rightIcon prop */}
+        <InputContainer
           label={label}
-          mode="outlined"
-          style={styles.input}
           placeholder={label}
-          placeholderTextColor="#787CA5"
-          textColor="#fff"
-          editable={false}
           value={selectedValue}
-          theme={{
-            roundness: 25,
-            colors: {
-              primary: '#787CA5',
-              background: '#37384B',
-            },
-          }}
-          right={
-            <TextInput.Icon
-              size={40}
-              icon={isDropdownVisible ? 'menu-up' : 'menu-down'}
-              onPress={handleOpenDropdown}
-            />
+          onChangeText={(text) => setSelectedValue(text)}
+          passwordError={null} // Adjust this according to your error handling logic
+          style={[styles.input, { borderColor: isDropdownVisible ? '#815BF5' : '#37384B' }]}  // Set border color dynamically
+          editable={false}
+          rightIcon={
+            <TouchableOpacity onPress={handleOpenDropdown}>
+              <MaterialCommunityIcons
+                name={isDropdownVisible ? 'menu-up' : 'menu-down'}
+                size={28}
+                color="#787CA5"
+              />
+            </TouchableOpacity>
           }
         />
       </View>
@@ -83,18 +77,20 @@ const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect }) => {
         visible={isDropdownVisible}
         transparent
         animationType="fade"
-        onRequestClose={() => setIsDropdownVisible(false)}>
+        onRequestClose={() => setIsDropdownVisible(false)}
+      >
         <TouchableOpacity style={styles.overlay} onPress={() => setIsDropdownVisible(false)} />
         <View
           style={[
             styles.dropdown,
             {
               top: dropdownPosition.y,
-              left: dropdownPosition.x + 15,
-              width: dropdownPosition.width - 30,
-              maxHeight: 250, // Limit dropdown height for scrolling
+              left: dropdownPosition.x + 7,
+              width: dropdownPosition.width - 20,
+              maxHeight: 250,
             },
-          ]}>
+          ]}
+        >
           <FlatList
             data={options}
             keyExtractor={(item, index) => index.toString()}
@@ -104,7 +100,8 @@ const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect }) => {
                   style={[
                     styles.optionText,
                     { color: selectedValue === item ? '#fff' : '#787CA5' },
-                  ]}>
+                  ]}
+                >
                   {item}
                 </Text>
                 {selectedValue === item && (
@@ -124,17 +121,18 @@ export default Dropdown;
 
 const styles = StyleSheet.create({
   container: {
-    width: screenWidth - 32,
+    width: screenWidth,
+    alignSelf: 'center',
   },
   inputWrapper: {
-    marginBottom: 15,
+    alignSelf:'center'
   },
   input: {
     backgroundColor: '#05071E',
+    position: 'relative',
   },
   overlay: {
     flex: 1,
-    // backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   dropdown: {
     position: 'absolute',
@@ -156,5 +154,6 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
+    fontFamily: 'LatoBold',
   },
 });

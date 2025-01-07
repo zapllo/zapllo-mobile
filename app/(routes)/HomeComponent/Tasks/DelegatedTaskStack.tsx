@@ -1,6 +1,6 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import MyTaskScreen from "./MyTaskScreen";
+import DelegatedTaskScreen from "./DelegatedTaskScreen ";
 import PendingTaskScreen from "~/screens/Task/DelegatedPendingTask";
 
 export type DelegatedTaskStackParamList = {
@@ -10,13 +10,13 @@ export type DelegatedTaskStackParamList = {
 
 const Stack = createStackNavigator<DelegatedTaskStackParamList>();
 
-const TaskStack = () => {
+const DelegatedTaskStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="DelegatedTask" component={MyTaskScreen} />
+      <Stack.Screen name="DelegatedTask" component={DelegatedTaskScreen} />
       <Stack.Screen name="PendingTask" component={PendingTaskScreen} />
     </Stack.Navigator>
   );
 };
 
-export default TaskStack;
+export default DelegatedTaskStack;

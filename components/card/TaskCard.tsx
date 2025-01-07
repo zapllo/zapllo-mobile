@@ -1,16 +1,28 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
-import moment from 'moment';
+import { View, Text, Image } from 'react-native';
 
+type TaskStatus = 'Pending' | 'InProgress' | 'Completed'; // Add other statuses as needed
+
+// Define the Task interface
+interface Task {
+  _id: string; // Assuming tasks have an ID
+  status: TaskStatus;
+  assignedUser: {
+    firstName?: string;
+    lastName?: string;
+  };
+  // Add other properties of a task as needed
+}
+
+// Ensure this is imported where needed
 interface TaskCardProps {
   title: string;
   count: number;
-  tasks: any[];
-  status: string;
-  colors: string[];
-  navigation?: any;
-  filterKey?: string;
-  navigateTo?: string;
+  tasks: Task[];
+  status: TaskStatus;
+  backgroundColor: string;
+  borderColor: string;
+  date:any
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({
@@ -18,11 +30,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
   count,
   tasks,
   status,
-  colors,
-  navigation,
-  filterKey,
-  navigateTo,
+  borderColor,
+  date,
 }) => {
+  const colors = ['#c3c5f7', '#ccc', '#fff', '#3399FF', '#FF33A6'];
+
   const getInitials = (assignedUser: { firstName?: string; lastName?: string }): string => {
     const firstInitial = assignedUser?.firstName ? assignedUser.firstName[0].toUpperCase() : '';
     const lastInitial = assignedUser?.lastName ? assignedUser.lastName[0].toUpperCase() : '';
@@ -32,39 +44,40 @@ const TaskCard: React.FC<TaskCardProps> = ({
   return (
     <>
       <View className="flex items-start">
-        <Text className="font-medium text-white">{title}</Text>
-        <Text className="text-4xl font-semibold text-white">{count}</Text>
-        <Text className="w-[40vw] pt-2 text-xs text-white">
-          {tasks.length > 0 && moment(tasks[0]?.dueDate).format('Do MMMM,  YYYY')}
+        <Text className="w-[30vh] text-white">{title}</Text>
+        <Text className="text-white" style={{ fontSize: 34 }}>
+          {count}
         </Text>
+        <Text className="w-[40vw] pt-2 text-xs text-white">{date}</Text>
       </View>
-      <View className="mt-7 mr-2 flex flex-row items-center justify-between">
-        <View className="flex flex-row items-center">
+      <View className="mt-3 flex flex-row items-start">
+        <View className="flex w-full flex-row pt-9">
           {tasks
             .filter((task) => task.status === status)
             .slice(0, 2)
             .map((task, index) => (
-              <View key={task._id} className="flex flex-row">
+              <View key={task._id} className="relative flex flex-row">
                 <View
-                  className="-mr-2.5 flex h-8 w-8 items-center justify-center rounded-full border"
+                  className="-m-1.5 flex h-9 w-9 items-center justify-center rounded-full border-2"
                   style={{
-                    borderColor: colors[index % colors.length],
+                    borderColor,
                     backgroundColor: colors[index % colors.length],
                   }}>
-                  <Text className="text-sm font-medium text-black">
-                    {getInitials(task?.assignedUser)}
+                  <Text className="text-center text-sm text-black">
+                    {task?.assignedUser ? getInitials(task?.assignedUser) : '0'}
                   </Text>
                 </View>
               </View>
             ))}
           {tasks.filter((task) => task.status === status).length > 2 && (
-            <View className=" mr-2 flex flex-row">
+            <View className="relative -m-1.5 flex flex-row">
               <View
-                className="flex h-8 w-8 items-center justify-center rounded-full"
+                className="h-9 w-9 items-center justify-center rounded-full border-2"
                 style={{
+                  borderColor,
                   backgroundColor: colors[2 % colors.length],
                 }}>
-                <Text className="font-bold text-black">
+                <Text className="text-center text-black">
                   +{tasks.filter((task) => task.status === status).length - 2}
                 </Text>
               </View>
@@ -72,15 +85,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
           )}
         </View>
       </View>
-
-      {/* {navigateTo && (
-          <TouchableOpacity
-            className="flex h-9 w-9 items-center justify-center self-end rounded-full border border-white"
-            onPress={() => navigation?.navigate(navigateTo, { [filterKey]: tasks })}>
-            <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-          </TouchableOpacity>
-        )} */}
     </>
   );
 };
+
 export default TaskCard;

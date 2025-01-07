@@ -6,13 +6,11 @@ import NavbarTwo from "~/components/navbarTwo";
 import { useNavigation } from "expo-router";
 import CustomDropdown from "~/components/customDropDown";
 import EmployeesDetaildComponent from "~/components/TaskComponents/EmployeesDetaildComponent";
+import { RouteProp } from "@react-navigation/native";
 
 // Define the type for your navigation
-type RootStackParamList = {
-  "(routes)/home/index": undefined; // Define your routes with parameters (if any)
-};
-type NavigationProp = StackNavigationProp<RootStackParamList, "(routes)/home/index">;
-type Props = StackScreenProps<DashboardStackParamList, "EmployeeWise">;
+type Props = StackScreenProps<DashboardStackParamList, 'EmployeeWise'>;
+type PendingTaskScreenRouteProp = RouteProp<DashboardStackParamList, 'EmployeeWise'>;
 const daysData = [
     { label: "Today", value: "Overdue" },
     { label: "Yesterday", value: "Yesterday" },
@@ -26,8 +24,8 @@ const daysData = [
     { label: "Custom", value: "Custom" },
   ];
 
-const EmployeeWiseScreen: React.FC<Props> = () => {
-  const navigation = useNavigation<NavigationProp>();
+const EmployeeWiseScreen: React.FC<Props> = ({navigation}) => {
+  // const navigation = useNavigation<PendingTaskScreenRouteProp>();
     const [selectedTeamSize, setSelectedTeamSize] = useState(null);
     const [search, setSearch] = useState("");
 
@@ -35,7 +33,7 @@ const EmployeeWiseScreen: React.FC<Props> = () => {
     <SafeAreaView className="flex-1 bg-primary h-full">
         <NavbarTwo
         title="Employee Wise"
-        onBackPress={() => navigation.navigate("(routes)/home/index")}
+        onBackPress={() => navigation.navigate("DashboardHome")}
         />
 
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

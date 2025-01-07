@@ -31,6 +31,7 @@ export default function Loginscreen() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [buttonSpinner, setButtonSpinner] = useState(false);
   const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
+  const [responseError, setResponseError] = useState('');
   const [userInfo, setUserInfo] = useState({
     email: '',
     password: '',
@@ -102,7 +103,7 @@ export default function Loginscreen() {
       }
     } catch (err: any) {
       console.error('Login error:', err.response.data.error || err.message);
-      Alert.alert('Login error:', err.response.data.error || err.message);
+      setResponseError(err.response.data.error)
     } finally {
       setButtonSpinner(false);
     }
@@ -165,11 +166,11 @@ export default function Loginscreen() {
 
             {isPasswordTouched && (
               <>
-                {error?.password ? (
-                  <View className="ml-8 mt-2 flex-row self-start items-center">
+                {error?.password ||responseError ? (
+                  <View className="ml-8 mt-2 flex-row self-start">
                     <Ionicons name="close-circle" size={16} color="#EE4848" />
-                    <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
-                      {error?.password}
+                    <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500">
+                      {error?.password || responseError}
                     </Text>
                   </View>
                 ) : (

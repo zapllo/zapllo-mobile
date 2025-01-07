@@ -13,12 +13,12 @@ interface NavbarProps {
 const NavbarTwo: React.FC<NavbarProps> = ({ title, onBackPress }) => {
   return (
     <View className="w-full h-20 flex flex-row justify-between p-5 items-center">
-      <View className="flex h-[3.2rem] w-[3.2rem] bg-[#37384B] items-center justify-center rounded-full">
+      <View className="flex h-14 w-14 bg-[#37384B] items-center justify-center rounded-full">
         <TouchableOpacity onPress={onBackPress}>
-          <AntDesign name="arrowleft" size={24} color="#ffffff" />
+          <AntDesign name="arrowleft" size={24} color="#ffffff"  />
         </TouchableOpacity>
       </View>
-      <Text className="text-2xl font-semibold pl-4 h-full text-[#FFFFFF]">{title}</Text>
+      <Text className="text-2xl font-semibold  h-full text-[#FFFFFF]" style={{fontFamily:"Lato-Bold"}}>{title}</Text>
       <ProfileButton />
     </View>
   );

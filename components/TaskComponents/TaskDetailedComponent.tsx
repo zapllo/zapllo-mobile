@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, Image, Button, TouchableOpacity, Linking, ScrollView } from "react-native";
-import Modal from "react-native-modal"; // Importing react-native-modal
-import { AntDesign } from "@expo/vector-icons";
+import Modal from "react-native-modal";
 
 interface TaskDetailedComponentProps {
   title: string;
@@ -22,7 +21,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
   return (
     <TouchableOpacity onPress={() => setModalVisible(true)}>
-      <View className="w-[90%] self-center h-52 border border-[#37384B] p-4 rounded-3xl items-center mt-5 gap-6">
+      <View className="w-[95%] self-center h-56 border border-[#37384B] p-4 rounded-3xl items-center mt-5 gap-6">
         <Modal
           isVisible={modalVisible}
           onBackdropPress={() => setModalVisible(false)}

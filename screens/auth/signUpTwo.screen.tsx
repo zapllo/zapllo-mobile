@@ -174,7 +174,7 @@ export default function SignUpTwoScreen() {
             {/* starting banner */}
             <View className="mb-9 mt-[4.6rem] w-full flex-row items-center justify-center">
               <Image
-                className="h-9 w-12"
+                className="h-9 w-12 mt-16"
                 source={require('~/assets/sign-in/teamsLogo.png')}
                 resizeMode="contain"
               />
@@ -183,8 +183,8 @@ export default function SignUpTwoScreen() {
 
             {/* middle banner */}
             <View className="mb-2 flex w-full items-center justify-center gap-6">
-              <Text className="text-2xl font-semibold text-white">Create Your Workspace</Text>
-              <Text className="font-light text-white ">
+              <Text className="text-2xl  text-white" style={{fontFamily:"Lato-Bold"}}>Create Your Workspace</Text>
+              <Text className=" text-white " style={{fontFamily:"Lato-Light"}}>
                 Let's get started by filling out the form below.
               </Text>
             </View>
@@ -320,15 +320,15 @@ export default function SignUpTwoScreen() {
               {buttonSpinner ? (
                 <ActivityIndicator size="small" color={'white'} />
               ) : (
-                <Text className="text-center text-white ">Sign Up</Text>
+                <Text className="text-center text-white " style={{fontFamily:"Lato-Bold"}}>Sign Up</Text>
               )}
             </TouchableOpacity>
 
             {/* go to the login page */}
             <View className="mb-10 mt-4 flex-row items-center justify-end ">
-              <Text className="mr-1 font-light text-white">Already a </Text>
+              <Text className="mr-1  text-white" style={{fontFamily:"Lato-Light"}}>Already a </Text>
               <GradientText text="Zapllonian" />
-              <Text className="mr-1 text-white">? </Text>
+              <Text className="mr-1 text-white" style={{fontFamily:"Lato-Light"}}>? </Text>
               <TouchableOpacity onPress={() => router.push('/(routes)/login' as any)}>
                 <Text className="font-semibold text-white">Log In Here</Text>
               </TouchableOpacity>

@@ -112,7 +112,7 @@ export default function Loginscreen() {
   return (
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary ">
       <KeyboardAvoidingView
-        className="w-full"
+        className=" w-full"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView
           className="h-full w-full flex-grow"
@@ -138,7 +138,7 @@ export default function Loginscreen() {
               value={userInfo.email}
               onChangeText={(value) => setUserInfo({ ...userInfo, email: value })}
               placeholder="Email Address"
-              className="h-14  w-11/12 rounded-full p-2.5 text-[#787CA5]"
+              className="flex-1  text-sm text-[#787CA5]"
               passwordError={''}
             />
 
@@ -149,7 +149,7 @@ export default function Loginscreen() {
                 onChangeText={handlePasswordValidation}
                 placeholder="**********"
                 secureTextEntry={!isPasswordVisible}
-                className="h-14  w-11/12 rounded-full p-2.5 text-[#787CA5]"
+                className="flex-1  text-sm text-[#787CA5]"
                 passwordError={error?.password}
               />
 
@@ -174,9 +174,9 @@ export default function Loginscreen() {
                     </Text>
                   </View>
                 ) : (
-                  <View className="ml-8 mt-2 flex-row self-start">
+                  <View className="ml-8 mt-2 flex-row self-start items-center">
                     <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
-                    <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500">
+                    <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500" style={{fontFamily:"Lato-Light"}}>
                       Password is valid!
                     </Text>
                   </View>
@@ -187,7 +187,7 @@ export default function Loginscreen() {
             <TouchableOpacity
               className="mr-9 mt-16 self-end"
               onPress={() => router.push('/(routes)/forgot-PassWord' as any)}>
-              <Text className="text-sm font-medium text-white ">Forgot password?</Text>
+              <Text className="text-sm  text-white" style={{fontFamily:"Lato-Light"}}>Forgot  password?</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -196,7 +196,7 @@ export default function Loginscreen() {
               {buttonSpinner ? (
                 <ActivityIndicator size="small" color={'white'} />
               ) : (
-                <Text className="text-center text-sm font-semibold text-white">Login</Text>
+                <Text className="text-center  font-semibold text-white"  style={{fontFamily:"Lato-Bold"}}>Login</Text>
               )}
             </TouchableOpacity>
 
@@ -205,11 +205,11 @@ export default function Loginscreen() {
             </View>
             <View className="flex-row items-center justify-center bg-primary py-5">
               <View className="flex-row">
-                <Text className="text-base font-bold text-white">Not a </Text>
+                <Text className="text-base  text-white" style={{fontFamily:"Lato-Regular"}}>Not a </Text>
                 <GradientText text="Zapllonian" textStyle={{ fontSize: 16, fontWeight: '400' }} />
               </View>
               <Link href="/(routes)/signup/pageOne">
-                <Text className="text-base font-extrabold text-white">? Register Here</Text>
+                <Text className="text-base font-extrabold text-white" style={{fontFamily:"Lato-Bold"}}>? Register Here</Text>
               </Link>
             </View>
           </View>

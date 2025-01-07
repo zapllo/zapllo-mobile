@@ -6,7 +6,7 @@ import { router } from "expo-router";
 export default function ProfileButton() {
   return (
     <TouchableOpacity 
-    className="h-[3.2rem] w-[3.2rem] rounded-full"
+    className="h-14 w-14 rounded-full"
     onPress={()=>router.push("(routes)/profile" as any)}
     >
       <LinearGradient
@@ -14,14 +14,14 @@ export default function ProfileButton() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={{
-          width: '100%',
-          height: '100%',
-          borderRadius: 55, // Ensure the gradient has the same border radius
+          width: '95%',
+          height: '95%',
+          borderRadius: 50, // Ensure the gradient has the same border radius
           justifyContent: 'center',
           alignItems: 'center',
         }}
       >
-        <View className="bg-white h-12 w-12 rounded-full border-2 border-primary"></View>
+        <View className="bg-white h-12 w-12 rounded-full border-4 border-primary"></View>
       </LinearGradient>
     </TouchableOpacity>
   );

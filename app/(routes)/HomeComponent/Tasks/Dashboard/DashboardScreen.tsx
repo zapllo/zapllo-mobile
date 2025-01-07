@@ -9,7 +9,6 @@ import {
   Keyboard,
   TouchableOpacity,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Navbar from '~/components/navbar';
 import CustomDropdown from '~/components/customDropDown';
 import { NavigationProp } from '@react-navigation/core';
@@ -23,8 +22,9 @@ import { backend_Host } from '~/config';
 import { Image } from 'react-native';
 import moment from 'moment';
 import getDateRange from '~/utils/GetDateRange';
-import TaskCard from '~/components/card/TaskCard';
-import TaskStatusCard from '~/components/card/TaskStatusCard';
+import TaskCard from '~/components/TaskComponents/TaskCard';
+import TaskStatusCard from '~/components/TaskComponents/TaskCountSection';
+
 interface Task {
   _id: string;
   status: string;
@@ -34,6 +34,7 @@ interface Task {
   description: string;
   assignedUser: { firstName: string; lastName: string }[];
 }
+
 
 type TaskStatus = 'Overdue' | 'Pending' | 'InProgress' | 'Completed' | 'In Time' | 'Delayed';
 
@@ -228,43 +229,44 @@ export default function DashboardScreen() {
             </View>
 
             {/* Content */}
-            <View className="p-4.2 mb-32 flex h-full w-full flex-col items-center gap-2.5 pt-1">
-              <View className="mb-4 flex w-[90%] flex-col items-center gap-5">
+            <View className="flex gap-2.5 flex-col h-full items-center w-full p-4.2 pt-1 mb-32">
+
+              <View className="flex flex-col items-center w-[90%] mb-4 gap-5">
                 {/* 1st row */}
-                <View className="flex flex-row items-center gap-5">
+                <View className="flex flex-row gap-5 items-center">
                   <TaskStatusCard
-                    imageSource={require('../../../../../assets/commonAssets/overdue.png')}
+                    imageSource={require("../../../../../assets/commonAssets/overdue.png")}
                     status="Overdue"
                     count="07"
                   />
                   <TaskStatusCard
-                    imageSource={require('../../../../../assets/Tasks/overdue.png')}
+                    imageSource={require("../../../../../assets/Tasks/overdue.png")}
                     status="Pending"
                     count="07"
                   />
                 </View>
                 {/* 2nd row */}
-                <View className="flex flex-row items-center gap-5">
+                <View className="flex flex-row gap-5 items-center">
                   <TaskStatusCard
-                    imageSource={require('../../../../../assets/commonAssets/Progress.png')}
+                    imageSource={require("../../../../../assets/commonAssets/Progress.png")}
                     status="In Progress"
                     count="07"
                   />
                   <TaskStatusCard
-                    imageSource={require('../../../../../assets/commonAssets/Completed.png')}
+                    imageSource={require("../../../../../assets/commonAssets/Completed.png")}
                     status="Completed"
                     count="07"
                   />
                 </View>
                 {/* 3rd row */}
-                <View className="flex flex-row items-center gap-5">
+                <View className="flex flex-row gap-5 items-center">
                   <TaskStatusCard
-                    imageSource={require('../../../../../assets/commonAssets/inTime.png')}
+                    imageSource={require("../../../../../assets/commonAssets/inTime.png")}
                     status="In Time"
                     count="07"
                   />
                   <TaskStatusCard
-                    imageSource={require('../../../../../assets/commonAssets/Delayed.png')}
+                    imageSource={require("../../../../../assets/commonAssets/Delayed.png")}
                     status="Delayed"
                     count="07"
                   />

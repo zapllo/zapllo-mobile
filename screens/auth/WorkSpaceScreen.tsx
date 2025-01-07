@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Platform,TextInput, ScrollView } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Platform,TextInput, ScrollView, Dimensions } from 'react-native';
 import Dropdown from '~/components/Dropdown';
 import InputContainer from '~/components/InputContainer';
+import * as Haptics from 'expo-haptics';
 
 interface WorkSpaceScreenProps {
   handleChange: (field: string, value: string) => void;
@@ -95,11 +96,12 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
       prev.includes(category) ? prev.filter((item) => item !== category) : [...prev, category]
     );
   };
-
+  const screenWidth = Dimensions.get('window').width; // Get screen width
+  const itemWidth = screenWidth > 400 ? screenWidth / 4 - 10 : screenWidth / 3 - 20; // Calculate item width based on screen size
   return (
-    <View className="items-center pb-4">
-      <Text className="text-center text-2xl font-semibold text-white">Create Your Workspace</Text>
-      <Text className="my-2 text-center font-light text-white">
+    <View className="items-center pb-14 ">
+      <Text className="text-center text-2xl  text-white" style={{fontFamily:"Lato-Bold"}}>Create Your Workspace</Text>
+      <Text className="my-2 text-center  text-white" style={{fontFamily:"Lato-Light"}}>
         Let's get started by filling out the form below.
       </Text>
 
@@ -142,31 +144,48 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
         />
       </View>
 
-      <Text className="mb-2 px-8 pt-2 text-lg font-semibold text-white">
+      <Text className="mb-2 px-5 ml-1 pt-2 mt-3 text-base  text-white" style={{fontFamily:"Lato-Light"}}>
         Select the categories that are relevant to your business
       </Text>
 
-      <View className="flex-row flex-wrap justify-start px-10 items-center gap-2 ">
+      <View className="flex-row flex-wrap items-center justify-start px-4">
         {categories.map((category, index) => (
           <TouchableOpacity
-            key={index}
-            className={`mb-2 rounded-full ${
-              selectedCategories.includes(category) ? 'bg-purple-600' : 'bg-gray-700'
-            } ${Platform.OS === 'ios' ? 'px-4 py-2.5' : 'px-4 py-3'}`}
-            onPress={() => toggleCategory(category)}>
-            <Text className="text-sm font-medium text-white" numberOfLines={1}>
-              {category}
-            </Text>
-          </TouchableOpacity>
+          key={index}
+          style={{
+            width: itemWidth, // Adjust dynamically based on screen size
+            marginBottom: 14,
+            backgroundColor: selectedCategories.includes(category) ? '#815BF5' : '#37384B', // Tailwind colors in hex
+            paddingVertical: Platform.OS === 'ios' ? 8 : 7,
+            borderRadius: 13, // Rounded full
+            alignItems: 'center',
+            marginLeft: 9
+          }}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // Trigger light haptic feedback
+            toggleCategory(category);
+          }}
+        >
+  <Text
+    style={{
+      fontSize: 11,
+      fontWeight: '600',
+      color: 'white',
+    }}
+    numberOfLines={1}
+  >
+    {category}
+  </Text>
+</TouchableOpacity>
         ))}
-      </View>
+      </View>
 
       {errors.categories && (
         <Text className="mt-2 text-sm text-[#FF6F61]">{errors.categories}</Text>
       )}
 
-      <View className="mb-4 mt-2.5 flex w-[90%] items-center">
-        <Text className="text-[12px]  font-light text-white">
+      <View className="mb-4 mt-2.5 flex px-5 items-center">
+        <Text className="text-[12px]   text-white" style={{fontFamily:"Lato-Light"}}>
           Don't worry you can add more later in the Settings panel
         </Text>
       </View>
@@ -184,7 +203,7 @@ const styles = StyleSheet.create({
     borderColor: '#37384B',
     padding: 10,
     marginTop: 20,
-    borderRadius: 35,
+    borderRadius: 25,
     width: '90%',
     height: 57,
     position: 'relative',

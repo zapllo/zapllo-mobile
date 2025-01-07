@@ -13,13 +13,13 @@ import {
   FlatList,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
-import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
 import ProfileButton from '~/components/profile/ProfileButton';
 import { AntDesign } from '@expo/vector-icons';
 import CustomDropdown from '~/components/customDropDown';
 import TaskDetailedComponent from '~/components/TaskComponents/TaskDetailedComponent';
 import Modal from 'react-native-modal';
 import { RouteProp, useRoute } from '@react-navigation/native';
+import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
 
 type Props = StackScreenProps<DashboardStackParamList, 'PendingTask'>;
 type PendingTaskScreenRouteProp = RouteProp<DashboardStackParamList, 'PendingTask'>;
@@ -232,7 +232,7 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
             </View>
 
             <ScrollView>
-              {pendingTasks.length > 0 ? (
+              {pendingTasks?.length > 0 ? (
                 pendingTasks.map((task) => (
                   <TaskDetailedComponent
                     key={task._id}

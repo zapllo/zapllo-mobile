@@ -85,7 +85,7 @@ export default function DashboardScreen() {
 
   // task?.assignedUser?._id === currentUser?._id;
 
-  // console.log('useerrrr>🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳', JSON.stringify(userData?.data?._id, null, 2));
+  console.log('useerrrr>🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳', JSON.stringify(userData?.data.role));
 
   const [selectedTeamSize, setSelectedTeamSize] = useState('');
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
@@ -169,15 +169,6 @@ export default function DashboardScreen() {
           const filteredTask = tasksData.filter(
             (e: { assignedUser: any; _id: any }) => e?.assignedUser?._id === userData?.data?._id
           );
-
-          // console.log(
-          //   'Tasks fetched:😀😀😀😀😀😀',
-          //   JSON.stringify(
-          //     filteredTask,
-          //     null,
-          //     2
-          //   )
-          // );
           setTasks(filteredTask);
           setTasksData(filteredTask);
           setTaskCountsData(countStatuses(filteredTask)); // Update task counts
@@ -220,7 +211,7 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
-      <Navbar title="My Tasks" />
+      <Navbar title="Dashboard" />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView
@@ -282,131 +273,139 @@ export default function DashboardScreen() {
                 </View>
               </View>
 
-
-
-
-
-              {/* Row 1 */}
-              <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5 mb-1">
-
-                {/* Today’s Task */}
-                {/* Pending Tasks */}
-                <TaskCard
-                title="Today’s Task"
-                count={taskCounts.Today}
-                tasks={tasks}
-                status="Today"
-                backgroundColor="#FC842C"
-                borderColor="#FC842C"
-                />
-                
-
-                {/* Overdue Tasks */}
-                <TaskCard
-                title="Overdue Tasks"
-                count={taskCounts.Today}
-                tasks={tasks}
-                status="Overdue"
-                backgroundColor="#D85570"
-                borderColor="#D85570"
-                />
-              </View>
-              {/* row 2 */}
-              <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5 mb-1">
-                {/* Pending Tasks */}
-                <TaskCard
-                title="Pending Tasks"
-                count={taskCounts.Pending}
-                tasks={tasks}
-                status="Pending"
-                backgroundColor="#FDB314"
-                borderColor="#FDB314"
-              />
-
-                {/* In Progress Tasks */}
-                <TaskCard
-                title="In Progress Tasks"
-                count={taskCounts.Overdue}
-                tasks={tasks}
-                status="Pending"
-                backgroundColor="#A914DD"
-                borderColor="#A914DD"
-              />
-              </View>
-
-              {/* Full Width Card */}
-              <View className="mb-2 mt-2 h-[167px] w-[93%] rounded-3xl bg-[#007B5B] p-5 pt-7 pb-7 ">
-                <View className=" flex w-full flex-row items-center justify-between">
-                  <Text className="text-white " style={{fontFamily:"Lato-Bold"}} >Completed Tasks</Text>
-                  <Text className="text-[10px] text-white" style={{fontFamily:"Lato-Bold"}}>22-12-2024 to 28-12-2024</Text>
-                </View>
-                <Text className=" mt-2  text-white"style={{ fontSize: 32,fontFamily:"Lato-Bold",lineHeight:38.4}}>
-                  {taskCounts.Completed}
-                </Text>
-
-                <View className="flex w-full flex-row items-center justify-between gap-20 pt-5">
-                  <View className="relative flex flex-row ">
-                    {tasks
-                      .filter((task) => task.status === 'Completed') // Filter by status
-                      .slice(0, 2) // Show only the first two users
-                      .map((task, index) => (
-                        <View key={task._id} className="relative flex flex-row">
-                          <View
-                            className="-m-1.5 h-9 w-9 rounded-full border-2 border-[#007B5B]"
-                            style={{
-                              borderColor:"#007B5B",
-                              backgroundColor: colors[index % colors.length], // Set background color
-                            }}>
-                            <Text className=" mt-1 text-center text-sm  text-black">
-                              {getInitials(task?.assignedUser)} {/* Display initials */}
-                            </Text>
-                          </View>
-                        </View>
-                      ))}
-                    {tasks.filter((task) => task.status === 'Completed').length > 2 && (
-                      <View className="relative -mt-1 flex flex-row">
-                        <View
-                          className="h-8 w-8 items-center justify-center rounded-full"
-                          style={{
-                            backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
+              {userData?.data?.role === 'orgAdmin' ||
+              userData?.data?.role === 'manager' ||
+              userData?.user?.role === 'orgAdmin' ? (
+                <>
+                  <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
+                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FC842C] p-5">
+                      <TouchableOpacity className="h-full w-full">
+                        <TaskCard
+                          title="Employee Wise"
+                          count={34}
+                          date={'25th December, 2024'}
+                          // count={taskCounts.Today}
+                          tasks={tasks}
+                          status="Today"
+                          borderColor="#FC842C"
+                        />
+                        <TouchableOpacity
+                          className=""
+                          onPress={() => {navigation.navigate('EmployeeWise');
                           }}>
-                          <Text className="text-center font-medium text-black">
-                            +{tasks.filter((task) => task.status === 'Completed').length - 2}
-                          </Text>
-                        </View>
-                      </View>
-                    )}
+                          <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
+                            <Image
+                              className="h-4 w-4"
+                              source={require('~/assets/Tasks/goto.png')}
+                            />
+                          </View>
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+                    </View>
+
+                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#D85570] p-5">
+                      <TouchableOpacity className="h-full w-full">
+                        {/* Overdue Tasks */}
+                        <TaskCard
+                          title="Category Wise"
+                          // count={taskCounts.Today}
+                          count={26}
+                          date={'22-12-2024 to 28-12-2024'}
+                          tasks={tasks}
+                          status="Overdue"
+                          borderColor="#D85570"
+                        />
+                        <TouchableOpacity>
+                          <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
+                            <Image
+                              className="h-4 w-4"
+                              source={require('~/assets/Tasks/goto.png')}
+                            />
+                          </View>
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+                    </View>
                   </View>
 
-                  <View className=" flex h-8 w-8 items-center justify-center rounded-full border border-white ">
-                    <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
+                  <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
+                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5">
+                      <TouchableOpacity className="h-full w-full">
+                        <TaskCard
+                          title="My Report"
+                          count={135}
+                          tasks={tasks}
+                          status="Pending"
+                          borderColor="#FDB314"
+                          colors={['#CCC', '#FFF']}
+                        />
+                        <TouchableOpacity>
+                          <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
+                            <Image
+                              className="h-4 w-4"
+                              source={require('~/assets/Tasks/goto.png')}
+                            />
+                          </View>
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+                    </View>
+                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
+                      <TouchableOpacity className="h-full w-full">
+                        <TaskCard
+                          title="Delegated"
+                          count={56}
+                          tasks={tasks}
+                          status="Pending"
+                          borderColor="#A914DD"
+                        />
+                        <TouchableOpacity>
+                          <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
+                            <Image
+                              className="h-4 w-4"
+                              source={require('~/assets/Tasks/goto.png')}
+                            />
+                          </View>
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </>
+              ) : (
+                <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
+                  <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5">
+                    <TouchableOpacity className="h-full w-full">
+                      <TaskCard
+                        title="My Report"
+                        count={135}
+                        tasks={tasks}
+                        status="Pending"
+                        borderColor="#FDB314"
+                        colors={['#CCC', '#FFF']}
+                      />
+                      <TouchableOpacity>
+                        <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
+                          <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
+                        </View>
+                      </TouchableOpacity>
+                    </TouchableOpacity>
+                  </View>
+                  <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
+                    <TouchableOpacity className="h-full w-full">
+                      <TaskCard
+                        title="Delegated"
+                        count={56}
+                        tasks={tasks}
+                        status="Pending"
+                        borderColor="#A914DD"
+                      />
+                      <TouchableOpacity>
+                        <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
+                          <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
+                        </View>
+                      </TouchableOpacity>
+                    </TouchableOpacity>
                   </View>
                 </View>
-              </View>
-
-              {/* row 3  */}
-              <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
-
-                {/* In Time Task */}
-                <TaskCard
-                title="In Time Task"
-                count={taskCounts.Today}
-                tasks={tasks}
-                status="Pending"
-                backgroundColor="#815BF5"
-                borderColor="#815BF5"
-              />
-                
-                {/* Delayed Tasks */}
-                <TaskCard
-                title="Delayed Tasks"
-                count={taskCounts.Today}
-                tasks={tasks}
-                status="Pending"
-                backgroundColor="#DE7560"
-                borderColor="#DE7560"
-              />
-              </View>
+              )}
             </View>
           </ScrollView>
         </TouchableWithoutFeedback>

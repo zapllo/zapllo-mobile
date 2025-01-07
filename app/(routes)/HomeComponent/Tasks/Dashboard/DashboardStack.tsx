@@ -3,12 +3,8 @@ import { createStackNavigator } from "@react-navigation/stack";
 import DashboardScreen from "./DashboardScreen";
 import PendingTaskScreen from "~/screens/Task/pendingTask.screen";
 import EmployeeWiseScreen from "~/screens/Task/EmployeeWise.screen";
+import { DashboardStackParamList } from "~/navigation/navigation";
 
-export type DashboardStackParamList = {
-  DashboardHome: undefined;
-  PendingTask: { pendingTasks: Task[] };
-  // EmployeeWise:undefined;
-};
 
 const Stack = createStackNavigator<DashboardStackParamList>();
 

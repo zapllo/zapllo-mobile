@@ -13,16 +13,20 @@ import {
   FlatList,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
-import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
 import ProfileButton from '~/components/profile/ProfileButton';
 import { AntDesign } from '@expo/vector-icons';
 import CustomDropdown from '~/components/customDropDown';
 import TaskDetailedComponent from '~/components/TaskComponents/TaskDetailedComponent';
 import Modal from 'react-native-modal';
 import { RouteProp, useRoute } from '@react-navigation/native';
+import { TaskStackParamList, DashboardStackParamList } from '~/navigation/navigation';
 
-type Props = StackScreenProps<DashboardStackParamList, 'PendingTask'>;
-type PendingTaskScreenRouteProp = RouteProp<DashboardStackParamList, 'PendingTask'>;
+type Props =
+  | StackScreenProps<DashboardStackParamList, 'PendingTask'>
+  | StackScreenProps<TaskStackParamList, 'PendingTask'>;
+type PendingTaskScreenProps =
+  | StackScreenProps<DashboardStackParamList, 'PendingTask'>
+  | StackScreenProps<TaskStackParamList, 'PendingTask'>;
 
 const daysData = [
   { label: 'Today', value: 'Overdue' },
@@ -38,7 +42,7 @@ const daysData = [
 ];
 
 const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
-  const route = useRoute<PendingTaskScreenRouteProp>();
+  const route = useRoute<PendingTaskScreenProps>();
   const { pendingTasks } = route.params; // Safely access pendingTasks
 
   const [selectedTeamSize, setSelectedTeamSize] = useState(null);

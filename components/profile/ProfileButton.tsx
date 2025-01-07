@@ -14,8 +14,8 @@ export default function ProfileButton() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={{
-          width: '98%',
-          height: '98%',
+          width: '95%',
+          height: '95%',
           borderRadius: 50, // Ensure the gradient has the same border radius
           justifyContent: 'center',
           alignItems: 'center',

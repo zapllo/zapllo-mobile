@@ -98,8 +98,8 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
 
   return (
     <View className="items-center pb-4">
-      <Text className="text-center text-2xl font-semibold text-white">Create Your Workspace</Text>
-      <Text className="my-2 text-center font-light text-white">
+      <Text className="text-center text-2xl  text-white" style={{fontFamily:"Lato-Bold"}}>Create Your Workspace</Text>
+      <Text className="my-2 text-center  text-white" style={{fontFamily:"Lato-Light"}}>
         Let's get started by filling out the form below.
       </Text>
 
@@ -142,17 +142,17 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
         />
       </View>
 
-      <Text className="mb-2 px-8 pt-2 text-lg font-semibold text-white">
+      <Text className="mb-2 px-5 ml-1 pt-2 mt-3 text-base  text-white" style={{fontFamily:"Lato-Light"}}>
         Select the categories that are relevant to your business
       </Text>
 
-      <View className="flex-row flex-wrap justify-start px-10 items-center gap-2 ">
+      <View className="flex-row flex-wrap justify-start px-5  items-center gap-2 ">
         {categories.map((category, index) => (
           <TouchableOpacity
             key={index}
-            className={`mb-2 rounded-full ${
-              selectedCategories.includes(category) ? 'bg-purple-600' : 'bg-gray-700'
-            } ${Platform.OS === 'ios' ? 'px-4 py-2.5' : 'px-4 py-3'}`}
+            className={`mb-2 rounded-2xl ${
+              selectedCategories.includes(category) ? 'bg-[#815BF5]' : 'bg-[#37384B]'
+            } ${Platform.OS === 'ios' ? 'px-4 py-1.5' : 'px-4 py-3'}`}
             onPress={() => toggleCategory(category)}>
             <Text className="text-sm font-medium text-white" numberOfLines={1}>
               {category}
@@ -165,8 +165,8 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
         <Text className="mt-2 text-sm text-[#FF6F61]">{errors.categories}</Text>
       )}
 
-      <View className="mb-4 mt-2.5 flex w-[90%] items-center">
-        <Text className="text-[12px]  font-light text-white">
+      <View className="mb-4 mt-2.5 flex px-5 items-center">
+        <Text className="text-[12px]   text-white" style={{fontFamily:"Lato-Light"}}>
           Don't worry you can add more later in the Settings panel
         </Text>
       </View>
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     borderColor: '#37384B',
     padding: 10,
     marginTop: 20,
-    borderRadius: 35,
+    borderRadius: 25,
     width: '90%',
     height: 57,
     position: 'relative',

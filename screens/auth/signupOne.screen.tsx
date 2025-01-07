@@ -196,8 +196,8 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
             <>
             <View className="flex h-full w-full items-center">
               <View className="mb-4 flex items-center justify-center gap-4 ">
-                <Text className="text-2xl font-semibold text-white">Let’s Get Started</Text>
-                <Text className="font-light text-white ">
+                <Text className="text-2xl  text-white" style={{fontFamily:"Lato-Bold"}}>Let’s Get Started</Text>
+                <Text className="font-light text-white" style={{fontFamily:"Lato-Light"}}>
                   Let's get started by filling out the form below.
                 </Text>
               </View>
@@ -356,16 +356,16 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
               {isPasswordTouched && (
                 <>
                   {error ? (
-                    <View className="ml-8 mt-2 flex-row self-start">
+                    <View className="ml-8 mt-2 flex-row self-start items-center">
                       <Ionicons name="close-circle" size={16} color="#EE4848" />
-                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500">
+                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
                         {error}
                       </Text>
                     </View>
                   ) : (
-                    <View className="ml-8 mt-2 flex-row self-start">
+                    <View className="ml-8 mt-2 flex-row self-start items-center">
                       <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
-                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500">
+                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500" style={{fontFamily:"Lato-Light"}}>
                         Password is valid!
                       </Text>
                     </View>
@@ -398,16 +398,16 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
               {isConfirmPasswordTouched && (
                 <>
                   {confirmPasswordError ? (
-                    <View className="ml-8 mt-2 flex-row self-start">
+                    <View className="ml-8 mt-2 flex-row self-start items-center">
                       <Ionicons name="close-circle" size={16} color="#EE4848" />
-                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500">
+                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
                         {confirmPasswordError}
                       </Text>
                     </View>
                   ) : (
-                    <View className="ml-8 mt-2 flex-row self-start">
+                    <View className="ml-8 mt-2 flex-row self-start items-center">
                       <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
-                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500">
+                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500" style={{fontFamily:"Lato-Light"}}>
                         Password matched!
                       </Text>
                     </View>
@@ -417,21 +417,21 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
            
             <View className="w-full px-4 mt-16">
             <TouchableOpacity
-              className={`flex h-[3.6rem] items-center justify-center rounded-full ${
+              className={`flex h-[3.7rem] items-center justify-center rounded-full ${
                 showWorkspace ? 'bg-[#815BF5]' : 'bg-[#37384B]'
               }`}
               onPress={handleNextOrSignUp}>
               {buttonSpinner ? (
                 <ActivityIndicator size="small" color={'white'} />
               ) : (
-                <Text className="text-center font-semibold text-white">
+                <Text className="text-center font-semibold text-white" style={{fontFamily:"Lato-Bold"}}>
                   {showWorkspace ? 'Sign Up' : 'Create Work Space'}
                 </Text>
               )}
             </TouchableOpacity>
             <View className="flex-row items-center justify-center bg-primary py-5">
               <View className="flex-row">
-                <Text className="text-base font-bold text-white">Already a </Text>
+                <Text className="text-base  text-white" style={{fontFamily:"Lato-Light"}}>Already a </Text>
                 <GradientText text="Zapllonian" textStyle={{ fontSize: 16, fontWeight: '400' }} />
               </View>
               <TouchableOpacity onPress={() => router.push('/(routes)/login' as any)}>

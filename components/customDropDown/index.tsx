@@ -90,7 +90,7 @@ export default CustomDropdown;
 const styles = StyleSheet.create({
   dropdownContainer: {
     marginVertical: 10,
-    width: "90%",
+    width: "92%",
   },
   dropdownButton: {
     height: 55,

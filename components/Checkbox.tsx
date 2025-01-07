@@ -79,6 +79,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     height: 25,
     width: 25,
+    fontFamily:"Lato-Regular"
   },
   checkboxSelected: {
     backgroundColor: '#37384B',

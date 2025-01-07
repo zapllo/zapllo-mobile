@@ -44,14 +44,16 @@ const TaskCard: React.FC<TaskCardProps> = ({ title, count, tasks, status, backgr
     <View className="flex h-full w-1/2 flex-col rounded-3xl p-5 m-0.5" style={{ backgroundColor }}>
       <TouchableOpacity className='w-full h-full'>
       <View className="flex items-start">
-        <Text className="text-white w-[30vh]">{title}</Text>
-        <Text className="text-white" style={{ fontSize: 34 }}>
+        <Text className="text-white w-[30vh]" style={{fontFamily:"Lato-Bold"}}>{title}</Text>
+        <Text className="text-white"  style={{ fontSize: 32,fontFamily:"Lato-Bold",lineHeight:38.4}}>
           {count}
         </Text>
-        <Text className="w-[40vw] pt-2 text-xs text-white">25th December, 2024</Text>
+        <Text className="w-[40vw] pt-2 text-[10px] text-white" style={{fontFamily:"Lato-Bold"}}>25th December, 2024</Text>
       </View>
-      <View className="mt-3 flex flex-row items-start">
-        <View className="flex w-full flex-row pt-9">
+
+      <View className='mt-10 flex  flex-row items-center w-[28vw]'>
+      <View className=" flex flex-row items-start">
+        <View className="flex w-full flex-row">
           {tasks
             .filter((task) => task.status === status)
             .slice(0, 2)
@@ -63,7 +65,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ title, count, tasks, status, backgr
                     borderColor,
                     backgroundColor: colors[index % colors.length],
                   }}>
-                  <Text className="mt-2 text-center text-sm text-black">
+                  <Text className=" text-center text-sm text-black" style={{fontFamily:"Lato-Thin"}} >
                     {getInitials(task?.assignedUser)}
                   </Text>
                 </View>
@@ -85,15 +87,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ title, count, tasks, status, backgr
           )}
         </View>
       </View>
+      
       <TouchableOpacity
         onPress={() => {
           const filteredTasks  = tasks.filter((task) => task.status === status);
           navigation.navigate('PendingTask', { filteredTasks });
         }}>
-        <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
+        <View className=" flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
           <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
         </View>
       </TouchableOpacity>
+      </View>
       </TouchableOpacity>
     </View>
   );

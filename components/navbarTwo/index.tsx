@@ -18,7 +18,7 @@ const NavbarTwo: React.FC<NavbarProps> = ({ title, onBackPress }) => {
           <AntDesign name="arrowleft" size={24} color="#ffffff"  />
         </TouchableOpacity>
       </View>
-      <Text className="text-2xl font-semibold pl-4 h-full text-[#FFFFFF]">{title}</Text>
+      <Text className="text-2xl font-semibold  h-full text-[#FFFFFF]" style={{fontFamily:"Lato-Bold"}}>{title}</Text>
       <ProfileButton />
     </View>
   );

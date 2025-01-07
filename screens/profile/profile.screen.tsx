@@ -76,11 +76,11 @@ const ProfileScreen: React.FC = () => {
                 )}
               </View>
               <View className=" flex flex-col items-start gap-1">
-                <Text className="text-xl font-medium text-white">
+                <Text className="text-xl font-medium text-white" style={{fontFamily:"Lato-Bold"}}>
                   {userData?.user?.firstName || userData?.data?.firstName}{' '}
                   {userData?.user?.lastName || userData?.data?.lastName}
                 </Text>
-                <Text className=" w-16 rounded-lg bg-[#815BF5] p-1 text-center text-xs text-white">
+                <Text className=" w-16 rounded-lg bg-[#815BF5] font-light p-1 text-center text-[11px] text-white" style={{fontFamily:"Lato-thin"}}>
                   {userData?.user?.role || userData?.data?.role === 'orgAdmin' ? 'Admin' : 'User'}
                 </Text>
               </View>
@@ -96,7 +96,7 @@ const ProfileScreen: React.FC = () => {
             {/* Account Information */}
             <View className="w-full">
             
-              <Text className="text-start text-sm text-[#787CA5] ml-7 ">Account Information</Text>
+              <Text className="text-start text-sm text-[#787CA5] ml-7 " style={{fontFamily:"Lato-Bold"}}>Account Information</Text>
               
               <View className='w-full flex items-center'>
               {/* mail */}
@@ -215,7 +215,7 @@ const ProfileScreen: React.FC = () => {
                   {buttonSpinner ? (
                     <ActivityIndicator size="small" color={'white'} />
                   ) : (
-                    <Text className="text-center  font-semibold text-white ">Change Password</Text>
+                    <Text className="text-center  text-white " style={{fontFamily:"Lato-Bold"}}>Change Password</Text>
                   )}
                 </TouchableOpacity>
               </View>
@@ -228,12 +228,12 @@ const ProfileScreen: React.FC = () => {
             <View className=" flex w-[90%] flex-col items-start gap-2">
             {/* line */}
             <View className="mb-9 mt-9 h-0.5 w-full bg-[#37384B]"></View>
-              <Text className="text-xs text-[#787CA5]">Support</Text>
+              <Text className="text-xs text-[#787CA5]" style={{fontFamily:"Lato-Bold"}}>Support</Text>
 
               {/* Tutorials */}
               <View className="w-full items-center gap-5">
                 <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white">Tutorials</Text>
+                  <Text className="text-base text-white" style={{fontFamily:"Lato-Bold"}}>Tutorials</Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
                     className="mb-1 h-3 w-3"
@@ -245,7 +245,7 @@ const ProfileScreen: React.FC = () => {
               {/* My Tickets */}
               <View className="mt-4 w-full items-center gap-5">
                 <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white">My Tickets</Text>
+                  <Text className="text-base text-white" style={{fontFamily:"Lato-Bold"}}>My Tickets</Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
                     className="mb-1 h-3 w-3"
@@ -257,7 +257,7 @@ const ProfileScreen: React.FC = () => {
               {/* Raise a Tickets*/}
               <View className="mt-4 w-full items-center gap-5">
                 <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white">Raise a Tickets</Text>
+                  <Text className="text-base text-white" style={{fontFamily:"Lato-Bold"}}>Raise a Tickets</Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
                     className="mb-1 h-3 w-3"
@@ -269,7 +269,7 @@ const ProfileScreen: React.FC = () => {
               {/* Mobile App */}
               <View className="mt-4 w-full items-center gap-5">
                 <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white">Mobile App</Text>
+                  <Text className="text-base text-white" style={{fontFamily:"Lato-Bold"}}>Mobile App</Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
                     className="mb-1 h-3 w-3"
@@ -281,7 +281,7 @@ const ProfileScreen: React.FC = () => {
               {/* Events */}
               <View className="mt-4 w-full items-center gap-5">
                 <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white">Events</Text>
+                  <Text className="text-base text-white" style={{fontFamily:"Lato-Bold"}}>Events</Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
                     className="mb-1 h-3 w-3"
@@ -293,7 +293,7 @@ const ProfileScreen: React.FC = () => {
               {/* Time zone */}
               <View className="mt-4 w-full items-center gap-5">
                 <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white">Time zone</Text>
+                  <Text className="text-base text-white" style={{fontFamily:"Lato-Bold"}}>Time zone</Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
                     className="mb-1 h-3 w-3"
@@ -305,7 +305,7 @@ const ProfileScreen: React.FC = () => {
               {/* Change Language */}
               <View className="mt-4 w-full items-center gap-5">
                 <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white">Change Language</Text>
+                  <Text className="text-base text-white" style={{fontFamily:"Lato-Bold"}}>Change Language</Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
                     className="mb-1 h-3 w-3"
@@ -321,7 +321,7 @@ const ProfileScreen: React.FC = () => {
               {buttonSpinner ? (
                 <ActivityIndicator size="small" color={'white'} />
               ) : (
-                <Text className="text-center  font-semibold text-white ">Log Out</Text>
+                <Text className="text-center text-lg  font-semibold text-white " style={{fontFamily:"Lato-Bold"}}>Log Out</Text>
               )}
             </TouchableOpacity>
           </View>

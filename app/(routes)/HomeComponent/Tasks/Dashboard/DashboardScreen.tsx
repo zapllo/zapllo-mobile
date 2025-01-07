@@ -337,10 +337,10 @@ export default function DashboardScreen() {
               {/* Full Width Card */}
               <View className="mb-2 mt-2 h-[167px] w-[93%] rounded-3xl bg-[#007B5B] p-5 pt-7 pb-7 ">
                 <View className=" flex w-full flex-row items-center justify-between">
-                  <Text className="text-white ">Completed Tasks</Text>
-                  <Text className="text-xs text-white">22-12-2024 to 28-12-2024</Text>
+                  <Text className="text-white " style={{fontFamily:"Lato-Bold"}} >Completed Tasks</Text>
+                  <Text className="text-[10px] text-white" style={{fontFamily:"Lato-Bold"}}>22-12-2024 to 28-12-2024</Text>
                 </View>
-                <Text className=" mt-2  text-white" style={{ fontSize: 34 }}>
+                <Text className=" mt-2  text-white"style={{ fontSize: 32,fontFamily:"Lato-Bold",lineHeight:38.4}}>
                   {taskCounts.Completed}
                 </Text>
 
@@ -352,12 +352,12 @@ export default function DashboardScreen() {
                       .map((task, index) => (
                         <View key={task._id} className="relative flex flex-row">
                           <View
-                            className="-m-1 h-9 w-9 rounded-full border border-[#007B5B]"
+                            className="-m-1.5 h-9 w-9 rounded-full border-2 border-[#007B5B]"
                             style={{
                               borderColor:"#007B5B",
                               backgroundColor: colors[index % colors.length], // Set background color
                             }}>
-                            <Text className=" mt-2 text-center text-sm  text-black">
+                            <Text className=" mt-1 text-center text-sm  text-black">
                               {getInitials(task?.assignedUser)} {/* Display initials */}
                             </Text>
                           </View>

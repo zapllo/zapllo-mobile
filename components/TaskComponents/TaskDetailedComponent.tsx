@@ -215,7 +215,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
           />
         </View>
 
-        <View className="flex flex-row w-full justify-between items-start">
+        <View className="flex flex-row w-full gap-14 items-start">
           <View className="flex gap-3">
             <View className="flex flex-col">
               <Text className="text-[#787CA5] text-xs">Due Date</Text>

@@ -1,6 +1,7 @@
 import { Entypo } from '@expo/vector-icons';
 import React, { useRef } from 'react';
 import { TouchableOpacity, Text, View, StyleSheet, Animated, Linking } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 interface CheckboxProps {
   onPress: () => void;
@@ -39,6 +40,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
     <View style={[styles.container, containerStyle]}>
       <TouchableOpacity
         onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // Trigger light haptic feedback
           startAnimation();
           onPress();
         }}

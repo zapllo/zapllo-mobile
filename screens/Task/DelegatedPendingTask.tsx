@@ -13,8 +13,7 @@ import {
   FlatList,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
-import { TaskStackParamList } from '~/app/(routes)/HomeComponent/Tasks/TaskStack';
-import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
+import { DelegatedTaskStackParamList } from '~/app/(routes)/HomeComponent/Tasks/TaskStack';
 import ProfileButton from '~/components/profile/ProfileButton';
 import { AntDesign } from '@expo/vector-icons';
 import CustomDropdown from '~/components/customDropDown';
@@ -22,8 +21,8 @@ import TaskDetailedComponent from '~/components/TaskComponents/TaskDetailedCompo
 import Modal from 'react-native-modal';
 import { RouteProp, useRoute } from '@react-navigation/native';
 
-type Props = StackScreenProps<TaskStackParamList, 'PendingTask'>;
-type PendingTaskScreenRouteProp = RouteProp<TaskStackParamList, 'PendingTask'>;
+type Props = StackScreenProps<DelegatedTaskStackParamList, 'PendingTask'>;
+type PendingTaskScreenRouteProp = RouteProp<DelegatedTaskStackParamList, 'PendingTask'>;
 
 const daysData = [
   { label: 'Today', value: 'Overdue' },

@@ -19,10 +19,10 @@ import CustomDropdown from '~/components/customDropDown';
 import TaskDetailedComponent from '~/components/TaskComponents/TaskDetailedComponent';
 import Modal from 'react-native-modal';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { DelegatedTaskStackParamList } from '~/app/(routes)/HomeComponent/Tasks/DelegatedTaskStack';
+import { MyTasksStackParamList } from './MyTaskStack';
 
-type Props = StackScreenProps<DelegatedTaskStackParamList, 'PendingTask'>;
-type PendingTaskScreenRouteProp = RouteProp<DelegatedTaskStackParamList, 'PendingTask'>;
+type Props = StackScreenProps<MyTasksStackParamList, 'PendingTask'>;
+type PendingTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'PendingTask'>;
 
 const daysData = [
   { label: 'Today', value: 'Overdue' },
@@ -37,7 +37,7 @@ const daysData = [
   { label: 'Custom', value: 'Custom' },
 ];
 
-const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
+const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<PendingTaskScreenRouteProp>();
   const { pendingTasks } = route.params; // Safely access pendingTasks
 
@@ -97,7 +97,7 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
       {/* Navbar */}
       <View className="flex h-20 w-full flex-row items-center justify-between p-5">
         <View className="flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-full bg-[#37384B]">
-          <TouchableOpacity onPress={() => navigation.navigate('DelegatedTask')}>
+          <TouchableOpacity onPress={() => navigation.navigate('DashboardHome')}>
             <AntDesign name="arrowleft" size={24} color="#ffffff" />
           </TouchableOpacity>
         </View>
@@ -116,7 +116,7 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
           <View className="mb-14 mt-2 flex w-full flex-row items-center justify-between">
             <Text className="text-xl font-semibold text-white">Task Progress</Text>
             <TouchableOpacity onPress={() => setShowMainModal(false)}>
-              <Image source={require('../../assets/commonAssets/cross.png')} className="h-8 w-8" />
+              <Image source={require('~/assets/commonAssets/cross.png')} className="h-8 w-8" />
             </TouchableOpacity>
           </View>
 
@@ -148,7 +148,7 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
           <View className="mb-6 mt-2 flex w-full flex-row items-center justify-between">
             <Text className="text-xl font-semibold text-white">In Progress</Text>
             <TouchableOpacity onPress={() => setShowProgressModal(false)}>
-              <Image source={require('../../assets/commonAssets/cross.png')} className="h-8 w-8" />
+              <Image source={require('~/assets/commonAssets/cross.png')} className="h-8 w-8" />
             </TouchableOpacity>
           </View>
 
@@ -170,7 +170,7 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
           <View className="w-full ">
             <View className=" flex w-full flex-row items-center gap-2">
               <Image
-                source={require('../../assets/commonAssets/fileLogo.png')}
+                source={require('~/assets/commonAssets/fileLogo.png')}
                 className="h-6 w-5"
               />
               <Text className="text-sm text-[#787CA5]">Files</Text>
@@ -178,15 +178,15 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
 
             <View className=" flex w-full flex-row items-center gap-3 pl-5 pt-1">
               <Image
-                source={require('../../assets/commonAssets/fileUploadContainer.png')}
+                source={require('~/assets/commonAssets/fileUploadContainer.png')}
                 className="h-24 w-24"
               />
               <Image
-                source={require('../../assets/commonAssets/fileUploadContainer.png')}
+                source={require('~/assets/commonAssets/fileUploadContainer.png')}
                 className="h-24 w-24"
               />
               <Image
-                source={require('../../assets/commonAssets/fileUploadContainer.png')}
+                source={require('~/assets/commonAssets/fileUploadContainer.png')}
                 className="h-24 w-24"
               />
             </View>
@@ -225,13 +225,34 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
               />
               <View className="h-14 w-14 rounded-full bg-[#37384B]">
                 <Image
-                  source={require('../../assets/commonAssets/filter.png')}
+                  source={require('~/assets/commonAssets/filter.png')}
                   className="h-full w-full"
                 />
               </View>
             </View>
 
-            <FlatList
+            <ScrollView>
+              {pendingTasks?.length > 0 ? (
+                pendingTasks.map((task) => (
+                  <TaskDetailedComponent
+                    key={task._id}
+                    title={task.title}
+                    dueDate={new Date(task.dueDate).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                    assignedTo={`${task.assignedUser?.firstName} ${task.assignedUser?.lastName}`}
+                    assignedBy={`${task.user?.firstName} ${task.user?.lastName}`}
+                    category={task.category?.name}
+                  />
+                ))
+              ) : (
+                <Text>No pending tasks available.</Text>
+              )}
+            </ScrollView>
+
+            {/* <FlatList
               data={pendingTasks}
               keyExtractor={(item) => item._id}
               renderItem={({ item }) => (
@@ -248,7 +269,30 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
                 />
               )}
               ListEmptyComponent={<Text>No pending tasks available.</Text>}
+            /> */}
+
+            {/* Task Boxes */}
+            {/* <TaskDetailedComponent
+              title="Zapllo design wireframe"
+              dueDate="Dec 25, 2024"
+              assignedTo="Deep Patel"
+              assignedBy="Subhadeep Banerjee"
+              category="Marketing"
             />
+            <TaskDetailedComponent
+              title="New Marketing Campaign"
+              dueDate="Dec 28, 2024"
+              assignedTo="Alice Johnson"
+              assignedBy="John Smith"
+              category="Design"
+            />
+            <TaskDetailedComponent
+              title="Final Presentation"
+              dueDate="Jan 5, 2025"
+              assignedTo="Mike Ross"
+              assignedBy="Harvey Specter"
+              category="Sales"
+            /> */}
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
@@ -256,4 +300,4 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-export default PendingTaskScreen;
+export default MyTaskPendingScreen;

@@ -1,22 +1,16 @@
-import { NavigationContainer } from '@react-navigation/native';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import DashboardScreen from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardScreen';
-import MyTaskScreen from '~/app/(routes)/HomeComponent/Tasks/MyTaskScreen';
 import DelegatedTaskScreen from '~/app/(routes)/HomeComponent/Tasks/DelegatedTaskScreen ';
 import AllTaskScreen from '~/app/(routes)/HomeComponent/Tasks/AllTaskScreen';
-import { Ionicons } from '@expo/vector-icons';
 import DashboardStack from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
-import TaskStack from '~/app/(routes)/HomeComponent/Tasks/TaskStack';
-import { useSelector } from 'react-redux';
-import { RootState } from '~/redux/store';
-import { AppTabParamList } from '~/navigation/navigation';
+// import TaskStack from '~/app/(routes)/HomeComponent/Tasks/TaskStack';
+import MyAppsScreen from '~/app/(routes)/HomeComponent/Tasks/MyAppsScreen';
+import DelegatedTaskStack from '~/app/(routes)/HomeComponent/Tasks/DelegatedTaskStack';
+import MyTasksStack from './myTask/MyTaskStack';
 
-const Tab = createBottomTabNavigator<AppTabParamList>();
+const Tab = createBottomTabNavigator();
 
 export default function TasksScreen() {
-  const { userData } = useSelector((state: RootState) => state.auth);
-
   return (
     <Tab.Navigator
       initialRouteName="Dashboard"
@@ -42,8 +36,10 @@ export default function TasksScreen() {
             icon = require('~/assets/tabBarImages/dashboard.png');
           } else if (route.name === 'My Task') {
             icon = require('~/assets/tabBarImages/mytask.png');
-          } else if (route.name === 'Delegated Task') {
+          } else if (route.name === 'My Apps') {
             icon = require('~/assets/tabBarImages/delegatedtask.png');
+          } else if (route.name === 'Delegated Task') {
+            icon = require('~/assets/tabBarImages/Frame.png');
           } else if (route.name === 'All Task') {
             icon = require('~/assets/tabBarImages/alltask.png');
           }
@@ -61,8 +57,9 @@ export default function TasksScreen() {
         tabBarShowLabel: false, // Hides the labels
       })}>
       <Tab.Screen name="Dashboard" component={DashboardStack} />
-      <Tab.Screen name="My Task" component={TaskStack} />
-      <Tab.Screen name="Delegated Task" component={DelegatedTaskScreen} />
+      <Tab.Screen name="My Task" component={MyTasksStack} />
+      <Tab.Screen name="My Apps" component={MyAppsScreen} />
+      <Tab.Screen name="Delegated Task" component={DelegatedTaskStack} />
       <Tab.Screen name="All Task" component={AllTaskScreen} />
     </Tab.Navigator>
   );

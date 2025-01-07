@@ -19,14 +19,10 @@ import CustomDropdown from '~/components/customDropDown';
 import TaskDetailedComponent from '~/components/TaskComponents/TaskDetailedComponent';
 import Modal from 'react-native-modal';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { TaskStackParamList, DashboardStackParamList } from '~/navigation/navigation';
+import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
 
-type Props =
-  | StackScreenProps<DashboardStackParamList, 'PendingTask'>
-  | StackScreenProps<TaskStackParamList, 'PendingTask'>;
-type PendingTaskScreenProps =
-  | StackScreenProps<DashboardStackParamList, 'PendingTask'>
-  | StackScreenProps<TaskStackParamList, 'PendingTask'>;
+type Props = StackScreenProps<DashboardStackParamList, 'PendingTask'>;
+type PendingTaskScreenRouteProp = RouteProp<DashboardStackParamList, 'PendingTask'>;
 
 const daysData = [
   { label: 'Today', value: 'Overdue' },
@@ -42,7 +38,7 @@ const daysData = [
 ];
 
 const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
-  const route = useRoute<PendingTaskScreenProps>();
+  const route = useRoute<PendingTaskScreenRouteProp>();
   const { pendingTasks } = route.params; // Safely access pendingTasks
 
   const [selectedTeamSize, setSelectedTeamSize] = useState(null);
@@ -236,7 +232,7 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
             </View>
 
             <ScrollView>
-              {pendingTasks.length > 0 ? (
+              {pendingTasks?.length > 0 ? (
                 pendingTasks.map((task) => (
                   <TaskDetailedComponent
                     key={task._id}

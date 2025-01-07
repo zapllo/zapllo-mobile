@@ -278,8 +278,8 @@ export default function DashboardScreen() {
               userData?.user?.role === 'orgAdmin' ? (
                 <>
                   <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
-                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FC842C] p-5">
-                      <TouchableOpacity className="h-full w-full">
+                  <View className="flex h-full w-1/2 flex-col rounded-3xl p-5 m-0.5 bg-[#FC842C]">
+                  <TouchableOpacity className='w-full h-full'>
                         <TaskCard
                           title="Employee Wise"
                           count={34}
@@ -303,8 +303,8 @@ export default function DashboardScreen() {
                       </TouchableOpacity>
                     </View>
 
-                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#D85570] p-5">
-                      <TouchableOpacity className="h-full w-full">
+                    <View className="flex h-full w-1/2 flex-col rounded-3xl p-5 m-0.5 bg-[#D85570]">
+                    <TouchableOpacity className='w-full h-full'>
                         {/* Overdue Tasks */}
                         <TaskCard
                           title="Category Wise"
@@ -328,8 +328,8 @@ export default function DashboardScreen() {
                   </View>
 
                   <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
-                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5">
-                      <TouchableOpacity className="h-full w-full">
+                  <View className="flex h-full w-1/2 flex-col rounded-3xl p-5 m-0.5 bg-[#FDB314]">
+                  <TouchableOpacity className='w-full h-full'>
                         <TaskCard
                           title="My Report"
                           count={135}
@@ -348,8 +348,8 @@ export default function DashboardScreen() {
                         </TouchableOpacity>
                       </TouchableOpacity>
                     </View>
-                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
-                      <TouchableOpacity className="h-full w-full">
+                    <View className="flex h-full w-1/2 flex-col rounded-3xl p-5 m-0.5 bg-[#A914DD]">
+                    <TouchableOpacity className='w-full h-full'>
                         <TaskCard
                           title="Delegated"
                           count={56}

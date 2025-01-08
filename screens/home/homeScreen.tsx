@@ -61,7 +61,7 @@ const componentsData: HomeScreenComponents[] = [
   {
     id: '5',
     title: 'Zapllo Workflows',
-    screen: '(routes)/HomeComponent/Workflows',
+    screen: '(routes)/HomeComponent/Tasks/AssignTaskScreen',
     description: 'Automate, Integrate & Connect anything effortlessly',
   },
   {

@@ -208,7 +208,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         </Modal>
 
         <View className="flex items-center flex-row w-full justify-between">
-          <Text className="text-white font-semibold text-lg">{title}</Text>
+          <Text className="text-white font-semibold ">{title}</Text>
           <Image
             source={require('../../assets/commonAssets/threeDot.png')}
             className="w-5 h-6"
@@ -219,7 +219,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
           <View className="flex gap-3">
             <View className="flex flex-col">
               <Text className="text-[#787CA5] text-xs">Due Date</Text>
-              <Text className="text-[#EF4444] text-lg">{dueDate}</Text>
+              <Text className="text-[#EF4444] ">{dueDate}</Text>
             </View>
 
             <View className="flex flex-col max-w-28">
@@ -231,10 +231,10 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
           <View className="flex gap-3">
             <View className="flex flex-col max-w-28">
               <Text className="text-[#787CA5] text-xs">Assigned by</Text>
-              <Text className="text-[#815BF5] mt-1">{assignedBy}</Text>
+              <Text className="text-[#815BF5] ">{assignedBy}</Text>
             </View>
 
-            <View className="flex flex-col mt-1">
+            <View className="flex flex-col ">
               <Text className="text-[#787CA5] text-xs">Category</Text>
               <Text className="text-[#FDB314]">{category}</Text>
             </View>

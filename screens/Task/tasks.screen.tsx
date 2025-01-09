@@ -18,15 +18,15 @@ export default function TasksScreen() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: '#05071E', // Tab bar background
-          borderWidth: 2,
+          borderWidth: 1,
           borderColor: '#815BF5',
           height: 56,
           position: 'absolute',
-          bottom: 20,
+          bottom: 29,
           borderRadius: 30,
           marginHorizontal: 16,
           display: 'flex',
-
+          borderTopWidth:1,
           justifyContent: 'center',
         },
         tabBarIcon: ({ focused }) => {
@@ -67,8 +67,8 @@ export default function TasksScreen() {
 
 const styles = StyleSheet.create({
   icon: {
-    width: 25, // Width of the icon image
-    height: 26, // Height of the icon image
+    width: 24, // Width of the icon image
+    height: 24, // Height of the icon image
     resizeMode: 'contain',
   },
   imageContainer: {
@@ -83,8 +83,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   activeImageContainer: {
-    width: 75, // Width of active tab background
-    height: 48, // Height of active tab background
+    width: 60, // Width of active tab background
+    height: 44, // Height of active tab background
     borderRadius: 35, // Rounded background
     backgroundColor: '#815BF5', // Background color for active tab
     alignItems: 'center',

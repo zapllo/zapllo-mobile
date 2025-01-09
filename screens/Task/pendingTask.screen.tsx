@@ -50,7 +50,7 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  console.log('pendinggggg', pendingTasks);
+  console.log('pending', pendingTasks);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(

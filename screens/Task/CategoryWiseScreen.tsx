@@ -18,8 +18,8 @@ import EmployeesDetaildComponent from '~/components/TaskComponents/EmployeesDeta
 import { RouteProp, useRoute } from '@react-navigation/native';
 
 // Define the type for your navigation
-type Props = StackScreenProps<DashboardStackParamList, 'EmployeeWise'>;
-type EmployeeWiseScreenRouteProp = RouteProp<DashboardStackParamList, 'EmployeeWise'>;
+type Props = StackScreenProps<DashboardStackParamList, 'CategoryWise'>;
+type CategoryWiseScreenRouteProp = RouteProp<DashboardStackParamList, 'CategoryWise'>;
 const daysData = [
   { label: 'Today', value: 'Overdue' },
   { label: 'Yesterday', value: 'Yesterday' },
@@ -33,16 +33,18 @@ const daysData = [
   { label: 'Custom', value: 'Custom' },
 ];
 
-const EmployeeWiseScreen: React.FC<Props> = ({ navigation }) => {
-  const route = useRoute<EmployeeWiseScreenRouteProp>();
+const CategoryWiseScreen: React.FC<Props> = ({ navigation }) => {
+  const route = useRoute<CategoryWiseScreenRouteProp>();
   const { employeeWiseData } = route.params;
   // const navigation = useNavigation<PendingTaskScreenRouteProp>();
   const [selectedTeamSize, setSelectedTeamSize] = useState(null);
   const [search, setSearch] = useState('');
 
+  console.log('>>>>>EEEEEEEE', employeeWiseData);
+
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
-      <NavbarTwo title="Employee Wise" onBackPress={() => navigation.navigate('DashboardHome')} />
+      <NavbarTwo title="Category Wise" onBackPress={() => navigation.navigate('DashboardHome')} />
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
@@ -71,40 +73,24 @@ const EmployeeWiseScreen: React.FC<Props> = ({ navigation }) => {
               />
             </View>
 
-            {employeeWiseData.map((employee) => {
-              const pending = employee.filter((e: any) => e?.status === 'Pending');
-              const completed = employee.filter((e: any) => e?.status === 'Completed');
-              const inProgress = employee.filter((e: any) => e?.status === 'InProgress');
-              const overdue = employee.filter((e: any) => e?.status === 'Overdue');
-
-              return (
-                <EmployeesDetaildComponent
-                  name={`${employee[0]?.assignedUser?.firstName} ${employee[0]?.assignedUser?.lastName}`}
-                  overdue={overdue?.length}
-                  pending={pending.length}
-                  completed={completed.length}
-                  inProgress={inProgress?.length}
-                />
-              );
-            })}
-            {/* <EmployeesDetaildComponent
-                name="Shubhodeep Banerjee"
-                overdue={3}
-                pending={7}
-                completed={10}
-                inProgress={12}
-              />
-                <EmployeesDetaildComponent
-                name="Deep Banerjee"
-                overdue={10}
-                pending={2}
-                completed={5}
-                inProgress={3}
-              /> */}
+            <EmployeesDetaildComponent
+              name="Shubhodeep Banerjee"
+              overdue={3}
+              pending={7}
+              completed={10}
+              inProgress={12}
+            />
+            <EmployeesDetaildComponent
+              name="Deep Banerjee"
+              overdue={10}
+              pending={2}
+              completed={5}
+              inProgress={3}
+            />
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 };
-export default EmployeeWiseScreen;
+export default CategoryWiseScreen;

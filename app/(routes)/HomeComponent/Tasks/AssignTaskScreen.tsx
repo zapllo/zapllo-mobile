@@ -14,6 +14,8 @@ import ReminderModal from "~/components/TaskComponents/assignNewTaskComponents/R
 import AudioModal from "~/components/TaskComponents/assignNewTaskComponents/AudioModal";
 import FileModal from "~/components/TaskComponents/assignNewTaskComponents/FileModal";
 import AddLinkModal from "~/components/TaskComponents/assignNewTaskComponents/AddLinkModal";
+import { Dropdown } from "react-native-element-dropdown";
+import CustomDropdownComponentTwo from "~/components/customNavbarTwo";
 
 //delete the data :)
 const daysData = [
@@ -43,6 +45,11 @@ export default function AssignTaskScreen() {
   const [isReminderModalVisible, setReminderModalVisible] = useState(false);
   const [isAudioModalVisible, setAudioModalVisible] = useState(false);
 
+
+  //demo state change the state while adding 
+  const [selectedIndustry, setSelectedIndustry] = useState(null); 
+  const [isIndustryDropdownOpen, setIsIndustryDropdownOpen] = useState(false);
+
   const position = useRef(new Animated.Value(0)).current;
 
   const handleButtonPress = (button: string) => {
@@ -65,6 +72,49 @@ export default function AssignTaskScreen() {
     inputRange: [0, 1],
     outputRange: [0, 32],
   });
+
+  // fake data
+  const industryData = [
+    { label: 'Retail/E-Commerce', value: 'Retail/E-Commerce' },
+    { label: 'Technology', value: 'Technology' },
+    { label: 'Service Provider', value: 'Service Provider' },
+    {
+      label: 'Healthcare(Doctors/Clinics/Physicians/Hospital)',
+      value: 'Healthcare(Doctors/Clinics/Physicians/Hospital)',
+    },
+    { label: 'Logistics', value: 'Logistics' },
+    { label: 'Financial Consultants', value: 'Financial Consultants' },
+    { label: 'Trading', value: 'Trading' },
+    { label: 'Education', value: 'Education' },
+    { label: 'Manufacturing', value: 'Manufacturing' },
+    {
+      label: 'Real Estate/Construction/Interior/Architects',
+      value: 'Real Estate/Construction/Interior/Architects',
+    },
+    { label: 'Others', value: 'Others' },
+  ];
+
+    const renderIndustryItem = (item: any) => {
+      const isSelected = item.value === selectedIndustry;
+  
+      return (
+        <TouchableOpacity
+          style={[
+            styles.itemStyle,
+            isSelected && styles.selectedDropdownItemStyle, // Apply selected item style
+          ]}
+          onPress={() => setSelectedIndustry(item.value)} // Update selected item
+        >
+          <Text
+            style={[
+              styles.itemTextStyle,
+              isSelected && styles.selectedTextStyle, // Apply selected text style
+            ]}>
+            {item.label}
+          </Text>
+        </TouchableOpacity>
+      );
+    };
 
   return (
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary ">
@@ -106,25 +156,51 @@ export default function AssignTaskScreen() {
                 placeholderTextColor="#787CA5"></TextInput>
             </View> 
             
+
+            {/* selected users */}
             <View className="flex flex-col items-center w-full mt-5 gap-2">
-              <CustomDropdown
-                data={daysData}
-                placeholder="Select User"
-                selectedValue={selectedTeamSize}
-                onSelect={(value) => setSelectedTeamSize(value)}
-              />
-              <CustomDropdown
-                data={daysData}
-                placeholder="Select Category"
-                selectedValue={selectedTeamSize}
-                onSelect={(value) => setSelectedTeamSize(value)}
-              />
-              <CustomDropdown
-                data={daysData}
-                placeholder="Subscribe to task"
-                selectedValue={selectedTeamSize}
-                onSelect={(value) => setSelectedTeamSize(value)}
-              />
+              <View style={styles.input}>
+                <Text style={[styles.baseName, { fontFamily: 'Nunito_400Regular' }]}>
+                Select User
+                </Text>
+                <CustomDropdownComponentTwo
+                  data={industryData}
+                  selectedValue={selectedIndustry}
+                  onSelect={(value) => setSelectedIndustry(value)}
+                  placeholder=""
+                  renderItem={renderIndustryItem}
+                />
+              </View>
+
+              <View style={styles.input}>
+                <Text style={[styles.baseName, { fontFamily: 'Nunito_400Regular' }]}>
+                Select Category
+                </Text>
+                <CustomDropdownComponentTwo
+                  data={industryData}
+                  selectedValue={selectedIndustry}
+                  onSelect={(value) => setSelectedIndustry(value)}
+                  placeholder=""
+                  renderItem={renderIndustryItem}
+                />
+              </View>
+
+
+              <View style={styles.input}>
+                <Text style={[styles.baseName, { fontFamily: 'Nunito_400Regular' }]}>
+                Subscribe to task
+                </Text>
+           
+                <CustomDropdownComponentTwo
+                  data={industryData}
+                  selectedValue={selectedIndustry}
+                  onSelect={(value) => setSelectedIndustry(value)}
+                  placeholder=""
+                  renderItem={renderIndustryItem}
+                />
+              </View>
+            
+              
             </View>
 
             <View className="flex gap-3 justify-start flex-col mt-3 items-start w-[90%]">
@@ -220,17 +296,7 @@ export default function AssignTaskScreen() {
 };
 
 const styles = StyleSheet.create({
-  input: {
-    borderWidth: 1,
-    borderColor: '#37384B',
-    padding: 10,
-    marginTop: 25,
-    borderRadius: 25,
-    width: '90%',
-    height: 60,
-    position: 'relative',
-    paddingLeft:14,
-  },
+
 
   inputSome: {
     flex: 1,
@@ -244,6 +310,90 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',
+  },
+  selectedDropdownItemStyle: {
+    backgroundColor: '#4e5278', // Background color for selected item
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: '#37384B',
+    padding: 10,
+    marginTop: 25,
+    borderRadius: 35,
+    width: '90%',
+    height: 57,
+    position: 'relative',
+  },
+  baseName: {
+    color: '#787CA5',
+    position: 'absolute',
+    top: -9,
+    left: 25,
+    backgroundColor: '#05071E',
+    paddingRight: 5,
+    paddingLeft: 5,
+    fontSize: 10,
+    fontWeight: 400,
+    fontFamily:"lato"
+
+  },
+
+
+  dropdown: {
+    position: 'absolute',
+    width: '100%',
+    height: 50,
+  },
+  itemStyle: {
+    padding: 15,
+    borderBottomColor: '#37384B',
+    borderBottomWidth: 1,
+  },
+  itemTextStyle: {
+    color: '#787CA5',
+  },
+  selectedItemStyle: {
+    backgroundColor: '#4e5278',
+  },
+
+  placeholderStyle: {
+    fontSize: 13,
+    color: '#787CA5',
+    fontWeight: 300,
+    paddingLeft: 22,
+  },
+  selectedTextStyle: {
+    fontSize: 13,
+    color: '#787CA5',
+    fontWeight: 300,
+    paddingLeft: 22,
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+    marginRight: 5,
+    borderColor: 'white',
+  },
+  dropdownMenu: {
+    backgroundColor: '#05071E',
+    borderColor: '#37384B',
+    borderWidth: 1,
+    borderBottomEndRadius: 15,
+    borderBottomStartRadius: 15,
+    margin: 8,
+  },
+  dropdownMenuTwo: {
+    backgroundColor: '#05071E',
+    borderColor: '#37384B',
+    borderWidth: 1,
+    borderBottomEndRadius: 15,
+    borderBottomStartRadius: 15,
+    margin: 8,
   },
 
 })

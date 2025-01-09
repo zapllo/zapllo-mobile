@@ -42,7 +42,7 @@ const CheckboxTwo: React.FC<CheckboxProps> = ({
           checkboxStyle,
         ]}
         accessibilityLabel="CheckboxTwo"
-        accessibilityRole="CheckboxTwo"
+        
         accessibilityState={{ checked: isChecked }}
       >
         <Animated.View style={{ width: animatedWidth }}>

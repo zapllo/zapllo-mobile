@@ -1,23 +1,20 @@
 // ReminderModal.tsx
-import { View, Text, TouchableOpacity, Image,TextInput } from "react-native";
+import { View, Text, TouchableOpacity, Image,TextInput, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import Modal from "react-native-modal";
 import CustomDropdown from "~/components/customDropDown";
+import CustomDropdownComponentTwo from "~/components/customNavbarTwo";
 
 
 
 const daysData = [
-    { label: 'Today', value: 'Today' },
-    { label: 'Yesterday', value: 'Yesterday' },
-    { label: 'This Week', value: 'This Week' },
-    { label: 'Last Week', value: 'Last Week' },
-    { label: 'Next Week', value: 'Next Week' },
-    { label: 'This Month', value: 'This Month' },
-    { label: 'Next Month', value: 'Next Month' },
-    { label: 'This Year', value: 'This Year' },
-    { label: 'All Time', value: 'All Time' },
-    { label: 'Custom', value: 'Custom' },
+    { label: 'Days', value: 'Days' },
+    { label: 'minutes', value: '' },
+    { label: 'hours', value: 'hours' },
+
   ];
+
+
 
 interface ReminderModalProps {
   isReminderModalVisible: boolean;
@@ -31,6 +28,32 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
     const [mail,setMail] = useState("");
     const[whatsApp, setWhatsApp] = useState("");
     const[number, setNumber] = useState("");
+    const [selectedIndustry, setSelectedIndustry] = useState(null); 
+
+
+    const renderIndustryItem = (item: any) => {
+      const isSelected = item.value === selectedIndustry;
+  
+      return (
+        <TouchableOpacity
+          style={[
+            styles.itemStyle,
+            isSelected && styles.selectedDropdownItemStyle, // Apply selected item style
+          ]}
+          onPress={() => setSelectedIndustry(item.value)} // Update selected item
+        >
+          <Text
+            style={[
+              styles.itemTextStyle,
+              isSelected && styles.selectedTextStyle, // Apply selected text style
+            ]}>
+            {item.label}
+          </Text>
+        </TouchableOpacity>
+      );
+    };
+
+
   return (
     <Modal
       isVisible={isReminderModalVisible}
@@ -57,30 +80,32 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
 
         <View className=" w-full items-center">
           <View className="flex w-full  flex-row items-center justify-between">
-            <View className="flex-1">
-              <CustomDropdown
-                data={daysData}
-                placeholder="Email"
-                selectedValue={mail}
-                onSelect={(value) => setMail(value)}
-              />
-            </View>
+          <View style={styles.input} className="w-[30%]">
+                <CustomDropdownComponentTwo
+                      data={daysData}
+                      selectedValue={selectedIndustry}
+                      onSelect={(value) => setSelectedIndustry(value)}
+                      placeholder="hii"
+                      renderItem={renderIndustryItem}
+                    />
+              </View>
 
-            <TextInput
-              value={number}
-              onChangeText={(text) => setNumber(text)}
-              placeholder="2"
-              className="p-3 border-[#37384B] border rounded-full w-[20%]  h-14"
-            />
+                <TextInput
+                  value={number}
+                  onChangeText={(text) => setNumber(text)}
+                  placeholder=""
+                  className="p-2 border-[#37384B] border rounded-full w-[20%]  h-14"
+                />
 
-            <View className="flex-1 ml-2">
-              <CustomDropdown
-                data={daysData}
-                placeholder="days"
-                selectedValue={mail}
-                onSelect={(value) => setMail(value)}
-              />
-            </View>
+              <View style={styles.input} className="w-[30%]">
+                <CustomDropdownComponentTwo
+                      data={daysData}
+                      selectedValue={selectedIndustry}
+                      onSelect={(value) => setSelectedIndustry(value)}
+                      placeholder="hii"
+                      renderItem={renderIndustryItem}
+                    />
+              </View>
 
             <TouchableOpacity className="h-12 w-12">
               <Image className="h-12 w-12" source={require("../../../assets/Tasks/delete.png")} />
@@ -88,67 +113,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
           </View>
 
         
-          <View className="flex w-full flex-row items-center justify-between">
-            <View className="flex-1 ">
-              <CustomDropdown
-                data={daysData}
-                placeholder="Email"
-                selectedValue={mail}
-                onSelect={(value) => setMail(value)}
-              />
-            </View>
-
-            <TextInput
-              value={number}
-              onChangeText={(text) => setNumber(text)}
-              placeholder="2"
-              className="p-3 border-[#37384B] border rounded-full w-[20%] h-14"
-            />
-
-            <View className="flex-1 ">
-              <CustomDropdown
-                data={daysData}
-                placeholder="days"
-                selectedValue={mail}
-                onSelect={(value) => setMail(value)}
-              />
-            </View>
-
-            <TouchableOpacity className="h-12 w-12">
-              <Image className="h-12 w-12" source={require("../../../assets/Tasks/delete.png")} />
-            </TouchableOpacity>
-          </View>
-
-          <View className="flex w-full flex-row items-center justify-between">
-            <View className="flex-1 ">
-              <CustomDropdown
-                data={daysData}
-                placeholder="Email"
-                selectedValue={mail}
-                onSelect={(value) => setMail(value)}
-              />
-            </View>
-
-            <TextInput
-              value={number}
-              onChangeText={(text) => setNumber(text)}
-              placeholder="2"
-              className="p-3 border-[#37384B] border rounded-full w-[20%] h-14"
-            />
-
-            <View className="flex-1 ">
-              <CustomDropdown
-                data={daysData}
-                placeholder="days"
-                selectedValue={mail}
-                onSelect={(value) => setMail(value)}
-              />
-            </View>
-
-            <TouchableOpacity className="h-12 w-12">
-              <Image className="h-12 w-12" source={require("../../../assets/Tasks/delete.png")} />
-            </TouchableOpacity>
-          </View>
+      
         </View>
 
 
@@ -159,3 +124,46 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
 };
 
 export default ReminderModal;
+
+
+const styles = StyleSheet.create({
+  input: {
+ 
+    borderWidth: 1,
+    borderColor: '#37384B',
+    padding:9,
+    borderRadius: 35,
+    height: 48,
+    position: 'relative',
+  },
+  
+  selectedDropdownItemStyle: {
+    backgroundColor: '#4e5278', // Background color for selected item
+  },
+
+  
+  itemStyle: {
+    padding: 15,
+    borderBottomColor: '#37384B',
+    borderBottomWidth: 1,
+  },
+  itemTextStyle: {
+    color: '#787CA5',
+  },
+
+  placeholderStyle: {
+    fontSize: 13,
+    color: '#787CA5',
+    fontWeight: 300,
+    paddingLeft: 22,
+  },
+  selectedTextStyle: {
+    fontSize: 13,
+    color: '#787CA5',
+    fontWeight: 300,
+    paddingLeft: 0,
+  },
+ 
+
+
+})

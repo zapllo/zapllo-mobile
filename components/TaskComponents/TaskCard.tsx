@@ -62,7 +62,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
         </Text>
       </View>
 
-      <View className="mt-10 flex  w-[28vw] flex-row items-center">
+      <View className="mt-10 flex  w-[28vw] flex-row items-center ">
         <View className=" flex flex-row items-start">
           <View className="flex w-full flex-row">
             {tasks
@@ -71,7 +71,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               .map((task, index) => (
                 <View key={task._id} className="relative flex flex-row">
                   <View
-                    className="-m-1.5 flex h-9 w-9 items-center justify-center rounded-full border-2"
+                    className="-m-1.5 flex h-10 w-10 items-center justify-center rounded-full border-2"
                     style={{
                       borderColor,
                       backgroundColor: colors[index % colors.length],
@@ -87,7 +87,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             {tasks.filter((task) => task.status === status).length > 2 && (
               <View className="relative -m-1.5 flex flex-row">
                 <View
-                  className="h-9 w-9 items-center justify-center rounded-full border-2"
+                  className="h-10 w-10 items-center justify-center rounded-full border-2"
                   style={{
                     borderColor,
                     backgroundColor: colors[2 % colors.length],
@@ -99,7 +99,17 @@ const TaskCard: React.FC<TaskCardProps> = ({
               </View>
             )}
           </View>
+
+          
         </View>
+           <TouchableOpacity>
+              <View className=" flex h-10 w-10 items-center justify-center self-end rounded-full border border-white">
+                <Image
+                  className="h-4 w-4"
+                  source={require('~/assets/Tasks/goto.png')}
+                />
+              </View>
+         </TouchableOpacity>
       </View>
     </>
   );

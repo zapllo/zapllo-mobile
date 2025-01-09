@@ -289,17 +289,7 @@ export default function DashboardScreen() {
                           status="Today"
                           borderColor="#FC842C"
                         />
-                        <TouchableOpacity
-                          className=""
-                          onPress={() => {navigation.navigate('EmployeeWise');
-                          }}>
-                          <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                            <Image
-                              className="h-4 w-4"
-                              source={require('~/assets/Tasks/goto.png')}
-                            />
-                          </View>
-                        </TouchableOpacity>
+      
                       </TouchableOpacity>
                     </View>
 
@@ -315,14 +305,7 @@ export default function DashboardScreen() {
                           status="Overdue"
                           borderColor="#D85570"
                         />
-                        <TouchableOpacity>
-                          <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                            <Image
-                              className="h-4 w-4"
-                              source={require('~/assets/Tasks/goto.png')}
-                            />
-                          </View>
-                        </TouchableOpacity>
+              
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -338,14 +321,7 @@ export default function DashboardScreen() {
                           borderColor="#FDB314"
                           colors={['#CCC', '#FFF']}
                         />
-                        <TouchableOpacity>
-                          <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                            <Image
-                              className="h-4 w-4"
-                              source={require('~/assets/Tasks/goto.png')}
-                            />
-                          </View>
-                        </TouchableOpacity>
+
                       </TouchableOpacity>
                     </View>
                     <View className="flex h-full w-1/2 flex-col rounded-3xl p-5 m-0.5 bg-[#A914DD]">
@@ -357,14 +333,7 @@ export default function DashboardScreen() {
                           status="Pending"
                           borderColor="#A914DD"
                         />
-                        <TouchableOpacity>
-                          <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                            <Image
-                              className="h-4 w-4"
-                              source={require('~/assets/Tasks/goto.png')}
-                            />
-                          </View>
-                        </TouchableOpacity>
+                       
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -397,11 +366,7 @@ export default function DashboardScreen() {
                         status="Pending"
                         borderColor="#A914DD"
                       />
-                      <TouchableOpacity>
-                        <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                          <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                        </View>
-                      </TouchableOpacity>
+
                     </TouchableOpacity>
                   </View>
                 </View>

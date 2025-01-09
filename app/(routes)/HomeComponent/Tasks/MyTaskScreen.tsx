@@ -23,7 +23,7 @@ import { Image } from 'react-native';
 import moment from 'moment';
 import getDateRange from '~/utils/GetDateRange';
 import TaskStatusCard from '~/components/card/TaskStatusCard';
-import TaskCard from '~/components/card/TaskCard';
+import TaskCard from '~/components/TaskComponents/TaskCard';
 import { MyTasksStackParamList } from '~/screens/Task/myTask/MyTaskStack';
 interface Task {
   _id: string;
@@ -103,7 +103,7 @@ export default function MyTaskScreen() {
   useEffect(() => {
     const dateRange = getDateRange(selectedTeamSize);
     const myTasksByDate = filterTasksByDate(tasksData, dateRange);
-    console.log("🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻",tasksData.length)
+    console.log('🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻', tasksData.length);
     setTasks(myTasksByDate);
     setTaskCounts(countStatuses(myTasksByDate));
   }, [selectedTeamSize]);
@@ -169,9 +169,9 @@ export default function MyTaskScreen() {
           const filteredTask = tasksData.filter(
             (e: { assignedUser: any; _id: any }) => e?.assignedUser?._id === userData?.data?._id
           );
-          console.log("++👵🏻👵🏻👵🏻👵🏻👵🏻",JSON.stringify(filteredTask,null,2))
-          
-          setTasks(filteredTask); 
+          console.log('++👵🏻👵🏻👵🏻👵🏻👵🏻', JSON.stringify(filteredTask, null, 2));
+
+          setTasks(filteredTask);
           setTasksData(filteredTask);
           setTaskCountsData(countStatuses(filteredTask)); // Update task counts
           setTaskCounts(countStatuses(filteredTask)); // Update task counts
@@ -224,7 +224,7 @@ export default function MyTaskScreen() {
             <View className="mb-3 mt-4 flex w-full items-center">
               <CustomDropdown
                 data={daysData}
-                placeholder="Select Filters"
+                placeholder="This Week"
                 selectedValue={selectedTeamSize}
                 onSelect={(value) => setSelectedTeamSize(value)}
               />
@@ -243,13 +243,13 @@ export default function MyTaskScreen() {
                       borderColor="#FC842C"
                     />
                     <TouchableOpacity
+                      className="flex h-8 w-8 items-center justify-center self-end rounded-full border border-white"
                       onPress={() => {
-                        const filteredTasks = tasks.filter((task) => task.status === "Today");
-                        navigation.navigate('PendingTask', { filteredTasks });
+                        const todaysTasks = tasks.filter((task) => task.status === 'Today');
+                        console.log('okkkkkk>>>>>>>>>>>>>', todaysTasks);
+                        navigation.navigate('ToadysTask', { todaysTasks });
                       }}>
-                      <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                        <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                      </View>
+                      <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                     </TouchableOpacity>
                   </TouchableOpacity>
                 </View>
@@ -265,13 +265,12 @@ export default function MyTaskScreen() {
                       borderColor="#D85570"
                     />
                     <TouchableOpacity
+                      className="flex h-8 w-8 items-center justify-center self-end rounded-full border border-white"
                       onPress={() => {
-                        const filteredTasks = tasks.filter((task) => task.status === "Overdue");
-                        navigation.navigate('PendingTask', { filteredTasks });
+                        const overdueTasks = tasks.filter((task) => task.status === 'Overdue');
+                        navigation.navigate('OverdueTask', { overdueTasks });
                       }}>
-                      <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                        <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                      </View>
+                      <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                     </TouchableOpacity>
                   </TouchableOpacity>
                 </View>
@@ -289,13 +288,12 @@ export default function MyTaskScreen() {
                       colors={['#CCC', '#FFF']}
                     />
                     <TouchableOpacity
+                      className="-mt-6 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white"
                       onPress={() => {
-                        const pendingTasks = tasks.filter((task) => task.status === "Pending");
+                        const pendingTasks = tasks.filter((task) => task.status === 'Pending');
                         navigation.navigate('PendingTask', { pendingTasks });
                       }}>
-                      <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                        <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                      </View>
+                      <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                     </TouchableOpacity>
                   </TouchableOpacity>
                 </View>
@@ -305,17 +303,16 @@ export default function MyTaskScreen() {
                       title="In Progress Tasks"
                       count={taskCounts.InProgress}
                       tasks={tasks}
-                      status="Pending"
+                      status="InProgress"
                       borderColor="#A914DD"
                     />
                     <TouchableOpacity
+                      className="flex h-8 w-8 items-center justify-center self-end rounded-full border border-white"
                       onPress={() => {
-                        const filteredTasks = tasks.filter((task) => task.status === 'Pending');
+                        const filteredTasks = tasks.filter((task) => task.status === 'InProgress');
                         navigation.navigate('PendingTask', { filteredTasks });
                       }}>
-                      <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                        <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                      </View>
+                      <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                     </TouchableOpacity>
                   </TouchableOpacity>
                 </View>
@@ -363,9 +360,14 @@ export default function MyTaskScreen() {
                     )}
                   </View>
 
-                  <View className=" flex h-8 w-8 items-center justify-center rounded-full border border-white ">
+                  <TouchableOpacity
+                    onPress={() => {
+                      const completedTasks = tasks.filter((task) => task.status === 'Completed');
+                      navigation.navigate('CompletedTask', { completedTasks });
+                    }}
+                    className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
                     <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                  </View>
+                  </TouchableOpacity>
                 </View>
               </View>
               <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
@@ -380,13 +382,12 @@ export default function MyTaskScreen() {
                       borderColor="#815BF5"
                     />
                     <TouchableOpacity
+                      className="flex h-8 w-8 items-center justify-center self-end rounded-full border border-white"
                       onPress={() => {
-                        const filteredTasks = tasks.filter((task) => task.status === 'In Time');
-                        navigation.navigate('PendingTask', { filteredTasks });
+                        const inTimeTasks = tasks.filter((task) => task.status === 'In Time');
+                        navigation.navigate('InTimeTask', { inTimeTasks });
                       }}>
-                      <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                        <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                      </View>
+                      <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                     </TouchableOpacity>
                   </TouchableOpacity>
                 </View>
@@ -401,13 +402,12 @@ export default function MyTaskScreen() {
                       borderColor="#DE7560"
                     />
                     <TouchableOpacity
+                      className="flex h-8 w-8 items-center justify-center self-end rounded-full border border-white"
                       onPress={() => {
-                        const filteredTasks = tasks.filter((task) => task.status === status);
-                        navigation.navigate('PendingTask', { filteredTasks });
+                        const delayedTasks = tasks.filter((task) => task.status === 'Delayed');
+                        navigation.navigate('DelayedTask', { delayedTasks });
                       }}>
-                      <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                        <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                      </View>
+                      <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                     </TouchableOpacity>
                   </TouchableOpacity>
                 </View>

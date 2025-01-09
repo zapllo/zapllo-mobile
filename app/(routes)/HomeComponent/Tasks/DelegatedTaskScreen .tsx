@@ -643,6 +643,7 @@ import { Image } from 'react-native';
 import moment from 'moment';
 import getDateRange from '~/utils/GetDateRange';
 import { DelegatedTaskStackParamList } from './DelegatedTaskStack';
+import TaskCard from '~/components/TaskComponents/TaskCard';
 // import { TaskStackParamList } from './TaskStack';
 
 interface Task {
@@ -855,7 +856,7 @@ export default function DelegatedTaskScreen () {
             <View className="mb-3 mt-4 flex w-full items-center">
               <CustomDropdown
                 data={daysData}
-                placeholder="Select Filters"
+                placeholder="This Week"
                 selectedValue={selectedTeamSize}
                 onSelect={(value) => setSelectedTeamSize(value)}
               />
@@ -863,225 +864,97 @@ export default function DelegatedTaskScreen () {
 
             {/* Content */}
             <View className="p-4.2 mb-32 flex h-full w-full flex-col items-center gap-2.5 pt-1">
-              {/* Row 1 */}
-              <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
-                <View className="flex h-full w-1/2 flex-col rounded-3xl bg-[#FC842C] p-5 ">
-                  <View className="flex items-start ">
-                    <Text style={{fontSize:16}} className="font-medium text-white">Today’s Task</Text>
-                    <Text className=" font-semibold text-white" style={{ fontSize: 32 }}>
-                      {taskCounts.Today}
-                    </Text>
-                    <Text className=" w-[40vw] pt-2 text-xs text-white">
-                      {tasks.length > 0 && formatDate(tasks[0].dueDate)}
-                    </Text>
-                  </View>
-                  <View className="mt-3 flex items-start">
-                    <View className="flex w-full flex-row items-center justify-center pt-9">
-                      {tasks
-                        .filter((task) => isToday(task.dueDate))
-                        .slice(0, 2)
-                        .map((task, index) => (
-                          <View key={task._id} className="relative flex flex-row">
-                            <View
-                              className="-m-1.5 h-9 w-9 rounded-full border"
-                              style={{
-                                borderColor: colors[index % colors.length],
-                                backgroundColor: colors[index % colors.length],
-                              }}>
-                              <Text className=" mt-2 text-center text-sm font-medium text-black">
-                                {getInitials(task?.assignedUser)}
-                              </Text>
-                            </View>
-                          </View>
-                        ))}
-
-                      {tasks.filter((task) => isToday(task.dueDate)).length > 2 && (
-                        <View className="relative flex flex-row">
-                          <View
-                            className="h-9 w-9 items-center justify-center rounded-full"
-                            style={{
-                              backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
-                            }}>
-                            <Text className="text-center font-bold text-black">
-                              +{tasks.filter((task) => isToday(task.dueDate)).length - 2}
-                            </Text>
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                  <View className=" flex h-9 w-9 items-center justify-center self-end rounded-full border border-white ">
-                    <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                  </View>
+              <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
+                <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FC842C] p-5">
+                  <TouchableOpacity className="h-full w-full">
+                    <TaskCard
+                      title="Today’s Task"
+                      count={taskCounts.Today}
+                      tasks={tasks}
+                      status="Today"
+                      borderColor="#FC842C"
+                    />
+                    <TouchableOpacity
+                      className="flex h-8 w-8 items-center justify-center self-end rounded-full border border-white"
+                      onPress={() => {
+                        const todaysTasks = tasks.filter((task) => task.status === 'Today');
+                        console.log('okkkkkk>>>>>>>>>>>>>', todaysTasks);
+                        navigation.navigate('ToadysTask', { todaysTasks });
+                      }}>
+                      <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
+                    </TouchableOpacity>
+                  </TouchableOpacity>
                 </View>
 
-                <View className="flex h-full w-1/2 flex-col rounded-3xl bg-[#D85570] p-5 ">
-                  <View className="flex items-start ">
-                    <Text className="font-medium text-white">Overdue Tasks</Text>
-                    <Text className=" font-semibold text-white" style={{ fontSize: 34 }}>
-                      {taskCounts.Overdue} {/* Dynamic task count */}
-                    </Text>
-                    <Text className=" w-[40vw] pt-2 text-xs text-white">
-                      {tasks.length > 0 && formatDate(tasks[1]?.dueDate)} {/* Formatted Due Date */}
-                    </Text>
-                  </View>
-                  <View className="mt-3 flex flex-row items-start">
-                    <View className="flex w-full flex-row  pt-9">
-                      {/* Display the first two initials with different colors */}
-                      {tasks
-                        .filter((task) => task.status === 'Overdue') // Filter by status
-                        .slice(0, 2) // Show only the first two users
-                        .map((task, index) => (
-                          <View key={task._id} className="relative flex flex-row">
-                            <View
-                              className="-m-1.5 h-9 w-9 rounded-full border"
-                              style={{
-                                borderColor: colors[index % colors.length], // Assign a color from the array
-                                backgroundColor: colors[index % colors.length], // Set background color
-                              }}>
-                              <Text className=" mt-2 text-center text-sm font-medium text-black">
-                                {getInitials(task?.assignedUser)} {/* Display initials */}
-                              </Text>
-                            </View>
-                          </View>
-                        ))}
-
-                      {/* Show the + with full circle if there are more than 2 users */}
-                      {tasks.filter((task) => task.status === 'Overdue').length > 2 && (
-                        <View className="relative -mt-1 flex flex-row">
-                          <View
-                            className="h-9 w-9 items-center justify-center rounded-full"
-                            style={{
-                              backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
-                            }}>
-                            <Text className="text-center font-bold text-black">
-                              +{tasks.filter((task) => task.status === 'Overdue').length - 2}
-                            </Text>
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                  <TouchableOpacity>
-                    <View className=" flex h-9 w-9 items-center justify-center self-end rounded-full border border-white">
+                <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#D85570] p-5">
+                  <TouchableOpacity className="h-full w-full">
+                    {/* Overdue Tasks */}
+                    <TaskCard
+                      title="Overdue Tasks"
+                      count={taskCounts.Overdue}
+                      tasks={tasks}
+                      status="Overdue"
+                      borderColor="#D85570"
+                    />
+                    <TouchableOpacity
+                      className="flex h-8 w-8 items-center justify-center self-end rounded-full border border-white"
+                      onPress={() => {
+                        const overdueTasks = tasks.filter((task) => task.status === 'Overdue');
+                        navigation.navigate('OverdueTask', { overdueTasks });
+                      }}>
                       <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                    </View>
+                    </TouchableOpacity>
                   </TouchableOpacity>
                 </View>
               </View>
 
-              <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
-                <View className="flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5 ">
-                  <View className="flex items-start ">
-                    <Text className="font-medium text-white">Pending Tasks</Text>
-                    <Text className=" font-semibold text-white" style={{ fontSize: 34 }}>
-                      {taskCounts.Pending} {/* Dynamic task count */}
-                    </Text>
-                    <Text className=" w-[40vw] pt-2 text-xs text-white">25th December, 2024</Text>
-                  </View>
-                  <View className="mt-3 flex flex-row items-start">
-                    <View className="flex w-full flex-row  pt-9">
-                      {tasks
-                        .filter((task) => task.status === 'Pending') // Filter by status
-                        .slice(0, 2) // Show only the first two users
-                        .map((task, index) => (
-                          <View key={task._id} className="relative flex flex-row">
-                            <View
-                              className="-m-1.5 h-9 w-9 rounded-full border"
-                              style={{
-                                borderColor: colors[index % colors.length], // Assign a color from the array
-                                backgroundColor: colors[index % colors.length], // Set background color
-                              }}>
-                              <Text className=" mt-2 text-center text-sm font-medium text-black">
-                                {getInitials(task?.assignedUser)} {/* Display initials */}
-                              </Text>
-                            </View>
-                          </View>
-                        ))}
-                      {tasks.filter((task) => task.status === 'Pending').length > 2 && (
-                        <View className="relative -mt-1 flex flex-row">
-                          <View
-                            className="h-9 w-9 items-center justify-center rounded-full"
-                            style={{
-                              backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
-                            }}>
-                            <Text className="text-center font-bold text-black">
-                              +{tasks.filter((task) => task.status === 'Pending').length - 2}
-                            </Text>
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                  <TouchableOpacity className=""   onPress={() => {
-                      const pendingTasks = tasks.filter((task) => task.status === 'Pending'); 
-                      navigation.navigate('PendingTask', { pendingTasks }); 
-                    }}>
-                    <View className="-mt-9 flex h-9 w-9 items-center justify-center self-end rounded-full border border-white">
+              <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
+                <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5">
+                  <TouchableOpacity className="h-full w-full">
+                    <TaskCard
+                      title="Pending Tasks"
+                      count={taskCounts.Pending}
+                      tasks={tasks}
+                      status="Pending"
+                      borderColor="#FDB314"
+                      colors={['#CCC', '#FFF']}
+                    />
+                    <TouchableOpacity
+                      className="-mt-6 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white"
+                      onPress={() => {
+                        const pendingTasks = tasks.filter((task) => task.status === 'Pending');
+                        navigation.navigate('PendingTask', { pendingTasks });
+                      }}>
                       <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                    </View>
+                    </TouchableOpacity>
                   </TouchableOpacity>
                 </View>
-                <View className="flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5 ">
-                  <View className="flex items-start ">
-                    <Text className="w-[50vh] font-medium text-white">In Progress Tasks</Text>
-                    <Text className=" font-semibold text-white" style={{ fontSize: 34 }}>
-                      {taskCounts.InProgress} {/* Dynamic task count */}
-                    </Text>
-                    <Text className=" w-[40vw] pt-2 text-xs text-white">25th December, 2024</Text>
-                  </View>
-                  <View className="mt-3 flex flex-row items-start">
-                    <View className="flex w-full flex-row  pt-9">
-                      {/* Display the first two initials with different colors */}
-                      {tasks
-                        .filter((task) => task.status === 'InProgress') // Filter by status
-                        .slice(0, 2) // Show only the first two users
-                        .map((task, index) => (
-                          <View key={task._id} className="relative flex flex-row">
-                            <View
-                              className="-m-1.5 h-9 w-9 rounded-full border"
-                              style={{
-                                borderColor: colors[index % colors.length], // Assign a color from the array
-                                backgroundColor: colors[index % colors.length], // Set background color
-                              }}>
-                              <Text className=" mt-2 text-center text-sm font-medium text-black">
-                                {getInitials(task?.assignedUser)} {/* Display initials */}
-                              </Text>
-                            </View>
-                          </View>
-                        ))}
-
-                      {/* Show the + with full circle if there are more than 2 users */}
-                      {tasks.filter((task) => task.status === 'InProgress').length > 2 && (
-                        <View className="relative -mt-1 flex flex-row">
-                          <View
-                            className="h-9 w-9 items-center justify-center rounded-full"
-                            style={{
-                              backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
-                            }}>
-                            <Text className="text-center font-bold text-black">
-                              +{tasks.filter((task) => task.status === 'Pending').length - 2}
-                            </Text>
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                  <TouchableOpacity>
-                    <View className=" -mt-1 flex h-9 w-9 items-center justify-center self-end rounded-full border border-white">
+                <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
+                  <TouchableOpacity className="h-full w-full">
+                    <TaskCard
+                      title="In Progress Tasks"
+                      count={taskCounts.InProgress}
+                      tasks={tasks}
+                      status="InProgress"
+                      borderColor="#A914DD"
+                    />
+                    <TouchableOpacity
+                      className="flex h-8 w-8 items-center justify-center self-end rounded-full border border-white"
+                      onPress={() => {
+                        const filteredTasks = tasks.filter((task) => task.status === 'InProgress');
+                        navigation.navigate('PendingTask', { filteredTasks });
+                      }}>
                       <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                    </View>
+                    </TouchableOpacity>
                   </TouchableOpacity>
                 </View>
               </View>
-
-              {/* Full Width Card */}
-              <View className="mb-2 mt-2 h-[160px] w-[93%] rounded-3xl bg-[#007B5B] p-4">
+              <View className="mb-2 mt-2 h-[167px] w-[93%] rounded-3xl bg-[#007B5B] p-5 pb-7 pt-7 ">
                 <View className=" flex w-full flex-row items-center justify-between">
                   <Text className="text-white ">Completed Tasks</Text>
                   <Text className="text-xs text-white">22-12-2024 to 28-12-2024</Text>
                 </View>
-                <Text className=" mt-2 font-semibold text-white" style={{ fontSize: 34 }}>
+                <Text className=" mt-2  text-white" style={{ fontSize: 34 }}>
                   {taskCounts.Completed}
                 </Text>
 
@@ -1093,12 +966,12 @@ export default function DelegatedTaskScreen () {
                       .map((task, index) => (
                         <View key={task._id} className="relative flex flex-row">
                           <View
-                            className="-m-1.5 h-9 w-9 rounded-full border"
+                            className="-m-1 h-9 w-9 rounded-full border border-[#007B5B]"
                             style={{
-                              borderColor: colors[index % colors.length], // Assign a color from the array
+                              borderColor: '#007B5B',
                               backgroundColor: colors[index % colors.length], // Set background color
                             }}>
-                            <Text className=" mt-2 text-center text-sm font-medium text-black">
+                            <Text className=" mt-2 text-center text-sm  text-black">
                               {getInitials(task?.assignedUser)} {/* Display initials */}
                             </Text>
                           </View>
@@ -1107,11 +980,11 @@ export default function DelegatedTaskScreen () {
                     {tasks.filter((task) => task.status === 'Completed').length > 2 && (
                       <View className="relative -mt-1 flex flex-row">
                         <View
-                          className="h-9 w-9 items-center justify-center rounded-full"
+                          className="h-8 w-8 items-center justify-center rounded-full"
                           style={{
                             backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
                           }}>
-                          <Text className="text-center font-bold text-black">
+                          <Text className="text-center font-medium text-black">
                             +{tasks.filter((task) => task.status === 'Completed').length - 2}
                           </Text>
                         </View>
@@ -1119,114 +992,55 @@ export default function DelegatedTaskScreen () {
                     )}
                   </View>
 
-                  <View className=" flex h-9 w-9 items-center justify-center rounded-full border border-white ">
+                  <TouchableOpacity
+                    onPress={() => {
+                      const completedTasks = tasks.filter((task) => task.status === 'Completed');
+                      navigation.navigate('CompletedTask', { completedTasks });
+                    }}
+                    className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
                     <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                  </View>
+                  </TouchableOpacity>
                 </View>
               </View>
               <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
-                <View className="flex h-full w-1/2 flex-col rounded-3xl bg-[#815BF5] p-5 ">
-                  <View className="flex items-start ">
-                    <Text className="font-medium text-white">In Time Task</Text>
-                    <Text className=" font-semibold text-white" style={{ fontSize: 34 }}>
-                      {taskCounts.Pending} {/* Dynamic task count */}
-                    </Text>
-                    <Text className=" w-[40vw] pt-2 text-xs text-white">
-                      {tasks.length > 0 && formatDate(tasks[0].dueDate)} {/* Formatted Due Date */}
-                    </Text>
-                  </View>
-                  <View className="mt-3 flex items-start">
-                    <View className="flex w-full flex-row items-center justify-center pt-9">
-                      {tasks
-                        .filter((task) => task.status === 'In Time') // Filter by status
-                        .slice(0, 2) // Show only the first two users
-                        .map((task, index) => (
-                          <View key={task._id} className="relative flex flex-row">
-                            <View
-                              className="-m-1.5 h-9 w-9 rounded-full border"
-                              style={{
-                                borderColor: colors[index % colors.length], // Assign a color from the array
-                                backgroundColor: colors[index % colors.length], // Set background color
-                              }}>
-                              <Text className=" mt-2 text-center text-sm font-medium text-black">
-                                {getInitials(task?.assignedUser)} {/* Display initials */}
-                              </Text>
-                            </View>
-                          </View>
-                        ))}
-
-                      {/* Show the + with full circle if there are more than 2 users */}
-                      {tasks.filter((task) => task.status === 'In Time').length > 2 && (
-                        <View className="relative flex flex-row">
-                          <View
-                            className="h-9 w-9 items-center justify-center rounded-full"
-                            style={{
-                              backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
-                            }}>
-                            <Text className="text-center font-bold text-black">
-                              +{tasks.filter((task) => task.status === 'Pending').length - 2}
-                            </Text>
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                    <View className=" flex h-9 w-9 items-center justify-center self-end rounded-full border border-white ">
+                <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#815BF5] p-5">
+                  <TouchableOpacity className="h-full w-full">
+                    <TaskCard
+                      title="In Time Tasks"
+                      count={taskCounts['In Time']}
+                      tasks={tasks}
+                      status="In Time"
+                      colors={['#CCC', '#FFF']}
+                      borderColor="#815BF5"
+                    />
+                    <TouchableOpacity
+                      className="flex h-8 w-8 items-center justify-center self-end rounded-full border border-white"
+                      onPress={() => {
+                        const inTimeTasks = tasks.filter((task) => task.status === 'In Time');
+                        navigation.navigate('InTimeTask', { inTimeTasks });
+                      }}>
                       <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                    </View>
-                  </View>
+                    </TouchableOpacity>
+                  </TouchableOpacity>
                 </View>
-
-                <View className="flex h-full w-1/2 flex-col rounded-3xl bg-[#DE7560] p-5 ">
-                  <View className="flex items-start ">
-                    <Text className="font-medium text-white">Delayed Tasks</Text>
-                    <Text className=" font-semibold text-white" style={{ fontSize: 34 }}>
-                      {taskCounts.Delayed} {/* Dynamic task count */}
-                    </Text>
-                    <Text className=" w-[40vw] pt-2 text-xs text-white">
-                      {tasks.length > 0 && formatDate(tasks[1]?.dueDate)} {/* Formatted Due Date */}
-                    </Text>
-                  </View>
-                  <View className="mt-3 flex flex-row items-start">
-                    <View className="flex w-full flex-row  pt-9">
-                      {/* Display the first two initials with different colors */}
-                      {tasks
-                        .filter((task) => task.status === 'Delayed') // Filter by status
-                        .slice(0, 2) // Show only the first two users
-                        .map((task, index) => (
-                          <View key={task._id} className="relative flex flex-row">
-                            <View
-                              className="-m-1.5 h-9 w-9 rounded-full border"
-                              style={{
-                                borderColor: colors[index % colors.length], // Assign a color from the array
-                                backgroundColor: colors[index % colors.length], // Set background color
-                              }}>
-                              <Text className=" mt-2 text-center text-sm font-medium text-black">
-                                {getInitials(task?.assignedUser)} {/* Display initials */}
-                              </Text>
-                            </View>
-                          </View>
-                        ))}
-
-                      {/* Show the + with full circle if there are more than 2 users */}
-                      {tasks.filter((task) => task.status === 'Delayed').length > 2 && (
-                        <View className="relative -mt-1 flex flex-row">
-                          <View
-                            className="h-9 w-9 items-center justify-center rounded-full"
-                            style={{
-                              backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
-                            }}>
-                            <Text className="text-center font-bold text-black">
-                              +{tasks.filter((task) => task.status === 'Delayed').length - 2}
-                            </Text>
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                  <TouchableOpacity>
-                    <View className=" -mt-1 flex h-9 w-9 items-center justify-center self-end rounded-full border border-white">
+                <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#DE7560] p-5">
+                  <TouchableOpacity className="h-full w-full">
+                    <TaskCard
+                      title="Delayed Tasks"
+                      count={taskCounts.Delayed}
+                      tasks={tasks}
+                      status="Delayed"
+                      colors={['#CCC', '#FFF']}
+                      borderColor="#DE7560"
+                    />
+                    <TouchableOpacity
+                      className="flex h-8 w-8 items-center justify-center self-end rounded-full border border-white"
+                      onPress={() => {
+                        const delayedTasks = tasks.filter((task) => task.status === 'Delayed');
+                        navigation.navigate('DelayedTask', { delayedTasks });
+                      }}>
                       <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                    </View>
+                    </TouchableOpacity>
                   </TouchableOpacity>
                 </View>
               </View>

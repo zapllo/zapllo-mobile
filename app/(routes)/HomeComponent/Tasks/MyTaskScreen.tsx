@@ -234,7 +234,13 @@ export default function MyTaskScreen() {
             <View className="p-4.2 mb-32 flex h-full w-full flex-col items-center gap-2.5 pt-1">
               <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FC842C] p-5">
-                  <TouchableOpacity className="h-full w-full">
+                  <TouchableOpacity 
+                  className="h-full w-full"
+                  onPress={() => {
+                    const filteredTasks = tasks.filter((task) => task.status === "Today");
+                    navigation.navigate('PendingTask', { filteredTasks });
+                  }}
+                  >
                     <TaskCard
                       title="Today’s Task"
                       count={taskCounts.Today}
@@ -255,7 +261,13 @@ export default function MyTaskScreen() {
                 </View>
 
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#D85570] p-5">
-                  <TouchableOpacity className="h-full w-full">
+                  <TouchableOpacity 
+                  className="h-full w-full"
+                  onPress={() => {
+                    const filteredTasks = tasks.filter((task) => task.status === "Overdue");
+                    navigation.navigate('PendingTask', { filteredTasks });
+                  }}
+                  >
                     {/* Overdue Tasks */}
                     <TaskCard
                       title="Overdue Tasks"
@@ -278,7 +290,13 @@ export default function MyTaskScreen() {
 
               <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5">
-                  <TouchableOpacity className="h-full w-full">
+                  <TouchableOpacity 
+                  className="h-full w-full"
+                  onPress={() => {
+                    const pendingTasks = tasks.filter((task) => task.status === "Pending");
+                    navigation.navigate('PendingTask', { pendingTasks });
+                  }}
+                  >
                     <TaskCard
                       title="Pending Tasks"
                       count={taskCounts.Pending}
@@ -298,7 +316,13 @@ export default function MyTaskScreen() {
                   </TouchableOpacity>
                 </View>
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
-                  <TouchableOpacity className="h-full w-full">
+                  <TouchableOpacity 
+                  className="h-full w-full"
+                  onPress={() => {
+                    const filteredTasks = tasks.filter((task) => task.status === 'Pending');
+                    navigation.navigate('PendingTask', { filteredTasks });
+                  }}
+                  >
                     <TaskCard
                       title="In Progress Tasks"
                       count={taskCounts.InProgress}
@@ -372,7 +396,14 @@ export default function MyTaskScreen() {
               </View>
               <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#815BF5] p-5">
-                  <TouchableOpacity className="h-full w-full">
+                  <TouchableOpacity 
+                  className="h-full w-full"
+                  
+                  onPress={() => {
+                    const filteredTasks = tasks.filter((task) => task.status === 'In Time');
+                    navigation.navigate('PendingTask', { filteredTasks });
+                  }}
+                  >
                     <TaskCard
                       title="In Time Tasks"
                       count={taskCounts['In Time']}
@@ -392,7 +423,14 @@ export default function MyTaskScreen() {
                   </TouchableOpacity>
                 </View>
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#DE7560] p-5">
-                  <TouchableOpacity className="h-full w-full">
+                  <TouchableOpacity 
+                  className="h-full w-full"
+                  onPress={() => {
+                    const filteredTasks = tasks.filter((task) => task.status === status);
+                    navigation.navigate('PendingTask', { filteredTasks });
+                  }}
+                  
+                  >
                     <TaskCard
                       title="Delayed Tasks"
                       count={taskCounts.Delayed}

@@ -255,7 +255,7 @@ export default function DashboardScreen() {
     },
     {} as Record<string, { user: Task['assignedUser']; tasks: Task[] }>
   );
-console.log("PPPPPPP",categoryTasks.length)
+console.log(object)
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -386,7 +386,7 @@ console.log("PPPPPPP",categoryTasks.length)
                         <TaskCard
                           title="Category Wise"
                           // count={taskCounts.Today}
-                          count={categoryTasks?.length}
+                          count={26}
                           date={'22-12-2024 to 28-12-2024'}
                           tasks={tasks}
                           status="Overdue"
@@ -431,6 +431,7 @@ console.log("PPPPPPP",categoryTasks.length)
                             />
                           </View>
                         </TouchableOpacity>
+
                       </TouchableOpacity>
                     </View>
                     <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">

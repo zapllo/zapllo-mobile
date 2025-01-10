@@ -75,7 +75,10 @@ export default function DashboardScreen() {
   const [assignedUsers, setAssignedUsers] = useState<Task[]>([]);
   const [tasksData, setTasksData] = useState<Task[]>([]);
   const [detailPageData, setDetailPageData] = useState();
+  const [myReports, setMyReports] = useState();
+  const [delegatedData, setDelegatedData] = useState();
   const [categoryTasks, setCategoryTasks] = useState([]);
+  const [groupedCategory, setGroupedCategory] = useState([]);
   const [taskCounts, setTaskCounts] = useState<TaskStatusCounts>({
     Overdue: 0,
     Pending: 0,
@@ -97,10 +100,27 @@ export default function DashboardScreen() {
 
   // task?.assignedUser?._id === currentUser?._id;
 
-  console.log('useerrrr>🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳', JSON.stringify(userData?.data.role));
+  // console.log('❌❌❌❌❌❌', JSON.stringify(userData?.data?._id,null,2));
 
   const [selectedTeamSize, setSelectedTeamSize] = useState('');
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
+
+  const groupedByCategory = tasks.reduce((acc, task) => {
+    const categoryName = task.category.name;
+    if (!acc[categoryName]) {
+      acc[categoryName] = [];
+    }
+    acc[categoryName].push(task);
+    return acc;
+  }, {});
+
+  useEffect(() => {
+    const groupedArray = Object.entries(groupedByCategory).map(([category, tasks]) => ({
+      category,
+      tasks,
+    }));
+    setGroupedCategory(groupedArray);
+  }, [tasks]);
 
   const filterTasksByDate = (tasks: Task[], dateRange: any) => {
     const { startDate, endDate } = dateRange;
@@ -178,6 +198,13 @@ export default function DashboardScreen() {
             },
           });
           const tasksData = Array.isArray(response.data?.data) ? response.data?.data : [];
+          const delegatedTask = tasksData.filter(
+            (task: { user: any; assignedUser: any; _id: any }) =>
+              (task.user?._id === userData?.data?._id &&
+                task.assignedUser?._id !== userData?.data?._id) ||
+              task.assignedUser?._id === userData?.data?._id
+          );
+
           const filteredEmployeeData = tasksData.map((v: any) => v.assignedUser);
           const uniqueData = Array.from(
             new Map(filteredEmployeeData.map((item: any) => [item._id, item])).values()
@@ -193,10 +220,10 @@ export default function DashboardScreen() {
             });
             newData.push(userData);
           });
-
+          setDelegatedData(delegatedTask);
           setAssignedUsers(uniqueData);
           setDetailPageData(newData);
-          console.log('🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻', uniqueData);
+          // console.log('🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻', uniqueData);
           // const filteredTask = tasksData.filter(
           //   (e: { assignedUser: any; _id: any }) => e?.assignedUser?._id === userData?.data?._id
           // );
@@ -228,6 +255,9 @@ export default function DashboardScreen() {
 
             // Now, update the state with the grouped data
             setCategoryTasks(groupedByCategory);
+            {
+              groupedCategory.map((cat) => setMyReports(cat.length));
+            }
           };
 
           // Call the filterCategory function to group tasks by category
@@ -255,7 +285,6 @@ export default function DashboardScreen() {
     },
     {} as Record<string, { user: Task['assignedUser']; tasks: Task[] }>
   );
-console.log(object)
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -283,6 +312,33 @@ console.log(object)
       today.getFullYear() === taskDueDate.getFullYear()
     );
   };
+
+  // const getCount = () => {
+  //   var assigned = [];
+  //   groupedCategory.forEach((cat) => {
+  //     cat?.tasks?.forEach((e) => {
+  //       if (e?.assignedUser?._id == userData?.data?._id) {
+  //         console.log('❌❌❌❌>>>>>', JSON.stringify(e.category?.name, null, 2));
+
+  //         assigned.push(e);
+  //       }
+  //     });
+  //   });
+  //   const filteredData = assigned.filter((item, index, array) => {
+  //     const categoryName = item.category?.name;
+  //     console.log('❌❌❌❌', JSON.stringify(categoryName, null, 2));
+  //     return array.findIndex((obj) => obj.category?.name === categoryName) === index;
+  //   });
+  //   setMyReports(filteredData);
+
+  //   // return count;
+  // };
+
+  // console.log(">>>>>>>>>>>>>>",myReports)
+
+  // // useEffect(()=>{
+  // //    getCount()
+  // // },[groupedCategory])
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
@@ -358,53 +414,34 @@ console.log(object)
                           title="Employee Wise"
                           count={assignedUsers.length}
                           date={'25th December, 2024'}
-                          // count={taskCounts.Today}
                           tasks={assignedUsers}
-                          status="Today"
                           borderColor="#FC842C"
-                        />
-                        <TouchableOpacity
-                          className=""
                           onPress={() => {
                             navigation.navigate('EmployeeWise', {
                               employeeWiseData: detailPageData,
                             });
-                          }}>
-                          <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                            <Image
-                              className="h-4 w-4"
-                              source={require('~/assets/Tasks/goto.png')}
-                            />
-                          </View>
-                        </TouchableOpacity>
+                          }}
+                        />
                       </TouchableOpacity>
                     </View>
 
                     <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#D85570] p-5">
                       <TouchableOpacity className="h-full w-full">
                         {/* Overdue Tasks */}
-                        <TaskCard
+                        <DashboardCard
                           title="Category Wise"
                           // count={taskCounts.Today}
-                          count={26}
+                          count={groupedCategory.length}
                           date={'22-12-2024 to 28-12-2024'}
                           tasks={tasks}
                           status="Overdue"
                           borderColor="#D85570"
-                        />
-                        <TouchableOpacity
                           onPress={() => {
                             navigation.navigate('CategoryWise', {
-                              employeeWiseData: detailPageData,
+                              employeeWiseData: groupedCategory,
                             });
-                          }}>
-                          <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                            <Image
-                              className="h-4 w-4"
-                              source={require('~/assets/Tasks/goto.png')}
-                            />
-                          </View>
-                        </TouchableOpacity>
+                          }}
+                        />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -412,48 +449,31 @@ console.log(object)
                   <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                     <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5">
                       <TouchableOpacity className="h-full w-full">
-                        <TaskCard
+                        <DashboardCard
                           title="My Report"
-                          count={135}
+                          count={5}
                           tasks={tasks}
                           status="Pending"
                           borderColor="#FDB314"
                           colors={['#CCC', '#FFF']}
-                        />
-                        <TouchableOpacity
                           onPress={() => {
-                            navigation.navigate('MyReports', { employeeWiseData: detailPageData });
-                          }}>
-                          <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                            <Image
-                              className="h-4 w-4"
-                              source={require('~/assets/Tasks/goto.png')}
-                            />
-                          </View>
-                        </TouchableOpacity>
-
+                            navigation.navigate('MyReports', { employeeWiseData: groupedCategory });
+                          }}
+                        />
                       </TouchableOpacity>
                     </View>
                     <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
                       <TouchableOpacity className="h-full w-full">
                         <TaskCard
                           title="Delegated"
-                          count={56}
+                          count={5}
                           tasks={tasks}
                           status="Pending"
                           borderColor="#A914DD"
-                        />
-                        <TouchableOpacity
                           onPress={() => {
                             navigation.navigate('Delegated', { employeeWiseData: detailPageData });
-                          }}>
-                          <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                            <Image
-                              className="h-4 w-4"
-                              source={require('~/assets/Tasks/goto.png')}
-                            />
-                          </View>
-                        </TouchableOpacity>
+                          }}
+                        />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -470,11 +490,6 @@ console.log(object)
                         borderColor="#FDB314"
                         colors={['#CCC', '#FFF']}
                       />
-                      <TouchableOpacity>
-                        <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                          <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                        </View>
-                      </TouchableOpacity>
                     </TouchableOpacity>
                   </View>
                   <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
@@ -486,11 +501,6 @@ console.log(object)
                         status="Pending"
                         borderColor="#A914DD"
                       />
-                      <TouchableOpacity>
-                        <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                          <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                        </View>
-                      </TouchableOpacity>
                     </TouchableOpacity>
                   </View>
                 </View>

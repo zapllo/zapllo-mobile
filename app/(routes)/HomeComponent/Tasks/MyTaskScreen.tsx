@@ -23,7 +23,7 @@ import { Image } from 'react-native';
 import moment from 'moment';
 import getDateRange from '~/utils/GetDateRange';
 import TaskStatusCard from '~/components/card/TaskStatusCard';
-import TaskCard from '~/components/card/TaskCard';
+import TaskCard from '~/components/TaskComponents/TaskCard';
 import { MyTasksStackParamList } from '~/screens/Task/myTask/MyTaskStack';
 interface Task {
   _id: string;
@@ -103,7 +103,7 @@ export default function MyTaskScreen() {
   useEffect(() => {
     const dateRange = getDateRange(selectedTeamSize);
     const myTasksByDate = filterTasksByDate(tasksData, dateRange);
-    console.log("🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻",tasksData.length)
+    console.log('🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻', tasksData.length);
     setTasks(myTasksByDate);
     setTaskCounts(countStatuses(myTasksByDate));
   }, [selectedTeamSize]);
@@ -156,6 +156,7 @@ export default function MyTaskScreen() {
     );
   };
 
+
   useFocusEffect(
     React.useCallback(() => {
       const fetchTasks = async () => {
@@ -169,9 +170,9 @@ export default function MyTaskScreen() {
           const filteredTask = tasksData.filter(
             (e: { assignedUser: any; _id: any }) => e?.assignedUser?._id === userData?.data?._id
           );
-          console.log("++👵🏻👵🏻👵🏻👵🏻👵🏻",JSON.stringify(filteredTask,null,2))
-          
-          setTasks(filteredTask); 
+          console.log('++👵🏻👵🏻👵🏻👵🏻👵🏻', JSON.stringify(filteredTask, null, 2));
+
+          setTasks(filteredTask);
           setTasksData(filteredTask);
           setTaskCountsData(countStatuses(filteredTask)); // Update task counts
           setTaskCounts(countStatuses(filteredTask)); // Update task counts
@@ -224,7 +225,7 @@ export default function MyTaskScreen() {
             <View className="mb-3 mt-4 flex w-full items-center">
               <CustomDropdown
                 data={daysData}
-                placeholder="Select Filters"
+                placeholder="This Week"
                 selectedValue={selectedTeamSize}
                 onSelect={(value) => setSelectedTeamSize(value)}
               />
@@ -234,32 +235,34 @@ export default function MyTaskScreen() {
             <View className="p-4.2 mb-32 flex h-full w-full flex-col items-center gap-2.5 pt-1">
               <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FC842C] p-5">
-                  <TouchableOpacity 
-                  className="h-full w-full"
-                  onPress={() => {
-                    const filteredTasks = tasks.filter((task) => task.status === "Today");
-                    navigation.navigate('PendingTask', { filteredTasks });
-                  }}
-                  >
+                  <TouchableOpacity
+                    className="h-full w-full"
+                    onPress={() => {
+                      const filteredTasks = tasks.filter((task) => task.status === 'Today');
+                      navigation.navigate('PendingTask', { filteredTasks });
+                    }}>
                     <TaskCard
                       title="Today’s Task"
                       count={taskCounts.Today}
                       tasks={tasks}
                       status="Today"
                       borderColor="#FC842C"
+                      onPress={() => {
+                        const todaysTasks = tasks.filter((task) => task.status === 'Today');
+                        console.log('okkkkkk>>>>>>>>>>>>>', todaysTasks);
+                        navigation.navigate('ToadysTask', { todaysTasks });
+                      }}
                     />
-        
                   </TouchableOpacity>
                 </View>
 
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#D85570] p-5">
-                  <TouchableOpacity 
-                  className="h-full w-full"
-                  onPress={() => {
-                    const filteredTasks = tasks.filter((task) => task.status === "Overdue");
-                    navigation.navigate('PendingTask', { filteredTasks });
-                  }}
-                  >
+                  <TouchableOpacity
+                    className="h-full w-full"
+                    onPress={() => {
+                      const filteredTasks = tasks.filter((task) => task.status === 'Overdue');
+                      navigation.navigate('PendingTask', { filteredTasks });
+                    }}>
                     {/* Overdue Tasks */}
                     <TaskCard
                       title="Overdue Tasks"
@@ -267,21 +270,23 @@ export default function MyTaskScreen() {
                       tasks={tasks}
                       status="Overdue"
                       borderColor="#D85570"
+                      onPress={() => {
+                        const overdueTasks = tasks.filter((task) => task.status === 'Overdue');
+                        navigation.navigate('OverdueTask', { overdueTasks });
+                      }}
                     />
-
                   </TouchableOpacity>
                 </View>
               </View>
 
               <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5">
-                  <TouchableOpacity 
-                  className="h-full w-full"
-                  onPress={() => {
-                    const pendingTasks = tasks.filter((task) => task.status === "Pending");
-                    navigation.navigate('PendingTask', { pendingTasks });
-                  }}
-                  >
+                  <TouchableOpacity
+                    className="h-full w-full"
+                    onPress={() => {
+                      const pendingTasks = tasks.filter((task) => task.status === 'Pending');
+                      navigation.navigate('PendingTask', { pendingTasks });
+                    }}>
                     <TaskCard
                       title="Pending Tasks"
                       count={taskCounts.Pending}
@@ -289,24 +294,30 @@ export default function MyTaskScreen() {
                       status="Pending"
                       borderColor="#FDB314"
                       colors={['#CCC', '#FFF']}
+                      onPress={() => {
+                        const pendingTasks = tasks.filter((task) => task.status === 'Pending');
+                        navigation.navigate('PendingTask', { pendingTasks });
+                      }}
                     />
-
                   </TouchableOpacity>
                 </View>
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
-                  <TouchableOpacity 
-                  className="h-full w-full"
-                  onPress={() => {
-                    const filteredTasks = tasks.filter((task) => task.status === 'Pending');
-                    navigation.navigate('PendingTask', { filteredTasks });
-                  }}
-                  >
+                  <TouchableOpacity
+                    className="h-full w-full"
+                    onPress={() => {
+                      const filteredTasks = tasks.filter((task) => task.status === 'Pending');
+                      navigation.navigate('PendingTask', { filteredTasks });
+                    }}>
                     <TaskCard
                       title="In Progress Tasks"
                       count={taskCounts.InProgress}
                       tasks={tasks}
-                      status="Pending"
+                      status="InProgress"
                       borderColor="#A914DD"
+                      onPress={() => {
+                        const filteredTasks = tasks.filter((task) => task.status === 'InProgress');
+                        navigation.navigate('PendingTask', { filteredTasks });
+                      }}
                     />
                   </TouchableOpacity>
                 </View>
@@ -356,21 +367,20 @@ export default function MyTaskScreen() {
 
                   <View className=" flex h-9 w-9 items-center justify-center rounded-full border border-white ">
                     <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                  </View>
+            
+                  
                 </View>
               </View>
               
 
               <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#815BF5] p-5">
-                  <TouchableOpacity 
-                  className="h-full w-full"
-                  
-                  onPress={() => {
-                    const filteredTasks = tasks.filter((task) => task.status === 'In Time');
-                    navigation.navigate('PendingTask', { filteredTasks });
-                  }}
-                  >
+                  <TouchableOpacity
+                    className="h-full w-full"
+                    onPress={() => {
+                      const filteredTasks = tasks.filter((task) => task.status === 'In Time');
+                      navigation.navigate('PendingTask', { filteredTasks });
+                    }}>
                     <TaskCard
                       title="In Time Tasks"
                       count={taskCounts['In Time']}
@@ -378,19 +388,20 @@ export default function MyTaskScreen() {
                       status="In Time"
                       colors={['#CCC', '#FFF']}
                       borderColor="#815BF5"
+                      onPress={() => {
+                        const inTimeTasks = tasks.filter((task) => task.status === 'In Time');
+                        navigation.navigate('InTimeTask', { inTimeTasks });
+                      }}
                     />
-      
                   </TouchableOpacity>
                 </View>
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#DE7560] p-5">
-                  <TouchableOpacity 
-                  className="h-full w-full"
-                  onPress={() => {
-                    const filteredTasks = tasks.filter((task) => task.status === status);
-                    navigation.navigate('PendingTask', { filteredTasks });
-                  }}
-                  
-                  >
+                  <TouchableOpacity
+                    className="h-full w-full"
+                    onPress={() => {
+                      const filteredTasks = tasks.filter((task) => task.status === status);
+                      navigation.navigate('PendingTask', { filteredTasks });
+                    }}>
                     <TaskCard
                       title="Delayed Tasks"
                       count={taskCounts.Delayed}
@@ -398,6 +409,10 @@ export default function MyTaskScreen() {
                       status="Delayed"
                       colors={['#CCC', '#FFF']}
                       borderColor="#DE7560"
+                      onPress={() => {
+                        const delayedTasks = tasks.filter((task) => task.status === 'Delayed');
+                        navigation.navigate('DelayedTask', { delayedTasks });
+                      }}
                     />
                   </TouchableOpacity>
                 </View>

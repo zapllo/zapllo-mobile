@@ -9,16 +9,19 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import NavbarTwo from '~/components/navbarTwo';
-import { useNavigation } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 import { StackNavigationProp } from '@react-navigation/stack';
 import ProfileButton from '~/components/profile/ProfileButton';
 import InputContainer from '~/components/InputContainer';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Button } from 'react-native-paper';
 import { useSelector } from 'react-redux';
-import { RootState } from '~/redux/store';
+import { AppDispatch, RootState } from '~/redux/store';
+import { useDispatch } from 'react-redux';
+import { logOut } from '~/redux/slices/authSlice';
 
 // Define the type for your navigation
 type RootStackParamList = {
@@ -40,13 +43,22 @@ type NavigationProp = StackNavigationProp<RootStackParamList, '(routes)/home/ind
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const dispatch = useDispatch<AppDispatch>();
   const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [numberValue, setNumberValue] = useState(data[0]?.value || null);
   const [buttonSpinner, setButtonSpinner] = useState(false);
 
-  console.log('userrrr', userData?.data?.profilePic);
+  const handleLogout = () => {
+    setButtonSpinner(true);
+    setTimeout(() => {
+      dispatch(logOut());
+      setButtonSpinner(false);
+      Alert.alert("Logged out sucessfully!")
+      router.push('/(routes)/login');
+    }, 1000);
+  };
 
   return (
     <SafeAreaView className="h-full w-full flex-1 bg-[#05071E]">
@@ -76,164 +88,176 @@ const ProfileScreen: React.FC = () => {
                 )}
               </View>
               <View className=" flex flex-col items-start gap-1">
-                <Text className="text-xl font-medium text-white" style={{fontFamily:"Lato-Bold"}}>
+                <Text
+                  className="text-xl font-medium text-white"
+                  style={{ fontFamily: 'Lato-Bold' }}>
                   {userData?.user?.firstName || userData?.data?.firstName}{' '}
                   {userData?.user?.lastName || userData?.data?.lastName}
                 </Text>
-                <Text className=" w-16 rounded-lg bg-[#815BF5] font-light p-1 text-center text-[11px] text-white" style={{fontFamily:"Lato-thin"}}>
+                <Text
+                  className=" w-16 rounded-lg bg-[#815BF5] p-1 text-center text-[11px] font-light text-white"
+                  style={{ fontFamily: 'Lato-thin' }}>
                   {userData?.user?.role || userData?.data?.role === 'orgAdmin' ? 'Admin' : 'User'}
                 </Text>
               </View>
             </View>
 
-            
             <View className="flex w-[90%] flex-row items-center justify-start gap-4">
-            {/* line */}
-            <View className="mb-9 mt-9 h-0.5 w-full bg-[#37384B]"></View>
+              {/* line */}
+              <View className="mb-9 mt-9 h-0.5 w-full bg-[#37384B]"></View>
             </View>
-
 
             {/* Account Information */}
             <View className="w-full">
-            
-              <Text className="text-start text-sm text-[#787CA5] ml-7 " style={{fontFamily:"Lato-Bold"}}>Account Information</Text>
-              
-              <View className='w-full flex items-center'>
-              {/* mail */}
-              <InputContainer
-                label="Email"
-                placeholder=""
-                className="flex-1 text-sm text-[#787CA5]"
-                value={userData?.user?.email || userData?.data?.email}
-                passwordError={''}
-                onChangeText={()=>{''}}
-              />
+              <Text
+                className="ml-7 text-start text-sm text-[#787CA5] "
+                style={{ fontFamily: 'Lato-Bold' }}>
+                Account Information
+              </Text>
 
-              {/* numbers */}
-              <View className="mt-1 flex w-[69%]  flex-row items-center justify-center gap-3">
-                <Dropdown
-                  style={{
-                    borderWidth: 1,
-                    borderColor: '#37384B',
-                    borderRadius: 29,
-                    backgroundColor: '#05071E',
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
-                    height: 55,
-                    marginTop: 27,
-                    width: 100,
-                  }}
-                  placeholderStyle={{
-                    fontSize: 14,
-                    color: '#787CA5',
-                  }}
-                  selectedTextStyle={{
-                    fontSize: 10,
-                    color: '#787CA5',
-                    marginLeft: 2,
-                  }}
-                  iconStyle={[
-                    {
-                      width: 20,
-                      height: 20,
-                      transform: [{ rotate: isDropdownOpen ? '180deg' : '0deg' }],
-                    },
-                  ]}
-                  containerStyle={{
-                    backgroundColor: '#05071E',
-                    borderColor: '#37384B',
-                    borderRadius: 20,
-                    overflow: 'hidden',
-                  }}
-                  data={data}
-                  labelField="label"
-                  valueField="value"
-                  placeholder="Select Code"
-                  value={numberValue}
-                  onFocus={() => setIsDropdownOpen(true)} // Handle open state
-                  onBlur={() => setIsDropdownOpen(false)} // Handle close state
-                  onChange={(item) => setNumberValue(item.value)} // Handle selection
-                  renderLeftIcon={() => {
-                    const selectedItem = data.find((item) => item.value === numberValue);
-                    return (
-                      <Image
-                        source={selectedItem?.icon}
-                        style={{ width: 15, height: 20, marginRight: 5 }}
-                        resizeMode="contain"
-                      />
-                    );
-                  }}
-                  renderItem={(item) => {
-                    const isSelected = item.value === numberValue;
-                    return (
-                      <TouchableOpacity
-                        style={[
-                          {
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            padding: 10,
-                            borderBottomColor: '#4e5278',
-                            backgroundColor: isSelected ? '#4e5278' : 'transparent',
-                            borderBottomWidth: 1,
-                          },
-                        ]}
-                        onPress={() => setNumberValue(item.value)}>
-                        <Image
-                          source={item.icon}
-                          style={{ width: 15, height: 20, marginRight: 10 }}
-                          resizeMode="contain"
-                        />
-                        <Text
-                          style={{
-                            fontSize: 14,
-                            color: isSelected ? '#FFFFFF' : '#787CA5',
-                            fontWeight: isSelected ? 'bold' : 'normal',
-                          }}>
-                          {item.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
+              <View className="flex w-full items-center">
+                {/* mail */}
+                <InputContainer
+                  label="Email"
+                  placeholder=""
+                  className="flex-1 text-sm text-[#787CA5]"
+                  value={userData?.user?.email || userData?.data?.email}
+                  passwordError={''}
+                  onChangeText={() => {
+                    ('');
                   }}
                 />
 
                 {/* numbers */}
-                <InputContainer
-                  label="WhatsApp Number"
-                  placeholder="7863983914"
-                  keyboardType="numeric"
-                  value={userData?.user?.whatsappNo || userData?.data?.whatsappNo}
-                  className="flex-1 p-2 text-sm text-[#787CA5]"
-                  passwordError={''}
-                  onChangeText={()=>{''}}
-                />
-              </View>
+                <View className="mt-1 flex w-[69%]  flex-row items-center justify-center gap-3">
+                  <Dropdown
+                    style={{
+                      borderWidth: 1,
+                      borderColor: '#37384B',
+                      borderRadius: 29,
+                      backgroundColor: '#05071E',
+                      paddingHorizontal: 12,
+                      paddingVertical: 10,
+                      height: 55,
+                      marginTop: 27,
+                      width: 100,
+                    }}
+                    placeholderStyle={{
+                      fontSize: 14,
+                      color: '#787CA5',
+                    }}
+                    selectedTextStyle={{
+                      fontSize: 10,
+                      color: '#787CA5',
+                      marginLeft: 2,
+                    }}
+                    iconStyle={[
+                      {
+                        width: 20,
+                        height: 20,
+                        transform: [{ rotate: isDropdownOpen ? '180deg' : '0deg' }],
+                      },
+                    ]}
+                    containerStyle={{
+                      backgroundColor: '#05071E',
+                      borderColor: '#37384B',
+                      borderRadius: 20,
+                      overflow: 'hidden',
+                    }}
+                    data={data}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select Code"
+                    value={numberValue}
+                    onFocus={() => setIsDropdownOpen(true)} // Handle open state
+                    onBlur={() => setIsDropdownOpen(false)} // Handle close state
+                    onChange={(item) => setNumberValue(item.value)} // Handle selection
+                    renderLeftIcon={() => {
+                      const selectedItem = data.find((item) => item.value === numberValue);
+                      return (
+                        <Image
+                          source={selectedItem?.icon}
+                          style={{ width: 15, height: 20, marginRight: 5 }}
+                          resizeMode="contain"
+                        />
+                      );
+                    }}
+                    renderItem={(item) => {
+                      const isSelected = item.value === numberValue;
+                      return (
+                        <TouchableOpacity
+                          style={[
+                            {
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              padding: 10,
+                              borderBottomColor: '#4e5278',
+                              backgroundColor: isSelected ? '#4e5278' : 'transparent',
+                              borderBottomWidth: 1,
+                            },
+                          ]}
+                          onPress={() => setNumberValue(item.value)}>
+                          <Image
+                            source={item.icon}
+                            style={{ width: 15, height: 20, marginRight: 10 }}
+                            resizeMode="contain"
+                          />
+                          <Text
+                            style={{
+                              fontSize: 14,
+                              color: isSelected ? '#FFFFFF' : '#787CA5',
+                              fontWeight: isSelected ? 'bold' : 'normal',
+                            }}>
+                            {item.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    }}
+                  />
 
-              {/* change pasword buttons */}
-              
+                  {/* numbers */}
+                  <InputContainer
+                    label="WhatsApp Number"
+                    placeholder="7863983914"
+                    keyboardType="numeric"
+                    value={userData?.user?.whatsappNo || userData?.data?.whatsappNo}
+                    className="flex-1 p-2 text-sm text-[#787CA5]"
+                    passwordError={''}
+                    onChangeText={() => {
+                      ('');
+                    }}
+                  />
+                </View>
+
+                {/* change pasword buttons */}
+
                 <TouchableOpacity
                   className={`mt-6 flex  h-[3.7rem] w-[90%] items-center justify-center rounded-full bg-[#37384B] p-2.5`}>
                   {buttonSpinner ? (
                     <ActivityIndicator size="small" color={'white'} />
                   ) : (
-                    <Text className="text-center  text-white " style={{fontFamily:"Lato-Bold"}}>Change Password</Text>
+                    <Text className="text-center  text-white " style={{ fontFamily: 'Lato-Bold' }}>
+                      Change Password
+                    </Text>
                   )}
                 </TouchableOpacity>
               </View>
-
             </View>
-
-
 
             {/* supports */}
             <View className=" flex w-[90%] flex-col items-start gap-2">
-            {/* line */}
-            <View className="mb-9 mt-9 h-0.5 w-full bg-[#37384B]"></View>
-              <Text className="text-xs text-[#787CA5]" style={{fontFamily:"Lato-Bold"}}>Support</Text>
+              {/* line */}
+              <View className="mb-9 mt-9 h-0.5 w-full bg-[#37384B]"></View>
+              <Text className="text-xs text-[#787CA5]" style={{ fontFamily: 'Lato-Bold' }}>
+                Support
+              </Text>
 
               {/* Tutorials */}
               <View className="w-full items-center gap-5">
                 <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{fontFamily:"Lato-Bold"}}>Tutorials</Text>
+                  <Text className="text-base text-white" style={{ fontFamily: 'Lato-Bold' }}>
+                    Tutorials
+                  </Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
                     className="mb-1 h-3 w-3"
@@ -245,7 +269,9 @@ const ProfileScreen: React.FC = () => {
               {/* My Tickets */}
               <View className="mt-4 w-full items-center gap-5">
                 <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{fontFamily:"Lato-Bold"}}>My Tickets</Text>
+                  <Text className="text-base text-white" style={{ fontFamily: 'Lato-Bold' }}>
+                    My Tickets
+                  </Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
                     className="mb-1 h-3 w-3"
@@ -257,7 +283,9 @@ const ProfileScreen: React.FC = () => {
               {/* Raise a Tickets*/}
               <View className="mt-4 w-full items-center gap-5">
                 <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{fontFamily:"Lato-Bold"}}>Raise a Tickets</Text>
+                  <Text className="text-base text-white" style={{ fontFamily: 'Lato-Bold' }}>
+                    Raise a Tickets
+                  </Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
                     className="mb-1 h-3 w-3"
@@ -269,7 +297,9 @@ const ProfileScreen: React.FC = () => {
               {/* Mobile App */}
               <View className="mt-4 w-full items-center gap-5">
                 <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{fontFamily:"Lato-Bold"}}>Mobile App</Text>
+                  <Text className="text-base text-white" style={{ fontFamily: 'Lato-Bold' }}>
+                    Mobile App
+                  </Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
                     className="mb-1 h-3 w-3"
@@ -281,7 +311,9 @@ const ProfileScreen: React.FC = () => {
               {/* Events */}
               <View className="mt-4 w-full items-center gap-5">
                 <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{fontFamily:"Lato-Bold"}}>Events</Text>
+                  <Text className="text-base text-white" style={{ fontFamily: 'Lato-Bold' }}>
+                    Events
+                  </Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
                     className="mb-1 h-3 w-3"
@@ -293,7 +325,9 @@ const ProfileScreen: React.FC = () => {
               {/* Time zone */}
               <View className="mt-4 w-full items-center gap-5">
                 <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{fontFamily:"Lato-Bold"}}>Time zone</Text>
+                  <Text className="text-base text-white" style={{ fontFamily: 'Lato-Bold' }}>
+                    Time zone
+                  </Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
                     className="mb-1 h-3 w-3"
@@ -305,7 +339,9 @@ const ProfileScreen: React.FC = () => {
               {/* Change Language */}
               <View className="mt-4 w-full items-center gap-5">
                 <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{fontFamily:"Lato-Bold"}}>Change Language</Text>
+                  <Text className="text-base text-white" style={{ fontFamily: 'Lato-Bold' }}>
+                    Change Language
+                  </Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
                     className="mb-1 h-3 w-3"
@@ -317,11 +353,16 @@ const ProfileScreen: React.FC = () => {
 
             {/* LOGOUT */}
             <TouchableOpacity
+              onPress={handleLogout}
               className={`mt-8 flex  h-[3.7rem] w-[90%] items-center justify-center rounded-full bg-[#EF4444] p-2.5`}>
               {buttonSpinner ? (
                 <ActivityIndicator size="small" color={'white'} />
               ) : (
-                <Text className="text-center text-lg  font-semibold text-white " style={{fontFamily:"Lato-Bold"}}>Log Out</Text>
+                <Text
+                  className="text-center text-lg  font-semibold text-white "
+                  style={{ fontFamily: 'Lato-Bold' }}>
+                  Log Out
+                </Text>
               )}
             </TouchableOpacity>
           </View>

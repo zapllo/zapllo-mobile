@@ -230,6 +230,23 @@ export default function AssignTaskScreen() {
               <CheckboxTwo isChecked={isChecked} onPress={() => setIsChecked(!isChecked)}/>
               <Text className="text-white" style={{fontFamily:"Lato-Bold"}}>Task Priority</Text>
             </View>
+            
+
+            <View className=" relative">
+              <InputContainer
+                label="Due Date"
+                value={taskTitle}
+                onChangeText={(value) => setTaskTitle(value)}
+                placeholder=""
+                className="flex-1  text-sm text-[#787CA5]"
+                passwordError={''}
+                style={{paddingEnd:45}}
+              />
+              <TouchableOpacity>
+                <Image className=" absolute w-6 h-6 bottom-6 right-6" source={require("../../../../assets/Tasks/calender.png")}/>
+              </TouchableOpacity>
+            </View>
+
 
             <View className=" flex items-center gap-3 flex-row w-[90%] mt-6">
               <TouchableOpacity onPress={() => setLinkModalVisible(true)}>
@@ -378,6 +395,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginRight: 5,
     borderColor: 'white',
+    width:10
   },
   dropdownMenu: {
     backgroundColor: '#05071E',

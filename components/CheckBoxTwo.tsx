@@ -1,13 +1,13 @@
 import { Entypo } from '@expo/vector-icons';
 import React, { useRef } from 'react';
-import { TouchableOpacity, Text, View, StyleSheet, Animated, Linking } from 'react-native';
+import { TouchableOpacity, View, StyleSheet, Animated } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface CheckboxProps {
   onPress: () => void;
   isChecked: boolean;
   containerStyle?: object;
-  textStyle?: object;
   checkboxStyle?: object;
 }
 
@@ -24,7 +24,7 @@ const CheckboxTwo: React.FC<CheckboxProps> = ({
     Animated.timing(animatedWidth, {
       toValue: toValue,
       duration: 500,
-      useNativeDriver: false, // Consider changing to true if applicable
+      useNativeDriver: false,
     }).start();
   };
 
@@ -32,24 +32,33 @@ const CheckboxTwo: React.FC<CheckboxProps> = ({
     <View style={[styles.container, containerStyle]}>
       <TouchableOpacity
         onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // Trigger light haptic feedback
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           startAnimation();
           onPress();
         }}
         style={[
           styles.CheckboxTwo,
-          isChecked && styles.checkboxSelected,
           checkboxStyle,
+          isChecked && styles.checkedStyle, // Apply additional style when checked
         ]}
         accessibilityLabel="CheckboxTwo"
-        
         accessibilityState={{ checked: isChecked }}
       >
-        <Animated.View style={{ width: animatedWidth }}>
-          <Entypo name="check" size={22} style={{ color: '#815BF5' }} />
-        </Animated.View>
+        {isChecked ? (
+          <LinearGradient
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            colors={["#815BF5", "#FC8929"]}
+            style={styles.gradientBackground}
+          >
+            <Entypo name="check" size={22} style={{ color: '#FFFFFF' }} />
+          </LinearGradient>
+        ) : (
+          <Animated.View style={{ width: animatedWidth }}>
+            <Entypo name="check" size={22} style={{ color: '#FFFFFF' }} />
+          </Animated.View>
+        )}
       </TouchableOpacity>
-
     </View>
   );
 };
@@ -66,22 +75,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     height: 25,
     width: 25,
-    fontFamily:"Lato-Regular",
-    borderColor:"#37384B",
-    
+    fontFamily: "Lato-Regular",
+    borderColor: "#37384B",
   },
-  checkboxSelected: {
-    backgroundColor: '#37384B',
+  checkedStyle: {
+    borderWidth: 0, // Remove border when checked
   },
-  checkboxText: {
-    fontSize: 14,
-    color: 'white',
-    fontWeight: '400',
-    paddingLeft: 5,
-  },
-  link: {
-    color: '#815BF5',
-    textDecorationLine: 'underline',
+  gradientBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+    height: '100%',
+    width: '100%',
   },
 });
 

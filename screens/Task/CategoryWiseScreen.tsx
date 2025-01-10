@@ -16,6 +16,9 @@ import { useNavigation } from 'expo-router';
 import CustomDropdown from '~/components/customDropDown';
 import EmployeesDetaildComponent from '~/components/TaskComponents/EmployeesDetaildComponent';
 import { RouteProp, useRoute } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import { RootState } from '~/redux/store';
+import CategoryDetailComponent from '~/components/TaskComponents/CategoryDetailComponent';
 
 // Define the type for your navigation
 type Props = StackScreenProps<DashboardStackParamList, 'CategoryWise'>;
@@ -36,11 +39,10 @@ const daysData = [
 const CategoryWiseScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<CategoryWiseScreenRouteProp>();
   const { employeeWiseData } = route.params;
+
   // const navigation = useNavigation<PendingTaskScreenRouteProp>();
   const [selectedTeamSize, setSelectedTeamSize] = useState(null);
   const [search, setSearch] = useState('');
-
-  console.log('>>>>>EEEEEEEE', employeeWiseData);
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
@@ -73,20 +75,18 @@ const CategoryWiseScreen: React.FC<Props> = ({ navigation }) => {
               />
             </View>
 
-            <EmployeesDetaildComponent
-              name="Shubhodeep Banerjee"
-              overdue={3}
-              pending={7}
-              completed={10}
-              inProgress={12}
-            />
-            <EmployeesDetaildComponent
-              name="Deep Banerjee"
-              overdue={10}
-              pending={2}
-              completed={5}
-              inProgress={3}
-            />
+            {employeeWiseData.map((cat) => {
+              const pending = cat?.tasks?.filter((e: any) => e?.status === 'Pending');
+              return (
+                <CategoryDetailComponent
+                  name={cat?.category}
+                  overdue={3}
+                  pending={pending.length}
+                  completed={10}
+                  inProgress={12}
+                />
+              );
+            })}
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>

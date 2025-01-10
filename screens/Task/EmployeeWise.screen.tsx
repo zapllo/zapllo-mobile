@@ -40,6 +40,7 @@ const EmployeeWiseScreen: React.FC<Props> = ({ navigation }) => {
   const [selectedTeamSize, setSelectedTeamSize] = useState(null);
   const [search, setSearch] = useState('');
 
+  
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
       <NavbarTwo title="Employee Wise" onBackPress={() => navigation.navigate('DashboardHome')} />
@@ -87,20 +88,6 @@ const EmployeeWiseScreen: React.FC<Props> = ({ navigation }) => {
                 />
               );
             })}
-            {/* <EmployeesDetaildComponent
-                name="Shubhodeep Banerjee"
-                overdue={3}
-                pending={7}
-                completed={10}
-                inProgress={12}
-              />
-                <EmployeesDetaildComponent
-                name="Deep Banerjee"
-                overdue={10}
-                pending={2}
-                completed={5}
-                inProgress={3}
-              /> */}
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>

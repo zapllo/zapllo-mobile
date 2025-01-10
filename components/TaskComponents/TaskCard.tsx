@@ -27,6 +27,7 @@ interface TaskCardProps {
   status: TaskStatus;
   backgroundColor: string;
   borderColor: string;
+  onPress:any;
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({
@@ -36,6 +37,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   status,
   backgroundColor,
   borderColor,
+  onPress
 }) => {
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
   const colors = ['#c3c5f7', '#ccc', '#fff', '#3399FF', '#FF33A6'];
@@ -104,7 +106,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
           
         </View>
-           <TouchableOpacity>
+           <TouchableOpacity onPress={onPress}>
               <View className=" flex h-10 w-10 items-center justify-center self-end rounded-full border border-white">
                 <Image
                   className="h-4 w-4"

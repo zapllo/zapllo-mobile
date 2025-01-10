@@ -4,11 +4,10 @@ import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/core';
 import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
 
-
 // Define the Task interface
 interface Task {
   _id: string; // Assuming tasks have an ID
-  
+
   assignedUser: {
     firstName?: string;
     lastName?: string;
@@ -23,15 +22,10 @@ interface TaskCardProps {
   tasks: Task[];
   backgroundColor: string;
   borderColor: string;
+  onPress: any;
 }
 
-const DashboardCard: React.FC<TaskCardProps> = ({
-  title,
-  count,
-  tasks,
-  backgroundColor,
-  borderColor,
-}) => {
+const DashboardCard: React.FC<TaskCardProps> = ({ title, count, tasks, borderColor,onPress }) => {
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
   const colors = ['#c3c5f7', '#ccc', '#fff', '#3399FF', '#FF33A6'];
 
@@ -41,7 +35,7 @@ const DashboardCard: React.FC<TaskCardProps> = ({
     return firstInitial + lastInitial;
   };
 
-  console.log(">>>>>>>>>>>>>>>",tasks)
+  console.log('>>>>>>>>>>>>>>>', tasks);
 
   return (
     <>
@@ -59,44 +53,44 @@ const DashboardCard: React.FC<TaskCardProps> = ({
         </Text>
       </View>
 
-      <View className="mt-10 flex  w-[28vw] flex-row items-center">
+      <View className="mt-10 flex  w-[28vw] flex-row items-center ">
         <View className=" flex flex-row items-start">
           <View className="flex w-full flex-row">
-
-            {tasks
-              .slice(0, 2)
-              .map((task, index) => (
-                <View key={task._id} className="relative flex flex-row">
-                  <View
-                    className="-m-1.5 flex h-9 w-9 items-center justify-center rounded-full border-2"
-                    style={{
-                      borderColor,
-                      backgroundColor: colors[index % colors.length],
-                    }}>
-                    <Text
-                      className=" text-center text-sm text-black"
-                      style={{ fontFamily: 'Lato-Thin' }}>
-                      {getInitials(task)}
-                    </Text>
-                  </View>
+            {tasks.slice(0, 2).map((task, index) => (
+              <View key={task._id} className="relative flex flex-row">
+                <View
+                  className="-m-1.5 flex h-10 w-10 items-center justify-center rounded-full border-2"
+                  style={{
+                    borderColor,
+                    backgroundColor: colors[index % colors.length],
+                  }}>
+                  <Text
+                    className=" text-center text-sm text-black"
+                    style={{ fontFamily: 'Lato-Thin' }}>
+                    {getInitials(task)}
+                  </Text>
                 </View>
-              ))}
+              </View>
+            ))}
             {tasks.length > 2 && (
               <View className="relative -m-1.5 flex flex-row">
                 <View
-                  className="h-9 w-9 items-center justify-center rounded-full border-2"
+                  className="h-10 w-10 items-center justify-center rounded-full border-2"
                   style={{
                     borderColor,
                     backgroundColor: colors[2 % colors.length],
                   }}>
-                  <Text className="text-center text-black">
-                    +{tasks.length-2}
-                  </Text>
+                  <Text className="text-center text-black">+{tasks.length - 2} </Text>
                 </View>
               </View>
             )}
           </View>
         </View>
+        <TouchableOpacity onPress={onPress}>
+          <View className=" flex h-10 w-10 items-center justify-center self-end rounded-full border border-white">
+            <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
+          </View>
+        </TouchableOpacity>
       </View>
     </>
   );

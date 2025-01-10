@@ -45,7 +45,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
     <>
       <View className="flex items-start">
         <Text className="w-[30vh] text-white" style={{ fontFamily: 'Lato-Bold' }}>{title}</Text>
-        <Text className="text-white" style={{ fontSize: 34 }}>
+        <Text className="text-white" style={{ fontSize: 34,fontFamily: 'Lato-Bold' }}>
           {count}
         </Text>
         <Text className="w-[40vw] pt-2 text-[10px] text-white" style={{ fontFamily: 'Lato-Bold' }}>{date}</Text>

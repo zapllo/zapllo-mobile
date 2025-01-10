@@ -232,6 +232,48 @@ export default function DashboardScreen() {
           setTaskCountsData(countStatuses(tasksData)); // Update task counts
           setTaskCounts(countStatuses(tasksData)); // Update task counts
 
+          const filteredTasks = tasksData.filter(
+            (task) => task.assignedUser?._id === userData?.data?._id
+          );
+          
+          const categoryStatusCount = filteredTasks.reduce((acc, task) => {
+            const categoryName = task.category?.name || "Uncategorized";
+          
+            if (!acc[categoryName]) {
+              acc[categoryName] = {};
+            }
+          
+            const status = task.status || "Unknown";
+          
+            if (!acc[categoryName][status]) {
+              acc[categoryName][status] = 0;
+            }
+          
+            acc[categoryName][status] += 1;
+          
+            return acc;
+          }, {});
+          const taskCountsArray = Object.entries(categoryStatusCount).map(([categoryName, data]) => ({
+            categoryName,
+            ...data
+          }));
+
+          setMyReports(taskCountsArray)
+          
+          console.log("+++++++++++++++++++++",taskCountsArray.length);
+
+          const groupedTasks = tasksData.reduce((acc, task) => {
+            if (!acc[task.status]) acc[task.status] = [];
+            acc[task.status].push(task);
+            return acc;
+          }, {});
+
+          const assignedToUser = (userId) =>
+            tasksData.filter((task) => task.assignedUser._id === userId);
+          
+          console.log(assignedToUser("676ba9521364993ac8498b93"));
+          
+          
           
 
           const filterCategory = () => {
@@ -257,9 +299,7 @@ export default function DashboardScreen() {
 
             // Now, update the state with the grouped data
             setCategoryTasks(groupedByCategory);
-            {
-              groupedCategory.map((cat) => setMyReports(cat.length));
-            }
+            
           };
 
           // Call the filterCategory function to group tasks by category
@@ -453,20 +493,20 @@ export default function DashboardScreen() {
                       <TouchableOpacity className="h-full w-full">
                         <DashboardCard
                           title="My Report"
-                          count={5}
+                          count={myReports?.length}
                           tasks={tasks}
                           status="Pending"
                           borderColor="#FDB314"
                           colors={['#CCC', '#FFF']}
                           onPress={() => {
-                            navigation.navigate('MyReports', { employeeWiseData: groupedCategory });
+                            navigation.navigate('MyReports', { employeeWiseData: myReports });
                           }}
                         />
                       </TouchableOpacity>
                     </View>
                     <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
                       <TouchableOpacity className="h-full w-full">
-                        <TaskCard
+                        <DashboardCard
                           title="Delegated"
                           count={5}
                           tasks={tasks}

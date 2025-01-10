@@ -56,7 +56,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
     companyName: '',
     description: '',
   });
-  const [showWorkspace, setShowWorkspace] = useState(true);
+  const [showWorkspace, setShowWorkspace] = useState(false);
   const [error, setError] = useState<string>('');
   const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
   const [confirmPasswordError, setConfirmPasswordError] = useState<string>('');

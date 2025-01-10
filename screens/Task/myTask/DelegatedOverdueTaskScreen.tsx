@@ -50,7 +50,7 @@ const DelegatedOverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  console.log('pendinggggg', overdueTasks);
+  console.log('222222222', overdueTasks);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -245,6 +245,7 @@ const DelegatedOverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
                     assignedTo={`${task.assignedUser?.firstName} ${task.assignedUser?.lastName}`}
                     assignedBy={`${task?.user?.firstName} ${task.user?.lastName}`}
                     category={task.category?.name}
+                    task={task}
                   />
                 ))
               ) : (

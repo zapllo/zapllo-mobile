@@ -105,7 +105,7 @@ export default function DashboardScreen() {
   const [selectedTeamSize, setSelectedTeamSize] = useState('');
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
 
-  const groupedByCategory = tasks.reduce((acc, task) => {
+  const groupedByCategory = tasks.reduce((acc:any, task) => {
     const categoryName = task.category.name;
     if (!acc[categoryName]) {
       acc[categoryName] = [];
@@ -231,6 +231,8 @@ export default function DashboardScreen() {
           setTasksData(tasksData);
           setTaskCountsData(countStatuses(tasksData)); // Update task counts
           setTaskCounts(countStatuses(tasksData)); // Update task counts
+
+          
 
           const filterCategory = () => {
             // Group tasks by category

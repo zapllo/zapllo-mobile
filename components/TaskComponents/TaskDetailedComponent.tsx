@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { View, Text, Image, Button, TouchableOpacity, Linking, ScrollView } from "react-native";
-import Modal from "react-native-modal";
+import moment from 'moment';
+import React, { useState } from 'react';
+import { View, Text, Image, Button, TouchableOpacity, Linking, ScrollView } from 'react-native';
+import Modal from 'react-native-modal';
 
 interface TaskDetailedComponentProps {
   title: string;
@@ -8,6 +9,7 @@ interface TaskDetailedComponentProps {
   assignedTo: string;
   assignedBy: string;
   category: string;
+  task: any;
 }
 
 const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
@@ -16,226 +18,237 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   assignedTo,
   assignedBy,
   category,
+  task,
 }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
+  console.log('>>>>>>>>>>>ppppp', task);
+
   return (
     <TouchableOpacity onPress={() => setModalVisible(true)}>
-      <View className="w-[95%] self-center h-56 border border-[#37384B] p-4 rounded-3xl items-center mt-5 gap-6">
+      <View className="mt-5 h-56 w-[95%] items-center gap-6 self-center rounded-3xl border border-[#37384B] p-4">
         <Modal
           isVisible={modalVisible}
           onBackdropPress={() => setModalVisible(false)}
-          style={{ margin: 0, justifyContent: "flex-end",marginTop:120 }}
+          style={{ margin: 0, justifyContent: 'flex-end', marginTop: 10 }}
           animationIn="slideInUp"
           animationOut="slideOutDown"
-          useNativeDriver={false}
-        >
+          useNativeDriver={false}>
           <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          >
-            <View className="bg-[#0A0D28] p-5 rounded-t-3xl pb-20">
+            contentContainerStyle={{ flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled">
+            <View className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20 mt-16">
+              {/* title */}
+              <View className=" mb-7 flex w-full flex-row items-center justify-between">
+                <Text className="text-xl font-semibold text-white">{title}</Text>
+                <TouchableOpacity onPress={() => setModalVisible(false)}>
+                  <Image
+                    source={require('../../assets/commonAssets/cross.png')}
+                    className="h-8 w-8"
+                  />
+                </TouchableOpacity>
+              </View>
 
-                {/* title */}
-                <View className=" w-full flex flex-row justify-between items-center mb-7">
-                  <Text className="text-white font-semibold text-xl">{title}</Text>
-                  <TouchableOpacity onPress={() => setModalVisible(false)}>
-                    <Image
-                      source={require("../../assets/commonAssets/cross.png")}
-                      className="w-8 h-8"
-                    />              
-                  </TouchableOpacity>
-
+              {/* assigned by an assigned to */}
+              <View className="mb-6 flex w-full flex-row items-center justify-start gap-8 ">
+                <View className="flex flex-col">
+                  <Text className="text-xs text-[#787CA5]">Assigned by</Text>
+                  <Text className=" text-[#815BF5] text-sm" >{assignedBy}</Text>
                 </View>
 
-                {/* assigned by an assigned to */}
-                <View className="flex mb-6 flex-row w-full gap-12 items-center justify-start">
-                
-                  <View className="flex flex-col w-[40%]">
-                    <Text className="text-[#787CA5] text-xs">Assigned by</Text>
-                    <Text className="text-[#815BF5] text-sm" style={{fontFamily:"Lato-Bold"}}>{assignedBy}</Text>
-                  </View>
-
-                  <View className="flex flex-col w-[40%]">
-                    <Text className="text-[#787CA5] text-xs">Assigned to</Text>
-                    <Text className="text-[#D85570] text-sm">{assignedTo}</Text>
-                  </View>
+                <View className="flex flex-col">
+                  <Text className="text-xs text-[#787CA5]">Assigned to</Text>
+                  <Text className="text-[#D85570] text-sm">{assignedTo}</Text>
                 </View>
+              </View>
 
-                {/* created date */}
-                <View className="w-full flex items-start gap-5 mb-6">
-                  <View className="flex flex-col">
-                    <Text className="text-[#787CA5] text-xs">Created date</Text>
-                    <Text className="text-white text-lg">Wed, December 25 - 12:13 PM</Text>
-                  </View>
-
-                  <View className="flex flex-col">
-                    <Text className="text-[#787CA5] text-xs">Due date</Text>
-                    <Text className="text-[#EF4444] text-lg">Wed, December 25 - 12:13 PM</Text>
-                  </View>
-                </View>
-
-                {/* features */}
-                <View className="flex mb-6 flex-row w-full gap-12 items-center pr-14">
-                  <View className="flex gap-3">
-                    <View className="flex flex-col">
-                      <Text className="text-[#787CA5] text-xs">Frequency</Text>
-                      <Text className="text-white text-lg">Once</Text>
-                    </View>
-
-                    <View className="flex flex-col">
-                      <Text className="text-[#787CA5] text-xs">Category</Text>
-                      <Text className="text-white">Marketing</Text>
-                    </View>
-                  </View>
-
-                  <View className="flex gap-3">
-                    <View className="flex flex-col">
-                      <Text className="text-[#787CA5] text-xs">Status</Text>
-                      <Text className="text-[#815BF5] mt-1">Pending</Text>
-                    </View>
-
-                    <View className="flex flex-col mt-1">
-                      <Text className="text-[#787CA5] text-xs">Priority</Text>
-                      <Text className="text-[#EF4444]">High</Text>
-                    </View>
-                  </View>
-                </View>
-
-                {/*Description */}
-                <View className=" w-full mb-6 flex flex-col gap-1">
-                  <Text className="text-[#787CA5] text-xs">Description</Text>
-                  <Text className="text-white text-sm" style={{fontFamily:"Lato-Thin"}}>
-                  Figma ipsum component variant main layer. Ellipse edit ipsum selection italic distribute. Star vector selection distribute pencil hand community export background. Bullet line layer inspect list.
+              {/* created date */}
+              <View className="mb-6 flex w-full items-start gap-5 ">
+                <View className="flex flex-col">
+                  <Text className="text-xs text-[#787CA5]">Created date</Text>
+                  <Text className="text-lg text-white">
+                    {moment(task?.createdAt).format('ddd, MMMM D - hh:mm A')}
                   </Text>
                 </View>
 
-                {/* line */}
-                <View className="h-0.5 w-full bg-[#37384B] mt-2 mb-8"></View>   
-                
-                {/* links */}
-                <View className="flex flex-col gap-2 mb-6">
-                  <View className="flex flex-row items-center justify-start gap-2">
-                    <Image 
-                    source={require("../../assets/commonAssets/links.png")}
-                    className="w-5 h-5"/>
-                    <Text className="text-[#787CA5] text-xs">Links</Text>
-                  </View>
-
-                  <View className="gap-2 ml-6">
-                    <TouchableOpacity onPress={() => Linking.openURL('http://www.google.com')}>
-                      <Text style={{ color: '#815BF5' }}>www.google.com</Text>
-                    </TouchableOpacity> 
-                              
-                    <TouchableOpacity onPress={() => Linking.openURL('http://www.google.com')}>
-                      <Text style={{ color: '#815BF5' }}>www.google.com</Text>
-                    </TouchableOpacity>    
-                  </View>                
+                <View className="flex flex-col">
+                  <Text className="text-xs text-[#787CA5]">Due date</Text>
+                  <Text className="text-lg text-[#EF4444]">
+                    {moment(task?.dueDate).format('ddd, MMMM D - hh:mm A')}
+                  </Text>
                 </View>
+              </View>
 
-                {/* file and image upload */}
-                <View className="w-full flex flex-col mb-6 ">
-                  
-                  <View className=" w-full gap-2 items-center flex flex-row">
-                      <Image source={require("../../assets/commonAssets/fileLogo.png")} className="w-5 h-6"/>
-                      <Text className="text-[#787CA5] text-xs">Files</Text>
+              {/* features */}
+              <View className="mb-6 flex w-full flex-row items-center justify-between pr-14">
+                <View className="flex gap-3">
+                  <View className="flex flex-col">
+                    <Text className="text-xs text-[#787CA5]">Frequency</Text>
+                    <Text className="text-lg text-white">Once</Text>
                   </View>
 
-                  <View className=" w-full flex flex-row items-center gap-3 pl-5 pt-1">
-                    <Image source={require("../../assets/commonAssets/fileUploadContainer.png")} className="h-24 w-24"/>
-                    <Image source={require("../../assets/commonAssets/fileUploadContainer.png")} className="h-24 w-24"/>
-                    <Image source={require("../../assets/commonAssets/fileUploadContainer.png")} className="h-24 w-24"/>
+                  <View className="flex flex-col">
+                    <Text className="text-xs text-[#787CA5]">Category</Text>
+                    <Text className="text-white">{category}</Text>
                   </View>
                 </View>
 
-                {/* reminders */}
-                <View className=" w-full flex-col gap-2 mb-6">
-                  <View className=" w-full gap-2 items-center flex flex-row">
-                    <Image source={require("../../assets/commonAssets/reminders.png")} className="w-5 h-6"/>
-                    <Text className="text-[#787CA5] text-xs">Reminders</Text>
+                <View className="flex gap-3">
+                  <View className="flex flex-col">
+                    <Text className="text-xs text-[#787CA5]">Status</Text>
+                    <Text className="mt-1 text-[#815BF5]">{task?.status}</Text>
                   </View>
-                  <Text className=" text-white text-lg">Wed, December 25 - 12:13 PM</Text>
+
+                  <View className="mt-1 flex flex-col">
+                    <Text className="text-xs text-[#787CA5]">Priority</Text>
+                    <Text className="text-[#EF4444]">{task?.priority}</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/*Description */}
+              <View className=" mb-6 flex w-full flex-col gap-1">
+                <Text className="text-xs text-[#787CA5]">Description</Text>
+                <Text className="text-base text-white">{task?.description}</Text>
+              </View>
+
+              {/* line */}
+              <View className="mb-8 mt-2 h-0.5 w-full bg-[#37384B]"></View>
+
+              {/* links */}
+              <View className="mb-6 flex flex-col gap-2">
+                <View className="flex flex-row items-center justify-start gap-2">
+                  <Image
+                    source={require('../../assets/commonAssets/links.png')}
+                    className="h-5 w-5"
+                  />
+                  <Text className="text-xs text-[#787CA5]">Links</Text>
                 </View>
 
-                {/* line */}
-                <View className="h-0.5 w-full bg-[#37384B] mt-2 mb-8"></View>    
-
-                {/* Task updates */}
-                <View className=" w-full flex-col gap-2 mb-6">
-                  <View className=" w-full gap-2 mb-6 items-center flex flex-row">
-                    <Image source={require("../../assets/commonAssets/allTasks.png")} className="w-5 h-6"/>
-                    <Text className="text-[#787CA5] text-xs">Task Updates</Text>
-                  </View>
-                  
-                  <View className="w-full flex flex-row justify-between items-center">
-                    <View className=" flex flex-row items-center-start gap-2">
-                      <View className="bg-white w-10 h-10 rounded-full"></View>
-                      <View>
-                        <Text className="text-white text-lg">{assignedBy}</Text>
-                        <Text className="text-[#787CA5] text-xs">a moment ago</Text>
-                      </View>
-                    </View>
-
-                    <TouchableOpacity className="bg-[#815BF5] mb-4 items-center flex p-2 pl-4 pr-4 rounded-2xl">
-                      <Text className="text-xs text-white">In Progress</Text>
+                <View className="ml-6 gap-2">
+                  {(task?.links).map((link,index) => (
+                    <TouchableOpacity key={index} onPress={() => Linking.openURL(link)}>
+                      <Text style={{ color: '#815BF5' }}>{link}</Text>
                     </TouchableOpacity>
-                  </View>
-                 {/* line */}
-                <View className="h-0.5 w-full bg-[#37384B] mt-3 mb-3"></View> 
+                  ))}
+                </View>
+              </View>
 
-                <View className="w-full flex flex-row justify-between items-center">
-                    <View className=" flex flex-row items-center-start gap-2">
-                      <View className="bg-white w-10 h-10 rounded-full"></View>
-                      <View>
-                        <Text className="text-white text-lg">{assignedBy}</Text>
-                        <Text className="text-[#787CA5] text-xs">a moment ago</Text>
-                      </View>
+              {/* file and image upload */}
+              <View className="mb-6 flex w-full flex-col ">
+                <View className=" flex w-full flex-row items-center gap-2">
+                  <Image
+                    source={require('../../assets/commonAssets/fileLogo.png')}
+                    className="h-6 w-5"
+                  />
+                  <Text className="text-xs text-[#787CA5]">Files</Text>
+                </View>
+
+                <View className=" flex w-full flex-row items-center gap-3 pl-5 pt-1">
+                  <Image
+                    source={require('../../assets/commonAssets/fileUploadContainer.png')}
+                    className="h-24 w-24"
+                  />
+                  <Image
+                    source={require('../../assets/commonAssets/fileUploadContainer.png')}
+                    className="h-24 w-24"
+                  />
+                  <Image
+                    source={require('../../assets/commonAssets/fileUploadContainer.png')}
+                    className="h-24 w-24"
+                  />
+                </View>
+              </View>
+
+              {/* reminders */}
+              <View className=" mb-6 w-full flex-col gap-2">
+                <View className=" flex w-full flex-row items-center gap-2">
+                  <Image
+                    source={require('../../assets/commonAssets/reminders.png')}
+                    className="h-6 w-5"
+                  />
+                  <Text className="text-xs text-[#787CA5]">Reminders</Text>
+                </View>
+                <Text className=" text-lg text-white">Wed, December 25 - 12:13 PM</Text>
+              </View>
+
+              {/* line */}
+              <View className="mb-8 mt-2 h-0.5 w-full bg-[#37384B]"></View>
+
+              {/* Task updates */}
+              <View className=" mb-6 w-full flex-col gap-2">
+                <View className=" mb-6 flex w-full flex-row items-center gap-2">
+                  <Image
+                    source={require('../../assets/commonAssets/allTasks.png')}
+                    className="h-6 w-5"
+                  />
+                  <Text className="text-xs text-[#787CA5]">Task Updates</Text>
+                </View>
+
+                <View className="flex w-full flex-row items-center justify-between">
+                  <View className=" items-center-start flex flex-row gap-2">
+                    <View className="h-10 w-10 rounded-full bg-white"></View>
+                    <View>
+                      <Text className="text-lg text-white">{assignedBy}</Text>
+                      <Text className="text-xs text-[#787CA5]">a moment ago</Text>
                     </View>
+                  </View>
 
-                    <TouchableOpacity className="bg-[#007B5B] mb-4 items-center flex p-2 pl-4 pr-4 rounded-2xl">
-                      <Text className="text-xs text-white">Completed</Text>
-                    </TouchableOpacity>
+                  <TouchableOpacity className="mb-4 flex items-center rounded-xl bg-[#815BF5] p-2 pl-3 pr-3">
+                    <Text className="text-[11px] text-white">In Progress</Text>
+                  </TouchableOpacity>
+                </View>
+                {/* line */}
+                <View className="mb-3 mt-3 h-0.5 w-full bg-[#37384B]"></View>
+
+                <View className="flex w-full flex-row items-center justify-between">
+                  <View className=" items-center-start flex flex-row gap-2">
+                    <View className="h-10 w-10 rounded-full bg-white"></View>
+                    <View>
+                      <Text className="text-lg text-white">{assignedBy}</Text>
+                      <Text className="text-xs text-[#787CA5]">a moment ago</Text>
+                    </View>
+                  </View>
+
+                  <TouchableOpacity className="mb-4 flex items-center rounded-xl bg-[#007B5B] p-2 pl-3 pr-3">
+                    <Text className="text-[11px] text-white">Completed</Text>
+                  </TouchableOpacity>
                 </View>
 
                 {/* line */}
-                <View className="h-0.5 w-full bg-[#37384B] mt-3 mb-3"></View> 
-                </View>
-
+                <View className="mb-3 mt-3 h-0.5 w-full bg-[#37384B]"></View>
+              </View>
             </View>
-          </ScrollView>  
-
+          </ScrollView>
         </Modal>
 
-        <View className="flex items-center flex-row w-full justify-between">
-          <Text className="text-white font-semibold ">{title}</Text>
-          <Image
-            source={require('../../assets/commonAssets/threeDot.png')}
-            className="w-5 h-6"
-          />
+        <View className="flex w-full flex-row items-center justify-between">
+          <Text className="font-semibold text-white ">{title}</Text>
+          <Image source={require('../../assets/commonAssets/threeDot.png')} className="h-6 w-5" />
         </View>
 
-        <View className="flex flex-row w-full gap-20 items-start">
+        <View className="flex w-full flex-row items-start gap-14">
           <View className="flex gap-3">
             <View className="flex flex-col">
-              <Text className="text-[#787CA5] text-xs">Due Date</Text>
+              <Text className="text-xs text-[#787CA5]">Due Date</Text>
               <Text className="text-[#EF4444] ">{dueDate}</Text>
             </View>
 
-            <View className="flex flex-col max-w-28">
-              <Text className="text-[#787CA5] text-xs">Assigned to</Text>
-              <Text className="text-[#D85570] w-[40vw]">{assignedTo}</Text>
+            <View className="flex max-w-28 flex-col">
+              <Text className="text-xs text-[#787CA5]">Assigned to</Text>
+              <Text className="text-[#D85570]">{assignedTo}</Text>
             </View>
           </View>
 
           <View className="flex gap-3">
-            <View className="flex flex-col max-w-28">
-              <Text className="text-[#787CA5] text-xs">Assigned by</Text>
-              <Text className="text-[#815BF5] w-[40vw]">{assignedBy}</Text>
+            <View className="flex max-w-28 flex-col">
+              <Text className="text-xs text-[#787CA5]">Assigned by</Text>
+              <Text className="text-[#815BF5] ">{assignedBy}</Text>
             </View>
 
             <View className="flex flex-col ">
-              <Text className="text-[#787CA5] text-xs">Category</Text>
+              <Text className="text-xs text-[#787CA5]">Category</Text>
               <Text className="text-[#FDB314]">{category}</Text>
             </View>
           </View>

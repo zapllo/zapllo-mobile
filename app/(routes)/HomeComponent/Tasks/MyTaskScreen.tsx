@@ -110,7 +110,7 @@ export default function MyTaskScreen() {
 
   // const myTasksCounts = countStatuses(myTasks
 
-  //*****Delegated */
+  //*Delegated */
   // (task.user?._id === currentUser?._id &&
   //   task.assignedUser?._id !== currentUser?._id) ||
   // task.assignedUser?._id === currentUser?._id;
@@ -155,7 +155,6 @@ export default function MyTaskScreen() {
       } as TaskStatusCounts
     );
   };
-
 
   useFocusEffect(
     React.useCallback(() => {
@@ -339,7 +338,7 @@ export default function MyTaskScreen() {
                       .map((task, index) => (
                         <View key={task._id} className="relative flex flex-row">
                           <View
-                            className="-m-1 h-10 w-10 rounded-full border-2 border-[#007B5B]"
+                            className="-m-1 h-9 w-9 rounded-full border border-[#007B5B]"
                             style={{
                               borderColor: '#007B5B',
                               backgroundColor: colors[index % colors.length], // Set background color
@@ -353,7 +352,7 @@ export default function MyTaskScreen() {
                     {tasks.filter((task) => task.status === 'Completed').length > 2 && (
                       <View className="relative -mt-1 flex flex-row">
                         <View
-                          className="h-9 w-9 items-center justify-center rounded-full"
+                          className="h-8 w-8 items-center justify-center rounded-full"
                           style={{
                             backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
                           }}>
@@ -365,14 +364,16 @@ export default function MyTaskScreen() {
                     )}
                   </View>
 
-                  <View className=" flex h-9 w-9 items-center justify-center rounded-full border border-white ">
+                  <TouchableOpacity
+                    onPress={() => {
+                      const completedTasks = tasks.filter((task) => task.status === 'Completed');
+                      navigation.navigate('CompletedTask', { completedTasks });
+                    }}
+                    className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
                     <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-            
-                  
+                  </TouchableOpacity>
                 </View>
               </View>
-              
-
               <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#815BF5] p-5">
                   <TouchableOpacity

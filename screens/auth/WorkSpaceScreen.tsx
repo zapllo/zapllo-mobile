@@ -106,11 +106,13 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
     );
   };
   const screenWidth = Dimensions.get('window').width; // Get screen width
-  const itemWidth = screenWidth > 400 ? screenWidth / 4 - 20 : screenWidth / 3-52; // Calculate item width based on screen size
+  const itemWidth = screenWidth > 450 ? screenWidth / 4 - 20 : screenWidth / 3-30; // Calculate item width based on screen size
   return (
-    <View className="items-center pb-5 ">
-      <Text className="text-center text-2xl  text-white" style={{fontFamily:"Lato-Bold"}}>Create Your Workspace</Text>
-      <Text className="my-2 text-center  text-white" style={{fontFamily:"Lato-Light"}}>
+    <View className="items-center pb-14 ">
+      <Text className="text-center text-2xl  text-white" style={{ fontFamily: 'Lato-Bold' }}>
+        Create Your Workspace
+      </Text>
+      <Text className="my-2 text-center  text-white" style={{ fontFamily: 'Lato-Light' }}>
         Let's get started by filling out the form below.
       </Text>
 
@@ -165,42 +167,40 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
       <View className="flex-row flex-wrap items-center justify-start px-5">
         {categories.map((category, index) => (
           <TouchableOpacity
-          key={index}
-          style={{
-            width: itemWidth, // Adjust dynamically based on screen size
-            marginBottom: 12,
-            backgroundColor: selectedCategories.includes(category) ? '#815BF5' : '#37384B', // Tailwind colors in hex
-            paddingVertical: Platform.OS === 'ios' ? 8 : 8,
-            borderRadius: 12, // Rounded full
-            alignItems: 'center',
-            marginLeft: 9
-          }}
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // Trigger light haptic feedback
-            toggleCategory(category);
-          }}
-        >
-  <Text
-    style={{
-      fontSize: 12,
-      fontWeight: '600',
-      color: 'white',
-    }}
-    numberOfLines={1}
-  >
-    {category}
-  </Text>
-</TouchableOpacity>
+            key={index}
+            style={{
+              width: itemWidth, // Adjust dynamically based on screen size
+              marginBottom: 14,
+              backgroundColor: selectedCategories.includes(category) ? '#815BF5' : '#37384B', // Tailwind colors in hex
+              paddingVertical: Platform.OS === 'ios' ? 10 : 8,
+              borderRadius: 10, // Rounded full
+              alignItems: 'center',
+              marginLeft: 10,
+            }}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // Trigger light haptic feedback
+              toggleCategory(category);
+            }}>
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: '600',
+                color: 'white',
+              }}
+              numberOfLines={1}>
+              {category}
+            </Text>
+          </TouchableOpacity>
         ))}
-              
+              
       </View>
 
       {errors.categories && (
         <Text className="mt-2 text-sm text-[#FF6F61]">{errors.categories}</Text>
       )}
 
-      <View className="w-[90%] mt-3 ">
-        <Text className="text-[12px]   text-white" style={{fontFamily:"Lato-Light"}}>
+      <View className="mb-4 mt-2.5 flex items-center px-5">
+        <Text className="text-[12px]   text-white" style={{ fontFamily: 'Lato-Light' }}>
           Don't worry you can add more later in the Settings panel
         </Text>
       </View>

@@ -50,7 +50,7 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  console.log('pendinggggg', pendingTasks);
+  console.log('00000000', pendingTasks);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -241,6 +241,7 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
                 assignedTo={`${item.assignedUser?.firstName} ${item.assignedUser?.lastName}`}
                 assignedBy={`${item.user?.firstName} ${item.user?.lastName}`}
                 category={item.category?.name}
+                task={task}
               />
             )}
             ListEmptyComponent={<Text>No pending tasks available.</Text>}

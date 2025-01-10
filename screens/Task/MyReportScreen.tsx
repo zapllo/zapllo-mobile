@@ -18,6 +18,7 @@ import EmployeesDetaildComponent from '~/components/TaskComponents/EmployeesDeta
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
+import CategoryDetailComponent from '~/components/TaskComponents/CategoryDetailComponent';
 
 // Define the type for your navigation
 type Props = StackScreenProps<DashboardStackParamList, 'MyReports'>;
@@ -77,16 +78,16 @@ const MyReportScreen: React.FC<Props> = ({ navigation }) => {
             </View>
 
             {employeeWiseData.map((cat) => {
-              const pending = cat?.tasks?.filter(
-                (e: any) => e?.status === 'Pending' && e?.assignedUser?._id === userData?.data?._id
-              );
+              // const pending = cat?.tasks?.filter(
+              //   (e: any) => e?.status === 'Pending' && e?.assignedUser?._id === userData?.data?._id
+              // );
               return (
-                <EmployeesDetaildComponent
-                  name={cat?.category}
-                  overdue={3}
-                  pending={pending.length}
-                  completed={10}
-                  inProgress={12}
+                <CategoryDetailComponent
+                  name={cat?.categoryName}
+                  overdue={cat?.Overdue}
+                  pending={cat?.Pending}
+                  completed={cat?.Completed}
+                  inProgress={cat?.InProgress}
                 />
               );
             })}

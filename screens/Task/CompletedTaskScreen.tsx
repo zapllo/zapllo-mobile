@@ -245,6 +245,7 @@ const CompletedTaskScreen: React.FC<Props> = ({ navigation }) => {
                     assignedTo={`${task.assignedUser?.firstName} ${task.assignedUser?.lastName}`}
                     assignedBy={`${task?.user?.firstName} ${task.user?.lastName}`}
                     category={task.category?.name}
+                    task={task}
                   />
                 ))
               ) : (

@@ -25,7 +25,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         <Modal
           isVisible={modalVisible}
           onBackdropPress={() => setModalVisible(false)}
-          style={{ margin: 0, justifyContent: "flex-end",marginTop:220 }}
+          style={{ margin: 0, justifyContent: "flex-end",marginTop:120 }}
           animationIn="slideInUp"
           animationOut="slideOutDown"
           useNativeDriver={false}
@@ -50,16 +50,16 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                 </View>
 
                 {/* assigned by an assigned to */}
-                <View className="flex mb-6 flex-row w-full gap-14 items-center justify-start">
+                <View className="flex mb-6 flex-row w-full gap-12 items-center justify-start">
                 
-                  <View className="flex flex-col">
+                  <View className="flex flex-col w-[40%]">
                     <Text className="text-[#787CA5] text-xs">Assigned by</Text>
-                    <Text className="text-[#815BF5] text-lg">{assignedBy}</Text>
+                    <Text className="text-[#815BF5] text-sm" style={{fontFamily:"Lato-Bold"}}>{assignedBy}</Text>
                   </View>
 
-                  <View className="flex flex-col">
+                  <View className="flex flex-col w-[40%]">
                     <Text className="text-[#787CA5] text-xs">Assigned to</Text>
-                    <Text className="text-[#D85570]">{assignedTo}</Text>
+                    <Text className="text-[#D85570] text-sm">{assignedTo}</Text>
                   </View>
                 </View>
 
@@ -77,7 +77,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                 </View>
 
                 {/* features */}
-                <View className="flex mb-6 flex-row w-full justify-between items-center pr-14">
+                <View className="flex mb-6 flex-row w-full gap-12 items-center pr-14">
                   <View className="flex gap-3">
                     <View className="flex flex-col">
                       <Text className="text-[#787CA5] text-xs">Frequency</Text>
@@ -106,7 +106,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                 {/*Description */}
                 <View className=" w-full mb-6 flex flex-col gap-1">
                   <Text className="text-[#787CA5] text-xs">Description</Text>
-                  <Text className="text-white text-base">
+                  <Text className="text-white text-sm" style={{fontFamily:"Lato-Thin"}}>
                   Figma ipsum component variant main layer. Ellipse edit ipsum selection italic distribute. Star vector selection distribute pencil hand community export background. Bullet line layer inspect list.
                   </Text>
                 </View>
@@ -215,7 +215,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
           />
         </View>
 
-        <View className="flex flex-row w-full gap-14 items-start">
+        <View className="flex flex-row w-full gap-20 items-start">
           <View className="flex gap-3">
             <View className="flex flex-col">
               <Text className="text-[#787CA5] text-xs">Due Date</Text>
@@ -224,14 +224,14 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
             <View className="flex flex-col max-w-28">
               <Text className="text-[#787CA5] text-xs">Assigned to</Text>
-              <Text className="text-[#D85570]">{assignedTo}</Text>
+              <Text className="text-[#D85570] w-[40vw]">{assignedTo}</Text>
             </View>
           </View>
 
           <View className="flex gap-3">
             <View className="flex flex-col max-w-28">
               <Text className="text-[#787CA5] text-xs">Assigned by</Text>
-              <Text className="text-[#815BF5] ">{assignedBy}</Text>
+              <Text className="text-[#815BF5] w-[40vw]">{assignedBy}</Text>
             </View>
 
             <View className="flex flex-col ">

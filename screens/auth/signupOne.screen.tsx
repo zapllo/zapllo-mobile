@@ -56,14 +56,11 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
     companyName: '',
     description: '',
   });
-  const [showWorkspace, setShowWorkspace] = useState(false);
+  const [showWorkspace, setShowWorkspace] = useState(true);
   const [error, setError] = useState<string>('');
   const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
   const [confirmPasswordError, setConfirmPasswordError] = useState<string>('');
   const [isConfirmPasswordTouched, setIsConfirmPasswordTouched] = useState<boolean>(false);
-  // const [countryCode, setCountryCode] = useState('IN'); // Default to India
-  // const [callingCode, setCallingCode] = useState('+91');
-  // const [phoneNumber, setPhoneNumber] = useState('');
   const data = [
     { label: '+91', value: '+91', icon: require('~/assets/sign-in/india.png') },
     { label: '+222', value: '+222' },

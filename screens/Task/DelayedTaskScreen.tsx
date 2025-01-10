@@ -19,10 +19,10 @@ import CustomDropdown from '~/components/customDropDown';
 import TaskDetailedComponent from '~/components/TaskComponents/TaskDetailedComponent';
 import Modal from 'react-native-modal';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { DelegatedTaskStackParamList } from '~/app/(routes)/HomeComponent/Tasks/DelegatedTaskStack';
+import { MyTasksStackParamList } from './myTask/MyTaskStack';
 
-type Props = StackScreenProps<DelegatedTaskStackParamList, 'PendingTask'>;
-type PendingTaskScreenRouteProp = RouteProp<DelegatedTaskStackParamList, 'PendingTask'>;
+type Props = StackScreenProps<MyTasksStackParamList, 'DelayedTask'>;
+type TodaysTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'DelayedTask'>;
 
 const daysData = [
   { label: 'Today', value: 'Overdue' },
@@ -37,9 +37,9 @@ const daysData = [
   { label: 'Custom', value: 'Custom' },
 ];
 
-const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
-  const route = useRoute<PendingTaskScreenRouteProp>();
-  const { pendingTasks } = route.params; // Safely access pendingTasks
+const DelayedTaskScreen: React.FC<Props> = ({ navigation }) => {
+  const route = useRoute<TodaysTaskScreenRouteProp>();
+  const { delayedTasks } = route.params; // Safely access pendingTasks
 
   const [selectedTeamSize, setSelectedTeamSize] = useState(null);
   const [search, setSearch] = useState('');
@@ -50,7 +50,7 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  console.log('pendinggggg', pendingTasks);
+  console.log('pendinggggg', delayedTasks);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -97,11 +97,11 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
       {/* Navbar */}
       <View className="flex h-20 w-full flex-row items-center justify-between p-5">
         <View className="flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-full bg-[#37384B]">
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-        <AntDesign name="arrowleft" size={24} color="#ffffff" />
+          <TouchableOpacity onPress={() => navigation.navigate('DashboardHome')}>
+            <AntDesign name="arrowleft" size={24} color="#ffffff" />
           </TouchableOpacity>
         </View>
-        <Text className="h-full pl-4 text-2xl font-semibold text-[#FFFFFF]">Pending</Text>
+        <Text className="h-full pl-4 text-2xl font-semibold text-[#FFFFFF]">Delayed Task</Text>
         <ProfileButton />
       </View>
 
@@ -199,56 +199,63 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
       </Modal>
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View className="mb-20 flex-1 items-center">
-          {/* Dropdown */}
-          <View className="mb-3 mt-4 flex w-full items-center">
-            <CustomDropdown
-              data={daysData}
-              placeholder="Select Filters"
-              selectedValue={selectedTeamSize}
-              onSelect={(value) => setSelectedTeamSize(value)}
-            />
-          </View>
-
-          {/* Search Bar */}
-          <View className="flex w-full flex-row items-center justify-center gap-5">
-            <TextInput
-              value={search}
-              onChangeText={(value) => setSearch(value)}
-              placeholder="Search"
-              className="w-[72%] rounded-full border border-[#37384B] p-4 text-[#787CA5]"
-              placeholderTextColor="#787CA5"
-            />
-            <View className="h-14 w-14 rounded-full bg-[#37384B]">
-              <Image
-                source={require('../../assets/commonAssets/filter.png')}
-                className="h-full w-full"
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled">
+          <View className="mb-20 flex-1 items-center">
+            {/* Dropdown */}
+            <View className="mb-3 mt-4 flex w-full items-center">
+              <CustomDropdown
+                data={daysData}
+                placeholder="Select Filters"
+                selectedValue={selectedTeamSize}
+                onSelect={(value) => setSelectedTeamSize(value)}
               />
             </View>
-          </View>
 
-          <FlatList
-            data={pendingTasks}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <TaskDetailedComponent
-                title={item.title}
-                dueDate={new Date(item.dueDate).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-                assignedTo={`${item.assignedUser?.firstName} ${item.assignedUser?.lastName}`}
-                assignedBy={`${item.user?.firstName} ${item.user?.lastName}`}
-                category={item.category?.name}
+            {/* Search Bar */}
+            <View className="flex w-full flex-row items-center justify-center gap-5">
+              <TextInput
+                value={search}
+                onChangeText={(value) => setSearch(value)}
+                placeholder="Search"
+                className="w-[72%] rounded-full border border-[#37384B] p-4 text-[#787CA5]"
+                placeholderTextColor="#787CA5"
               />
-            )}
-            ListEmptyComponent={<Text>No pending tasks available.</Text>}
-          />
-        </View>
+              <View className="h-14 w-14 rounded-full bg-[#37384B]">
+                <Image
+                  source={require('../../assets/commonAssets/filter.png')}
+                  className="h-full w-full"
+                />
+              </View>
+            </View>
+
+            <ScrollView>
+              {delayedTasks?.length > 0 ? (
+                delayedTasks.map((task) => (
+                  <TaskDetailedComponent
+                    key={task._id}
+                    title={task.title}
+                    dueDate={new Date(task.dueDate).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                    assignedTo={`${task.assignedUser?.firstName} ${task.assignedUser?.lastName}`}
+                    assignedBy={`${task?.user?.firstName} ${task.user?.lastName}`}
+                    category={task.category?.name}
+                  />
+                ))
+              ) : (
+                <Text>No pending tasks available.</Text>
+              )}
+            </ScrollView>
+          </View>
+        </ScrollView>
       </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 };
 
-export default PendingTaskScreen;
+export default DelayedTaskScreen;

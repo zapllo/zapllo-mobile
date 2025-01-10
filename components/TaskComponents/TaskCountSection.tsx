@@ -4,7 +4,7 @@ import { View, Text, Image } from 'react-native';
 interface TaskStatusCardProps {
   imageSource: any;
   status: string;
-  count: string;
+  count: number;
 }
 
 const TaskStatusCard: React.FC<TaskStatusCardProps> = ({ imageSource, status, count }) => {

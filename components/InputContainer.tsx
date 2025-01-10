@@ -32,7 +32,7 @@ const InputContainer: React.FC<InputContainerProps> = ({
           style={[styles.inputSome, style]}
           value={value}
           onChangeText={onChangeText}
-          placeholder={placeholder}
+          placeholder={''}
           placeholderTextColor="#787CA5"
           {...rest}
         />

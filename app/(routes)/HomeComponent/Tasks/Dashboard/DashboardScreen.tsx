@@ -24,6 +24,7 @@ import moment from 'moment';
 import getDateRange from '~/utils/GetDateRange';
 import TaskCard from '~/components/TaskComponents/TaskCard';
 import TaskStatusCard from '~/components/TaskComponents/TaskCountSection';
+import DashboardCard from '~/components/TaskComponents/DashboardCard';
 
 interface Task {
   _id: string;
@@ -34,7 +35,15 @@ interface Task {
   description: string;
   assignedUser: { firstName: string; lastName: string }[];
 }
-
+interface Emploees {
+  _id: string;
+  status: string;
+  dueDate: string;
+  completionDate: string | null;
+  title: string;
+  description: string;
+  assignedUser: { firstName: string; lastName: string }[];
+}
 
 type TaskStatus = 'Overdue' | 'Pending' | 'InProgress' | 'Completed' | 'In Time' | 'Delayed';
 
@@ -63,7 +72,13 @@ const daysData = [
 export default function DashboardScreen() {
   const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
   const [tasks, setTasks] = useState<Task[]>([]); // Store tasks fetched from API
+  const [assignedUsers, setAssignedUsers] = useState<Task[]>([]);
   const [tasksData, setTasksData] = useState<Task[]>([]);
+  const [detailPageData, setDetailPageData] = useState();
+  const [myReports, setMyReports] = useState();
+  const [delegatedData, setDelegatedData] = useState();
+  const [categoryTasks, setCategoryTasks] = useState([]);
+  const [groupedCategory, setGroupedCategory] = useState([]);
   const [taskCounts, setTaskCounts] = useState<TaskStatusCounts>({
     Overdue: 0,
     Pending: 0,
@@ -85,10 +100,27 @@ export default function DashboardScreen() {
 
   // task?.assignedUser?._id === currentUser?._id;
 
-  console.log('useerrrr>🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳', JSON.stringify(userData?.data.role));
+  // console.log('❌❌❌❌❌❌', JSON.stringify(userData?.data?._id,null,2));
 
   const [selectedTeamSize, setSelectedTeamSize] = useState('');
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
+
+  const groupedByCategory = tasks.reduce((acc, task) => {
+    const categoryName = task.category.name;
+    if (!acc[categoryName]) {
+      acc[categoryName] = [];
+    }
+    acc[categoryName].push(task);
+    return acc;
+  }, {});
+
+  useEffect(() => {
+    const groupedArray = Object.entries(groupedByCategory).map(([category, tasks]) => ({
+      category,
+      tasks,
+    }));
+    setGroupedCategory(groupedArray);
+  }, [tasks]);
 
   const filterTasksByDate = (tasks: Task[], dateRange: any) => {
     const { startDate, endDate } = dateRange;
@@ -166,13 +198,70 @@ export default function DashboardScreen() {
             },
           });
           const tasksData = Array.isArray(response.data?.data) ? response.data?.data : [];
-          const filteredTask = tasksData.filter(
-            (e: { assignedUser: any; _id: any }) => e?.assignedUser?._id === userData?.data?._id
+          const delegatedTask = tasksData.filter(
+            (task: { user: any; assignedUser: any; _id: any }) =>
+              (task.user?._id === userData?.data?._id &&
+                task.assignedUser?._id !== userData?.data?._id) ||
+              task.assignedUser?._id === userData?.data?._id
           );
-          setTasks(filteredTask);
-          setTasksData(filteredTask);
-          setTaskCountsData(countStatuses(filteredTask)); // Update task counts
-          setTaskCounts(countStatuses(filteredTask)); // Update task counts
+
+          const filteredEmployeeData = tasksData.map((v: any) => v.assignedUser);
+          const uniqueData = Array.from(
+            new Map(filteredEmployeeData.map((item: any) => [item._id, item])).values()
+          );
+
+          var newData = [];
+          uniqueData.forEach((val: any) => {
+            var userData: any[] = [];
+            tasksData.forEach((user: { assignedUser: { _id: any } }) => {
+              if (user?.assignedUser?._id === val?._id) {
+                userData.push(user);
+              }
+            });
+            newData.push(userData);
+          });
+          setDelegatedData(delegatedTask);
+          setAssignedUsers(uniqueData);
+          setDetailPageData(newData);
+          // console.log('🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻', uniqueData);
+          // const filteredTask = tasksData.filter(
+          //   (e: { assignedUser: any; _id: any }) => e?.assignedUser?._id === userData?.data?._id
+          // );
+          setTasks(tasksData);
+          setTasksData(tasksData);
+          setTaskCountsData(countStatuses(tasksData)); // Update task counts
+          setTaskCounts(countStatuses(tasksData)); // Update task counts
+
+          const filterCategory = () => {
+            // Group tasks by category
+            const groupedByCategory = tasksData.reduce((acc, task) => {
+              const categoryName = task.category?.name; // Get the category name
+              if (!categoryName) return acc;
+
+              // Find the category object or create it if it doesn't exist
+              const categoryIndex = acc.findIndex((category) => category.name === categoryName);
+
+              if (categoryIndex === -1) {
+                acc.push({
+                  name: categoryName,
+                  tasks: [task], // Initialize the tasks array with this task
+                });
+              } else {
+                acc[categoryIndex].tasks.push(task); // Add the task to the existing category
+              }
+
+              return acc;
+            }, []);
+
+            // Now, update the state with the grouped data
+            setCategoryTasks(groupedByCategory);
+            {
+              groupedCategory.map((cat) => setMyReports(cat.length));
+            }
+          };
+
+          // Call the filterCategory function to group tasks by category
+          filterCategory();
         } catch (error) {
           console.error('Error fetching tasks:', error);
         }
@@ -180,6 +269,21 @@ export default function DashboardScreen() {
 
       fetchTasks();
     }, [token])
+  );
+
+  const tasksByEmployee = tasks.reduce(
+    (acc, task) => {
+      const userId = task.assignedUser._id;
+      if (!acc[userId]) {
+        acc[userId] = {
+          user: task.assignedUser,
+          tasks: [],
+        };
+      }
+      acc[userId].tasks.push(task);
+      return acc;
+    },
+    {} as Record<string, { user: Task['assignedUser']; tasks: Task[] }>
   );
 
   const formatDate = (dateString: string): string => {
@@ -209,6 +313,33 @@ export default function DashboardScreen() {
     );
   };
 
+  // const getCount = () => {
+  //   var assigned = [];
+  //   groupedCategory.forEach((cat) => {
+  //     cat?.tasks?.forEach((e) => {
+  //       if (e?.assignedUser?._id == userData?.data?._id) {
+  //         console.log('❌❌❌❌>>>>>', JSON.stringify(e.category?.name, null, 2));
+
+  //         assigned.push(e);
+  //       }
+  //     });
+  //   });
+  //   const filteredData = assigned.filter((item, index, array) => {
+  //     const categoryName = item.category?.name;
+  //     console.log('❌❌❌❌', JSON.stringify(categoryName, null, 2));
+  //     return array.findIndex((obj) => obj.category?.name === categoryName) === index;
+  //   });
+  //   setMyReports(filteredData);
+
+  //   // return count;
+  // };
+
+  // console.log(">>>>>>>>>>>>>>",myReports)
+
+  // // useEffect(()=>{
+  // //    getCount()
+  // // },[groupedCategory])
+
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
       <Navbar title="Dashboard" />
@@ -229,46 +360,45 @@ export default function DashboardScreen() {
             </View>
 
             {/* Content */}
-            <View className="flex gap-2.5 flex-col h-full items-center w-full p-4.2 pt-1 mb-32">
-
-              <View className="flex flex-col items-center w-[90%] mb-4 gap-5">
+            <View className="p-4.2 mb-32 flex h-full w-full flex-col items-center gap-2.5 pt-1">
+              <View className="mb-4 flex w-[90%] flex-col items-center gap-5">
                 {/* 1st row */}
-                <View className="flex flex-row gap-5 items-center">
+                <View className="flex flex-row items-center gap-5">
                   <TaskStatusCard
-                    imageSource={require("../../../../../assets/commonAssets/overdue.png")}
+                    imageSource={require('../../../../../assets/commonAssets/overdue.png')}
                     status="Overdue"
-                    count="07"
+                    count={taskCounts?.Overdue}
                   />
                   <TaskStatusCard
-                    imageSource={require("../../../../../assets/Tasks/overdue.png")}
+                    imageSource={require('../../../../../assets/Tasks/overdue.png')}
                     status="Pending"
-                    count="07"
+                    count={taskCounts?.Pending}
                   />
                 </View>
                 {/* 2nd row */}
-                <View className="flex flex-row gap-5 items-center">
+                <View className="flex flex-row items-center gap-5">
                   <TaskStatusCard
-                    imageSource={require("../../../../../assets/commonAssets/Progress.png")}
+                    imageSource={require('../../../../../assets/commonAssets/Progress.png')}
                     status="In Progress"
-                    count="07"
+                    count={taskCounts?.InProgress}
                   />
                   <TaskStatusCard
-                    imageSource={require("../../../../../assets/commonAssets/Completed.png")}
+                    imageSource={require('../../../../../assets/commonAssets/Completed.png')}
                     status="Completed"
-                    count="07"
+                    count={taskCounts?.Completed}
                   />
                 </View>
                 {/* 3rd row */}
-                <View className="flex flex-row gap-5 items-center">
+                <View className="flex flex-row items-center gap-5">
                   <TaskStatusCard
-                    imageSource={require("../../../../../assets/commonAssets/inTime.png")}
+                    imageSource={require('../../../../../assets/commonAssets/inTime.png')}
                     status="In Time"
-                    count="07"
+                    count={taskCounts['In Time']}
                   />
                   <TaskStatusCard
-                    imageSource={require("../../../../../assets/commonAssets/Delayed.png")}
+                    imageSource={require('../../../../../assets/commonAssets/Delayed.png')}
                     status="Delayed"
-                    count="07"
+                    count={taskCounts?.Delayed}
                   />
                 </View>
               </View>
@@ -278,62 +408,72 @@ export default function DashboardScreen() {
               userData?.user?.role === 'orgAdmin' ? (
                 <>
                   <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
-                  <View className="flex h-full w-1/2 flex-col rounded-3xl p-5 m-0.5 bg-[#FC842C]">
-                  <TouchableOpacity className='w-full h-full'>
-                        <TaskCard
+                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FC842C] p-5">
+                      <TouchableOpacity className="h-full w-full">
+                        <DashboardCard
                           title="Employee Wise"
-                          count={34}
+                          count={assignedUsers.length}
                           date={'25th December, 2024'}
-                          // count={taskCounts.Today}
-                          tasks={tasks}
-                          status="Today"
+                          tasks={assignedUsers}
                           borderColor="#FC842C"
+                          onPress={() => {
+                            navigation.navigate('EmployeeWise', {
+                              employeeWiseData: detailPageData,
+                            });
+                          }}
                         />
-      
                       </TouchableOpacity>
                     </View>
 
-                    <View className="flex h-full w-1/2 flex-col rounded-3xl p-5 m-0.5 bg-[#D85570]">
-                    <TouchableOpacity className='w-full h-full'>
+                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#D85570] p-5">
+                      <TouchableOpacity className="h-full w-full">
                         {/* Overdue Tasks */}
-                        <TaskCard
+                        <DashboardCard
                           title="Category Wise"
                           // count={taskCounts.Today}
-                          count={26}
+                          count={groupedCategory.length}
                           date={'22-12-2024 to 28-12-2024'}
                           tasks={tasks}
                           status="Overdue"
                           borderColor="#D85570"
+                          onPress={() => {
+                            navigation.navigate('CategoryWise', {
+                              employeeWiseData: groupedCategory,
+                            });
+                          }}
                         />
-              
                       </TouchableOpacity>
                     </View>
                   </View>
 
                   <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
-                  <View className="flex h-full w-1/2 flex-col rounded-3xl p-5 m-0.5 bg-[#FDB314]">
-                  <TouchableOpacity className='w-full h-full'>
-                        <TaskCard
+                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5">
+                      <TouchableOpacity className="h-full w-full">
+                        <DashboardCard
                           title="My Report"
-                          count={135}
+                          count={5}
                           tasks={tasks}
                           status="Pending"
                           borderColor="#FDB314"
                           colors={['#CCC', '#FFF']}
+                          onPress={() => {
+                            navigation.navigate('MyReports', { employeeWiseData: groupedCategory });
+                          }}
                         />
-
                       </TouchableOpacity>
                     </View>
-                    <View className="flex h-full w-1/2 flex-col rounded-3xl p-5 m-0.5 bg-[#A914DD]">
-                    <TouchableOpacity className='w-full h-full'>
+                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
+                      <TouchableOpacity className="h-full w-full">
                         <TaskCard
                           title="Delegated"
-                          count={56}
+                          count={5}
                           tasks={tasks}
                           status="Pending"
                           borderColor="#A914DD"
+                          onPress={() => {
+                            navigation.navigate('Delegated', { employeeWiseData: detailPageData });
+                          }}
                         />
-                       
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -350,11 +490,6 @@ export default function DashboardScreen() {
                         borderColor="#FDB314"
                         colors={['#CCC', '#FFF']}
                       />
-                      <TouchableOpacity>
-                        <View className="-mt-7 flex h-8 w-8 items-center justify-center self-end rounded-full border border-white">
-                          <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-                        </View>
-                      </TouchableOpacity>
                     </TouchableOpacity>
                   </View>
                   <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
@@ -366,7 +501,6 @@ export default function DashboardScreen() {
                         status="Pending"
                         borderColor="#A914DD"
                       />
-
                     </TouchableOpacity>
                   </View>
                 </View>

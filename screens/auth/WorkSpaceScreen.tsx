@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Platform,TextInput, ScrollView, Dimensions } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Platform,
+  TextInput,
+  ScrollView,
+  Dimensions,
+} from 'react-native';
 import Dropdown from '~/components/Dropdown';
 import InputContainer from '~/components/InputContainer';
 import * as Haptics from 'expo-haptics';
@@ -97,7 +106,7 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
     );
   };
   const screenWidth = Dimensions.get('window').width; // Get screen width
-  const itemWidth = screenWidth > 400 ? screenWidth / 4 - 10 : screenWidth / 3 - 20; // Calculate item width based on screen size
+  const itemWidth = screenWidth > 400 ? screenWidth / 4 - 20 : screenWidth / 3-52; // Calculate item width based on screen size
   return (
     <View className="items-center pb-5 ">
       <Text className="text-center text-2xl  text-white" style={{fontFamily:"Lato-Bold"}}>Create Your Workspace</Text>
@@ -136,7 +145,10 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
         ]}>
         <TextInput
           multiline
-          style={[styles.inputSome, { textAlignVertical: 'top', width: '100%',backgroundColor:'05071E' }]}
+          style={[
+            styles.inputSome,
+            { textAlignVertical: 'top', width: '100%', backgroundColor: '05071E' },
+          ]}
           value={formData.description}
           onChangeText={(text) => handleChange('description', text)}
           placeholder="Description"
@@ -144,11 +156,13 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
         />
       </View>
 
-      <Text className="mb-2 px-5 ml-1 pt-2 mt-3 text-base  text-white" style={{fontFamily:"Lato-Light"}}>
+      <Text
+        className="mb-2 ml-1 mt-3 px-5 pt-2 text-base  text-white"
+        style={{ fontFamily: 'Lato-Light' }}>
         Select the categories that are relevant to your business
       </Text>
 
-      <View className="flex-row flex-wrap items-center justify-start px-4">
+      <View className="flex-row flex-wrap items-center justify-start px-5">
         {categories.map((category, index) => (
           <TouchableOpacity
           key={index}
@@ -178,7 +192,8 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
   </Text>
 </TouchableOpacity>
         ))}
-      </View>
+              
+      </View>
 
       {errors.categories && (
         <Text className="mt-2 text-sm text-[#FF6F61]">{errors.categories}</Text>
@@ -222,7 +237,7 @@ const styles = StyleSheet.create({
   inputSome: {
     flex: 1,
     padding: 8,
-    color:'#fff',
+    color: '#fff',
     fontSize: 12,
   },
 

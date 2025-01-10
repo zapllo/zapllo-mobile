@@ -207,19 +207,19 @@ export default function AssignTaskScreen() {
               <Text className="text-white " style={{fontFamily:"lato-bold"}}>Task Priority</Text>
               <View className="flex flex-row">
                 <TouchableOpacity
-                  className={activeButton === 'firstHalf' ? "bg-[#815BF5] border border-[#37384B] rounded-l-xl rounded" : "bg-transparent border border-[#37384B] rounded-l-xl rounded"}
+                  className={activeButton === 'firstHalf' ? "bg-[#815BF5] border border-[#37384B] rounded-l-xl " : "bg-transparent border border-[#37384B] rounded-l-xl "}
                   onPress={() => handleButtonPress('firstHalf')}>
                   <Text className={activeButton === 'firstHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm"} style={{fontFamily:"Lato-Thin"}}>First Half</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  className={activeButton === 'secondHalf' ? "bg-[#815BF5] border border-[#37384B] rounded" : "bg-transparent border border-[#37384B] rounded"}
+                  className={activeButton === 'secondHalf' ? "bg-[#815BF5] border border-[#37384B] " : "bg-transparent border border-[#37384B] "}
                   onPress={() => handleButtonPress('secondHalf')}>
                   <Text className={activeButton === 'secondHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm"} style={{fontFamily:"Lato-Thin"}}>Second Half</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  className={activeButton === 'thirdHalf' ? "bg-[#815BF5] border border-[#37384B] rounded" : "bg-transparent border border-[#37384B] rounded rounded-r-xl "}
+                  className={activeButton === 'thirdHalf' ? "bg-[#815BF5] rounded-r-xl border border-[#37384B] " : "bg-transparent border border-[#37384B]  rounded-r-xl "}
                   onPress={() => handleButtonPress('thirdHalf')}>
                   <Text className={activeButton === 'thirdHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm "} style={{fontFamily:"Lato-Thin"}}>Second Half</Text>
                 </TouchableOpacity>

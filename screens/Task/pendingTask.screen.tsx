@@ -20,9 +20,10 @@ import TaskDetailedComponent from '~/components/TaskComponents/TaskDetailedCompo
 import Modal from 'react-native-modal';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
+import { MyTasksStackParamList } from './myTask/MyTaskStack';
 
-type Props = StackScreenProps<DashboardStackParamList, 'PendingTask'>;
-type PendingTaskScreenRouteProp = RouteProp<DashboardStackParamList, 'PendingTask'>;
+type Props = StackScreenProps<MyTasksStackParamList, 'PendingTask'>;
+type PendingTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'PendingTask'>;
 
 const daysData = [
   { label: 'Today', value: 'Overdue' },
@@ -50,7 +51,7 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  console.log('pending', pendingTasks);
+  console.log('okkkkkkk>>>>>>>>>', pendingTasks);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -245,6 +246,7 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
                     assignedTo={`${task.assignedUser?.firstName} ${task.assignedUser?.lastName}`}
                     assignedBy={`${task.user?.firstName} ${task.user?.lastName}`}
                     category={task.category?.name}
+                    task={task}
                   />
                 ))
               ) : (

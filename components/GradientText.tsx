@@ -15,7 +15,6 @@ export const GradientText: React.FC<gradientProps> = ({ text, textStyle }) => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         colors={["#815BF5", "#FC8929"]}
-        
       >
         <Text style={[textStyle, { opacity: 0 }]} >{text}</Text>
       </LinearGradient>

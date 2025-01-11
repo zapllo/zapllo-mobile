@@ -50,7 +50,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
         </Text>
         <Text className="w-[40vw] pt-2 text-[10px] text-white" style={{ fontFamily: 'Lato-Bold' }}>{date}</Text>
       </View>
-      <View className="mt-10 flex  w-[28vw] flex-row items-center ">
+      <View className="mt-10 flex  w-[28vw] flex-row items-center bg-opacity-50">
         <View className="flex flex-row items-start">
           <View className="flex w-full flex-row">
             {tasks

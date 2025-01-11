@@ -469,16 +469,16 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
                     </Text>
                   )}
                 </TouchableOpacity>
-                <View className="flex-row items-center justify-center bg-primary py-5">
+                <View className="flex-row items-center justify-center bg-primary py-5 mb-10">
                   <View className="flex-row">
-                    <Text className="text-base font-bold text-white">Already a </Text>
+                    <Text className="text-base  text-white font-light" style={{fontFamily:"Lato-Thin"}}>Already a </Text>
                     <GradientText
                       text="Zapllonian"
                       textStyle={{ fontSize: 16, fontWeight: '400' }}
                     />
                   </View>
                   <TouchableOpacity onPress={() => router.push('/(routes)/login' as any)}>
-                    <Text className="text-base font-extrabold text-white">? Login Here</Text>
+                    <Text className="text-base font-extrabold text-white" style={{fontFamily:"Lato-Bold"}}>? Login Here</Text>
                   </TouchableOpacity>
                 </View>
               </View>

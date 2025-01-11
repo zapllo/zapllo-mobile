@@ -106,7 +106,7 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
     );
   };
   const screenWidth = Dimensions.get('window').width; // Get screen width
-  const itemWidth = screenWidth > 400 ? screenWidth / 4 - 20 : screenWidth / 3-52; // Calculate item width based on screen size
+  const itemWidth = screenWidth > 450 ? screenWidth / 4 - 20 : screenWidth / 3-30; // Calculate item width based on screen size
   return (
     <View className="items-center pb-14 ">
       <Text className="text-center text-2xl  text-white" style={{ fontFamily: 'Lato-Bold' }}>
@@ -192,7 +192,7 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
             </Text>
           </TouchableOpacity>
         ))}
-              
+              
       </View>
 
       {errors.categories && (

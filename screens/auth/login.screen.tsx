@@ -205,7 +205,7 @@ export default function Loginscreen() {
             </View>
             <View className="flex-row items-center justify-center bg-primary py-5">
               <View className="flex-row">
-                <Text className="text-base  text-white" style={{fontFamily:"Lato-Regular"}}>Not a </Text>
+                <Text className="text-base  text-white" style={{fontFamily:"Lato-Light"}}>Not a </Text>
                 <GradientText text="Zapllonian" textStyle={{ fontSize: 16, fontWeight: '400' }} />
               </View>
               <Link href="/(routes)/signup/pageOne">

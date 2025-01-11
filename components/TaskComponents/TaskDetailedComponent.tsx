@@ -38,7 +38,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
             contentContainerStyle={{ flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled">
-            <View className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
+            <View className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20 mt-16">
               {/* title */}
               <View className=" mb-7 flex w-full flex-row items-center justify-between">
                 <Text className="text-xl font-semibold text-white">{title}</Text>
@@ -51,20 +51,20 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
               </View>
 
               {/* assigned by an assigned to */}
-              <View className="mb-6 flex w-full flex-row items-center justify-start gap-14">
+              <View className="mb-6 flex w-full flex-row items-center justify-start gap-8 ">
                 <View className="flex flex-col">
                   <Text className="text-xs text-[#787CA5]">Assigned by</Text>
-                  <Text className="text-lg text-[#815BF5]">{assignedBy}</Text>
+                  <Text className=" text-[#815BF5] text-sm" >{assignedBy}</Text>
                 </View>
 
                 <View className="flex flex-col">
                   <Text className="text-xs text-[#787CA5]">Assigned to</Text>
-                  <Text className="text-[#D85570]">{assignedTo}</Text>
+                  <Text className="text-[#D85570] text-sm">{assignedTo}</Text>
                 </View>
               </View>
 
               {/* created date */}
-              <View className="mb-6 flex w-full items-start gap-5">
+              <View className="mb-6 flex w-full items-start gap-5 ">
                 <View className="flex flex-col">
                   <Text className="text-xs text-[#787CA5]">Created date</Text>
                   <Text className="text-lg text-white">
@@ -195,8 +195,8 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                     </View>
                   </View>
 
-                  <TouchableOpacity className="mb-4 flex items-center rounded-2xl bg-[#815BF5] p-2 pl-4 pr-4">
-                    <Text className="text-xs text-white">In Progress</Text>
+                  <TouchableOpacity className="mb-4 flex items-center rounded-xl bg-[#815BF5] p-2 pl-3 pr-3">
+                    <Text className="text-[11px] text-white">In Progress</Text>
                   </TouchableOpacity>
                 </View>
                 {/* line */}
@@ -211,8 +211,8 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                     </View>
                   </View>
 
-                  <TouchableOpacity className="mb-4 flex items-center rounded-2xl bg-[#007B5B] p-2 pl-4 pr-4">
-                    <Text className="text-xs text-white">Completed</Text>
+                  <TouchableOpacity className="mb-4 flex items-center rounded-xl bg-[#007B5B] p-2 pl-3 pr-3">
+                    <Text className="text-[11px] text-white">Completed</Text>
                   </TouchableOpacity>
                 </View>
 

@@ -73,7 +73,7 @@ const componentsData: HomeScreenComponents[] = [
   {
     id: '7',
     title: 'Zapllo CRM',
-    screen: '(routes)/HomeComponent/CRM',
+    screen: '(routes)/HomeComponent/Tasks/TaskCategories',
     description: 'Track, Convert & Assign Leads to your Sales Team',
   },
 ];

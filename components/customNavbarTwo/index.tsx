@@ -1,6 +1,6 @@
 import { AntDesign } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { StyleSheet, Image } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
 interface CustomDropdownProps {
@@ -19,6 +19,12 @@ const CustomDropdownComponentTwo: React.FC<CustomDropdownProps> = ({
   renderItem,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter data based on search query
+  const filteredData = data.filter((item) =>
+    item.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <Dropdown
@@ -26,19 +32,25 @@ const CustomDropdownComponentTwo: React.FC<CustomDropdownProps> = ({
       placeholderStyle={styles.placeholderStyle}
       selectedTextStyle={styles.selectedTextStyle}
       inputSearchStyle={styles.inputSearchStyle}
-      renderItem={renderItem}
-      data={data}
-      maxHeight={200}
+      search
+      searchPlaceholder="Search..."
+      value={selectedValue}
+      data={filteredData} // Use the filtered data
       labelField="label"
       valueField="value"
       placeholder={placeholder}
-      value={selectedValue}
-      onChange={(item: any) => onSelect(item.value)}
+      onChangeText={(text) => setSearchQuery(text)} // Update search query
+      renderItem={renderItem}
+      maxHeight={200}
+      onChange={(item: any) => {
+        onSelect(item.value); // Call the onSelect function
+        setIsDropdownOpen(false); // Close the dropdown
+      }}
       onFocus={() => setIsDropdownOpen(true)}
       onBlur={() => setIsDropdownOpen(false)}
       renderRightIcon={() => (
         <AntDesign
-          name={isDropdownOpen ? "caretup" : "caretdown"}
+          name={isDropdownOpen ? 'caretup' : 'caretdown'}
           size={14}
           color="#787CA5"
           style={styles.dropdownIcon}
@@ -49,115 +61,45 @@ const CustomDropdownComponentTwo: React.FC<CustomDropdownProps> = ({
   );
 };
 
-
-
 const styles = StyleSheet.create({
-    dropdownIcon: {
-        alignSelf: 'center',  // Ensures the icon is centered
-        marginLeft: 10,
-        marginRight: 5,  // Adjust to prevent overflow
-      },
-    input: {
-      borderWidth: 1,
-      borderColor: '#37384B',
-      padding: 10,
-      marginTop: 25,
-      borderRadius: 25,
-      width: '90%',
-      height: 60,
-      position: 'relative',
-      paddingLeft:14,
-    },
-  
-    inputSome: {
-      flex: 1,
-      padding: 8,
-      color: '#787CA5',
-      fontSize: 13,
-      fontFamily:"lato-bold"
-    },
-    modalContent: {
-      backgroundColor: 'white',
-      padding: 20,
-      borderRadius: 10,
-      alignItems: 'center',
-    },
-    selectedDropdownItemStyle: {
-      backgroundColor: '#4e5278', // Background color for selected item
-    },
-  
+  dropdownIcon: {
+    alignSelf: 'center',
+    marginLeft: 10,
+    marginRight: 5,
+  },
+  dropdown: {
+    position: 'absolute',
+    width: '100%',
+    height: 50,
+  },
+  placeholderStyle: {
+    fontSize: 13,
+    color: '#787CA5',
+    fontWeight: '300',
+    paddingLeft: 22,
+  },
+  selectedTextStyle: {
+    fontSize: 13,
+    color: '#787CA5',
+    fontWeight: '300',
+    paddingLeft: 22,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+    borderColor: '#37384B',
+    borderWidth: 1,
+    backgroundColor: '#05071E',
+    color: '#FFFFFF',
+  },
+  dropdownMenu: {
+    backgroundColor: '#05071E',
+    borderColor: '#37384B',
+    borderWidth: 1,
+    borderBottomEndRadius: 15,
+    borderBottomStartRadius: 15,
+    margin: 8,
+  },
+});
 
-    baseName: {
-      color: '#787CA5',
-      position: 'absolute',
-      top: -9,
-      left: 25,
-      backgroundColor: '#05071E',
-      paddingRight: 5,
-      paddingLeft: 5,
-      fontSize: 10,
-      fontWeight: 400,
-      fontFamily:"lato"
-  
-    },
-  
-  
-    dropdown: {
-      position: 'absolute',
-      width: '100%',
-      height: 50,
-    },
-    itemStyle: {
-      padding: 15,
-      borderBottomColor: '#37384B',
-      borderBottomWidth: 1,
-    },
-    itemTextStyle: {
-      color: '#787CA5',
-    },
-    selectedItemStyle: {
-      backgroundColor: '#4e5278',
-    },
-  
-    placeholderStyle: {
-      fontSize: 13,
-      color: '#787CA5',
-      fontWeight: 300,
-      paddingLeft: 22,
-    },
-    selectedTextStyle: {
-      fontSize: 13,
-      color: '#787CA5',
-      fontWeight: 300,
-      paddingLeft: 22,
-    },
-    iconStyle: {
-      width: 20,
-      height: 20,
-    },
-    inputSearchStyle: {
-      height: 40,
-      fontSize: 16,
-      marginRight: 5,
-      borderColor: 'white',
-    },
-    dropdownMenu: {
-      backgroundColor: '#05071E',
-      borderColor: '#37384B',
-      borderWidth: 1,
-      borderBottomEndRadius: 15,
-      borderBottomStartRadius: 15,
-      margin: 8,
-    },
-    dropdownMenuTwo: {
-      backgroundColor: '#05071E',
-      borderColor: '#37384B',
-      borderWidth: 1,
-      borderBottomEndRadius: 15,
-      borderBottomStartRadius: 15,
-      margin: 8,
-    },
-  
-})
-
-  export default CustomDropdownComponentTwo
+export default CustomDropdownComponentTwo;

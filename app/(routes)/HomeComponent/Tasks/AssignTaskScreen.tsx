@@ -16,6 +16,8 @@ import FileModal from "~/components/TaskComponents/assignNewTaskComponents/FileM
 import AddLinkModal from "~/components/TaskComponents/assignNewTaskComponents/AddLinkModal";
 import { Dropdown } from "react-native-element-dropdown";
 import CustomDropdownComponentTwo from "~/components/customNavbarTwo";
+import WeeklyModal from "~/components/TaskComponents/assignNewTaskComponents/WeeklyModal";
+import MonthlyModal from "~/components/TaskComponents/assignNewTaskComponents/MonthlyModal";
 
 //delete the data :)
 const daysData = [
@@ -31,6 +33,12 @@ const daysData = [
   { label: 'Custom', value: 'Custom' },
 ];
 
+const selectRepetType = [
+  { label: 'Daily', value: 'Daily' },
+  { label: 'Weekly', value: 'Weekly' },
+  { label: 'Monthly', value: 'Monthly' },
+]
+
 export default function AssignTaskScreen() {
   const navigation = useNavigation<StackNavigationProp<any>>();
   const [taskTitle, setTaskTitle] = useState("");
@@ -44,6 +52,11 @@ export default function AssignTaskScreen() {
   const [isFileModalVisible, setFileModalVisible] = useState(false);
   const [isReminderModalVisible, setReminderModalVisible] = useState(false);
   const [isAudioModalVisible, setAudioModalVisible] = useState(false);
+  const [repeatType, setRepeatType] = useState('');
+  const [isWeeklyModalVisible, setWeeklyModalVisible] = useState(false);
+  const [isMonthlyModalVisible, setMonthlyModalVisible] = useState(false);
+
+  
 
 
   //demo state change the state while adding 
@@ -72,6 +85,14 @@ export default function AssignTaskScreen() {
     inputRange: [0, 1],
     outputRange: [0, 32],
   });
+
+  const handleWeeklyTap = () => {
+    setWeeklyModalVisible(true);
+  };
+
+  const handleMonthlyTap = () => {
+    setMonthlyModalVisible(true);
+  };
 
   // fake data
   const industryData = [
@@ -158,9 +179,9 @@ export default function AssignTaskScreen() {
             
 
             {/* selected users */}
-            <View className="flex flex-col items-center w-full mt-5 gap-2">
+            <View className="flex flex-col items-center w-full mt-2 gap-2">
               <View style={styles.input}>
-                <Text style={[styles.baseName, { fontFamily: 'Nunito_400Regular' }]}>
+                <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>
                 Select User
                 </Text>
                 <CustomDropdownComponentTwo
@@ -173,7 +194,7 @@ export default function AssignTaskScreen() {
               </View>
 
               <View style={styles.input}>
-                <Text style={[styles.baseName, { fontFamily: 'Nunito_400Regular' }]}>
+                <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>
                 Select Category
                 </Text>
                 <CustomDropdownComponentTwo
@@ -184,52 +205,54 @@ export default function AssignTaskScreen() {
                   renderItem={renderIndustryItem}
                 />
               </View>
-
-
-              <View style={styles.input}>
-                <Text style={[styles.baseName, { fontFamily: 'Nunito_400Regular' }]}>
-                Subscribe to task
-                </Text>
-           
-                <CustomDropdownComponentTwo
-                  data={industryData}
-                  selectedValue={selectedIndustry}
-                  onSelect={(value) => setSelectedIndustry(value)}
-                  placeholder=""
-                  renderItem={renderIndustryItem}
-                />
-              </View>
-            
               
             </View>
+            
 
-            <View className="flex gap-3 justify-start flex-col mt-3 items-start w-[90%]">
+            {/* Task priority */}
+            <View className="flex gap-3 justify-start flex-col mt-6 items-start w-[90%]">
               <Text className="text-white " style={{fontFamily:"lato-bold"}}>Task Priority</Text>
               <View className="flex flex-row">
                 <TouchableOpacity
                   className={activeButton === 'firstHalf' ? "bg-[#815BF5] border border-[#37384B] rounded-l-xl " : "bg-transparent border border-[#37384B] rounded-l-xl "}
                   onPress={() => handleButtonPress('firstHalf')}>
-                  <Text className={activeButton === 'firstHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm"} style={{fontFamily:"Lato-Thin"}}>First Half</Text>
+                  <Text className={activeButton === 'firstHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm"} style={{fontFamily:"Lato-Thin"}}>High</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   className={activeButton === 'secondHalf' ? "bg-[#815BF5] border border-[#37384B] " : "bg-transparent border border-[#37384B] "}
                   onPress={() => handleButtonPress('secondHalf')}>
-                  <Text className={activeButton === 'secondHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm"} style={{fontFamily:"Lato-Thin"}}>Second Half</Text>
+                  <Text className={activeButton === 'secondHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm"} style={{fontFamily:"Lato-Thin"}}>medium</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   className={activeButton === 'thirdHalf' ? "bg-[#815BF5] rounded-r-xl border border-[#37384B] " : "bg-transparent border border-[#37384B]  rounded-r-xl "}
                   onPress={() => handleButtonPress('thirdHalf')}>
-                  <Text className={activeButton === 'thirdHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm "} style={{fontFamily:"Lato-Thin"}}>Second Half</Text>
+                  <Text className={activeButton === 'thirdHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm "} style={{fontFamily:"Lato-Thin"}}>Low</Text>
                 </TouchableOpacity>
               </View>
             </View>
 
             <View className="flex items-center flex-row w-[90%] justify-start mt-6 gap-4">
               <CheckboxTwo isChecked={isChecked} onPress={() => setIsChecked(!isChecked)}/>
-              <Text className="text-white" style={{fontFamily:"Lato-Bold"}}>Task Priority</Text>
+              <Text className="text-white" style={{fontFamily:"Lato-Bold"}}>Repeat</Text>
             </View>
+
+            {
+              isChecked ? <CustomDropdown
+              data={selectRepetType}
+              placeholder="Select Repeat Type"
+              selectedValue={repeatType}
+              onSelect={(value) => {
+                setRepeatType(value);
+                if (value === 'Weekly') {
+                  setWeeklyModalVisible(true);
+                } else if (value === 'Monthly') {
+                  setMonthlyModalVisible(true);
+                }
+              }}
+              />:""
+            }
             
 
             <View className=" relative">
@@ -264,18 +287,24 @@ export default function AssignTaskScreen() {
             </View>
 
             <View className="flex items-center justify-between w-[90%] flex-row mt-6 mb-10">
-              <Text className="text-white" style={{ fontFamily: "Lato-Bold" }}>Assign More Task</Text>
-              <View className="bg-white w-20 h-10 rounded-3xl relative justify-center flex">
-                <TouchableOpacity onPress={toggleSwitch}>
-                  <Animated.View style={{ transform: [{ translateX }] }}>
-                    <Image
-                      className="h-9 w-9 mx-1"
-                      source={require("../../../../assets/Tasks/onOffBall.png")}
-                    />
-                  </Animated.View>
-                </TouchableOpacity>
-              </View>
-            </View>
+      <Text className="text-white" style={{ fontFamily: "Lato-Bold" }}>Assign More Task</Text>
+      <View
+      className="bg-white w-20 h-10 rounded-3xl relative justify-center flex"
+        style={[
+          
+          { backgroundColor: isOn ? 'white' : '#a9b0bd' }, // Use gray color when off
+        ]}
+      >
+        <TouchableOpacity onPress={toggleSwitch}>
+          <Animated.View style={{ transform: [{ translateX }] }}>
+            <Image
+              className="h-9 w-9 mx-1"
+              source={require("../../../../assets/Tasks/onOffBall.png")}
+            />
+          </Animated.View>
+        </TouchableOpacity>
+      </View>
+    </View>
 
             <TouchableOpacity
               className={`mb-10  flex h-[4rem] w-[90%] items-center justify-center rounded-full p-5 bg-[#37384B]`}>
@@ -308,12 +337,29 @@ export default function AssignTaskScreen() {
         isAudioModalVisible={isAudioModalVisible}
         setAudioModalVisible={setAudioModalVisible}
       />
+
+                  {/* Weekly Modal */}
+                  <WeeklyModal
+              isVisible={isWeeklyModalVisible}
+              onClose={() => setWeeklyModalVisible(false)}
+            />
+
+            {/* Monthly Modal */}
+            <MonthlyModal
+              isVisible={isMonthlyModalVisible}
+              onClose={() => setMonthlyModalVisible(false)}
+            />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-
+  switchContainer: {
+    width: 76,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+  },
 
   inputSome: {
     flex: 1,
@@ -350,7 +396,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#05071E',
     paddingRight: 5,
     paddingLeft: 5,
-    fontSize: 10,
+    fontSize: 13,
     fontWeight: 400,
     fontFamily:"lato"
 

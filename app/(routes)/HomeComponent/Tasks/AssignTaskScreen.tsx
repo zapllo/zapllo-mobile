@@ -37,6 +37,7 @@ import moment from 'moment';
 import { Button } from 'react-native';
 import WeeklyModal from '~/components/TaskComponents/assignNewTaskComponents/WeeklyModal';
 import MonthlyModal from '~/components/TaskComponents/assignNewTaskComponents/MonthlyModal';
+import SelectDateModal from '~/components/TaskComponents/assignNewTaskComponents/SelectDateModal';
 
 //delete the data :)
 const daysData = [
@@ -194,26 +195,6 @@ export default function AssignTaskScreen() {
     setMonthlyModalVisible(true);
   };
 
-  // fake data
-  const industryData = [
-    { label: 'Retail/E-Commerce', value: 'Retail/E-Commerce' },
-    { label: 'Technology', value: 'Technology' },
-    { label: 'Service Provider', value: 'Service Provider' },
-    {
-      label: 'Healthcare(Doctors/Clinics/Physicians/Hospital)',
-      value: 'Healthcare(Doctors/Clinics/Physicians/Hospital)',
-    },
-    { label: 'Logistics', value: 'Logistics' },
-    { label: 'Financial Consultants', value: 'Financial Consultants' },
-    { label: 'Trading', value: 'Trading' },
-    { label: 'Education', value: 'Education' },
-    { label: 'Manufacturing', value: 'Manufacturing' },
-    {
-      label: 'Real Estate/Construction/Interior/Architects',
-      value: 'Real Estate/Construction/Interior/Architects',
-    },
-    { label: 'Others', value: 'Others' },
-  ];
 
   
 
@@ -389,56 +370,37 @@ export default function AssignTaskScreen() {
             }
             
 
-            <View className=" relative">
-              <InputContainer
-                label="Due Date"
-                value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
-                onChangeText={(value) => setDueDate(value)}
-                placeholder=""
-                className="flex-1  text-sm text-[#787CA5]"
-                passwordError={''}
-                style={{ paddingEnd: 45 }}
-              />
-              <TouchableOpacity
-                onPress={() => {
-                  setShowPicker(true);
-                  setMode('date');
-                }}>
-                <Image
-                  className=" absolute bottom-6 right-6 h-6 w-6"
-                  source={require('../../../../assets/Tasks/calender.png')}
-                />
-              </TouchableOpacity>
-              {showPicker && (
-                <Modal transparent={true} animationType="slide">
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      backgroundColor: 'rgba(0,0,0,0.5)',
-                    }}>
-                    <View
-                      style={{
-                        backgroundColor: 'white',
-                        margin: 20,
-                        borderRadius: 10,
-                        padding: 20,
-                      }}>
-                      <Text style={{ fontSize: 16, marginBottom: 10 }}>
-                        {mode === 'date' ? 'Select Date' : 'Select Time'}
-                      </Text>
-                      <DateTimePicker
-                        value={mode === 'date' ? selectedDate : selectedTime}
-                        mode={mode}
-                        display="default"
-                        onChange={handleChange}
-                      />
-                      <Button title="Cancel" onPress={() => setShowPicker(false)} />
-                    </View>
-                  </View>
-                </Modal>
-              )}
-            </View>
+            <View className="relative">
+      <InputContainer
+        label="Due Date"
+        value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
+        onChangeText={(value) => setDueDate(new Date(value))}
+        placeholder=""
+        className="flex-1 text-sm text-[#787CA5]"
+        passwordError={''}
+        style={{ paddingEnd: 45 }}
+      />
+      <TouchableOpacity
+        onPress={() => {
+          setShowPicker(true);
+          setMode('date'); // Open date picker first
+        }}
+      >
+        <Image
+          className="absolute bottom-6 right-6 h-6 w-6"
+          source={require('../../../../assets/Tasks/calender.png')}
+        />
+      </TouchableOpacity>
+      {showPicker && (
+        <SelectDateModal
+          visible={showPicker}
+          mode={mode}
+          selectedDate={mode === 'date' ? selectedDate : selectedTime}
+          onChange={handleChange}
+          onCancel={() => setShowPicker(false)}
+        />
+      )}
+    </View>
 
             <View className=" mt-6 flex w-[90%] flex-row items-center gap-3">
               <TouchableOpacity onPress={() => setLinkModalVisible(true)}>

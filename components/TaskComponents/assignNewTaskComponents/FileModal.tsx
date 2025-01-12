@@ -12,21 +12,26 @@ const FileModal: React.FC<FileModalProps> = ({
   isFileModalVisible,
   setFileModalVisible,
 }) => {
-  const [attachments, setAttachments] = useState<any[]>([]); // Array to store file info
+  const [attachments, setAttachments] = useState<{ name: string; uri: string }[]>(
+    []
+  );
 
   const handleFileSelect = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: "*/*",
       });
-  
-      console.log("Document Picker Result: ", result); // Log the full result
-  
+
+      console.log("Document Picker Result: ", result);
+
       if (result.canceled) {
         console.log("Document selection cancelled.");
-      } else {
+      } else if (result.assets && result.assets.length > 0) {
+        // Extract the name and uri from the first asset
+        const { name, uri } = result.assets[0];
+
         setAttachments((prev) => {
-          const updated = [...prev, result];
+          const updated = [...prev, { name, uri }];
           console.log("Updated Attachments: ", updated);
           return updated;
         });
@@ -35,17 +40,14 @@ const FileModal: React.FC<FileModalProps> = ({
       console.error("Error picking document: ", err);
     }
   };
-  
-  
-  
+
   // Monitor `attachments` state changes
   React.useEffect(() => {
     console.log("Attachments state updated: ", attachments);
   }, [attachments]);
-  
-  
+
   const handleSaveAttachments = () => {
-    console.log("Current Attachments: ", attachments); // Log the attachments state
+    console.log("Current Attachments: ", attachments);
     if (attachments.length > 0) {
       console.log("Attachments saved:", attachments);
       Alert.alert("Success", "Files have been successfully uploaded.");
@@ -54,7 +56,8 @@ const FileModal: React.FC<FileModalProps> = ({
       Alert.alert("No Files", "Please select a file before uploading.");
     }
   };
-  
+
+  console.log(">>>>>",attachments)
 
   return (
     <Modal
@@ -86,8 +89,7 @@ const FileModal: React.FC<FileModalProps> = ({
           >
             {attachments.length > 0 ? (
               <Text className="text-white" style={{ fontFamily: "Lato-Bold" }}>
-                {attachments[attachments.length - 1].name} (
-                {attachments[attachments.length - 1].mimeType || "unknown format"})
+                {attachments[attachments.length - 1].name}
               </Text>
             ) : (
               <>
@@ -117,7 +119,6 @@ const FileModal: React.FC<FileModalProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Display selected files */}
         {attachments.length > 0 && (
           <View>
             <Text className="text-white" style={{ fontFamily: "Lato-Bold" }}>
@@ -125,7 +126,7 @@ const FileModal: React.FC<FileModalProps> = ({
             </Text>
             {attachments.map((attachment, index) => (
               <Text key={index} className="text-white">
-                {attachment.name} ({attachment.mimeType || "unknown format"})
+                {attachment.name}
               </Text>
             ))}
           </View>

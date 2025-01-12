@@ -70,7 +70,7 @@ function RootLayoutNav() {
 
   return (
     <>
-      {isLoggedin ? (
+      {!isLoggedin ? (
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(routes)/home/index" />
           <Stack.Screen name="(routes)/HomeComponent/AIAssistant/index" />

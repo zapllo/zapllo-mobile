@@ -1,21 +1,39 @@
-import { View, Text, SafeAreaView, Platform, ScrollView, StyleSheet, TouchableOpacity, Image, Animated } from "react-native";
-import React, { useRef, useState } from "react";
-import { KeyboardAvoidingView } from "react-native";
-import NavbarTwo from "~/components/navbarTwo";
-import { useNavigation } from "expo-router";
-import { StackNavigationProp } from "@react-navigation/stack";
-import InputContainer from "~/components/InputContainer";
-import { TextInput } from "react-native";
-import CustomDropdown from "~/components/customDropDown";
-import CheckboxTwo from "~/components/CheckBoxTwo";
+import {
+  View,
+  Text,
+  SafeAreaView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Animated,
+  Alert,
+  Modal,
+} from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { KeyboardAvoidingView } from 'react-native';
+import NavbarTwo from '~/components/navbarTwo';
+import { useNavigation } from 'expo-router';
+import { StackNavigationProp } from '@react-navigation/stack';
+import InputContainer from '~/components/InputContainer';
+import { TextInput } from 'react-native';
+import CustomDropdown from '~/components/customDropDown';
+import CheckboxTwo from '~/components/CheckBoxTwo';
 import * as Haptics from 'expo-haptics';
-import Modal from 'react-native-modal';
-import ReminderModal from "~/components/TaskComponents/assignNewTaskComponents/ReminderModal";
-import AudioModal from "~/components/TaskComponents/assignNewTaskComponents/AudioModal";
-import FileModal from "~/components/TaskComponents/assignNewTaskComponents/FileModal";
-import AddLinkModal from "~/components/TaskComponents/assignNewTaskComponents/AddLinkModal";
-import { Dropdown } from "react-native-element-dropdown";
-import CustomDropdownComponentTwo from "~/components/customNavbarTwo";
+import ReminderModal from '~/components/TaskComponents/assignNewTaskComponents/ReminderModal';
+import AudioModal from '~/components/TaskComponents/assignNewTaskComponents/AudioModal';
+import FileModal from '~/components/TaskComponents/assignNewTaskComponents/FileModal';
+import AddLinkModal from '~/components/TaskComponents/assignNewTaskComponents/AddLinkModal';
+import { Dropdown } from 'react-native-element-dropdown';
+import CustomDropdownComponentTwo from '~/components/customNavbarTwo';
+import axios from 'axios';
+import { backend_Host } from '~/config';
+import { useSelector } from 'react-redux';
+import { RootState } from '~/redux/store';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import moment from 'moment';
+import { Button } from 'react-native';
 
 //delete the data :)
 const daysData = [
@@ -33,25 +51,108 @@ const daysData = [
 
 export default function AssignTaskScreen() {
   const navigation = useNavigation<StackNavigationProp<any>>();
-  const [taskTitle, setTaskTitle] = useState("");
-  const [taskDescription, setTaskDescription] = useState("");
+  const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskDescription, setTaskDescription] = useState('');
   const [selectedTeamSize, setSelectedTeamSize] = useState('');
-  const [activeButton, setActiveButton] = useState('firstHalf'); 
+  const [activeButton, setActiveButton] = useState('High');
   const [isChecked, setIsChecked] = useState(false);
   const [isOn, setIsOn] = useState(false);
-
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [isLinkModalVisible, setLinkModalVisible] = useState(false);
   const [isFileModalVisible, setFileModalVisible] = useState(false);
   const [isReminderModalVisible, setReminderModalVisible] = useState(false);
   const [isAudioModalVisible, setAudioModalVisible] = useState(false);
-
-
-  //demo state change the state while adding 
-  const [selectedIndustry, setSelectedIndustry] = useState(null); 
+  const [dueDate, setDueDate] = useState(null);
+  const [categoryData, setCategoryData] = useState([]);
+  const [category, setCategory] = useState('');
+  const [assignedUser, setAssignedUser] = useState('');
+  const [attachments, setAttachments] = useState([]);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [links, setLinks] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [reminders, setReminders] = useState([]);
+  const [selectedIndustry, setSelectedIndustry] = useState(null);
   const [isIndustryDropdownOpen, setIsIndustryDropdownOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showPicker, setShowPicker] = useState(true); // Control the modal visibility
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedTime, setSelectedTime] = useState(new Date());
+  const [mode, setMode] = useState('date'); // Mode can be 'date' or 'time'
 
   const position = useRef(new Animated.Value(0)).current;
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(`${backend_Host}/users/organization`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        const formattedData = processUserData(response.data.data);
+        setUsers(formattedData);
+      } catch (err: any) {
+        setError('Failed to fetch tasks. Please try again.');
+        console.error('API Error:', err.response || err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${backend_Host}/category/get`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        console.log('>>>>>>>>>>', response?.data?.data);
+        const formattedData = processCategoryData(response.data.data);
+        setCategoryData(formattedData);
+      } catch (err: any) {
+        setError('Failed to fetch tasks. Please try again.');
+        console.error('API Error:', err.response || err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+    fetchCategories();
+  }, [token]);
+
+  const processUserData = (data) => {
+    return data.map((user) => ({
+      value: user._id,
+      label: `${user.firstName} ${user.lastName}`,
+    }));
+  };
+  const processCategoryData = (data) => {
+    return data.map((cat) => ({
+      value: cat?._id,
+      label: cat?.name,
+    }));
+  };
+
+  const handleChange = (event, value) => {
+    if (mode === 'date') {
+      setSelectedDate(value || selectedDate);
+      setMode('time'); // Switch to time picker
+    } else {
+      setSelectedTime(value || selectedTime);
+      setShowPicker(false); // Close modal after selecting time
+
+      // Combine selected date and time
+      const date = value || selectedTime;
+      const combinedDate = new Date(selectedDate);
+      combinedDate.setHours(date.getHours());
+      combinedDate.setMinutes(date.getMinutes());
+      setDueDate(combinedDate); // Store combined date and time
+    }
+  };
   const handleButtonPress = (button: string) => {
     setActiveButton(button);
     Haptics.selectionAsync();
@@ -94,27 +195,60 @@ export default function AssignTaskScreen() {
     { label: 'Others', value: 'Others' },
   ];
 
-    const renderIndustryItem = (item: any) => {
-      const isSelected = item.value === selectedIndustry;
-  
-      return (
-        <TouchableOpacity
-          style={[
-            styles.itemStyle,
-            isSelected && styles.selectedDropdownItemStyle, // Apply selected item style
-          ]}
-          onPress={() => setSelectedIndustry(item.value)} // Update selected item
-        >
-          <Text
-            style={[
-              styles.itemTextStyle,
-              isSelected && styles.selectedTextStyle, // Apply selected text style
-            ]}>
-            {item.label}
-          </Text>
-        </TouchableOpacity>
-      );
+  const handleCreateTask = async () => {
+    const payload = {
+      title: taskTitle,
+      description: taskDescription,
+      priority:
+        activeButton === 'firstHalf' ? 'High' : activeButton === 'secondHalf' ? 'Medium' : 'Low',
+      repeat: isOn,
+      repeatType: 'Weekly',
+      days: ['Monday', 'Wednesday', 'Friday'],
+      dueDate,
+      completionDate: '2025-01-14T15:00:00Z',
+      category,
+      assignedUser,
+      status: 'Pending',
+      organization: '64a9ed4b7a5a870015a1a123',
+      attachment: attachments,
+      audioUrl,
+      links,
+      comments,
+      reminders,
     };
+
+    try {
+      const response = await axios.post(`${backend_Host}/tasks/create`, payload);
+      console.log('Task Created:', response.data);
+      Alert.alert('Task successfully created!');
+      // Navigate to another screen or reset form
+      navigation.navigate('(routes)/home/index');
+    } catch (error: any) {
+      console.error('Error creating task:', error.response?.data || error.message);
+      Alert.alert('Failed to create task. Please try again.');
+    }
+  };
+
+  const renderDropdownItem = (item: any, type: 'user' | 'category') => {
+    const isSelected = type === 'user' ? item.value === selectedUser : item.value === category;
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.itemStyle,
+          isSelected && styles.selectedDropdownItemStyle, // Highlight selected item
+        ]}
+        onPress={() => (type === 'user' ? setSelectedUser(item.value) : setCategory(item.value))}>
+        <Text
+          style={[
+            styles.itemTextStyle,
+            isSelected && styles.selectedTextStyle, // Apply selected text style
+          ]}>
+          {item.label}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary ">
@@ -154,123 +288,219 @@ export default function AssignTaskScreen() {
                 onChangeText={(value) => setTaskDescription(value)}
                 placeholder="Description of the task"
                 placeholderTextColor="#787CA5"></TextInput>
-            </View> 
-            
+            </View>
 
             {/* selected users */}
-            <View className="flex flex-col items-center w-full mt-5 gap-2">
+            <View className="mt-5 flex w-full flex-col items-center gap-2">
               <View style={styles.input}>
                 <Text style={[styles.baseName, { fontFamily: 'Nunito_400Regular' }]}>
-                Select User
+                  Select User
                 </Text>
                 <CustomDropdownComponentTwo
-                  data={industryData}
-                  selectedValue={selectedIndustry}
-                  onSelect={(value) => setSelectedIndustry(value)}
-                  placeholder=""
-                  renderItem={renderIndustryItem}
+                  data={users}
+                  selectedValue={selectedUser}
+                  onSelect={(value) => setSelectedUser(value)}
+                  placeholder="Select a user"
+                  renderItem={(item) => renderDropdownItem(item, 'user')}
                 />
               </View>
 
               <View style={styles.input}>
                 <Text style={[styles.baseName, { fontFamily: 'Nunito_400Regular' }]}>
-                Select Category
+                  Select Category
                 </Text>
                 <CustomDropdownComponentTwo
-                  data={industryData}
-                  selectedValue={selectedIndustry}
-                  onSelect={(value) => setSelectedIndustry(value)}
+                  data={categoryData}
+                  selectedValue={category}
+                  onSelect={(value) => setCategory(value)}
                   placeholder=""
-                  renderItem={renderIndustryItem}
+                  renderItem={(item) => renderDropdownItem(item, 'category')}
                 />
               </View>
 
-
-              <View style={styles.input}>
+              {/* <View style={styles.input}>
                 <Text style={[styles.baseName, { fontFamily: 'Nunito_400Regular' }]}>
-                Subscribe to task
+                  Subscribe to task
                 </Text>
-           
+
                 <CustomDropdownComponentTwo
                   data={industryData}
                   selectedValue={selectedIndustry}
                   onSelect={(value) => setSelectedIndustry(value)}
                   placeholder=""
-                  renderItem={renderIndustryItem}
+                  renderItem={renderDropdownItem}
                 />
-              </View>
-            
-              
+              </View> */}
             </View>
 
-            <View className="flex gap-3 justify-start flex-col mt-3 items-start w-[90%]">
-              <Text className="text-white " style={{fontFamily:"lato-bold"}}>Task Priority</Text>
+            <View className="mt-3 flex w-[90%] flex-col items-start justify-start gap-3">
+              <Text className="text-white " style={{ fontFamily: 'lato-bold' }}>
+                Task Priority
+              </Text>
               <View className="flex flex-row">
                 <TouchableOpacity
-                  className={activeButton === 'firstHalf' ? "bg-[#815BF5] border border-[#37384B] rounded-l-xl " : "bg-transparent border border-[#37384B] rounded-l-xl "}
-                  onPress={() => handleButtonPress('firstHalf')}>
-                  <Text className={activeButton === 'firstHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm"} style={{fontFamily:"Lato-Thin"}}>First Half</Text>
+                  className={
+                    activeButton === 'High'
+                      ? 'rounded-l-xl border border-[#37384B] bg-[#815BF5] '
+                      : 'rounded-l-xl border border-[#37384B] bg-transparent '
+                  }
+                  onPress={() => handleButtonPress('High')}>
+                  <Text
+                    className={
+                      activeButton === 'High'
+                        ? 'p-3 text-sm text-white'
+                        : 'p-3 text-sm text-[#787CA5]'
+                    }
+                    style={{ fontFamily: 'Lato-Thin' }}>
+                    High
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  className={activeButton === 'secondHalf' ? "bg-[#815BF5] border border-[#37384B] " : "bg-transparent border border-[#37384B] "}
-                  onPress={() => handleButtonPress('secondHalf')}>
-                  <Text className={activeButton === 'secondHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm"} style={{fontFamily:"Lato-Thin"}}>Second Half</Text>
+                  className={
+                    activeButton === 'Medium'
+                      ? 'border border-[#37384B] bg-[#815BF5] '
+                      : 'border border-[#37384B] bg-transparent '
+                  }
+                  onPress={() => handleButtonPress('Medium')}>
+                  <Text
+                    className={
+                      activeButton === 'Medium'
+                        ? 'p-3 text-sm text-white'
+                        : 'p-3 text-sm text-[#787CA5]'
+                    }
+                    style={{ fontFamily: 'Lato-Thin' }}>
+                    Medium
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  className={activeButton === 'thirdHalf' ? "bg-[#815BF5] rounded-r-xl border border-[#37384B] " : "bg-transparent border border-[#37384B]  rounded-r-xl "}
-                  onPress={() => handleButtonPress('thirdHalf')}>
-                  <Text className={activeButton === 'thirdHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm "} style={{fontFamily:"Lato-Thin"}}>Second Half</Text>
+                  className={
+                    activeButton === 'Low'
+                      ? 'rounded-r-xl border border-[#37384B] bg-[#815BF5] '
+                      : 'rounded-r-xl border border-[#37384B]  bg-transparent '
+                  }
+                  onPress={() => handleButtonPress('Low')}>
+                  <Text
+                    className={
+                      activeButton === 'Low'
+                        ? 'p-3 text-sm text-white'
+                        : 'p-3 text-sm text-[#787CA5] '
+                    }
+                    style={{ fontFamily: 'Lato-Thin' }}>
+                    Low
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
 
-            <View className="flex items-center flex-row w-[90%] justify-start mt-6 gap-4">
-              <CheckboxTwo isChecked={isChecked} onPress={() => setIsChecked(!isChecked)}/>
-              <Text className="text-white" style={{fontFamily:"Lato-Bold"}}>Task Priority</Text>
+            <View className="mt-6 flex w-[90%] flex-row items-center justify-start gap-4">
+              <CheckboxTwo isChecked={isChecked} onPress={() => setIsChecked(!isChecked)} />
+              <Text className="text-white" style={{ fontFamily: 'Lato-Bold' }}>
+                Task Priority
+              </Text>
             </View>
-            
 
             <View className=" relative">
               <InputContainer
                 label="Due Date"
-                value={taskTitle}
-                onChangeText={(value) => setTaskTitle(value)}
+                value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
+                onChangeText={(value) => setDueDate(value)}
                 placeholder=""
                 className="flex-1  text-sm text-[#787CA5]"
                 passwordError={''}
-                style={{paddingEnd:45}}
+                style={{ paddingEnd: 45 }}
               />
-              <TouchableOpacity>
-                <Image className=" absolute w-6 h-6 bottom-6 right-6" source={require("../../../../assets/Tasks/calender.png")}/>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowPicker(true);
+                  setMode('date');
+                }}>
+                <Image
+                  className=" absolute bottom-6 right-6 h-6 w-6"
+                  source={require('../../../../assets/Tasks/calender.png')}
+                />
               </TouchableOpacity>
+              {showPicker && (
+                <Modal transparent={true} animationType="slide">
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      backgroundColor: 'rgba(0,0,0,0.5)',
+                    }}>
+                    <View
+                      style={{
+                        backgroundColor: 'white',
+                        margin: 20,
+                        borderRadius: 10,
+                        padding: 20,
+                      }}>
+                      <Text style={{ fontSize: 16, marginBottom: 10 }}>
+                        {mode === 'date' ? 'Select Date' : 'Select Time'}
+                      </Text>
+                      <DateTimePicker
+                        value={mode === 'date' ? selectedDate : selectedTime}
+                        mode={mode}
+                        display="default"
+                        onChange={handleChange}
+                      />
+                      <Button title="Cancel" onPress={() => setShowPicker(false)} />
+                    </View>
+                  </View>
+                </Modal>
+              )}
             </View>
 
-
-            <View className=" flex items-center gap-3 flex-row w-[90%] mt-6">
+            <View className=" mt-6 flex w-[90%] flex-row items-center gap-3">
               <TouchableOpacity onPress={() => setLinkModalVisible(true)}>
-                <Image className="h-12 w-12" source={require("../../../../assets/Tasks/link.png")} />
+                <Image
+                  className="h-12 w-12"
+                  source={require('../../../../assets/Tasks/link.png')}
+                />
+                <Text className="text-sm text-white">
+                  {links.length > 0 ? `${links.length} Links` : ''}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setFileModalVisible(true)}>
-                <Image className="h-12 w-12" source={require("../../../../assets/Tasks/file.png")} />
+                <Image
+                  className="h-12 w-12"
+                  source={require('../../../../assets/Tasks/file.png')}
+                />
+                <Text className="text-sm text-white">
+                  {links.length > 0 ? `${links.length} Links` : ''}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setReminderModalVisible(true)}>
-                <Image className="h-12 w-12" source={require("../../../../assets/Tasks/Reminder.png")} />
+                <Image
+                  className="h-12 w-12"
+                  source={require('../../../../assets/Tasks/Reminder.png')}
+                />
+                <Text className="mt-1 text-xs text-white" style={{ fontFamily: 'LatoBold' }}>
+                  {links.length > 0 ? `${links.length} Links` : ''}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setAudioModalVisible(true)}>
-                <Image className="h-12 w-12" source={require("../../../../assets/Tasks/Audio.png")} />
+                <Image
+                  className="h-12 w-12"
+                  source={require('../../../../assets/Tasks/Audio.png')}
+                />
+                <Text className="text-sm text-white">
+                  {links.length > 0 ? `${links.length} Links` : ''}
+                </Text>
               </TouchableOpacity>
             </View>
 
-            <View className="flex items-center justify-between w-[90%] flex-row mt-6 mb-10">
-              <Text className="text-white" style={{ fontFamily: "Lato-Bold" }}>Assign More Task</Text>
-              <View className="bg-white w-20 h-10 rounded-3xl relative justify-center flex">
+            <View className="mb-10 mt-6 flex w-[90%] flex-row items-center justify-between">
+              <Text className="text-white" style={{ fontFamily: 'Lato-Bold' }}>
+                Assign More Task
+              </Text>
+              <View className="relative flex h-10 w-20 justify-center rounded-3xl bg-white">
                 <TouchableOpacity onPress={toggleSwitch}>
                   <Animated.View style={{ transform: [{ translateX }] }}>
                     <Image
-                      className="h-9 w-9 mx-1"
-                      source={require("../../../../assets/Tasks/onOffBall.png")}
+                      className="mx-1 h-9 w-9"
+                      source={require('../../../../assets/Tasks/onOffBall.png')}
                     />
                   </Animated.View>
                 </TouchableOpacity>
@@ -278,8 +508,12 @@ export default function AssignTaskScreen() {
             </View>
 
             <TouchableOpacity
-              className={`mb-10  flex h-[4rem] w-[90%] items-center justify-center rounded-full p-5 bg-[#37384B]`}>
-              <Text className="text-center  font-semibold text-white"  style={{fontFamily:"Lato-Bold"}}>Assign Task</Text>
+              className={`mb-10  flex h-[4rem] w-[90%] items-center justify-center rounded-full bg-[#37384B] p-5`}>
+              <Text
+                className="text-center  font-semibold text-white"
+                style={{ fontFamily: 'Lato-Bold' }}>
+                Assign Task
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -290,11 +524,15 @@ export default function AssignTaskScreen() {
       <AddLinkModal
         isLinkModalVisible={isLinkModalVisible}
         setLinkModalVisible={setLinkModalVisible}
+        setLinks={setLinks}
+        links={links}
       />
       {/* File Modal */}
       <FileModal
         isFileModalVisible={isFileModalVisible}
         setFileModalVisible={setFileModalVisible}
+        attachments={attachments}
+        setAttachments={setAttachments}
       />
 
       {/* Reminder Modal */}
@@ -302,25 +540,25 @@ export default function AssignTaskScreen() {
         isReminderModalVisible={isReminderModalVisible}
         setReminderModalVisible={setReminderModalVisible}
       />
-      
+
       {/* Audio Modal */}
       <AudioModal
         isAudioModalVisible={isAudioModalVisible}
         setAudioModalVisible={setAudioModalVisible}
+        audioUrl={audioUrl}
+        setAudioUrl={setAudioUrl}
       />
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
-
-
   inputSome: {
     flex: 1,
     padding: 8,
     color: '#787CA5',
     fontSize: 13,
-    fontFamily:"lato-bold"
+    fontFamily: 'lato-bold',
   },
   modalContent: {
     backgroundColor: 'white',
@@ -352,10 +590,8 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
     fontSize: 10,
     fontWeight: 400,
-    fontFamily:"lato"
-
+    fontFamily: 'lato',
   },
-
 
   dropdown: {
     position: 'absolute',
@@ -395,7 +631,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginRight: 5,
     borderColor: 'white',
-    width:10
+    width: 10,
   },
   dropdownMenu: {
     backgroundColor: '#05071E',
@@ -413,5 +649,4 @@ const styles = StyleSheet.create({
     borderBottomStartRadius: 15,
     margin: 8,
   },
-
-})
+});

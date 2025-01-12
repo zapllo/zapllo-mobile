@@ -4,12 +4,12 @@ import React, { useState } from "react";
 import Modal from "react-native-modal";
 import CustomDropdown from "~/components/customDropDown";
 import CustomDropdownComponentTwo from "~/components/customNavbarTwo";
+import CustomDropdownComponentThree from "~/components/customDropdownThree";
 
 
 
 const daysData = [
     { label: 'Days', value: 'Days' },
-    { label: 'minutes', value: '' },
     { label: 'hours', value: 'hours' },
 
   ];
@@ -81,11 +81,11 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
         <View className=" w-full items-center">
           <View className="flex w-full  flex-row items-center justify-between">
           <View style={styles.input} className="w-[30%]">
-                <CustomDropdownComponentTwo
+                <CustomDropdownComponentThree
                       data={daysData}
                       selectedValue={selectedIndustry}
                       onSelect={(value) => setSelectedIndustry(value)}
-                      placeholder="hii"
+                      
                       renderItem={renderIndustryItem}
                     />
               </View>
@@ -98,19 +98,35 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
                 />
 
               <View style={styles.input} className="w-[30%]">
-                <CustomDropdownComponentTwo
+                <CustomDropdownComponentThree
                       data={daysData}
                       selectedValue={selectedIndustry}
                       onSelect={(value) => setSelectedIndustry(value)}
-                      placeholder="hii"
                       renderItem={renderIndustryItem}
                     />
               </View>
 
             <TouchableOpacity className="h-12 w-12">
-              <Image className="h-12 w-12" source={require("../../../assets/Tasks/delete.png")} />
+              <Image className="h-12 w-12" source={require("../../../assets/Tasks/add.png")} />
             </TouchableOpacity>
+
+
+            
           </View>
+
+          <View className="w-full mt-16">
+           <TouchableOpacity
+           
+             className="mb-10 flex h-[4rem] items-center justify-center rounded-full p-5 bg-[#37384B]"
+           >
+             <Text
+               className="text-center font-semibold text-white"
+               style={{ fontFamily: "Lato-Bold" }}
+             >
+               Upload Documents
+             </Text>
+           </TouchableOpacity>
+         </View>
 
         
       

@@ -4,6 +4,7 @@ import Modal from 'react-native-modal';
 import { Audio } from 'expo-av';
 import LottieView from 'lottie-react-native';
 import Slider from '@react-native-community/slider';
+import { Entypo } from '@expo/vector-icons';
 
 interface AudioModalProps{
   isAudioModalVisible :any,
@@ -95,7 +96,7 @@ const AudioModal: React.FC<AudioModalProps> = ({
     }
   };
 
-  const updateStatus = (status) => {
+  const updateStatus = (status:any) => {
     if (status.isLoaded) {
       setDuration(status.durationMillis || 0);
       setCurrentPosition(status.positionMillis || 0);
@@ -123,8 +124,11 @@ const AudioModal: React.FC<AudioModalProps> = ({
           </TouchableOpacity>
         </View>
 
-        <View className="flex w-full items-center">
-          {!recording ? (
+
+
+        {!isRecordingStopped ? (
+          <View className="flex w-full items-center">
+          {!recording  ? (
             <TouchableOpacity
               onPress={startRecording}
               className="flex h-32 w-full flex-row items-center justify-center gap-4 rounded-2xl border border-dashed border-[#815BF5]">
@@ -137,53 +141,68 @@ const AudioModal: React.FC<AudioModalProps> = ({
             <View className="flex h-32 w-full items-center justify-center">
               {/* Lottie Animation for Recording */}
 
-              <TouchableOpacity onPress={stopRecording} className="mt-4">
+              <TouchableOpacity 
+              className="flex h-32 w-full flex-row items-center justify-between p-5 gap-4 rounded-2xl border border-dashed border-[#815BF5] "
+              >
                 <LottieView
                   source={require('../../../assets/sound-wave.json')} // Replace with your animation file
                   autoPlay
                   loop
-                  style={{ height: 100, width: 100 }}
+                  style={{ height: 200, width: 200 }}
                 />
-                <Text className="text-red-500" style={{ fontFamily: 'Lato-Bold' }}>
-                  Stop Recording
+                <TouchableOpacity onPress={stopRecording}  className='bg-white p-2 rounded-lg flex flex-row justify-center items-center gap-2'>
+                  <View className='bg-red-600 h-4 w-4'></View>
+                <Text className="text-gray-500" style={{ fontFamily: 'Lato-Bold' }}>
+                  Stop
                 </Text>
+                </TouchableOpacity>
+
               </TouchableOpacity>
             </View>
           )}
-        </View>
-
-        {!isRecordingStopped ? (
-          <TouchableOpacity
-            onPress={recording ? stopRecording : startRecording}
-            style={styles.recordButton}>
-            <Text style={styles.recordText}>
-              {recording ? 'Stop Recording' : 'Start Recording'}
-            </Text>
-          </TouchableOpacity>
+          </View>
         ) : (
-          <View>
-            <Text style={styles.title}>Voice Note</Text>
-            <Text style={styles.timer}>
-              {Math.floor(currentPosition / 1000)}s / {Math.floor(duration / 1000)}s
-            </Text>
+          <View className='flex h-32 w-full p-4  justify-center  rounded-2xl border border-dashed border-[#815BF5]'>
+
+            <View className='flex flex-row justify-between'>
+            <View className='flex flex-col'>
+              <Text className='text-white text-sm ' >Voice Note</Text>
+              <Text className='text-white text-sm mb-1' style={{fontFamily:"Lato-Light"}}>
+                {Math.floor(currentPosition / 1000)}s / {Math.floor(duration / 1000)}s
+              </Text>
+            </View>
+
+            <View className='flex flex-row items-center gap-3'>
+              <TouchableOpacity className='bg-[#46765f] h-10 w-10 items-center justify-center rounded-full'  onPress={playAudio}>
+              <Entypo
+                name={isPlaying ? 'controller-paus' : 'controller-play'}
+                size={24}
+                color="#FFF"
+              />
+              </TouchableOpacity>
+              <TouchableOpacity className='bg-[#EF4444] h-8 w-20 rounded-2xl flex items-center flex-row justify-center'  onPress={clearAudio}> 
+                
+                <Entypo
+                name='cross'
+                size={20}
+                color="#FFF"
+                />
+                <Text className='text-white text-xs' style={{fontFamily:"Lato-Light"}}>Clear</Text>
+              </TouchableOpacity>
+            </View>
+            </View>
+
             <Slider
               style={styles.slider}
               minimumValue={0}
               maximumValue={duration/1000}
               value={currentPosition/1000}
               minimumTrackTintColor="#815BF5"
-              maximumTrackTintColor="#fff"
-              thumbTintColor="#fff"
+              maximumTrackTintColor="gray"
+              thumbTintColor="#ffffff"
               onValueChange={(value) => sound?.setPositionAsync(value)}
             />
-            <View style={styles.controls}>
-              <TouchableOpacity style={styles.playButton} onPress={playAudio}>
-                <Text style={styles.playText}>{isPlaying ? 'Pause' : 'Play'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.clearButton} onPress={clearAudio}>
-                <Text style={styles.clearText}>Clear</Text>
-              </TouchableOpacity>
-            </View>
+
           </View>
         )}
         <View className="mt-16 w-full">
@@ -210,9 +229,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    fontSize: 10,
   },
   timer: {
     color: '#FFF',

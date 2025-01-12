@@ -7,11 +7,16 @@ import DashboardStack from '~/app/(routes)/HomeComponent/Tasks/Dashboard/Dashboa
 import MyAppsScreen from '~/app/(routes)/HomeComponent/Tasks/MyAppsScreen';
 import DelegatedTaskStack from '~/app/(routes)/HomeComponent/Tasks/DelegatedTaskStack';
 import MyTasksStack from './myTask/MyTaskStack';
+import { useState } from 'react';
+import Modal from "react-native-modal";
+import AllTaskModalScreen from './AllTaskModalScreen';
 
 const Tab = createBottomTabNavigator();
 
 export default function TasksScreen() {
+  const [isModalVisible, setModalVisible] = useState(false);
   return (
+    <View style={{ flex: 1 }}>
     <Tab.Navigator
       initialRouteName="Dashboard"
       screenOptions={({ route }) => ({
@@ -46,22 +51,40 @@ export default function TasksScreen() {
 
           return (
             <View
-              style={[
-                styles.imageContainer,
-                focused && styles.activeImageContainer, // Highlight active image background
-              ]}>
-              <Image source={icon} style={styles.icon} />
-            </View>
-          );
-        },
-        tabBarShowLabel: false, // Hides the labels
-      })}>
+            style={[
+              styles.imageContainer,
+              focused && styles.activeImageContainer,
+            ]}
+          >
+            <Image source={icon} style={styles.icon} />
+          </View>
+            );
+            },
+          tabBarShowLabel: false,
+          })}
+          >
       <Tab.Screen name="Dashboard" component={DashboardStack} />
       <Tab.Screen name="My Task" component={MyTasksStack} />
       <Tab.Screen name="My Apps" component={MyAppsScreen} />
       <Tab.Screen name="Delegated Task" component={DelegatedTaskStack} />
-      <Tab.Screen name="All Task" component={AllTaskScreen} />
+      <Tab.Screen
+          name="All Task"
+          component={AllTaskScreen}
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault(); // Prevent default action
+              setModalVisible(true); // Show modal
+            },
+          }}
+        />
     </Tab.Navigator>
+
+    <AllTaskModalScreen
+        isVisible={isModalVisible}
+        onClose={() => setModalVisible(false)}
+      />
+    </View>
+    
   );
 }
 

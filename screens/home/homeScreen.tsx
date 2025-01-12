@@ -26,11 +26,13 @@ type HomeScreenComponents = {
   id: string;
   screen: any;
   description: string;
+  image: any; // Add image property
 };
 
 interface ChecklistItem {
   _id: string; // Assuming each item has a unique `_id`
   name: string; // Example property, you can add more properties as needed
+  image: any; // Add image property
 }
 
 const componentsData: HomeScreenComponents[] = [
@@ -39,42 +41,49 @@ const componentsData: HomeScreenComponents[] = [
     title: 'Zapllo Task',
     screen: '(routes)/HomeComponent/Tasks',
     description: 'Delegate one time and recurring task to your team',
+    image: require('~/assets/HomeComponents/ZTask.png'), // Add image path
   },
   {
     id: '2',
     title: 'Zapllo Attendance',
     screen: '(routes)/HomeComponent/Attendance',
     description: 'Track your Team Attendance & Breaks',
+    image: require('~/assets/HomeComponents/ZAttendance.png'), // Add image path
   },
   {
     id: '3',
     title: 'Zapllo Events',
     screen: '(routes)/HomeComponent/Events',
     description: 'Track your Team Attendance & Breaks',
+    image: require('~/assets/HomeComponents/ZEvents.png'), // Add image path
   },
   {
     id: '4',
     title: 'Zapllo Intranet',
     screen: '(routes)/settings',
     description: 'Manage all your Important Company Links',
+    image: require('~/assets/HomeComponents/ZEvents.png'), // Add image path
   },
   {
     id: '5',
     title: 'Zapllo Workflows',
     screen: '(routes)/HomeComponent/Tasks/AssignTaskScreen',
     description: 'Automate, Integrate & Connect anything effortlessly',
+    image: require('~/assets/HomeComponents/ZAttendance.png'), // Add image path
   },
   {
     id: '6',
     title: 'Zapllo Leaves',
     screen: '(routes)/HomeComponent/Leaves',
     description: 'Track, Convert & Assign Leads to your Sales Team',
+    image: require('~/assets/HomeComponents/ZLeave.png'), // Add image path
   },
   {
     id: '7',
     title: 'Zapllo CRM',
     screen: '(routes)/HomeComponent/Tasks/TaskCategories',
     description: 'Track, Convert & Assign Leads to your Sales Team',
+    image: require('~/assets/HomeComponents/ZCRM.png'), // Add image path
   },
 ];
 
@@ -195,7 +204,7 @@ const HomeScreen: React.FC = () => {
               <View className="flex w-full items-start gap-3">
                 <Image
                   className="h-14 w-14"
-                  source={require('~/assets/HomeComponents/Attendance.png')}
+                  source={item.image}
                 />
                 <View className="w-ull">
                   <Text className="text-lg text-[#e3dcdc]" style={{fontFamily:"Lato-Bold"}}>{item.title}</Text>

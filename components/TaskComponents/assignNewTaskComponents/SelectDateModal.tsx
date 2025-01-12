@@ -37,7 +37,7 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
         <DateTimePicker
           value={selectedDate}
           mode={mode}
-          display={Platform.OS === 'ios' ? 'spinner' : 'calendar'} // Use spinner for iOS
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'} // Use spinner for iOS
           onChange={(event, date) => {
             if (date) onChange(date); // Trigger the onChange only if a date is selected
           }}

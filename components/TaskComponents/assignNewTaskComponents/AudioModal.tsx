@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
 import Modal from 'react-native-modal';
 import { Audio } from 'expo-av';
@@ -6,15 +6,18 @@ import LottieView from 'lottie-react-native';
 import Slider from '@react-native-community/slider';
 import { Entypo } from '@expo/vector-icons';
 
-interface AudioModalProps{
-  isAudioModalVisible :any,
-  setAudioModalVisible:any,
+interface AudioModalProps {
+  isAudioModalVisible: any;
+  setAudioModalVisible: any;
+  audioUrl: any;
+  setAudioUrl: any;
 }
 
 const AudioModal: React.FC<AudioModalProps> = ({
   isAudioModalVisible,
   setAudioModalVisible,
-
+  audioUrl,
+  setAudioUrl,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [sound, setSound] = useState<any>(null);
@@ -25,29 +28,40 @@ const AudioModal: React.FC<AudioModalProps> = ({
   const [currentPosition, setCurrentPosition] = useState(0);
   const [isRecordingStopped, setIsRecordingStopped] = useState(false);
 
+  useEffect(() => {
+    if (isAudioModalVisible && audioUrl) {
+      // Restore the sound if a recording exists
+      loadAudioFromUrl(audioUrl);
+    }
+  }, [isAudioModalVisible]);
+
+  const loadAudioFromUrl = async (url: string) => {
+    try {
+      const { sound } = await Audio.Sound.createAsync({ uri: url });
+      setSound(sound);
+      const status = await sound.getStatusAsync();
+      setDuration(status.durationMillis || 0);
+    } catch (err) {
+      console.error('Failed to load audio', err);
+    }
+  };
+
   async function startRecording(): Promise<void> {
     try {
       if (permissionResponse?.status !== 'granted') {
-        console.log('Requesting permission...');
         const response = await requestPermission();
-        if (response.status !== 'granted') {
-          console.warn('Permission not granted');
-          return;
-        }
+        if (response.status !== 'granted') return;
       }
-
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
       });
 
-      console.log('Starting recording...');
       const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
       setRecording(recording);
       setIsRecordingStopped(false);
-      console.log('Recording started');
     } catch (err) {
       console.error('Failed to start recording', err);
     }
@@ -56,15 +70,12 @@ const AudioModal: React.FC<AudioModalProps> = ({
   async function stopRecording(): Promise<void> {
     try {
       if (recording) {
-        console.log('Stopping recording...');
         await recording.stopAndUnloadAsync();
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: false,
-        });
+        await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
         const uri = recording.getURI();
         const { sound } = await recording.createNewLoadedSoundAsync();
         setSound(sound);
-        console.log('Recording stopped and stored at', uri);
+        setAudioUrl(uri || ''); // Store the audio URL in the parent state
         setRecording(undefined);
         setIsRecordingStopped(true);
       }
@@ -72,6 +83,7 @@ const AudioModal: React.FC<AudioModalProps> = ({
       console.error('Failed to stop recording', err);
     }
   }
+
   const playAudio = async () => {
     if (sound) {
       if (isPlaying) {
@@ -89,6 +101,7 @@ const AudioModal: React.FC<AudioModalProps> = ({
     if (sound) {
       sound.unloadAsync();
       setSound(null);
+      setAudioUrl(''); // Clear the audio URL from the parent state
       setIsPlaying(false);
       setDuration(0);
       setCurrentPosition(0);
@@ -96,7 +109,7 @@ const AudioModal: React.FC<AudioModalProps> = ({
     }
   };
 
-  const updateStatus = (status:any) => {
+  const updateStatus = (status: any) => {
     if (status.isLoaded) {
       setDuration(status.durationMillis || 0);
       setCurrentPosition(status.positionMillis || 0);
@@ -106,7 +119,6 @@ const AudioModal: React.FC<AudioModalProps> = ({
       }
     }
   };
-
   return (
     <Modal
       isVisible={isAudioModalVisible}
@@ -124,89 +136,89 @@ const AudioModal: React.FC<AudioModalProps> = ({
           </TouchableOpacity>
         </View>
 
-
-
         {!isRecordingStopped ? (
           <View className="flex w-full items-center">
-          {!recording  ? (
-            <TouchableOpacity
-              onPress={startRecording}
-              className="flex h-32 w-full flex-row items-center justify-center gap-4 rounded-2xl border border-dashed border-[#815BF5]">
-              <Image className="h-9 w-9" source={require('../../../assets/Tasks/voice.png')} />
-              <Text className="text-white" style={{ fontFamily: 'Lato-Bold' }}>
-                Tap to Record Your Voice Note
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <View className="flex h-32 w-full items-center justify-center">
-              {/* Lottie Animation for Recording */}
-
-              <TouchableOpacity 
-              className="flex h-32 w-full flex-row items-center justify-between p-5 gap-4 rounded-2xl border border-dashed border-[#815BF5] "
-              >
-                <LottieView
-                  source={require('../../../assets/sound-wave.json')} // Replace with your animation file
-                  autoPlay
-                  loop
-                  style={{ height: 200, width: 200 }}
-                />
-                <TouchableOpacity onPress={stopRecording}  className='bg-white p-2 rounded-lg flex flex-row justify-center items-center gap-2'>
-                  <View className='bg-red-600 h-4 w-4'></View>
-                <Text className="text-gray-500" style={{ fontFamily: 'Lato-Bold' }}>
-                  Stop
+            {!recording ? (
+              <TouchableOpacity
+                onPress={startRecording}
+                className="flex h-32 w-full flex-row items-center justify-center gap-4 rounded-2xl border border-dashed border-[#815BF5]">
+                <Image className="h-9 w-9" source={require('../../../assets/Tasks/voice.png')} />
+                <Text className="text-white" style={{ fontFamily: 'Lato-Bold' }}>
+                  Tap to Record Your Voice Note
                 </Text>
-                </TouchableOpacity>
-
               </TouchableOpacity>
-            </View>
-          )}
+            ) : (
+              <View className="flex h-32 w-full items-center justify-center">
+                {/* Lottie Animation for Recording */}
+
+                <TouchableOpacity className="flex h-32 w-full flex-row items-center justify-between gap-4 rounded-2xl border border-dashed border-[#815BF5] p-5 ">
+                  <LottieView
+                    source={require('../../../assets/sound-wave.json')} // Replace with your animation file
+                    autoPlay
+                    loop
+                    style={{ height: 200, width: 200 }}
+                  />
+                  <TouchableOpacity
+                    onPress={stopRecording}
+                    className="flex flex-row items-center justify-center gap-2 rounded-lg bg-white p-2">
+                    <View className="h-4 w-4 bg-red-600"></View>
+                    <Text className="text-gray-500" style={{ fontFamily: 'Lato-Bold' }}>
+                      Stop
+                    </Text>
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         ) : (
-          <View className='flex h-32 w-full p-4  justify-center  rounded-2xl border border-dashed border-[#815BF5]'>
+          <View className="flex h-32 w-full justify-center  rounded-2xl  border border-dashed border-[#815BF5] p-4">
+            <View className="flex flex-row justify-between">
+              <View className="flex flex-col">
+                <Text className="text-sm text-white ">Voice Note</Text>
+                <Text className="mb-1 text-sm text-white" style={{ fontFamily: 'Lato-Light' }}>
+                  {Math.floor(currentPosition / 1000)}s / {Math.floor(duration / 1000)}s
+                </Text>
+              </View>
 
-            <View className='flex flex-row justify-between'>
-            <View className='flex flex-col'>
-              <Text className='text-white text-sm ' >Voice Note</Text>
-              <Text className='text-white text-sm mb-1' style={{fontFamily:"Lato-Light"}}>
-                {Math.floor(currentPosition / 1000)}s / {Math.floor(duration / 1000)}s
-              </Text>
-            </View>
-
-            <View className='flex flex-row items-center gap-3'>
-              <TouchableOpacity className='bg-[#46765f] h-10 w-10 items-center justify-center rounded-full'  onPress={playAudio}>
-              <Entypo
-                name={isPlaying ? 'controller-paus' : 'controller-play'}
-                size={24}
-                color="#FFF"
-              />
-              </TouchableOpacity>
-              <TouchableOpacity className='bg-[#EF4444] h-8 w-20 rounded-2xl flex items-center flex-row justify-center'  onPress={clearAudio}> 
-                
-                <Entypo
-                name='cross'
-                size={20}
-                color="#FFF"
-                />
-                <Text className='text-white text-xs' style={{fontFamily:"Lato-Light"}}>Clear</Text>
-              </TouchableOpacity>
-            </View>
+              <View className="flex flex-row items-center gap-3">
+                <TouchableOpacity
+                  className="h-10 w-10 items-center justify-center rounded-full bg-[#46765f]"
+                  onPress={playAudio}>
+                  <Entypo
+                    name={isPlaying ? 'controller-paus' : 'controller-play'}
+                    size={24}
+                    color="#FFF"
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className="flex h-8 w-20 flex-row items-center justify-center rounded-2xl bg-[#EF4444]"
+                  onPress={clearAudio}>
+                  <Entypo name="cross" size={20} color="#FFF" />
+                  <Text className="text-xs text-white" style={{ fontFamily: 'Lato-Light' }}>
+                    Clear
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             <Slider
               style={styles.slider}
               minimumValue={0}
-              maximumValue={duration/1000}
-              value={currentPosition/1000}
+              maximumValue={duration / 1000}
+              value={currentPosition / 1000}
               minimumTrackTintColor="#815BF5"
               maximumTrackTintColor="gray"
               thumbTintColor="#ffffff"
               onValueChange={(value) => sound?.setPositionAsync(value)}
             />
-
           </View>
         )}
         <View className="mt-16 w-full">
-          <TouchableOpacity className="mb-10 flex h-[4rem] items-center justify-center rounded-full bg-[#37384B] p-5">
+          <TouchableOpacity
+            onPress={() => {
+              if (audioUrl) setAudioModalVisible(false);
+            }}
+            className="mb-10 flex h-[4rem] items-center justify-center rounded-full bg-[#37384B] p-5">
             <Text
               className="text-center font-semibold text-white"
               style={{ fontFamily: 'Lato-Bold' }}>

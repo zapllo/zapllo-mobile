@@ -48,6 +48,8 @@ const AddLinkModal: React.FC<LinkModalProps> = ({
     setLinks(updatedLinks);
   };
 
+  console.log("linkkkkkk",links)
+
   return (
     <Modal
       isVisible={isLinkModalVisible}

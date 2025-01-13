@@ -67,7 +67,7 @@ const componentsData: HomeScreenComponents[] = [
   {
     id: '5',
     title: 'Zapllo Workflows',
-    screen: '(routes)/HomeComponent/Tasks/AssignTaskScreen',
+    screen: '(routes)/HomeComponent/Tasks/Workflows',
     description: 'Automate, Integrate & Connect anything effortlessly',
     image: require('~/assets/HomeComponents/ZAttendance.png'), // Add image path
   },

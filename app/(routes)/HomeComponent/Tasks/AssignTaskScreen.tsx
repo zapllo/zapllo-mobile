@@ -77,7 +77,7 @@ export default function AssignTaskScreen() {
   const [categoryData, setCategoryData] = useState([]);
   const [category, setCategory] = useState('');
   const [assignedUser, setAssignedUser] = useState('');
-  const [attachments, setAttachments] = useState([]);
+  const [attachments, setAttachments] = useState<string[]>([]);
   const [audioUrl, setAudioUrl] = useState(null);
   const [links, setLinks] = useState([]);
   const [comments, setComments] = useState([]);
@@ -86,7 +86,7 @@ export default function AssignTaskScreen() {
   const [isIndustryDropdownOpen, setIsIndustryDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showPicker, setShowPicker] = useState(true); // Control the modal visibility
+  const [showPicker, setShowPicker] = useState(false); // Control the modal visibility
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [mode, setMode] = useState('date'); // Mode can be 'date' or 'time'
@@ -194,7 +194,6 @@ export default function AssignTaskScreen() {
     setMonthlyModalVisible(true);
   };
 
-
   const handleCreateTask = async () => {
     const payload = {
       title: taskTitle,
@@ -211,8 +210,8 @@ export default function AssignTaskScreen() {
       status: 'Pending',
       organization: '64a9ed4b7a5a870015a1a123',
       attachment: attachments,
-      audioUrl,
-      links,
+      audioUrl:audioUrl,
+      links: links,
       comments,
       reminders,
     };
@@ -255,10 +254,7 @@ export default function AssignTaskScreen() {
       <KeyboardAvoidingView
         className=" w-full"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <NavbarTwo
-          title="Assign New Task"
-          onBackPress={() => navigation.navigate('(routes)/home/index')}
-        />
+        <NavbarTwo title="Assign New Task" onBackPress={() => navigation.goBack()} />
         <ScrollView
           className="h-full w-full flex-grow"
           showsVerticalScrollIndicator={false}
@@ -407,36 +403,35 @@ export default function AssignTaskScreen() {
             )}
 
             <View className="relative">
-      <InputContainer
-        label="Due Date"
-        value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
-        onChangeText={(value) => setDueDate(new Date(value))}
-        placeholder=""
-        className="flex-1 text-sm text-[#787CA5]"
-        passwordError={''}
-        style={{ paddingEnd: 45 }}
-      />
-      <TouchableOpacity
-        onPress={() => {
-          setShowPicker(true);
-          setMode('date'); // Open date picker first
-        }}
-      >
-        <Image
-          className="absolute bottom-6 right-6 h-6 w-6"
-          source={require('../../../../assets/Tasks/calender.png')}
-        />
-      </TouchableOpacity>
-      {showPicker && (
-        <SelectDateModal
-          visible={showPicker}
-          mode={mode}
-          selectedDate={mode === 'date' ? selectedDate : selectedTime}
-          onChange={handleChange}
-          onCancel={() => setShowPicker(false)}
-        />
-      )}
-    </View>
+              <InputContainer
+                label="Due Date"
+                value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
+                onChangeText={(value) => setDueDate(new Date(value))}
+                placeholder=""
+                className="flex-1 text-sm text-[#787CA5]"
+                passwordError={''}
+                style={{ paddingEnd: 45 }}
+              />
+              <TouchableOpacity
+                onPress={() => {
+                  setShowPicker(true);
+                  setMode('date'); // Open date picker first
+                }}>
+                <Image
+                  className="absolute bottom-6 right-6 h-6 w-6"
+                  source={require('../../../../assets/Tasks/calender.png')}
+                />
+              </TouchableOpacity>
+              {showPicker && (
+                <SelectDateModal
+                  visible={showPicker}
+                  mode={mode}
+                  selectedDate={mode === 'date' ? selectedDate : selectedTime}
+                  onChange={handleChange}
+                  onCancel={() => setShowPicker(false)}
+                />
+              )}
+            </View>
 
             <View className=" mt-6 flex w-[90%] flex-row items-center gap-3">
               <TouchableOpacity onPress={() => setLinkModalVisible(true)}>
@@ -453,8 +448,8 @@ export default function AssignTaskScreen() {
                   className="h-12 w-12"
                   source={require('../../../../assets/Tasks/file.png')}
                 />
-                <Text className="text-sm text-white">
-                  {links.length > 0 ? `${links.length} Links` : ''}
+                <Text className="text-sm text-white ml-1.5">
+                  {attachments.length > 0 ? `${attachments.length} File` : ''}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setReminderModalVisible(true)}>

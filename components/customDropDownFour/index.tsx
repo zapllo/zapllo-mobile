@@ -18,7 +18,7 @@ interface CustomDropdownProps {
   placeholder?: string;
 }
 
-const CustomDropdownComponentTwo: React.FC<CustomDropdownProps> = ({
+const CustomDropdownComponentFour: React.FC<CustomDropdownProps> = ({
   data,
   selectedValue,
   onSelect,
@@ -45,9 +45,6 @@ const CustomDropdownComponentTwo: React.FC<CustomDropdownProps> = ({
 
   const renderItem = (item: DropdownItem) => (
     <View style={styles.itemContainer}>
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: item.image }} style={styles.itemImage} />
-      </View>
       <Text style={styles.itemLabel}>{item.label}</Text>
       {item.value === selectedValue && (
         <AntDesign name="checkcircle" size={16} color="#faf9fd" style={styles.selectedIcon} />
@@ -209,4 +206,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomDropdownComponentTwo;
+export default CustomDropdownComponentFour;

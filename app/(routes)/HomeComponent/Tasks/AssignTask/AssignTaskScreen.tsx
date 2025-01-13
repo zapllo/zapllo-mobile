@@ -37,6 +37,7 @@ import { Button } from 'react-native';
 import WeeklyModal from '~/components/TaskComponents/assignNewTaskComponents/WeeklyModal';
 import MonthlyModal from '~/components/TaskComponents/assignNewTaskComponents/MonthlyModal';
 import SelectDateModal from '~/components/TaskComponents/assignNewTaskComponents/SelectDateModal';
+import CustomDropdownComponentFour from '~/components/customDropDownFour';
 
 //delete the data :)
 const daysData = [
@@ -320,7 +321,7 @@ export default function AssignTaskScreen() {
                 <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>
                   Select Category
                 </Text>
-                <CustomDropdownComponentTwo
+                <CustomDropdownComponentFour
                   data={categoryData}
                   selectedValue={category}
                   onSelect={(value) => setCategory(value)}

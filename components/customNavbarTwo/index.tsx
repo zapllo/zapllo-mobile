@@ -1,14 +1,13 @@
 import { AntDesign } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View, Text, Image } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
 interface CustomDropdownProps {
-  data: Array<{ label: string; value: any }>;
+  data: Array<{ label: string; value: any; image: string }>;
   selectedValue: any;
   onSelect: (value: any) => void;
   placeholder?: string;
-  renderItem: (item: any) => JSX.Element;
 }
 
 const CustomDropdownComponentTwo: React.FC<CustomDropdownProps> = ({
@@ -16,7 +15,6 @@ const CustomDropdownComponentTwo: React.FC<CustomDropdownProps> = ({
   selectedValue,
   onSelect,
   placeholder = '',
-  renderItem,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,6 +22,16 @@ const CustomDropdownComponentTwo: React.FC<CustomDropdownProps> = ({
   // Filter data based on search query
   const filteredData = data.filter((item) =>
     item.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const renderItem = (item: any) => (
+    <View style={styles.itemContainer}>
+      <Image source={{ uri: item.image }} style={styles.itemImage} />
+      <Text style={styles.itemLabel}>{item.label}</Text>
+      {item.value === selectedValue && (
+        <AntDesign name="checkcircle" size={16} color="#4CAF50" style={styles.selectedIcon} />
+      )}
+    </View>
   );
 
   return (
@@ -83,6 +91,7 @@ const styles = StyleSheet.create({
     color: '#787CA5',
     fontWeight: '300',
     paddingLeft: 22,
+    backgroundColor: 'transparent', // Remove background color for selected item
   },
   inputSearchStyle: {
     height: 40,
@@ -99,6 +108,23 @@ const styles = StyleSheet.create({
     borderBottomEndRadius: 15,
     borderBottomStartRadius: 15,
     margin: 8,
+  },
+  itemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+  },
+  itemImage: {
+    width: 30,
+    height: 30,
+    marginRight: 10,
+  },
+  itemLabel: {
+    fontSize: 14,
+    color: '#FFFFFF',
+  },
+  selectedIcon: {
+    marginLeft: 'auto',
   },
 });
 

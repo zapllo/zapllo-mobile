@@ -48,6 +48,8 @@ const AddLinkModal: React.FC<LinkModalProps> = ({
     setLinks(updatedLinks);
   };
 
+  console.log("linkkkkkk",links)
+
   return (
     <Modal
       isVisible={isLinkModalVisible}
@@ -55,6 +57,7 @@ const AddLinkModal: React.FC<LinkModalProps> = ({
       style={{ margin: 0, justifyContent: 'flex-end' }}
       animationIn="slideInUp"
       animationOut="slideOutDown">
+        
       <View className="rounded-t-3xl bg-[#0A0D28] p-5">
         <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
           <Text className="text-2xl font-semibold text-white" style={{ fontFamily: 'Lato-Bold' }}>

@@ -77,13 +77,10 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
   const handlePasswordValidation = (value: string) => {
-    const passwordSpecialCharacter = /(?=.*[!@#$&*])/;
     const passwordOneNumber = /(?=.*[0-9])/;
     const passwordSixValue = /(?=.{6,})/;
 
-    if (!passwordSpecialCharacter.test(value)) {
-      setError('Write at least one special character');
-    } else if (!passwordOneNumber.test(value)) {
+  if (!passwordOneNumber.test(value)) {
       setError('Write at least one number');
     } else if (!passwordSixValue.test(value)) {
       setError('Write at least 6 characters');

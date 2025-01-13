@@ -10,7 +10,6 @@ import {
   Animated,
   Alert,
   Modal,
-  
 } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView } from 'react-native';
@@ -57,7 +56,7 @@ const selectRepetType = [
   { label: 'Daily', value: 'Daily' },
   { label: 'Weekly', value: 'Weekly' },
   { label: 'Monthly', value: 'Monthly' },
-]
+];
 
 export default function AssignTaskScreen() {
   const navigation = useNavigation<StackNavigationProp<any>>();
@@ -78,7 +77,7 @@ export default function AssignTaskScreen() {
   const [categoryData, setCategoryData] = useState([]);
   const [category, setCategory] = useState('');
   const [assignedUser, setAssignedUser] = useState('');
-  const [attachments, setAttachments] = useState([]);
+  const [attachments, setAttachments] = useState<string[]>([]);
   const [audioUrl, setAudioUrl] = useState(null);
   const [links, setLinks] = useState([]);
   const [comments, setComments] = useState([]);
@@ -87,14 +86,14 @@ export default function AssignTaskScreen() {
   const [isIndustryDropdownOpen, setIsIndustryDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showPicker, setShowPicker] = useState(true); // Control the modal visibility
+  const [showPicker, setShowPicker] = useState(false); // Control the modal visibility
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [mode, setMode] = useState('date'); // Mode can be 'date' or 'time'
   const [isWeeklyModalVisible, setWeeklyModalVisible] = useState(false);
   const [isMonthlyModalVisible, setMonthlyModalVisible] = useState(false);
   const [repeatType, setRepeatType] = useState('');
-  
+
   const position = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -195,9 +194,6 @@ export default function AssignTaskScreen() {
     setMonthlyModalVisible(true);
   };
 
-
-  
-
   const handleCreateTask = async () => {
     const payload = {
       title: taskTitle,
@@ -214,8 +210,8 @@ export default function AssignTaskScreen() {
       status: 'Pending',
       organization: '64a9ed4b7a5a870015a1a123',
       attachment: attachments,
-      audioUrl,
-      links,
+      audioUrl:audioUrl,
+      links: links,
       comments,
       reminders,
     };
@@ -258,10 +254,7 @@ export default function AssignTaskScreen() {
       <KeyboardAvoidingView
         className=" w-full"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <NavbarTwo
-          title="Assign New Task"
-          onBackPress={() => navigation.navigate('(routes)/home/index')}
-        />
+        <NavbarTwo title="Assign New Task" onBackPress={() => navigation.goBack()} />
         <ScrollView
           className="h-full w-full flex-grow"
           showsVerticalScrollIndicator={false}
@@ -320,87 +313,125 @@ export default function AssignTaskScreen() {
                   renderItem={(item) => renderDropdownItem(item, 'category')}
                 />
               </View>
-              
             </View>
-            
 
             {/* Task priority */}
-            <View className="flex gap-3 justify-start flex-col mt-6 items-start w-[90%]">
-              <Text className="text-white " style={{fontFamily:"lato-bold"}}>Task Priority</Text>
+            <View className="mt-6 flex w-[90%] flex-col items-start justify-start gap-3">
+              <Text className="text-white " style={{ fontFamily: 'lato-bold' }}>
+                Task Priority
+              </Text>
               <View className="flex flex-row">
                 <TouchableOpacity
-                  className={activeButton === 'firstHalf' ? "bg-[#815BF5] border border-[#37384B] rounded-l-xl " : "bg-transparent border border-[#37384B] rounded-l-xl "}
+                  className={
+                    activeButton === 'firstHalf'
+                      ? 'rounded-l-xl border border-[#37384B] bg-[#815BF5] '
+                      : 'rounded-l-xl border border-[#37384B] bg-transparent '
+                  }
                   onPress={() => handleButtonPress('firstHalf')}>
-                  <Text className={activeButton === 'firstHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm"} style={{fontFamily:"Lato-Thin"}}>High</Text>
+                  <Text
+                    className={
+                      activeButton === 'firstHalf'
+                        ? 'p-3 text-sm text-white'
+                        : 'p-3 text-sm text-[#787CA5]'
+                    }
+                    style={{ fontFamily: 'Lato-Thin' }}>
+                    High
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  className={activeButton === 'secondHalf' ? "bg-[#815BF5] border border-[#37384B] " : "bg-transparent border border-[#37384B] "}
+                  className={
+                    activeButton === 'secondHalf'
+                      ? 'border border-[#37384B] bg-[#815BF5] '
+                      : 'border border-[#37384B] bg-transparent '
+                  }
                   onPress={() => handleButtonPress('secondHalf')}>
-                  <Text className={activeButton === 'secondHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm"} style={{fontFamily:"Lato-Thin"}}>medium</Text>
+                  <Text
+                    className={
+                      activeButton === 'secondHalf'
+                        ? 'p-3 text-sm text-white'
+                        : 'p-3 text-sm text-[#787CA5]'
+                    }
+                    style={{ fontFamily: 'Lato-Thin' }}>
+                    medium
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  className={activeButton === 'thirdHalf' ? "bg-[#815BF5] rounded-r-xl border border-[#37384B] " : "bg-transparent border border-[#37384B]  rounded-r-xl "}
+                  className={
+                    activeButton === 'thirdHalf'
+                      ? 'rounded-r-xl border border-[#37384B] bg-[#815BF5] '
+                      : 'rounded-r-xl border border-[#37384B]  bg-transparent '
+                  }
                   onPress={() => handleButtonPress('thirdHalf')}>
-                  <Text className={activeButton === 'thirdHalf' ? "text-white p-3 text-sm" : "text-[#787CA5] p-3 text-sm "} style={{fontFamily:"Lato-Thin"}}>Low</Text>
+                  <Text
+                    className={
+                      activeButton === 'thirdHalf'
+                        ? 'p-3 text-sm text-white'
+                        : 'p-3 text-sm text-[#787CA5] '
+                    }
+                    style={{ fontFamily: 'Lato-Thin' }}>
+                    Low
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
 
-            <View className="flex items-center flex-row w-[90%] justify-start mt-6 gap-4">
-              <CheckboxTwo isChecked={isChecked} onPress={() => setIsChecked(!isChecked)}/>
-              <Text className="text-white" style={{fontFamily:"Lato-Bold"}}>Repeat</Text>
+            <View className="mt-6 flex w-[90%] flex-row items-center justify-start gap-4">
+              <CheckboxTwo isChecked={isChecked} onPress={() => setIsChecked(!isChecked)} />
+              <Text className="text-white" style={{ fontFamily: 'Lato-Bold' }}>
+                Repeat
+              </Text>
             </View>
 
-            {
-              isChecked ? <CustomDropdown
-              data={selectRepetType}
-              placeholder="Select Repeat Type"
-              selectedValue={repeatType}
-              onSelect={(value) => {
-                setRepeatType(value);
-                if (value === 'Weekly') {
-                  setWeeklyModalVisible(true);
-                } else if (value === 'Monthly') {
-                  setMonthlyModalVisible(true);
-                }
-              }}
-              />:""
-            }
-            
+            {isChecked ? (
+              <CustomDropdown
+                data={selectRepetType}
+                placeholder="Select Repeat Type"
+                selectedValue={repeatType}
+                onSelect={(value) => {
+                  setRepeatType(value);
+                  if (value === 'Weekly') {
+                    setWeeklyModalVisible(true);
+                  } else if (value === 'Monthly') {
+                    setMonthlyModalVisible(true);
+                  }
+                }}
+              />
+            ) : (
+              ''
+            )}
 
             <View className="relative">
-      <InputContainer
-        label="Due Date"
-        value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
-        onChangeText={(value) => setDueDate(new Date(value))}
-        placeholder=""
-        className="flex-1 text-sm text-[#787CA5]"
-        passwordError={''}
-        style={{ paddingEnd: 45 }}
-      />
-      <TouchableOpacity
-        onPress={() => {
-          setShowPicker(true);
-          setMode('date'); // Open date picker first
-        }}
-      >
-        <Image
-          className="absolute bottom-6 right-6 h-6 w-6"
-          source={require('../../../../assets/Tasks/calender.png')}
-        />
-      </TouchableOpacity>
-      {showPicker && (
-        <SelectDateModal
-          visible={showPicker}
-          mode={mode}
-          selectedDate={mode === 'date' ? selectedDate : selectedTime}
-          onChange={handleChange}
-          onCancel={() => setShowPicker(false)}
-        />
-      )}
-    </View>
+              <InputContainer
+                label="Due Date"
+                value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
+                onChangeText={(value) => setDueDate(new Date(value))}
+                placeholder=""
+                className="flex-1 text-sm text-[#787CA5]"
+                passwordError={''}
+                style={{ paddingEnd: 45 }}
+              />
+              <TouchableOpacity
+                onPress={() => {
+                  setShowPicker(true);
+                  setMode('date'); // Open date picker first
+                }}>
+                <Image
+                  className="absolute bottom-6 right-6 h-6 w-6"
+                  source={require('../../../../assets/Tasks/calender.png')}
+                />
+              </TouchableOpacity>
+              {showPicker && (
+                <SelectDateModal
+                  visible={showPicker}
+                  mode={mode}
+                  selectedDate={mode === 'date' ? selectedDate : selectedTime}
+                  onChange={handleChange}
+                  onCancel={() => setShowPicker(false)}
+                />
+              )}
+            </View>
 
             <View className=" mt-6 flex w-[90%] flex-row items-center gap-3">
               <TouchableOpacity onPress={() => setLinkModalVisible(true)}>
@@ -417,8 +448,8 @@ export default function AssignTaskScreen() {
                   className="h-12 w-12"
                   source={require('../../../../assets/Tasks/file.png')}
                 />
-                <Text className="text-sm text-white">
-                  {links.length > 0 ? `${links.length} Links` : ''}
+                <Text className="text-sm text-white ml-1.5">
+                  {attachments.length > 0 ? `${attachments.length} File` : ''}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setReminderModalVisible(true)}>
@@ -441,25 +472,25 @@ export default function AssignTaskScreen() {
               </TouchableOpacity>
             </View>
 
-            <View className="flex items-center justify-between w-[90%] flex-row mt-6 mb-10">
-      <Text className="text-white" style={{ fontFamily: "Lato-Bold" }}>Assign More Task</Text>
-      <View
-      className="bg-white w-20 h-10 rounded-3xl relative justify-center flex"
-        style={[
-          
-          { backgroundColor: isOn ? 'white' : '#a9b0bd' }, // Use gray color when off
-        ]}
-      >
-        <TouchableOpacity onPress={toggleSwitch}>
-          <Animated.View style={{ transform: [{ translateX }] }}>
-            <Image
-              className="h-9 w-9 mx-1"
-              source={require("../../../../assets/Tasks/onOffBall.png")}
-            />
-          </Animated.View>
-        </TouchableOpacity>
-      </View>
-    </View>
+            <View className="mb-10 mt-6 flex w-[90%] flex-row items-center justify-between">
+              <Text className="text-white" style={{ fontFamily: 'Lato-Bold' }}>
+                Assign More Task
+              </Text>
+              <View
+                className="relative flex h-10 w-20 justify-center rounded-3xl bg-white"
+                style={[
+                  { backgroundColor: isOn ? 'white' : '#a9b0bd' }, // Use gray color when off
+                ]}>
+                <TouchableOpacity onPress={toggleSwitch}>
+                  <Animated.View style={{ transform: [{ translateX }] }}>
+                    <Image
+                      className="mx-1 h-9 w-9"
+                      source={require('../../../../assets/Tasks/onOffBall.png')}
+                    />
+                  </Animated.View>
+                </TouchableOpacity>
+              </View>
+            </View>
 
             <TouchableOpacity
               className={`mb-10  flex h-[4rem] w-[90%] items-center justify-center rounded-full bg-[#37384B] p-5`}>
@@ -471,49 +502,49 @@ export default function AssignTaskScreen() {
             </TouchableOpacity>
           </View>
         </ScrollView>
+
+        {/* Modals */}
+        {/* add link Modal */}
+        <AddLinkModal
+          isLinkModalVisible={isLinkModalVisible}
+          setLinkModalVisible={setLinkModalVisible}
+          setLinks={setLinks}
+          links={links}
+        />
+        {/* File Modal */}
+        <FileModal
+          isFileModalVisible={isFileModalVisible}
+          setFileModalVisible={setFileModalVisible}
+          attachments={attachments}
+          setAttachments={setAttachments}
+        />
+
+        {/* Reminder Modal */}
+        <ReminderModal
+          isReminderModalVisible={isReminderModalVisible}
+          setReminderModalVisible={setReminderModalVisible}
+        />
+
+        {/* Audio Modal */}
+        <AudioModal
+          isAudioModalVisible={isAudioModalVisible}
+          setAudioModalVisible={setAudioModalVisible}
+          audioUrl={audioUrl}
+          setAudioUrl={setAudioUrl}
+        />
+
+        {/* Weekly Modal */}
+        <WeeklyModal
+          isVisible={isWeeklyModalVisible}
+          onClose={() => setWeeklyModalVisible(false)}
+        />
+
+        {/* Monthly Modal */}
+        <MonthlyModal
+          isVisible={isMonthlyModalVisible}
+          onClose={() => setMonthlyModalVisible(false)}
+        />
       </KeyboardAvoidingView>
-
-      {/* Modals */}
-      {/* add link Modal */}
-      <AddLinkModal
-        isLinkModalVisible={isLinkModalVisible}
-        setLinkModalVisible={setLinkModalVisible}
-        setLinks={setLinks}
-        links={links}
-      />
-      {/* File Modal */}
-      <FileModal
-        isFileModalVisible={isFileModalVisible}
-        setFileModalVisible={setFileModalVisible}
-        attachments={attachments}
-        setAttachments={setAttachments}
-      />
-
-      {/* Reminder Modal */}
-      <ReminderModal
-        isReminderModalVisible={isReminderModalVisible}
-        setReminderModalVisible={setReminderModalVisible}
-      />
-
-      {/* Audio Modal */}
-      <AudioModal
-        isAudioModalVisible={isAudioModalVisible}
-        setAudioModalVisible={setAudioModalVisible}
-        audioUrl={audioUrl}
-        setAudioUrl={setAudioUrl}
-      />
-
-                  {/* Weekly Modal */}
-                  <WeeklyModal
-              isVisible={isWeeklyModalVisible}
-              onClose={() => setWeeklyModalVisible(false)}
-            />
-
-            {/* Monthly Modal */}
-            <MonthlyModal
-              isVisible={isMonthlyModalVisible}
-              onClose={() => setMonthlyModalVisible(false)}
-            />
     </SafeAreaView>
   );
 }

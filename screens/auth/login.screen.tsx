@@ -43,17 +43,10 @@ export default function Loginscreen() {
 
   const handlePasswordValidation = (value: string) => {
     const password = value;
-    const passwordSpecialCharecter = /(?=.*[!@#$&*])/;
     const passwordOneNumber = /(?=.*[0-9])/;
     const passwordSixValue = /(?=.{6,})/;
 
-    if (!passwordSpecialCharecter.test(password)) {
-      setError({
-        ...error,
-        password: 'Write at least one special character',
-      });
-      setUserInfo({ ...userInfo, password: '' });
-    } else if (!passwordOneNumber.test(password)) {
+     if (!passwordOneNumber.test(password)) {
       setError({
         ...error,
         password: 'Write at least one number',

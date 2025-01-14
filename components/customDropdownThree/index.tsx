@@ -1,11 +1,11 @@
 import { AntDesign } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
 interface CustomDropdownProps {
   data: Array<{ label: string; value: any }>;
-  selectedValue: any;
+  selectedValue?: any;
   onSelect: (value: any) => void;
   renderItem: (item: any) => JSX.Element;
 }
@@ -17,12 +17,17 @@ const CustomDropdownComponentThree: React.FC<CustomDropdownProps> = ({
   renderItem,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [currentValue, setCurrentValue] = useState(selectedValue || (data.length > 0 ? data[0].value : null));
 
-  // Set the default value to the first item in the data list if no value is selected
-  const defaultValue = selectedValue || (data.length > 0 ? data[0].value : null);
+  useEffect(() => {
+    if (!selectedValue && data.length > 0) {
+      setCurrentValue(data[0].value);
+    }
+  }, [selectedValue, data]);
 
   const handleSelect = (value: any) => {
     Haptics.selectionAsync(); // Trigger haptic feedback
+    setCurrentValue(value);
     onSelect(value);
     setIsDropdownOpen(false);
   };
@@ -34,7 +39,7 @@ const CustomDropdownComponentThree: React.FC<CustomDropdownProps> = ({
         onPress={() => setIsDropdownOpen(!isDropdownOpen)}
       >
         <Text style={styles.selectedTextStyle}>
-          {defaultValue ? data.find(item => item.value === defaultValue)?.label : 'Select...'}
+          {currentValue ? data.find(item => item.value === currentValue)?.label : 'Select...'}
         </Text>
         <AntDesign
           name={isDropdownOpen ? 'caretup' : 'caretdown'}
@@ -51,13 +56,13 @@ const CustomDropdownComponentThree: React.FC<CustomDropdownProps> = ({
               onPress={() => handleSelect(item.value)}
               style={[
                 styles.dropdownItem,
-                selectedValue === item.value && styles.selectedItem, // Apply selected style to item
+                currentValue === item.value && styles.selectedItem, // Apply selected style to item
               ]}
             >
               <Text
                 style={[
                   styles.dropdownItemText,
-                  selectedValue === item.value && styles.selectedItemText, // Change text color if selected
+                  currentValue === item.value && styles.selectedItemText, // Change text color if selected
                 ]}
               >
                 {item.label}
@@ -109,7 +114,6 @@ const styles = StyleSheet.create({
   },
   selectedItem: {
     backgroundColor: '#FFFFFF', // Change background color to white when selected
-    
   },
   selectedItemText: {
     color: '#000000', // Change text color to black when selected

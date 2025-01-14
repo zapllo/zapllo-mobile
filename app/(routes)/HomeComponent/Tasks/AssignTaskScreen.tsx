@@ -10,6 +10,7 @@ import {
   Animated,
   Alert,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView } from 'react-native';
@@ -60,10 +61,9 @@ const selectRepetType = [
 
 export default function AssignTaskScreen() {
   const navigation = useNavigation<StackNavigationProp<any>>();
-  const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
+  const { token, userData } = useSelector((state: RootState) => state.auth);
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
-  const [selectedTeamSize, setSelectedTeamSize] = useState('');
   const [activeButton, setActiveButton] = useState('High');
   const [isChecked, setIsChecked] = useState(false);
   const [isOn, setIsOn] = useState(false);
@@ -76,14 +76,13 @@ export default function AssignTaskScreen() {
   const [dueDate, setDueDate] = useState(null);
   const [categoryData, setCategoryData] = useState([]);
   const [category, setCategory] = useState('');
-  const [assignedUser, setAssignedUser] = useState('');
+  const [weekDays, setWeekDays] = useState([]);
+  const [monthDays, setMonthDays] = useState([]);
   const [attachments, setAttachments] = useState<string[]>([]);
   const [audioUrl, setAudioUrl] = useState(null);
   const [links, setLinks] = useState([]);
   const [comments, setComments] = useState([]);
-  const [reminders, setReminders] = useState([]);
-  const [selectedIndustry, setSelectedIndustry] = useState(null);
-  const [isIndustryDropdownOpen, setIsIndustryDropdownOpen] = useState(false);
+  const [addedReminder, setAddedReminders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showPicker, setShowPicker] = useState(false); // Control the modal visibility
@@ -93,6 +92,7 @@ export default function AssignTaskScreen() {
   const [isWeeklyModalVisible, setWeeklyModalVisible] = useState(false);
   const [isMonthlyModalVisible, setMonthlyModalVisible] = useState(false);
   const [repeatType, setRepeatType] = useState('');
+  const [taskLoading, setTaskLoading] = useState(false);
 
   const position = useRef(new Animated.Value(0)).current;
 
@@ -136,6 +136,8 @@ export default function AssignTaskScreen() {
     fetchCategories();
   }, [token]);
 
+  console.log('>>>>', addedReminder, isChecked);
+
   const processUserData = (data) => {
     return data.map((user) => ({
       value: user._id,
@@ -149,6 +151,8 @@ export default function AssignTaskScreen() {
     }));
   };
 
+  console.log('>>>>ppppppp', userData.data.organization);
+
   const handleChange = (event, value) => {
     if (mode === 'date') {
       setSelectedDate(value || selectedDate);
@@ -157,12 +161,12 @@ export default function AssignTaskScreen() {
       setSelectedTime(value || selectedTime);
       setShowPicker(false); // Close modal after selecting time
 
-      // Combine selected date and time
-      const date = value || selectedTime;
-      const combinedDate = new Date(selectedDate);
-      combinedDate.setHours(date.getHours());
-      combinedDate.setMinutes(date.getMinutes());
-      setDueDate(combinedDate); // Store combined date and time
+      const selectedDateTime = new Date(selectedDate);
+      const selectedTimeValue = value || selectedTime;
+      selectedDateTime.setHours(selectedTimeValue.getHours());
+      selectedDateTime.setMinutes(selectedTimeValue.getMinutes());
+
+      setDueDate(selectedDateTime); // Update due date
     }
   };
   const handleButtonPress = (button: string) => {
@@ -170,8 +174,27 @@ export default function AssignTaskScreen() {
     Haptics.selectionAsync();
   };
 
+  const resetForm = () => {
+    setTaskTitle('');
+    setTaskDescription('');
+    setActiveButton('High');
+    setIsChecked(false);
+    setSelectedUser(null);
+    setCategory('');
+    setDueDate(null);
+    setWeekDays([]);
+    setMonthDays([]);
+    setAttachments([]);
+    setAudioUrl(null);
+    setLinks([]);
+    setComments([]);
+    setAddedReminders([]);
+    setRepeatType('');
+  };
+
   const toggleSwitch = () => {
     setIsOn((previousState) => !previousState);
+    resetForm();
     Animated.timing(position, {
       toValue: isOn ? 0 : 1,
       duration: 300,
@@ -194,37 +217,76 @@ export default function AssignTaskScreen() {
     setMonthlyModalVisible(true);
   };
 
+  console.log('ooooo', weekDays, monthDays);
+
   const handleCreateTask = async () => {
+    if (!taskTitle.trim()) {
+      Alert.alert('Validation Error', 'Task Title is required.');
+      setLoading(false);
+      return;
+    }
+  
+    if (!taskDescription.trim()) {
+      Alert.alert('Validation Error', 'Task Description is required.');
+      setLoading(false);
+      return;
+    }
+  
+    if (!activeButton) {
+      Alert.alert('Validation Error', 'Priority level must be selected.');
+      setLoading(false);
+      return;
+    }
+  
+    if (!selectedUser) {
+      Alert.alert('Validation Error', 'A user must be assigned.');
+      setLoading(false);
+      return;
+    }
+  
+    if (!category.trim()) {
+      Alert.alert('Validation Error', 'Category is required.');
+      setLoading(false);
+      return;
+    }
+  
+    if (!dueDate) {
+      Alert.alert('Validation Error', 'A due date must be selected.');
+      setLoading(false);
+      return;
+    }
+    setTaskLoading(true);
     const payload = {
       title: taskTitle,
       description: taskDescription,
-      priority:
-        activeButton === 'firstHalf' ? 'High' : activeButton === 'secondHalf' ? 'Medium' : 'Low',
-      repeat: isOn,
-      repeatType: 'Weekly',
-      days: ['Monday', 'Wednesday', 'Friday'],
-      dueDate,
-      completionDate: '2025-01-14T15:00:00Z',
-      category,
-      assignedUser,
+      priority: activeButton,
+      repeat: isChecked,
+      repeatType: repeatType,
+      days: weekDays,
+      dates: monthDays,
+      dueDate: dueDate,
+      completionDate: '',
+      category: category,
+      assignedUser: selectedUser,
       status: 'Pending',
-      organization: '64a9ed4b7a5a870015a1a123',
+      organization: userData?.data?.organization,
       attachment: attachments,
-      audioUrl:audioUrl,
+      audioUrl: audioUrl,
       links: links,
       comments,
-      reminders,
+      reminders: addedReminder,
     };
-
     try {
       const response = await axios.post(`${backend_Host}/tasks/create`, payload);
       console.log('Task Created:', response.data);
       Alert.alert('Task successfully created!');
       // Navigate to another screen or reset form
-      navigation.navigate('(routes)/home/index');
+      navigation.goBack()
     } catch (error: any) {
       console.error('Error creating task:', error.response?.data || error.message);
-      Alert.alert('Failed to create task. Please try again.');
+      // Alert.alert('Failed to create task. Please try again.');
+    } finally {
+      setTaskLoading(false);
     }
   };
 
@@ -323,14 +385,14 @@ export default function AssignTaskScreen() {
               <View className="flex flex-row">
                 <TouchableOpacity
                   className={
-                    activeButton === 'firstHalf'
+                    activeButton === 'High'
                       ? 'rounded-l-xl border border-[#37384B] bg-[#815BF5] '
                       : 'rounded-l-xl border border-[#37384B] bg-transparent '
                   }
-                  onPress={() => handleButtonPress('firstHalf')}>
+                  onPress={() => handleButtonPress('High')}>
                   <Text
                     className={
-                      activeButton === 'firstHalf'
+                      activeButton === 'High'
                         ? 'p-3 text-sm text-white'
                         : 'p-3 text-sm text-[#787CA5]'
                     }
@@ -341,14 +403,14 @@ export default function AssignTaskScreen() {
 
                 <TouchableOpacity
                   className={
-                    activeButton === 'secondHalf'
+                    activeButton === 'Medium'
                       ? 'border border-[#37384B] bg-[#815BF5] '
                       : 'border border-[#37384B] bg-transparent '
                   }
-                  onPress={() => handleButtonPress('secondHalf')}>
+                  onPress={() => handleButtonPress('Medium')}>
                   <Text
                     className={
-                      activeButton === 'secondHalf'
+                      activeButton === 'Medium'
                         ? 'p-3 text-sm text-white'
                         : 'p-3 text-sm text-[#787CA5]'
                     }
@@ -359,14 +421,14 @@ export default function AssignTaskScreen() {
 
                 <TouchableOpacity
                   className={
-                    activeButton === 'thirdHalf'
+                    activeButton === 'Low'
                       ? 'rounded-r-xl border border-[#37384B] bg-[#815BF5] '
                       : 'rounded-r-xl border border-[#37384B]  bg-transparent '
                   }
-                  onPress={() => handleButtonPress('thirdHalf')}>
+                  onPress={() => handleButtonPress('Low')}>
                   <Text
                     className={
-                      activeButton === 'thirdHalf'
+                      activeButton === 'Low'
                         ? 'p-3 text-sm text-white'
                         : 'p-3 text-sm text-[#787CA5] '
                     }
@@ -406,7 +468,7 @@ export default function AssignTaskScreen() {
               <InputContainer
                 label="Due Date"
                 value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
-                onChangeText={(value) => setDueDate(new Date(value))}
+                onChangeText={() => setDueDate(dueDate)}
                 placeholder=""
                 className="flex-1 text-sm text-[#787CA5]"
                 passwordError={''}
@@ -448,7 +510,7 @@ export default function AssignTaskScreen() {
                   className="h-12 w-12"
                   source={require('../../../../assets/Tasks/file.png')}
                 />
-                <Text className="text-sm text-white ml-1.5">
+                <Text className="ml-1.5 text-sm text-white">
                   {attachments.length > 0 ? `${attachments.length} File` : ''}
                 </Text>
               </TouchableOpacity>
@@ -457,18 +519,18 @@ export default function AssignTaskScreen() {
                   className="h-12 w-12"
                   source={require('../../../../assets/Tasks/Reminder.png')}
                 />
-                <Text className="mt-1 text-xs text-white" style={{ fontFamily: 'LatoBold' }}>
-                  {links.length > 0 ? `${links.length} Links` : ''}
-                </Text>
+                {/* <Text className="mt-1 text-xs text-white" style={{ fontFamily: 'LatoBold' }}>
+                  {addedReminder.length > 0 ? `${addedReminder.length} Links` : ''}
+                </Text> */}
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setAudioModalVisible(true)}>
                 <Image
-                  className="h-12 w-12"
+                  className="-mt-2 h-12 w-12"
                   source={require('../../../../assets/Tasks/Audio.png')}
                 />
-                <Text className="text-sm text-white">
+                {/* <Text className="text-sm text-white">
                   {links.length > 0 ? `${links.length} Links` : ''}
-                </Text>
+                </Text> */}
               </TouchableOpacity>
             </View>
 
@@ -493,12 +555,18 @@ export default function AssignTaskScreen() {
             </View>
 
             <TouchableOpacity
+              onPress={handleCreateTask}
+              disabled={taskLoading}
               className={`mb-10  flex h-[4rem] w-[90%] items-center justify-center rounded-full bg-[#37384B] p-5`}>
-              <Text
-                className="text-center  font-semibold text-white"
-                style={{ fontFamily: 'Lato-Bold' }}>
-                Assign Task
-              </Text>
+              {taskLoading ? (
+                <ActivityIndicator size="large" color="#FFFFFF" style={{ marginTop: 20 }} />
+              ) : (
+                <Text
+                  className="text-center  font-semibold text-white"
+                  style={{ fontFamily: 'Lato-Bold' }}>
+                  Assign Task
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -523,6 +591,7 @@ export default function AssignTaskScreen() {
         <ReminderModal
           isReminderModalVisible={isReminderModalVisible}
           setReminderModalVisible={setReminderModalVisible}
+          setAddedReminders={setAddedReminders}
         />
 
         {/* Audio Modal */}
@@ -537,12 +606,14 @@ export default function AssignTaskScreen() {
         <WeeklyModal
           isVisible={isWeeklyModalVisible}
           onClose={() => setWeeklyModalVisible(false)}
+          setWeekDays={setWeekDays}
         />
 
         {/* Monthly Modal */}
         <MonthlyModal
           isVisible={isMonthlyModalVisible}
           onClose={() => setMonthlyModalVisible(false)}
+          setMonthDays={setMonthDays}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -81,7 +81,8 @@ const styles = StyleSheet.create({
     paddingLeft: 22,
   },
   selectedTextStyle: {
-    fontSize: 13,
+    fontSize: 12,
+    fontFamily:"Lato-Bold",
     color: 'white',
     fontWeight: '300',
     paddingLeft: 22,

@@ -37,6 +37,7 @@ import { Button } from 'react-native';
 import WeeklyModal from '~/components/TaskComponents/assignNewTaskComponents/WeeklyModal';
 import MonthlyModal from '~/components/TaskComponents/assignNewTaskComponents/MonthlyModal';
 import SelectDateModal from '~/components/TaskComponents/assignNewTaskComponents/SelectDateModal';
+import CustomDropdownComponentFour from '~/components/customDropDownFour';
 
 //delete the data :)
 const daysData = [
@@ -82,8 +83,7 @@ export default function AssignTaskScreen() {
   const [links, setLinks] = useState([]);
   const [comments, setComments] = useState([]);
   const [reminders, setReminders] = useState([]);
-  const [selectedIndustry, setSelectedIndustry] = useState(null);
-  const [isIndustryDropdownOpen, setIsIndustryDropdownOpen] = useState(false);
+  const [isDescriptionFocused, setDescriptionFocused] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showPicker, setShowPicker] = useState(false); // Control the modal visibility
@@ -93,6 +93,9 @@ export default function AssignTaskScreen() {
   const [isWeeklyModalVisible, setWeeklyModalVisible] = useState(false);
   const [isMonthlyModalVisible, setMonthlyModalVisible] = useState(false);
   const [repeatType, setRepeatType] = useState('');
+
+  const handleFocus = () => setDescriptionFocused(true);
+  const handleBlur = () => setDescriptionFocused(false);
 
   const position = useRef(new Animated.Value(0)).current;
 
@@ -260,6 +263,8 @@ export default function AssignTaskScreen() {
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
           <View className="h-full w-full items-center pb-20">
+
+            {/* task title */}
             <InputContainer
               label="Task Title"
               value={taskTitle}
@@ -269,27 +274,38 @@ export default function AssignTaskScreen() {
               passwordError={''}
             />
 
+
+            {/* Task desc */}
             <View
+            style={[
+              styles.input,
+              {
+                height: 100,
+                justifyContent: 'flex-start',
+                alignItems: 'flex-start',
+                borderColor: isDescriptionFocused ? '#815BF5' : '#37384B',
+              },
+            ]}>
+            <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Task Description</Text>
+            <TextInput
+              multiline
               style={[
-                styles.input,
-                { height: 100, justifyContent: 'flex-start', alignItems: 'flex-start' },
-              ]}>
-              <TextInput
-                multiline
-                style={[
-                  styles.inputSome,
-                  { textAlignVertical: 'top', paddingTop: 5, width: '100%' },
-                ]}
-                value={taskDescription}
-                onChangeText={(value) => setTaskDescription(value)}
-                placeholder="Description of the task"
-                placeholderTextColor="#787CA5"></TextInput>
-            </View>
+                styles.inputSome,
+                { textAlignVertical: 'top', paddingTop: 5, width: '100%' },
+              ]}
+              value={taskDescription}
+              onChangeText={(value) => setTaskDescription(value)}
+              placeholder=""
+              placeholderTextColor="#787CA5"
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+            />
+          </View>
 
             {/* selected users */}
             <View className="mt-5 flex w-full flex-col items-center gap-2">
               <View style={styles.input}>
-                <Text style={[styles.baseName, { fontFamily: 'Nunito_400Regular' }]}>
+                <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>
                   Select User
                 </Text>
                 <CustomDropdownComponentTwo
@@ -302,10 +318,10 @@ export default function AssignTaskScreen() {
               </View>
 
               <View style={styles.input}>
-                <Text style={[styles.baseName, { fontFamily: 'Nunito_400Regular' }]}>
+                <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>
                   Select Category
                 </Text>
-                <CustomDropdownComponentTwo
+                <CustomDropdownComponentFour
                   data={categoryData}
                   selectedValue={category}
                   onSelect={(value) => setCategory(value)}
@@ -419,7 +435,7 @@ export default function AssignTaskScreen() {
                 }}>
                 <Image
                   className="absolute bottom-6 right-6 h-6 w-6"
-                  source={require('../../../../assets/Tasks/calender.png')}
+                  source={require('../../../../../assets/Tasks/calender.png')}
                 />
               </TouchableOpacity>
               {showPicker && (
@@ -437,7 +453,7 @@ export default function AssignTaskScreen() {
               <TouchableOpacity onPress={() => setLinkModalVisible(true)}>
                 <Image
                   className="h-12 w-12"
-                  source={require('../../../../assets/Tasks/link.png')}
+                  source={require('../../../../../assets/Tasks/link.png')}
                 />
                 <Text className="text-sm text-white">
                   {links.length > 0 ? `${links.length} Links` : ''}
@@ -446,7 +462,7 @@ export default function AssignTaskScreen() {
               <TouchableOpacity onPress={() => setFileModalVisible(true)}>
                 <Image
                   className="h-12 w-12"
-                  source={require('../../../../assets/Tasks/file.png')}
+                  source={require('../../../../../assets/Tasks/file.png')}
                 />
                 <Text className="text-sm text-white ml-1.5">
                   {attachments.length > 0 ? `${attachments.length} File` : ''}
@@ -455,7 +471,7 @@ export default function AssignTaskScreen() {
               <TouchableOpacity onPress={() => setReminderModalVisible(true)}>
                 <Image
                   className="h-12 w-12"
-                  source={require('../../../../assets/Tasks/Reminder.png')}
+                  source={require('../../../../../assets/Tasks/Reminder.png')}
                 />
                 <Text className="mt-1 text-xs text-white" style={{ fontFamily: 'LatoBold' }}>
                   {links.length > 0 ? `${links.length} Links` : ''}
@@ -464,7 +480,7 @@ export default function AssignTaskScreen() {
               <TouchableOpacity onPress={() => setAudioModalVisible(true)}>
                 <Image
                   className="h-12 w-12"
-                  source={require('../../../../assets/Tasks/Audio.png')}
+                  source={require('../../../../../assets/Tasks/Audio.png')}
                 />
                 <Text className="text-sm text-white">
                   {links.length > 0 ? `${links.length} Links` : ''}
@@ -485,7 +501,7 @@ export default function AssignTaskScreen() {
                   <Animated.View style={{ transform: [{ translateX }] }}>
                     <Image
                       className="mx-1 h-9 w-9"
-                      source={require('../../../../assets/Tasks/onOffBall.png')}
+                      source={require('../../../../../assets/Tasks/onOffBall.png')}
                     />
                   </Animated.View>
                 </TouchableOpacity>

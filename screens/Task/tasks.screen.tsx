@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import DelegatedTaskScreen from '~/app/(routes)/HomeComponent/Tasks/DelegatedTaskScreen ';
 import AllTaskScreen from '~/app/(routes)/HomeComponent/Tasks/AllTaskScreen';
@@ -10,11 +10,18 @@ import MyTasksStack from './myTask/MyTaskStack';
 import { useState } from 'react';
 import Modal from "react-native-modal";
 import AllTaskModalScreen from './AllTaskModalScreen';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import AssignTaskScreen from '../../app/(routes)/HomeComponent/Tasks/AssignTask/AssignTaskScreen';
+import { router } from 'expo-router';
 
 const Tab = createBottomTabNavigator();
 
 export default function TasksScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
+
+  const navigation = useNavigation<StackNavigationProp<any>>();
+
   return (
     <View style={{ flex: 1 }}>
     <Tab.Navigator
@@ -77,12 +84,27 @@ export default function TasksScreen() {
             },
           }}
         />
+
+        
     </Tab.Navigator>
 
     <AllTaskModalScreen
         isVisible={isModalVisible}
         onClose={() => setModalVisible(false)}
       />
+
+
+      {/* add task */}
+      <TouchableOpacity
+        style={styles.fixedImage}
+        onPress={() => router.push('/(routes)/HomeComponent/Tasks/AssignTask/AssignTaskScreen')}
+      >
+        <Image
+          source={require("../../assets/Tasks/addIcon.png")}
+          className='w-8 h-8'
+        />
+      </TouchableOpacity>
+
     </View>
     
   );
@@ -112,5 +134,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#815BF5', // Background color for active tab
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  fixedImage: {
+    position: 'absolute',
+    bottom: 100,
+    right: 30,
+    width: 60,
+    height: 60,
+    backgroundColor:"rgb(252 137 41)",
+    borderRadius:"50%",
+    alignItems:"center",
+    justifyContent:"center"
   },
 });

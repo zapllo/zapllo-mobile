@@ -321,12 +321,13 @@ export default function MyTaskScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
-              <View className="mb-2 mt-2 h-[167px] w-[93%] rounded-3xl bg-[#007B5B] p-5 pb-7 pt-7 ">
+              
+              <View className="my-1 h-[167px] w-[93%] rounded-3xl bg-[#007B5B] p-5 pb-7 pt-7 ">
                 <View className=" flex w-full flex-row items-center justify-between">
-                  <Text className="text-white " style={{ fontFamily: 'Lato-Bold' }}>Completed Tasks</Text>
+                  <Text className="text-white " style={{ fontFamily: 'LatoBold' }}>Completed Tasks</Text>
                   <Text className="text-xs text-white">22-12-2024 to 28-12-2024</Text>
                 </View>
-                <Text className=" mt-2  text-white" style={{ fontSize: 34,fontFamily: 'Lato-Bold' }}>
+                <Text className=" mt-4  text-white text-5xl " style={{ fontFamily: 'LatoBold' }}>
                   {taskCounts.Completed}
                 </Text>
 
@@ -369,7 +370,7 @@ export default function MyTaskScreen() {
                       const completedTasks = tasks.filter((task) => task.status === 'Completed');
                       navigation.navigate('CompletedTask', { completedTasks });
                     }}
-                    className="-mt-7 flex h-9 w-12 items-center justify-center self-end rounded-full border border-white">
+                    className="-mt-4 flex h-11 w-14 items-center justify-center self-end rounded-full border border-white">
                     <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                   </TouchableOpacity>
                 </View>

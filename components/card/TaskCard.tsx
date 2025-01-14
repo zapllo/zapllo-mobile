@@ -44,11 +44,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
   return (
     <>
       <View className="flex items-start">
-        <Text className="w-[30vh] text-white" style={{ fontFamily: 'Lato-Bold' }}>{title}</Text>
+        <Text className="w-[30vh] text-white" style={{ fontFamily: 'LatoBold' }}>{title}</Text>
         <Text className="text-white" style={{ fontSize: 34 }}>
           {count}
         </Text>
-        <Text className="w-[40vw] pt-2 text-[10px] text-white" style={{ fontFamily: 'Lato-Bold' }}>{date}</Text>
+        <Text className="w-[40vw] pt-2 text-[10px] text-white" style={{ fontFamily: 'LatoBold' }}>{date}</Text>
       </View>
       <View className="mt-10 flex  w-[28vw] flex-row items-center bg-opacity-50">
         <View className="flex flex-row items-start">

@@ -109,7 +109,7 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
   const itemWidth = screenWidth > 450 ? screenWidth / 4 - 20 : screenWidth / 3-30; // Calculate item width based on screen size
   return (
     <View className="items-center pb-14 ">
-      <Text className="text-center text-2xl  text-white" style={{ fontFamily: 'Lato-Bold' }}>
+      <Text className="text-center text-2xl  text-white" style={{ fontFamily: 'LatoBold' }}>
         Create Your Workspace
       </Text>
       <Text className="my-2 text-center  text-white" style={{ fontFamily: 'Lato-Light' }}>

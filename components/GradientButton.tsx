@@ -30,7 +30,7 @@ const GradientButton: React.FC<GradientButtonProps> = ({ title, onPress, imageSo
           style={styles.gradient}
         >
           <ImageContainer source={imageSource} />
-          <Text className="text-center font-semibold text-white text-lg" style={{ fontFamily: "Lato-Bold" }}>
+          <Text className="text-center font-semibold text-white text-lg" style={{ fontFamily: "LatoBold" }}>
             {title}
           </Text>
         </LinearGradient>

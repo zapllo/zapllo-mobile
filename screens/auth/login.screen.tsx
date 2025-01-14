@@ -129,10 +129,11 @@ export default function Loginscreen() {
             <InputContainer
               label="Email Address"
               value={userInfo.email}
-              onChangeText={(value) => setUserInfo({ ...userInfo, email: value })}
+              onChangeText={(value) => setUserInfo({ ...userInfo, email: value.toLowerCase() })}
               placeholder="Email Address"
               className="flex-1  text-sm text-[#787CA5]"
               passwordError={''}
+            
             />
 
             <View className="relative w-full items-center">
@@ -189,7 +190,7 @@ export default function Loginscreen() {
               {buttonSpinner ? (
                 <ActivityIndicator size="small" color={'white'} />
               ) : (
-                <Text className="text-center  font-semibold text-white"  style={{fontFamily:"Lato-Bold"}}>Login</Text>
+                <Text className="text-center  font-semibold text-white"  style={{fontFamily:"LatoBold"}}>Login</Text>
               )}
             </TouchableOpacity>
 
@@ -202,7 +203,7 @@ export default function Loginscreen() {
                 <GradientText text="Zapllonian" textStyle={{ fontSize: 16, fontWeight: '400' }} />
               </View>
               <Link href="/(routes)/signup/pageOne">
-                <Text className="text-base font-extrabold text-white" style={{fontFamily:"Lato-Bold"}}>? Register Here</Text>
+                <Text className="text-base font-extrabold text-white" style={{fontFamily:"LatoBold"}}>? Register Here</Text>
               </Link>
             </View>
           </View>

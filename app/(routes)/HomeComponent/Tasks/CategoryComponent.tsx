@@ -17,7 +17,7 @@ const CategoryComponent: React.FC<CategoryComponentProps> = ({
     
   return (
     <View className="pt-5 pb-5 items-center flex flex-row justify-between w-[90%] p-4 border border-[#37384B] rounded-3xl bg-[#10122d] mb-3">
-      <Text className="text-white text-lg" style={{fontFamily:"Lato-Bold"}}>{title}</Text>
+      <Text className="text-white text-lg" style={{fontFamily:"LatoBold"}}>{title}</Text>
       <View className="flex items-center justify-center gap-3 flex-row">
         <TouchableOpacity onPress={onAddPress}>
           <Image source={require("../../../../assets/Tasks/addto.png")} className="w-7 h-7" />

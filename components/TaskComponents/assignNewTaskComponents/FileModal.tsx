@@ -68,7 +68,7 @@ const FileModal: React.FC<FileModalProps> = ({ isFileModalVisible, setFileModalV
       animationOut="slideOutDown">
       <View className="rounded-t-3xl bg-[#0A0D28] p-5">
         <View className="mb-10 mt-2 flex w-full flex-row items-center justify-between">
-          <Text className="text-2xl font-semibold text-white" style={{ fontFamily: 'Lato-Bold' }}>
+          <Text className="text-2xl font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
             Add File
           </Text>
           <TouchableOpacity onPress={() => setFileModalVisible(false)}>
@@ -89,7 +89,7 @@ const FileModal: React.FC<FileModalProps> = ({ isFileModalVisible, setFileModalV
                   className="h-9 w-9"
                   source={require('../../../assets/Tasks/selectImage.png')}
                 />
-                <Text className="text-white" style={{ fontFamily: 'Lato-Bold' }}>
+                <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>
                   Click to upload your document
                 </Text>
               </>
@@ -114,7 +114,7 @@ const FileModal: React.FC<FileModalProps> = ({ isFileModalVisible, setFileModalV
             className="mb-10 flex h-[4rem] items-center justify-center rounded-full bg-[#37384B] p-5">
             <Text
               className="text-center font-semibold text-white"
-              style={{ fontFamily: 'Lato-Bold' }}>
+              style={{ fontFamily: 'LatoBold' }}>
               Upload Documents
             </Text>
           </TouchableOpacity>

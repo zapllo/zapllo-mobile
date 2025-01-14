@@ -30,7 +30,7 @@ const MonthlyModal: React.FC<MonthlyModalProps> = ({ isVisible, onClose }) => {
     >
       <View className="rounded-xl bg-[#0A0D28] p-5 pb-8">
         <View className="mb-4 flex w-full flex-row items-center justify-between">
-          <Text className="text-lg text-white" style={{ fontFamily: "Lato-Bold" }}>
+          <Text className="text-lg text-white" style={{ fontFamily: "LatoBold" }}>
             Select Days
           </Text>
           <TouchableOpacity onPress={onClose}>

@@ -86,7 +86,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
         <View className="mb-7 mt-2 flex w-full flex-row items-center justify-between">
           <Text
             className="text-2xl font-semibold text-white"
-            style={{ fontFamily: "Lato-Bold" }}
+            style={{ fontFamily: "LatoBold" }}
           >
             Add Task Reminders
           </Text>
@@ -136,7 +136,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
            >
              <Text
                className="text-center font-semibold text-white"
-               style={{ fontFamily: "Lato-Bold" }}
+               style={{ fontFamily: "LatoBold" }}
              >
                Upload Documents
              </Text>

@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity, Image, FlatList } from 'react-native';
-import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, Image, FlatList, Keyboard, KeyboardEvent } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import Modal from 'react-native-modal';
 import InputContainer from '~/components/InputContainer';
 
@@ -16,39 +16,51 @@ const AddLinkModal: React.FC<LinkModalProps> = ({
   links,
   setLinks,
 }) => {
-  const [linkInputs, setLinkInputs] = useState<string[]>(['']); // Start with one input box
+  const [linkInputs, setLinkInputs] = useState<string[]>(['']);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-  // Add a new input field at the bottom
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      (event: KeyboardEvent) => {
+        setKeyboardHeight(event.endCoordinates.height);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
   const addLinkInput = () => {
     setLinkInputs((prevInputs) => [...prevInputs, '']);
   };
 
-  // Remove a link input field
   const removeLinkInput = (index: number) => {
     const updatedInputs = [...linkInputs];
     updatedInputs.splice(index, 1);
     setLinkInputs(updatedInputs);
   };
 
-  // Add a new link
   const addLink = () => {
     linkInputs.forEach((link) => {
       if (link.trim()) {
         setLinks((prevLinks) => [...prevLinks, link.trim()]);
       }
     });
-    setLinkInputs(['']); // Reset input fields after adding
-    setLinkModalVisible(false); // Close modal
+    setLinkInputs(['']);
+    setLinkModalVisible(false);
   };
 
-  // Delete a link
   const deleteLink = (index: number) => {
     const updatedLinks = [...links];
     updatedLinks.splice(index, 1);
     setLinks(updatedLinks);
   };
-
-  console.log("linkkkkkk",links)
 
   return (
     <Modal
@@ -57,8 +69,7 @@ const AddLinkModal: React.FC<LinkModalProps> = ({
       style={{ margin: 0, justifyContent: 'flex-end' }}
       animationIn="slideInUp"
       animationOut="slideOutDown">
-        
-      <View className="rounded-t-3xl bg-[#0A0D28] p-5">
+      <View style={{ marginBottom: keyboardHeight }} className="rounded-t-3xl bg-[#0A0D28] p-5">
         <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
           <Text className="text-2xl font-semibold text-white" style={{ fontFamily: 'Lato-Bold' }}>
             Add Link
@@ -110,7 +121,6 @@ const AddLinkModal: React.FC<LinkModalProps> = ({
               />
             </View>
 
-            {/* Add/Delete icon */}
             {index === linkInputs.length - 1 ? (
               <TouchableOpacity
                 onPress={addLinkInput}
@@ -127,13 +137,10 @@ const AddLinkModal: React.FC<LinkModalProps> = ({
           </View>
         ))}
 
-        {/* Show added links */}
-
         <View className="mt-10 w-full">
           <TouchableOpacity
             className="mb-10 flex h-[4rem] items-center justify-center rounded-full bg-[#37384B] p-5"
-            onPress={addLink} // Add links when clicked
-          >
+            onPress={addLink}>
             <Text
               className="text-center font-semibold text-white"
               style={{ fontFamily: 'Lato-Bold' }}>

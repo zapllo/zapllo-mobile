@@ -1,13 +1,12 @@
 import { AntDesign } from '@expo/vector-icons';
-import React, { useState } from 'react';
-import { StyleSheet } from 'react-native';
-import { Dropdown } from 'react-native-element-dropdown';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 interface CustomDropdownProps {
   data: Array<{ label: string; value: any }>;
-  selectedValue: any;
+  selectedValue?: any;
   onSelect: (value: any) => void;
-  placeholder?: string;
   renderItem: (item: any) => JSX.Element;
 }
 
@@ -15,51 +14,64 @@ const CustomDropdownComponentThree: React.FC<CustomDropdownProps> = ({
   data,
   selectedValue,
   onSelect,
- 
   renderItem,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [currentValue, setCurrentValue] = useState(selectedValue || (data.length > 0 ? data[0].value : null));
 
-  // Filter data based on search query
-  const filteredData = data.filter((item) =>
-    item.label.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    if (!selectedValue && data.length > 0) {
+      setCurrentValue(data[0].value);
+    }
+  }, [selectedValue, data]);
 
-  // Set the default value to the first item in the data list if no value is selected
-  const defaultValue = selectedValue || (data.length > 0 ? data[0].value : null);
+  const handleSelect = (value: any) => {
+    Haptics.selectionAsync(); // Trigger haptic feedback
+    setCurrentValue(value);
+    onSelect(value);
+    setIsDropdownOpen(false);
+  };
 
   return (
-    <Dropdown
-      style={styles.dropdown}
-      placeholderStyle={styles.placeholderStyle}
-      selectedTextStyle={styles.selectedTextStyle}
-      inputSearchStyle={styles.inputSearchStyle}
-     
-      searchPlaceholder="Search..."
-      value={defaultValue} // Default to the first item's value
-      data={filteredData} // Use the filtered data
-      labelField="label"
-      valueField="value"
-      onChangeText={(text) => setSearchQuery(text)} // Update search query
-      renderItem={renderItem}
-      maxHeight={200}
-      onChange={(item: any) => {
-        onSelect(item.value); // Call the onSelect function
-        setIsDropdownOpen(false); // Close the dropdown
-      }}
-      onFocus={() => setIsDropdownOpen(true)}
-      onBlur={() => setIsDropdownOpen(false)}
-      renderRightIcon={() => (
+    <View>
+      <TouchableOpacity
+        style={styles.dropdown}
+        onPress={() => setIsDropdownOpen(!isDropdownOpen)}
+      >
+        <Text style={styles.selectedTextStyle}>
+          {currentValue ? data.find(item => item.value === currentValue)?.label : 'Select...'}
+        </Text>
         <AntDesign
           name={isDropdownOpen ? 'caretup' : 'caretdown'}
-          size={14}
+          size={12}
           color="#787CA5"
           style={styles.dropdownIcon}
         />
+      </TouchableOpacity>
+      {isDropdownOpen && (
+        <View style={styles.dropdownMenu}>
+          {data.map((item) => (
+            <TouchableOpacity
+              key={item.value}
+              onPress={() => handleSelect(item.value)}
+              style={[
+                styles.dropdownItem,
+                currentValue === item.value && styles.selectedItem, // Apply selected style to item
+              ]}
+            >
+              <Text
+                style={[
+                  styles.dropdownItemText,
+                  currentValue === item.value && styles.selectedItemText, // Change text color if selected
+                ]}
+              >
+                {item.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       )}
-      containerStyle={styles.dropdownMenu}
-    />
+    </View>
   );
 };
 
@@ -67,40 +79,44 @@ const styles = StyleSheet.create({
   dropdownIcon: {
     alignSelf: 'center',
     marginLeft: 10,
-  
   },
   dropdown: {
-    position: 'absolute',
     width: '100%',
     height: 50,
-  },
-  placeholderStyle: {
-    fontSize: 13,
-    color: '#787CA5',
-    fontWeight: '300',
-    paddingLeft: 22,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#37384B',
+    borderRadius: 22,
+    paddingHorizontal: 10,
+    backgroundColor: '#05071E',
   },
   selectedTextStyle: {
     fontSize: 13,
     color: 'white',
     fontWeight: '300',
-    paddingLeft: 22,
-  },
-  inputSearchStyle: {
-    height: 40,
-    fontSize: 16,
-    borderColor: '#37384B',
-    borderWidth: 1,
-    backgroundColor: '#05071E',
-    color: '#FFFFFF',
   },
   dropdownMenu: {
     backgroundColor: '#05071E',
     borderColor: '#37384B',
     borderWidth: 1,
-    borderBottomEndRadius: 15,
-    borderBottomStartRadius: 15,
-    margin: 8,
+    borderRadius: 8,
+    marginTop: 5,
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+  },
+  dropdownItemText: {
+    color: '#787CA5',
+    fontSize: 13,
+  },
+  selectedItem: {
+    backgroundColor: '#FFFFFF', // Change background color to white when selected
+  },
+  selectedItemText: {
+    color: '#000000', // Change text color to black when selected
   },
 });
 

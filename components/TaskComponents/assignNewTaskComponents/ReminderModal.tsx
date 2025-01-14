@@ -1,9 +1,7 @@
 // ReminderModal.tsx
-import { View, Text, TouchableOpacity, Image, TextInput, StyleSheet, Keyboard } from "react-native";
-import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, Image, TextInput, StyleSheet, Keyboard, Animated } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
 import Modal from "react-native-modal";
-import CustomDropdown from "~/components/customDropDown";
-import CustomDropdownComponentTwo from "~/components/customNavbarTwo";
 import CustomDropdownComponentThree from "~/components/customDropdownThree";
 
 const daysData = [
@@ -25,15 +23,26 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
     const [number, setNumber] = useState("");
     const [selectedIndustry, setSelectedIndustry] = useState(null);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const animatedHeight = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         const keyboardDidShowListener = Keyboard.addListener(
           'keyboardDidShow',
           (event) => {
+            Animated.timing(animatedHeight, {
+              toValue: event.endCoordinates.height,
+              duration: 300,
+              useNativeDriver: false,
+            }).start();
             setKeyboardHeight(event.endCoordinates.height);
           }
         );
         const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+          Animated.timing(animatedHeight, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: false,
+          }).start();
           setKeyboardHeight(0);
         });
 
@@ -69,11 +78,11 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
     <Modal
       isVisible={isReminderModalVisible}
       onBackdropPress={() => setReminderModalVisible(false)}
-      style={{ margin: 0, justifyContent: "flex-end", marginBottom: keyboardHeight }}
+      style={{ margin: 0, justifyContent: "flex-end" }}
       animationIn="slideInUp"
       animationOut="slideOutDown"
     >
-      <View className="rounded-t-3xl bg-[#0A0D28] p-5 ">
+      <Animated.View style={[styles.modalContent, { marginBottom: animatedHeight }]}>
         <View className="mb-7 mt-2 flex w-full flex-row items-center justify-between">
           <Text
             className="text-2xl font-semibold text-white"
@@ -134,7 +143,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
            </TouchableOpacity>
          </View>
         </View>
-      </View>
+      </Animated.View>
     </Modal>
   );
 };
@@ -142,10 +151,14 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
 export default ReminderModal;
 
 const styles = StyleSheet.create({
+  modalContent: {
+    backgroundColor: '#0A0D28',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 20,
+  },
   input: {
-  zIndex:100,
-    
-   
+    zIndex: 100,
     height: 48,
     position: 'relative',
   },

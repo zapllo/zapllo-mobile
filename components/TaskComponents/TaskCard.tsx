@@ -53,20 +53,20 @@ const TaskCard: React.FC<TaskCardProps> = ({
   return (
     <>
       <View className="flex items-start">
-        <Text className="w-[30vh] text-white text-lg" style={{ fontFamily: 'LatoBold' }}>
+        <Text className="w-[30vh] text-white mb-2" style={{ fontFamily: 'LatoBold' }}>
           {title}
         </Text>
         <Text
-          className="text-white text-5xl"
+          className="text-white text-5xl mt-1"
           style={{  fontFamily: 'LatoBold'}}>
           {count}
         </Text>
-        <Text className="w-[40vw] pt-2  text-white" style={{ fontFamily: 'LatoBold' }}>
+        <Text className="w-[40vw] pt-2 text-xs  text-white" style={{ fontFamily: 'LatoBold' }}>
           25th Dec, 2024
         </Text>
       </View>
 
-      <View className="mt-8 flex  w-[28vw] flex-row items-center ">
+      <View className="mt-7 flex  w-[28vw] flex-row items-center ">
         <View className=" flex flex-row items-start">
           <View className="flex w-full flex-row">
             {tasks

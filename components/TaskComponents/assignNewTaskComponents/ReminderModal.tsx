@@ -1,78 +1,112 @@
 // ReminderModal.tsx
-import { View, Text, TouchableOpacity, Image, TextInput, StyleSheet, Keyboard, Animated } from "react-native";
-import React, { useState, useEffect, useRef } from "react";
-import Modal from "react-native-modal";
-import CustomDropdownComponentThree from "~/components/customDropdownThree";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  TextInput,
+  StyleSheet,
+  Keyboard,
+  Animated,
+} from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import Modal from 'react-native-modal';
+import CustomDropdownComponentThree from '~/components/customDropdownThree';
 
 const daysData = [
-    { label: 'Days', value: 'Days' },
-    { label: 'hours', value: 'hours' },
+  { label: 'Days', value: 'days' },
+  { label: 'Hours', value: 'hours' },
+  { label: 'Minutes', value: 'minutes' },
+];
+
+const notificationTypes = [
+  { label: 'Email', value: 'email' },
+  { label: 'WhatsApp', value: 'whatsapp' },
 ];
 
 interface ReminderModalProps {
   isReminderModalVisible: boolean;
   setReminderModalVisible: (visible: boolean) => boolean;
+  setAddedReminders: any;
 }
 
 const ReminderModal: React.FC<ReminderModalProps> = ({
   isReminderModalVisible,
   setReminderModalVisible,
+  setAddedReminders,
 }) => {
-    const [mail, setMail] = useState("");
-    const [whatsApp, setWhatsApp] = useState("");
-    const [number, setNumber] = useState("");
-    const [selectedIndustry, setSelectedIndustry] = useState(null);
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
-    const animatedHeight = useRef(new Animated.Value(0)).current;
+  const [mail, setMail] = useState('');
+  const [whatsApp, setWhatsApp] = useState('');
+  const [number, setNumber] = useState('');
+  const [selectedIndustry, setSelectedIndustry] = useState(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const animatedHeight = useRef(new Animated.Value(0)).current;
 
-    useEffect(() => {
-        const keyboardDidShowListener = Keyboard.addListener(
-          'keyboardDidShow',
-          (event) => {
-            Animated.timing(animatedHeight, {
-              toValue: event.endCoordinates.height,
-              duration: 300,
-              useNativeDriver: false,
-            }).start();
-            setKeyboardHeight(event.endCoordinates.height);
-          }
-        );
-        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
-          Animated.timing(animatedHeight, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: false,
-          }).start();
-          setKeyboardHeight(0);
-        });
+  const [reminders, setReminders] = useState([
+    { notificationType: 'email', type: 'days', value: 1, sent: false },
+  ]);
 
-        return () => {
-          keyboardDidShowListener.remove();
-          keyboardDidHideListener.remove();
-        };
-    }, []);
+  const addReminder = () => {
+    setReminders([
+      ...reminders,
+      { notificationType: 'email', type: 'days', value: 1, sent: false },
+    ]);
+  };
 
-    const renderIndustryItem = (item: any) => {
-      const isSelected = item.value === selectedIndustry;
-  
-      return (
-        <TouchableOpacity
-          style={[
-            styles.itemStyle,
-            isSelected && styles.selectedDropdownItemStyle,
-          ]}
-          onPress={() => setSelectedIndustry(item.value)}
-        >
-          <Text
-            style={[
-              styles.itemTextStyle,
-              isSelected && styles.selectedTextStyle,
-            ]}>
-            {item.label}
-          </Text>
-        </TouchableOpacity>
-      );
+  const deleteReminder = (index: number) => {
+    const updatedReminders = reminders.filter((_, i) => i !== index);
+    setReminders(updatedReminders);
+  };
+
+  const updateReminder = (index: number, key: string, value: any) => {
+    const updatedReminders = [...reminders];
+    updatedReminders[index][key] = value;
+    setReminders(updatedReminders);
+  };
+
+  const uploadDocuments = () => {
+    console.log('Reminders Data:', reminders);
+    setAddedReminders(reminders);
+    setReminderModalVisible(false);
+  };
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (event) => {
+      Animated.timing(animatedHeight, {
+        toValue: event.endCoordinates.height,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+      setKeyboardHeight(event.endCoordinates.height);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      Animated.timing(animatedHeight, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
     };
+  }, []);
+
+  const renderIndustryItem = (item: any) => {
+    const isSelected = item.value === selectedIndustry;
+
+    return (
+      <TouchableOpacity
+        style={[styles.itemStyle, isSelected && styles.selectedDropdownItemStyle]}
+        onPress={() => setSelectedIndustry(item.value)}>
+        <Text style={[styles.itemTextStyle, isSelected && styles.selectedTextStyle]}>
+          {item.label}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <Modal
@@ -80,68 +114,69 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
       onBackdropPress={() => setReminderModalVisible(false)}
       style={{ margin: 0, justifyContent: 'flex-end' }}
       animationIn="slideInUp"
-      animationOut="slideOutDown"
-    >
+      animationOut="slideOutDown">
       <Animated.View style={[styles.modalContent, { marginBottom: animatedHeight }]}>
         <View className="mb-7 mt-2 flex w-full flex-row items-center justify-between">
-          <Text
-            className="text-2xl font-semibold text-white"
-            style={{ fontFamily: "Lato-Bold" }}
-          >
+          <Text className="text-2xl font-semibold text-white" style={{ fontFamily: 'Lato-Bold' }}>
             Add Task Reminders
           </Text>
           <TouchableOpacity onPress={() => setReminderModalVisible(false)}>
-            <Image
-              source={require("../../../assets/commonAssets/cross.png")}
-              className="h-8 w-8"
-            />
+            <Image source={require('../../../assets/commonAssets/cross.png')} className="h-8 w-8" />
           </TouchableOpacity>
         </View>
 
         <View className=" w-full items-center">
-          <View className="flex w-full  flex-row items-center justify-between">
-            <View style={styles.input} className="w-[30%]">
+          {reminders.map((reminder, index) => (
+            <View className="flex w-full  flex-row items-center justify-between">
+              <View style={styles.input} className="w-[30%]">
                 <CustomDropdownComponentThree
-                      data={daysData}
-                      selectedValue={selectedIndustry}
-                      onSelect={(value) => setSelectedIndustry(value)}
-                      renderItem={renderIndustryItem}
-                    />
+                  data={notificationTypes}
+                  selectedValue={reminder.notificationType}
+                  onSelect={(value) => updateReminder(index, 'notificationType', value)}
+                  renderItem={renderIndustryItem}
+                />
               </View>
 
-                <TextInput
-                  value={number}
-                  onChangeText={(text) => setNumber(text)}
-                  placeholder=""
-                  className="p-2 border-[#37384B] border text-white rounded-full w-[20%]  h-14"
-                />
+              <TextInput
+                value={reminder.value.toString()}
+                onChangeText={(text) => updateReminder(index, 'value', parseInt(text) || 0)}
+                keyboardType="numeric"
+                placeholder=""
+                className="h-14 w-[20%] rounded-full border border-[#37384B] p-2  text-white"
+              />
 
               <View style={styles.input} className="w-[30%]">
                 <CustomDropdownComponentThree
-                      data={daysData}
-                      selectedValue={selectedIndustry}
-                      onSelect={(value) => setSelectedIndustry(value)}
-                      renderItem={renderIndustryItem}
-                    />
+                  data={daysData}
+                  selectedValue={reminder.type}
+                  onSelect={(value) => updateReminder(index, 'type', value)}
+                  renderItem={renderIndustryItem}
+                />
               </View>
 
-            <TouchableOpacity className="h-12 w-12">
-              <Image className="h-12 w-12" source={require("../../../assets/Tasks/add.png")} />
+              <TouchableOpacity
+                onPress={index === 0 ? addReminder : () => deleteReminder(index)}
+                className="h-12 w-12">
+                <Image className="h-12 w-12" 
+               source={
+                index === 0
+                  ? require('../../../assets/Tasks/add.png')
+                  : require('../../../assets/Tasks/delete.png')
+              } />
+              </TouchableOpacity>
+            </View>
+          ))}
+          <View className="mt-16 w-full">
+            <TouchableOpacity
+              onPress={uploadDocuments}
+              className="mb-10 flex h-[4rem] items-center justify-center rounded-full bg-[#37384B] p-5">
+              <Text
+                className="text-center font-semibold text-white"
+                style={{ fontFamily: 'Lato-Bold' }}>
+                Add Reminder
+              </Text>
             </TouchableOpacity>
           </View>
-
-          <View className="w-full mt-16">
-           <TouchableOpacity
-             className="mb-10 flex h-[4rem] items-center justify-center rounded-full p-5 bg-[#37384B]"
-           >
-             <Text
-               className="text-center font-semibold text-white"
-               style={{ fontFamily: "Lato-Bold" }}
-             >
-               Upload Documents
-             </Text>
-           </TouchableOpacity>
-         </View>
         </View>
       </Animated.View>
     </Modal>
@@ -186,4 +221,3 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
   },
 });
-

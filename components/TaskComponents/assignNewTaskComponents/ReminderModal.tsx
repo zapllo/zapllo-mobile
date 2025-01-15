@@ -27,7 +27,7 @@ const notificationTypes = [
 
 interface ReminderModalProps {
   isReminderModalVisible: boolean;
-  setReminderModalVisible: (visible: boolean) => boolean;
+  setReminderModalVisible: any;
   setAddedReminders: any;
 }
 

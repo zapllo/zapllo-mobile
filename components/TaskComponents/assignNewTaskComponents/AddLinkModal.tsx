@@ -71,7 +71,7 @@ const AddLinkModal: React.FC<LinkModalProps> = ({
       animationOut="slideOutDown">
       <View style={{ marginBottom: keyboardHeight }} className="rounded-t-3xl bg-[#0A0D28] p-5">
         <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
-          <Text className="text-2xl font-semibold text-white" style={{ fontFamily: 'Lato-Bold' }}>
+          <Text className="text-2xl font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
             Add Link
           </Text>
           <TouchableOpacity onPress={() => setLinkModalVisible(false)}>
@@ -143,7 +143,7 @@ const AddLinkModal: React.FC<LinkModalProps> = ({
             onPress={addLink}>
             <Text
               className="text-center font-semibold text-white"
-              style={{ fontFamily: 'Lato-Bold' }}>
+              style={{ fontFamily: 'LatoBold' }}>
               Add Link
             </Text>
           </TouchableOpacity>

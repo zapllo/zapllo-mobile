@@ -183,7 +183,7 @@ export default function SignUpTwoScreen() {
 
             {/* middle banner */}
             <View className="mb-2 flex w-full items-center justify-center gap-6">
-              <Text className="text-2xl  text-white" style={{fontFamily:"Lato-Bold"}}>Create Your Workspace</Text>
+              <Text className="text-2xl  text-white" style={{fontFamily:"LatoBold"}}>Create Your Workspace</Text>
               <Text className=" text-white " style={{fontFamily:"Lato-Light"}}>
                 Let's get started by filling out the form below.
               </Text>
@@ -320,7 +320,7 @@ export default function SignUpTwoScreen() {
               {buttonSpinner ? (
                 <ActivityIndicator size="small" color={'white'} />
               ) : (
-                <Text className="text-center text-white " style={{fontFamily:"Lato-Bold"}}>Sign Up</Text>
+                <Text className="text-center text-white " style={{fontFamily:"LatoBold"}}>Sign Up</Text>
               )}
             </TouchableOpacity>
 

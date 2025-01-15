@@ -26,7 +26,6 @@ import ReminderModal from '~/components/TaskComponents/assignNewTaskComponents/R
 import AudioModal from '~/components/TaskComponents/assignNewTaskComponents/AudioModal';
 import FileModal from '~/components/TaskComponents/assignNewTaskComponents/FileModal';
 import AddLinkModal from '~/components/TaskComponents/assignNewTaskComponents/AddLinkModal';
-import { Dropdown } from 'react-native-element-dropdown';
 import CustomDropdownComponentTwo from '~/components/customNavbarTwo';
 import axios from 'axios';
 import { backend_Host } from '~/config';
@@ -38,6 +37,7 @@ import { Button } from 'react-native';
 import WeeklyModal from '~/components/TaskComponents/assignNewTaskComponents/WeeklyModal';
 import MonthlyModal from '~/components/TaskComponents/assignNewTaskComponents/MonthlyModal';
 import SelectDateModal from '~/components/TaskComponents/assignNewTaskComponents/SelectDateModal';
+import CustomDropdownComponentFour from '~/components/customDropDownFour';
 
 //delete the data :)
 const daysData = [
@@ -73,7 +73,6 @@ export default function AssignTaskScreen() {
   const [isFileModalVisible, setFileModalVisible] = useState(false);
   const [isReminderModalVisible, setReminderModalVisible] = useState(false);
   const [isAudioModalVisible, setAudioModalVisible] = useState(false);
-  const [dueDate, setDueDate] = useState(null);
   const [categoryData, setCategoryData] = useState([]);
   const [category, setCategory] = useState('');
   const [weekDays, setWeekDays] = useState([]);
@@ -83,16 +82,22 @@ export default function AssignTaskScreen() {
   const [links, setLinks] = useState([]);
   const [comments, setComments] = useState([]);
   const [addedReminder, setAddedReminders] = useState([]);
+  const [reminders, setReminders] = useState([]);
+  const [isDescriptionFocused, setDescriptionFocused] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showPicker, setShowPicker] = useState(false); // Control the modal visibility
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedTime, setSelectedTime] = useState(new Date());
-  const [mode, setMode] = useState('date'); // Mode can be 'date' or 'time'
   const [isWeeklyModalVisible, setWeeklyModalVisible] = useState(false);
   const [isMonthlyModalVisible, setMonthlyModalVisible] = useState(false);
   const [repeatType, setRepeatType] = useState('');
   const [taskLoading, setTaskLoading] = useState(false);
+  const [showPicker, setShowPicker] = React.useState(false);
+  const [mode, setMode] = React.useState<'date' | 'time'>('date');
+  const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());
+  const [selectedTime, setSelectedTime] = React.useState<Date>(new Date());
+  const [dueDate, setDueDate] = React.useState<Date | null>(null);
+
+  const handleFocus = () => setDescriptionFocused(true);
+  const handleBlur = () => setDescriptionFocused(false);
 
   const position = useRef(new Animated.Value(0)).current;
 
@@ -122,7 +127,7 @@ export default function AssignTaskScreen() {
             'Content-Type': 'application/json',
           },
         });
-        console.log('>>>>>>>>>>', response?.data?.data);
+        console.log('>>>>>>>>>>', response?.data?.data, token);
         const formattedData = processCategoryData(response.data.data);
         setCategoryData(formattedData);
       } catch (err: any) {
@@ -135,8 +140,6 @@ export default function AssignTaskScreen() {
     fetchUsers();
     fetchCategories();
   }, [token]);
-
-  console.log('>>>>', addedReminder, isChecked);
 
   const processUserData = (data) => {
     return data.map((user) => ({
@@ -151,29 +154,32 @@ export default function AssignTaskScreen() {
     }));
   };
 
-  console.log('>>>>ppppppp', userData.data.organization);
-
-  const handleChange = (event, value) => {
+  const handleChange = (date: Date) => {
     if (mode === 'date') {
-      setSelectedDate(value || selectedDate);
+      // Update selected date
+      setSelectedDate(date);
       setMode('time'); // Switch to time picker
     } else {
-      setSelectedTime(value || selectedTime);
-      setShowPicker(false); // Close modal after selecting time
-
-      const selectedDateTime = new Date(selectedDate);
-      const selectedTimeValue = value || selectedTime;
-      selectedDateTime.setHours(selectedTimeValue.getHours());
-      selectedDateTime.setMinutes(selectedTimeValue.getMinutes());
-
-      setDueDate(selectedDateTime); // Update due date
+      // Update selected time and combine with selected date
+      setSelectedTime(date);
+      const combinedDate = new Date(selectedDate);
+      combinedDate.setHours(date.getHours());
+      combinedDate.setMinutes(date.getMinutes());
+      setDueDate(combinedDate); // Update due date
+      setShowPicker(false); // Close modal
+      console.log('Mode:', mode);
+      console.log('Selected Date:', selectedDate);
+      console.log('Selected Time:', selectedTime);
+      console.log('Combined Due Date:', dueDate);
     }
   };
+  console.log('Formatted Due Date:', moment(dueDate).format('MMMM Do YYYY, h:mm a'));
+
+
   const handleButtonPress = (button: string) => {
     setActiveButton(button);
     Haptics.selectionAsync();
   };
-
   const resetForm = () => {
     setTaskTitle('');
     setTaskDescription('');
@@ -217,39 +223,37 @@ export default function AssignTaskScreen() {
     setMonthlyModalVisible(true);
   };
 
-  console.log('ooooo', weekDays, monthDays);
-
   const handleCreateTask = async () => {
     if (!taskTitle.trim()) {
       Alert.alert('Validation Error', 'Task Title is required.');
       setLoading(false);
       return;
     }
-  
+
     if (!taskDescription.trim()) {
       Alert.alert('Validation Error', 'Task Description is required.');
       setLoading(false);
       return;
     }
-  
+
     if (!activeButton) {
       Alert.alert('Validation Error', 'Priority level must be selected.');
       setLoading(false);
       return;
     }
-  
+
     if (!selectedUser) {
       Alert.alert('Validation Error', 'A user must be assigned.');
       setLoading(false);
       return;
     }
-  
+
     if (!category.trim()) {
       Alert.alert('Validation Error', 'Category is required.');
       setLoading(false);
       return;
     }
-  
+
     if (!dueDate) {
       Alert.alert('Validation Error', 'A due date must be selected.');
       setLoading(false);
@@ -281,7 +285,7 @@ export default function AssignTaskScreen() {
       console.log('Task Created:', response.data);
       Alert.alert('Task successfully created!');
       // Navigate to another screen or reset form
-      navigation.goBack()
+      navigation.goBack();
     } catch (error: any) {
       console.error('Error creating task:', error.response?.data || error.message);
       // Alert.alert('Failed to create task. Please try again.');
@@ -322,6 +326,7 @@ export default function AssignTaskScreen() {
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
           <View className="h-full w-full items-center pb-20">
+            {/* task title */}
             <InputContainer
               label="Task Title"
               value={taskTitle}
@@ -331,11 +336,18 @@ export default function AssignTaskScreen() {
               passwordError={''}
             />
 
+            {/* Task desc */}
             <View
               style={[
                 styles.input,
-                { height: 100, justifyContent: 'flex-start', alignItems: 'flex-start' },
+                {
+                  height: 100,
+                  justifyContent: 'flex-start',
+                  alignItems: 'flex-start',
+                  borderColor: isDescriptionFocused ? '#815BF5' : '#37384B',
+                },
               ]}>
+              <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Task Description</Text>
               <TextInput
                 multiline
                 style={[
@@ -344,16 +356,17 @@ export default function AssignTaskScreen() {
                 ]}
                 value={taskDescription}
                 onChangeText={(value) => setTaskDescription(value)}
-                placeholder="Description of the task"
-                placeholderTextColor="#787CA5"></TextInput>
+                placeholder=""
+                placeholderTextColor="#787CA5"
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+              />
             </View>
 
             {/* selected users */}
             <View className="mt-5 flex w-full flex-col items-center gap-2">
               <View style={styles.input}>
-                <Text style={[styles.baseName, { fontFamily: 'Nunito_400Regular' }]}>
-                  Select User
-                </Text>
+                <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Select User</Text>
                 <CustomDropdownComponentTwo
                   data={users}
                   selectedValue={selectedUser}
@@ -364,10 +377,8 @@ export default function AssignTaskScreen() {
               </View>
 
               <View style={styles.input}>
-                <Text style={[styles.baseName, { fontFamily: 'Nunito_400Regular' }]}>
-                  Select Category
-                </Text>
-                <CustomDropdownComponentTwo
+                <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Select Category</Text>
+                <CustomDropdownComponentFour
                   data={categoryData}
                   selectedValue={category}
                   onSelect={(value) => setCategory(value)}
@@ -415,7 +426,7 @@ export default function AssignTaskScreen() {
                         : 'p-3 text-sm text-[#787CA5]'
                     }
                     style={{ fontFamily: 'Lato-Thin' }}>
-                    medium
+                    Medium
                   </Text>
                 </TouchableOpacity>
 
@@ -441,7 +452,7 @@ export default function AssignTaskScreen() {
 
             <View className="mt-6 flex w-[90%] flex-row items-center justify-start gap-4">
               <CheckboxTwo isChecked={isChecked} onPress={() => setIsChecked(!isChecked)} />
-              <Text className="text-white" style={{ fontFamily: 'Lato-Bold' }}>
+              <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>
                 Repeat
               </Text>
             </View>
@@ -468,7 +479,7 @@ export default function AssignTaskScreen() {
               <InputContainer
                 label="Due Date"
                 value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
-                onChangeText={() => setDueDate(dueDate)}
+                onChangeText={(value) => setDueDate(new Date(value))}
                 placeholder=""
                 className="flex-1 text-sm text-[#787CA5]"
                 passwordError={''}
@@ -477,11 +488,11 @@ export default function AssignTaskScreen() {
               <TouchableOpacity
                 onPress={() => {
                   setShowPicker(true);
-                  setMode('date'); // Open date picker first
+                  setMode('date');
                 }}>
                 <Image
                   className="absolute bottom-6 right-6 h-6 w-6"
-                  source={require('../../../../assets/Tasks/calender.png')}
+                  source={require('../../../../../assets/Tasks/calender.png')}
                 />
               </TouchableOpacity>
               {showPicker && (
@@ -499,16 +510,16 @@ export default function AssignTaskScreen() {
               <TouchableOpacity onPress={() => setLinkModalVisible(true)}>
                 <Image
                   className="h-12 w-12"
-                  source={require('../../../../assets/Tasks/link.png')}
+                  source={require('../../../../../assets/Tasks/link.png')}
                 />
                 <Text className="text-sm text-white">
-                  {links.length > 0 ? `${links.length} Links` : ''}
+                  {links.length > 0 ? `${links.length} Link` : ''}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setFileModalVisible(true)}>
                 <Image
                   className="h-12 w-12"
-                  source={require('../../../../assets/Tasks/file.png')}
+                  source={require('../../../../../assets/Tasks/file.png')}
                 />
                 <Text className="ml-1.5 text-sm text-white">
                   {attachments.length > 0 ? `${attachments.length} File` : ''}
@@ -517,20 +528,20 @@ export default function AssignTaskScreen() {
               <TouchableOpacity onPress={() => setReminderModalVisible(true)}>
                 <Image
                   className="h-12 w-12"
-                  source={require('../../../../assets/Tasks/Reminder.png')}
+                  source={require('../../../../../assets/Tasks/Reminder.png')}
                 />
-                {/* <Text className="mt-1 text-xs text-white" style={{ fontFamily: 'LatoBold' }}>
-                  {addedReminder.length > 0 ? `${addedReminder.length} Links` : ''}
-                </Text> */}
+                <Text className="mt-1 text-xs text-white" style={{ fontFamily: 'LatoBold' }}>
+                  {links.length > 0 ? `${links.length} Links` : ''}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setAudioModalVisible(true)}>
                 <Image
-                  className="-mt-2 h-12 w-12"
-                  source={require('../../../../assets/Tasks/Audio.png')}
+                  className="h-12 w-12"
+                  source={require('../../../../../assets/Tasks/Audio.png')}
                 />
-                {/* <Text className="text-sm text-white">
+                <Text className="text-sm text-white">
                   {links.length > 0 ? `${links.length} Links` : ''}
-                </Text> */}
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -547,7 +558,7 @@ export default function AssignTaskScreen() {
                   <Animated.View style={{ transform: [{ translateX }] }}>
                     <Image
                       className="mx-1 h-9 w-9"
-                      source={require('../../../../assets/Tasks/onOffBall.png')}
+                      source={require('../../../../../assets/Tasks/onOffBall.png')}
                     />
                   </Animated.View>
                 </TouchableOpacity>

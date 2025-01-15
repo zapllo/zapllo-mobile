@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import Modal from 'react-native-modal';
 import { Audio } from 'expo-av';
-import LottieView from 'lottie-react-native';
 import Slider from '@react-native-community/slider';
 import { Entypo } from '@expo/vector-icons';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import AudioVisualizer from './AudioVisualizer';
 
 interface AudioModalProps {
   isAudioModalVisible: any;
@@ -28,9 +29,10 @@ const AudioModal: React.FC<AudioModalProps> = ({
   const [currentPosition, setCurrentPosition] = useState(0);
   const [isRecordingStopped, setIsRecordingStopped] = useState(false);
 
+  const audioLevel = useSharedValue(0);
+
   useEffect(() => {
     if (isAudioModalVisible && audioUrl) {
-      // Restore the sound if a recording exists
       loadAudioFromUrl(audioUrl);
     }
   }, [isAudioModalVisible]);
@@ -62,6 +64,12 @@ const AudioModal: React.FC<AudioModalProps> = ({
       );
       setRecording(recording);
       setIsRecordingStopped(false);
+
+      recording.setOnRecordingStatusUpdate((status) => {
+        if (status.metering) {
+          audioLevel.value = withTiming(status.metering + 70, { duration: 100 });
+        }
+      });
     } catch (err) {
       console.error('Failed to start recording', err);
     }
@@ -75,7 +83,7 @@ const AudioModal: React.FC<AudioModalProps> = ({
         const uri = recording.getURI();
         const { sound } = await recording.createNewLoadedSoundAsync();
         setSound(sound);
-        setAudioUrl(uri || ''); // Store the audio URL in the parent state
+        setAudioUrl(uri || '');
         setRecording(undefined);
         setIsRecordingStopped(true);
       }
@@ -101,7 +109,7 @@ const AudioModal: React.FC<AudioModalProps> = ({
     if (sound) {
       sound.unloadAsync();
       setSound(null);
-      setAudioUrl(''); // Clear the audio URL from the parent state
+      setAudioUrl('');
       setIsPlaying(false);
       setDuration(0);
       setCurrentPosition(0);
@@ -119,6 +127,16 @@ const AudioModal: React.FC<AudioModalProps> = ({
       }
     }
   };
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      height: audioLevel.value,
+      backgroundColor: '#815BF5',
+      width: 2,
+      margin: 6,
+    };
+  });
+
   return (
     <Modal
       isVisible={isAudioModalVisible}
@@ -148,30 +166,21 @@ const AudioModal: React.FC<AudioModalProps> = ({
                 </Text>
               </TouchableOpacity>
             ) : (
-              <View className="flex h-32 w-full items-center justify-center">
-                {/* Lottie Animation for Recording */}
-
-                <TouchableOpacity className="flex h-32 w-full flex-row items-center justify-between gap-4 rounded-2xl border border-dashed border-[#815BF5] p-5 ">
-                  <LottieView
-                    source={require('../../../assets/sound-wave.json')} // Replace with your animation file
-                    autoPlay
-                    loop
-                    style={{ height: 200, width: 200 }}
-                  />
-                  <TouchableOpacity
-                    onPress={stopRecording}
-                    className="flex flex-row items-center justify-center gap-2 rounded-lg bg-white p-2">
-                    <View className="h-4 w-4 bg-red-600"></View>
-                    <Text className="text-gray-500" style={{ fontFamily: 'Lato-Bold' }}>
-                      Stop
-                    </Text>
-                  </TouchableOpacity>
+              <View className="flex flex-row gap-3  h-32 w-full items-center justify-center">
+              <AudioVisualizer recording={recording} />
+                <TouchableOpacity
+                  onPress={stopRecording}
+                  className="flex flex-row items-center justify-center gap-2 rounded-lg bg-white p-2">
+                  <View className="h-4 w-4 bg-red-600"></View>
+                  <Text className="text-gray-500" style={{ fontFamily: 'Lato-Bold' }}>
+                    Stop
+                  </Text>
                 </TouchableOpacity>
               </View>
             )}
           </View>
         ) : (
-          <View className="flex h-32 w-full justify-center  rounded-2xl  border border-dashed border-[#815BF5] p-4">
+          <View className="flex h-32  w-full justify-center  rounded-2xl  border border-dashed border-[#815BF5] p-4">
             <View className="flex flex-row justify-between">
               <View className="flex flex-col">
                 <Text className="text-sm text-white ">Voice Note</Text>
@@ -232,6 +241,7 @@ const AudioModal: React.FC<AudioModalProps> = ({
 };
 
 export default AudioModal;
+
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#0A0D28',

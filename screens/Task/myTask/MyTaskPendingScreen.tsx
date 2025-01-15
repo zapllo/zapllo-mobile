@@ -45,7 +45,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<PendingTaskScreenRouteProp>();
   const { pendingTasks } = route.params; // Safely access pendingTasks
 
-  const [selectedTeamSize, setSelectedTeamSize] = useState(null);
+  const [selectedTeamSize, setSelectedTeamSize] = useState("This week");
   const [search, setSearch] = useState('');
   const [showMainModal, setShowMainModal] = useState(true);
   const [showProgressModal, setShowProgressModal] = useState(false);

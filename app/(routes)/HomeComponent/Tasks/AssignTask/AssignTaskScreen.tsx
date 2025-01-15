@@ -38,6 +38,7 @@ import WeeklyModal from '~/components/TaskComponents/assignNewTaskComponents/Wee
 import MonthlyModal from '~/components/TaskComponents/assignNewTaskComponents/MonthlyModal';
 import SelectDateModal from '~/components/TaskComponents/assignNewTaskComponents/SelectDateModal';
 import CustomDropdownComponentFour from '~/components/customDropDownFour';
+import CustomDropdownWithSearchAndAdd from '~/components/customDropDownFour';
 
 //delete the data :)
 const daysData = [
@@ -312,7 +313,7 @@ export default function AssignTaskScreen() {
                   data={users}
                   selectedValue={selectedUser}
                   onSelect={(value) => setSelectedUser(value)}
-                  placeholder="Select a user"
+                  placeholder=""
                   renderItem={(item) => renderDropdownItem(item, 'user')}
                 />
               </View>
@@ -321,7 +322,7 @@ export default function AssignTaskScreen() {
                 <Text style={[styles.baseName, { fontFamily: 'LatoBold' }]}>
                   Select Category
                 </Text>
-                <CustomDropdownComponentFour
+                <CustomDropdownWithSearchAndAdd
                   data={categoryData}
                   selectedValue={category}
                   onSelect={(value) => setCategory(value)}

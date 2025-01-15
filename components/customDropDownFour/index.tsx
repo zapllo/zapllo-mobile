@@ -1,192 +1,158 @@
 import { AntDesign } from '@expo/vector-icons';
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Image, TextInput } from 'react-native';
-import { Dropdown } from 'react-native-element-dropdown';
-import * as Haptics from 'expo-haptics';
-import Animated, { Easing, useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Image,
+} from 'react-native';
 
 interface DropdownItem {
   label: string;
   value: any;
-  image: string;
 }
 
 interface CustomDropdownProps {
   data: DropdownItem[];
-  selectedValue: any;
-  onSelect: (value: any) => void;
   placeholder?: string;
+  onSelect: (value: any) => void;
+  selectedValue?: any;
 }
 
-const CustomDropdownComponentFour: React.FC<CustomDropdownProps> = ({
+const CustomDropdownWithSearchAndAdd: React.FC<CustomDropdownProps> = ({
   data,
-  selectedValue,
+  placeholder = 'Select an option',
   onSelect,
-  placeholder = '',
+  selectedValue,
 }) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const dropdownHeight = useSharedValue(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [newItem, setNewItem] = useState('');
+  const [items, setItems] = useState<DropdownItem[]>(data);
 
-  useEffect(() => {
-    dropdownHeight.value = withTiming(isDropdownOpen ? 200 : 0, {
-      duration: 300,
-      easing: Easing.inOut(Easing.ease),
-    });
-  }, [isDropdownOpen]);
+  const handleSelect = (value: any) => {
+    setIsOpen(false);
+    onSelect(value);
+  };
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    height: dropdownHeight.value,
-  }));
+  const addItem = () => {
+    if (newItem.trim()) {
+      const newItemObject = { label: newItem, value: newItem };
+      setItems([...items, newItemObject]);
+      setNewItem('');
+    }
+  };
 
-  const filteredData = data.filter((item) =>
+  const filteredData = items.filter((item) =>
     item.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const renderItem = (item: DropdownItem) => (
-    <View style={styles.itemContainer}>
-      <Text style={styles.itemLabel}>{item.label}</Text>
-      {item.value === selectedValue && (
-        <AntDesign name="checkcircle" size={16} color="#faf9fd" style={styles.selectedIcon} />
-      )}
-    </View>
-  );
-
   return (
-    <Dropdown
-      style={[
-        styles.dropdown,
-        isDropdownOpen ? styles.dropdownOpen : styles.dropdownClosed,
-      ]}
-      placeholderStyle={styles.placeholderStyle}
-      selectedTextStyle={styles.selectedTextStyle}
-      inputSearchStyle={styles.inputSearchStyle}
-      search
-      searchPlaceholder='search'
-      searchPlaceholderTextColor='#b9bbe2c3'
-      value={selectedValue}
-      data={filteredData}
-      labelField="label"
-      valueField="value"
-      placeholder=""
-      onChangeText={(text) => setSearchQuery(text)}
-      renderItem={renderItem}
-      maxHeight={200}
-      onChange={(item: DropdownItem) => {
-        onSelect(item.value);
-        setIsDropdownOpen(false);
-        Haptics.selectionAsync(); // Trigger haptic feedback
-      }}
-      onFocus={() => setIsDropdownOpen(true)}
-      onBlur={() => setIsDropdownOpen(false)}
-      renderRightIcon={() => (
+    <View style={styles.dropdownContainer}>
+      <TouchableOpacity
+        style={styles.dropdownButton}
+        onPress={() => setIsOpen(!isOpen)}
+      >
+        <Text style={styles.dropdownButtonText}>
+          {selectedValue
+            ? items.find((item) => item.value === selectedValue)?.label
+            : placeholder}
+        </Text>
         <AntDesign
-          name={isDropdownOpen ? 'caretup' : 'caretdown'}
+          name={isOpen ? 'caretup' : 'caretdown'}
           size={14}
           color="#787CA5"
           style={styles.dropdownIcon}
         />
+      </TouchableOpacity>
+
+      {isOpen && (
+        <View style={styles.dropdownMenu}>
+          <View style={styles.searchContainer}>
+            <AntDesign name="search1" size={16} color="#787CA5" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search"
+              placeholderTextColor="#787CA5"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+          <ScrollView
+            nestedScrollEnabled
+            showsVerticalScrollIndicator={false}
+            style={{ maxHeight: 150 }}
+          >
+            {filteredData.map((item) => (
+              <TouchableOpacity
+                key={item.value}
+                style={styles.dropdownItem}
+                onPress={() => handleSelect(item.value)}
+              >
+                <Text
+                  style={[
+                    styles.dropdownItemText,
+                    selectedValue === item.value && styles.selectedItemText,
+                  ]}
+                >
+                  {item.label}
+                </Text>
+                {selectedValue === item.value && (
+                  <AntDesign name="checkcircle" size={16} color="#f8f8fb" style={styles.itemIcon} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          <View style={styles.addItemContainer}>
+            <TextInput
+              style={styles.addItemInput}
+              placeholder="create category"
+              placeholderTextColor="#6a6a6a"
+              value={newItem}
+              onChangeText={setNewItem}
+            />
+            <TouchableOpacity style={styles.addButton} onPress={addItem}>
+              <Image className='w-5 h-5' source={require("../../assets/Tasks/addIcon.png")}/>
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
-      containerStyle={[
-        styles.dropdownMenu,
-        isDropdownOpen ? styles.dropdownMenuOpen : styles.dropdownMenuClosed,
-      ]}
-    >
-      <Animated.View style={[styles.searchContainer, animatedStyle]}>
-        <AntDesign name="search1" size={16} color="#787CA5" style={styles.searchIcon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder={searchQuery ? '' : 'Search'}
-          placeholderTextColor="#787CA5"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-      </Animated.View>
-    </Dropdown>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  dropdown: {
-    position: 'absolute',
+  dropdownContainer: {
     width: '100%',
-    height: 50,
-    overflow: "hidden"
   },
-  dropdownOpen: {
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
+  dropdownButton: {
+    height: 35,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingHorizontal: 9,
   },
-  dropdownClosed: {
-    borderRadius: 17,
-  },
-  placeholderStyle: {
-    fontSize: 13,
-    color: '#787CA5',
-    fontWeight: '300',
-    paddingLeft: 22,
-  },
-  selectedTextStyle: {
+  dropdownButtonText: {
+    color: 'white',
     fontSize: 14,
-    color: '#ffffff',
-    fontWeight: '500',
-    paddingLeft: 21,
-    backgroundColor: 'transparent',
-    fontFamily: 'Lato',
-    paddingTop: 4,
+    flex: 1,
   },
-  inputSearchStyle: {
-    height: 40,
-    fontSize: 16,
-    borderWidth: 0,
-    backgroundColor: '#05071E',
-    color: '#FFFFFF',
+  dropdownIcon: {
+    alignSelf: 'center',
+    marginLeft: 10,
+    marginRight: 5,
   },
   dropdownMenu: {
     backgroundColor: '#05071E',
+    borderRadius: 15,
     borderColor: '#37384B',
     borderWidth: 1,
-    margin: 8,
-    zIndex: 4,
-    overflow: "hidden"
-  },
-  dropdownMenuOpen: {
-    borderRadius: 12,
-  },
-  dropdownMenuClosed: {
-    borderRadius: 15,
-  },
-  itemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    backgroundColor: '#05071E',
-    borderBottomWidth: 1,
-    borderBottomColor: '#37384B',
-    paddingTop: 16,
-    paddingBottom: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#37384B',
-  },
-  imageContainer: {
-    backgroundColor: 'white',
-    borderRadius: 15,
-    height: 40,
-    width: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 20,
-  },
-  itemImage: {
-    width: 40,
-    height: 40,
-  },
-  itemLabel: {
-    fontSize: 14,
-    color: '#FFFFFF',
-  },
-  selectedIcon: {
-    marginLeft: 'auto',
+    marginTop: 15,
+    zIndex: 100,
+    overflow: "hidden",
   },
   searchContainer: {
     flexDirection: 'row',
@@ -195,6 +161,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#05071E',
     borderBottomWidth: 1,
     borderBottomColor: '#37384B',
+    zIndex: 100,
   },
   searchIcon: {
     marginRight: 10,
@@ -204,6 +171,55 @@ const styles = StyleSheet.create({
     height: 40,
     color: '#FFFFFF',
   },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#37384B',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dropdownItemText: {
+    color: '#787CA5',
+    fontSize: 14,
+    flex: 1,
+  },
+  selectedItemText: {
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  itemIcon: {
+    marginLeft: 10,
+  },
+  addItemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#05071E',
+    borderTopWidth: 1,
+    borderTopColor: '#37384B',
+  },
+  addItemInput: {
+    flex: 1,
+    height: 40,
+    borderColor: '#37384B',
+    borderWidth: 1,
+    borderRadius: 9,
+    paddingHorizontal: 10,
+    color: '#FFFFFF',
+    backgroundColor: '#1b1c1f',
+  },
+  addButton: {
+    marginLeft: 10,
+    backgroundColor: 'rgb(0 122 90)',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: "50%",
+  },
+  addButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+  },
 });
 
-export default CustomDropdownComponentFour;
+export default CustomDropdownWithSearchAndAdd;

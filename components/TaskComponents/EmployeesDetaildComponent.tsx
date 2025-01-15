@@ -3,10 +3,10 @@ import React from "react";
 
 // Define the props interface
 interface EmployeesDetaildComponentProps {
-  overdue: number;
-  pending: number;
-  inProgress: number;
-  completed: number;
+  overdue: any;
+  pending: any;
+  inProgress: any;
+  completed: any;
   name:string;
 }
 

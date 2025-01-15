@@ -10,6 +10,7 @@ import {
   Animated,
   Alert,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView } from 'react-native';
@@ -25,7 +26,6 @@ import ReminderModal from '~/components/TaskComponents/assignNewTaskComponents/R
 import AudioModal from '~/components/TaskComponents/assignNewTaskComponents/AudioModal';
 import FileModal from '~/components/TaskComponents/assignNewTaskComponents/FileModal';
 import AddLinkModal from '~/components/TaskComponents/assignNewTaskComponents/AddLinkModal';
-import { Dropdown } from 'react-native-element-dropdown';
 import CustomDropdownComponentTwo from '~/components/customNavbarTwo';
 import axios from 'axios';
 import { backend_Host } from '~/config';
@@ -37,7 +37,7 @@ import { Button } from 'react-native';
 import WeeklyModal from '~/components/TaskComponents/assignNewTaskComponents/WeeklyModal';
 import MonthlyModal from '~/components/TaskComponents/assignNewTaskComponents/MonthlyModal';
 import SelectDateModal from '~/components/TaskComponents/assignNewTaskComponents/SelectDateModal';
-import CustomDropdownComponentFour from '~/components/customDropDownFour';
+import { AntDesign } from '@expo/vector-icons';
 import CustomDropdownWithSearchAndAdd from '~/components/customDropDownFour';
 
 //delete the data :)
@@ -62,10 +62,9 @@ const selectRepetType = [
 
 export default function AssignTaskScreen() {
   const navigation = useNavigation<StackNavigationProp<any>>();
-  const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
+  const { token, userData } = useSelector((state: RootState) => state.auth);
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
-  const [selectedTeamSize, setSelectedTeamSize] = useState('');
   const [activeButton, setActiveButton] = useState('High');
   const [isChecked, setIsChecked] = useState(false);
   const [isOn, setIsOn] = useState(false);
@@ -75,25 +74,29 @@ export default function AssignTaskScreen() {
   const [isFileModalVisible, setFileModalVisible] = useState(false);
   const [isReminderModalVisible, setReminderModalVisible] = useState(false);
   const [isAudioModalVisible, setAudioModalVisible] = useState(false);
-  const [dueDate, setDueDate] = useState(null);
   const [categoryData, setCategoryData] = useState([]);
   const [category, setCategory] = useState('');
-  const [assignedUser, setAssignedUser] = useState('');
+  const [weekDays, setWeekDays] = useState([]);
+  const [monthDays, setMonthDays] = useState([]);
   const [attachments, setAttachments] = useState<string[]>([]);
   const [audioUrl, setAudioUrl] = useState(null);
   const [links, setLinks] = useState([]);
   const [comments, setComments] = useState([]);
-  const [reminders, setReminders] = useState([]);
+  const [addedReminder, setAddedReminders] = useState([]);
   const [isDescriptionFocused, setDescriptionFocused] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showPicker, setShowPicker] = useState(false); // Control the modal visibility
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedTime, setSelectedTime] = useState(new Date());
-  const [mode, setMode] = useState('date'); // Mode can be 'date' or 'time'
   const [isWeeklyModalVisible, setWeeklyModalVisible] = useState(false);
   const [isMonthlyModalVisible, setMonthlyModalVisible] = useState(false);
   const [repeatType, setRepeatType] = useState('');
+  const [taskLoading, setTaskLoading] = useState(false);
+  const [showPicker, setShowPicker] = React.useState(false);
+  const [mode, setMode] = React.useState<'date' | 'time'>('date');
+  const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());
+  const [selectedTime, setSelectedTime] = React.useState<Date>(new Date());
+  const [dueDate, setDueDate] = React.useState<Date | null>(null);
+  const [newCategory, setNewCategory] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFocus = () => setDescriptionFocused(true);
   const handleBlur = () => setDescriptionFocused(false);
@@ -118,27 +121,28 @@ export default function AssignTaskScreen() {
         setLoading(false);
       }
     };
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get(`${backend_Host}/category/get`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        console.log('>>>>>>>>>>', response?.data?.data);
-        const formattedData = processCategoryData(response.data.data);
-        setCategoryData(formattedData);
-      } catch (err: any) {
-        setError('Failed to fetch tasks. Please try again.');
-        console.error('API Error:', err.response || err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchUsers();
     fetchCategories();
   }, [token]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${backend_Host}/category/get`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      // console.log('>>>>>>>>>>', response?.data?.data, token);
+      const formattedData = processCategoryData(response.data.data);
+      setCategoryData(formattedData);
+    } catch (err: any) {
+      setError('Failed to fetch tasks. Please try again.');
+      console.error('API Error:', err.response || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const processUserData = (data) => {
     return data.map((user) => ({
@@ -153,36 +157,47 @@ export default function AssignTaskScreen() {
     }));
   };
 
-  const handleChange = (event, value) => {
+  const handleChange = (date: Date) => {
     if (mode === 'date') {
-      setSelectedDate(value || selectedDate);
+      // Update selected date
+      setSelectedDate(date);
       setMode('time'); // Switch to time picker
     } else {
-      setSelectedTime(value || selectedTime);
-      setShowPicker(false); // Close modal after selecting time
-
-      // Combine selected date and time
-      const date = value || selectedTime;
+      // Update selected time and combine with selected date
+      setSelectedTime(date);
       const combinedDate = new Date(selectedDate);
       combinedDate.setHours(date.getHours());
       combinedDate.setMinutes(date.getMinutes());
-      setDueDate(combinedDate); // Store combined date and time
+      setDueDate(combinedDate); // Update due date
+      setShowPicker(false); // Close modal
+      // console.log('Mode:', mode);
+      // console.log('Selected Date:', selectedDate);
+      // console.log('Selected Time:', selectedTime);
+      // console.log('Combined Due Date:', dueDate);
     }
   };
+  console.log('Formatted Due Date:', moment(dueDate).format('MMMM Do YYYY, h:mm a'));
+
   const handleButtonPress = (button: string) => {
     setActiveButton(button);
     Haptics.selectionAsync();
   };
-
-  const toggleSwitch = () => {
-    setIsOn((previousState) => !previousState);
-    Animated.timing(position, {
-      toValue: isOn ? 0 : 1,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-
-    Haptics.selectionAsync();
+  const resetForm = () => {
+    setTaskTitle('');
+    setTaskDescription('');
+    setActiveButton('High');
+    setIsChecked(false);
+    setSelectedUser(null);
+    setCategory('');
+    setDueDate(null);
+    setWeekDays([]);
+    setMonthDays([]);
+    setAttachments([]);
+    setAudioUrl(null);
+    setLinks([]);
+    setComments([]);
+    setAddedReminders([]);
+    setRepeatType('');
   };
 
   const translateX = position.interpolate({
@@ -198,56 +213,166 @@ export default function AssignTaskScreen() {
     setMonthlyModalVisible(true);
   };
 
-  const handleCreateTask = async () => {
-    const payload = {
-      title: taskTitle,
-      description: taskDescription,
-      priority:
-        activeButton === 'firstHalf' ? 'High' : activeButton === 'secondHalf' ? 'Medium' : 'Low',
-      repeat: isOn,
-      repeatType: 'Weekly',
-      days: ['Monday', 'Wednesday', 'Friday'],
-      dueDate,
-      completionDate: '2025-01-14T15:00:00Z',
-      category,
-      assignedUser,
-      status: 'Pending',
-      organization: '64a9ed4b7a5a870015a1a123',
-      attachment: attachments,
-      audioUrl:audioUrl,
-      links: links,
-      comments,
-      reminders,
-    };
-
-    try {
-      const response = await axios.post(`${backend_Host}/tasks/create`, payload);
-      console.log('Task Created:', response.data);
-      Alert.alert('Task successfully created!');
-      // Navigate to another screen or reset form
-      navigation.navigate('(routes)/home/index');
-    } catch (error: any) {
-      console.error('Error creating task:', error.response?.data || error.message);
-      Alert.alert('Failed to create task. Please try again.');
+  const assignTask = async () => {
+    await handleCreateTask();
+    if (!isOn) {
+      navigation.goBack(); // Navigate back only if the toggle is off
+    } else {
+      resetForm(); // Reset the form if the toggle is on
     }
   };
 
-  const renderDropdownItem = (item: any, type: 'user' | 'category') => {
+  const toggleSwitch = () => {
+    setIsOn((previousState) => !previousState);
+    Animated.timing(position, {
+      toValue: isOn ? 0 : 1,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+    Haptics.selectionAsync();
+  };
+
+  const handleCreateTask = async () => {
+    if (!taskTitle.trim()) {
+      Alert.alert('Validation Error', 'Task Title is required.');
+      return;
+    }
+
+    if (!taskDescription.trim()) {
+      Alert.alert('Validation Error', 'Task Description is required.');
+      return;
+    }
+
+    if (!activeButton) {
+      Alert.alert('Validation Error', 'Priority level must be selected.');
+      return;
+    }
+
+    if (!selectedUser) {
+      Alert.alert('Validation Error', 'A user must be assigned.');
+      return;
+    }
+
+    if (!category.trim()) {
+      Alert.alert('Validation Error', 'Category is required.');
+      return;
+    }
+
+    if (!dueDate) {
+      Alert.alert('Validation Error', 'A due date must be selected.');
+      return;
+    }
+
+    setTaskLoading(true);
+    const payload = {
+      title: taskTitle,
+      description: taskDescription,
+      priority: activeButton,
+      repeat: isChecked,
+      repeatType: repeatType,
+      days: weekDays,
+      dates: monthDays,
+      dueDate: dueDate,
+      completionDate: '',
+      category: category,
+      assignedUser: selectedUser,
+      status: 'Pending',
+      organization: userData?.data?.organization,
+      attachment: attachments,
+      audioUrl: audioUrl,
+      links: links,
+      comments,
+      reminders: addedReminder,
+    };
+
+    try {
+      const response = await axios.post(`${backend_Host}/tasks/create`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      // console.log('Task Created:', response.data);
+      Alert.alert('Task successfully created!');
+    } catch (error) {
+      console.error('Error creating task:', error.response?.data || error.message);
+      Alert.alert('Failed to create task. Please try again.');
+    } finally {
+      setTaskLoading(false);
+    }
+  };
+
+  const handleCreateCategory = async (cat:string) => {
+    console.log('Category created:❌❌❌❌❌❌❌❌❌❌❌❌❌❌111111');
+    if (!cat) {
+      Alert.alert('Validation Error', 'Enter new category');
+      return;
+    }
+    setIsLoading(true)
+    try {
+      const response = await axios.post(
+        `${backend_Host}/category/create`,
+        {
+          name: cat, // Assuming "name" is required by the API
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const newCategoryy = response.data; // Access the new category details from the response
+
+      // Update category data
+      fetchCategories();
+      const updatedData = [...categoryData, { label: newCategoryy.name, value: newCategoryy.id }];
+      setCategoryData(updatedData);
+      console.log('Category created:❌❌❌❌❌❌❌❌❌❌❌❌❌❌',updatedData);
+      setCategory(newCategoryy.id);
+      Alert.alert('New Category Addedsssss');
+    } catch (error) {
+      console.error('Error creating category:', error);
+      Alert.alert('Failed to create category. Please try again.');
+    }finally{
+      setIsLoading(false)
+    }
+  };
+
+  const renderDropdownItem = (
+    item: { label: string; value: any },
+    type: 'user' | 'category',
+    isCreateOption: boolean = false // Flag for the "Create Category" option
+  ) => {
+    // Determine if the item is selected
     const isSelected = type === 'user' ? item.value === selectedUser : item.value === category;
 
     return (
       <TouchableOpacity
         style={[
           styles.itemStyle,
-          isSelected && styles.selectedDropdownItemStyle, // Highlight selected item
+          isSelected && styles.selectedDropdownItemStyle, // Highlight if selected
+          isCreateOption && styles.createCategoryStyle, // Style for the "Create" option
         ]}
-        onPress={() => (type === 'user' ? setSelectedUser(item.value) : setCategory(item.value))}>
+        onPress={() => {
+          if (isCreateOption) {
+            onCreateCategory(item.label); // Handle category creation
+          } else {
+            if (type === 'user') {
+              setSelectedUser(item.value);
+            } else {
+              setCategory(item.value);
+            }
+          }
+        }}>
         <Text
           style={[
             styles.itemTextStyle,
-            isSelected && styles.selectedTextStyle, // Apply selected text style
+            isSelected && styles.selectedTextStyle, // Apply text style for selected
+            isCreateOption && styles.createCategoryTextStyle, // Text style for "Create"
           ]}>
-          {item.label}
+          {isCreateOption ? `Create Category: "${item.label}"` : item.label}
         </Text>
       </TouchableOpacity>
     );
@@ -264,7 +389,6 @@ export default function AssignTaskScreen() {
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
           <View className="h-full w-full items-center pb-20">
-
             {/* task title */}
             <InputContainer
               label="Task Title"
@@ -275,40 +399,37 @@ export default function AssignTaskScreen() {
               passwordError={''}
             />
 
-
             {/* Task desc */}
             <View
-            style={[
-              styles.input,
-              {
-                height: 100,
-                justifyContent: 'flex-start',
-                alignItems: 'flex-start',
-                borderColor: isDescriptionFocused ? '#815BF5' : '#37384B',
-              },
-            ]}>
-            <Text style={[styles.baseName, { fontFamily: 'LatoBold' }]}>Task Description</Text>
-            <TextInput
-              multiline
               style={[
-                styles.inputSome,
-                { textAlignVertical: 'top', paddingTop: 5, width: '100%' },
-              ]}
-              value={taskDescription}
-              onChangeText={(value) => setTaskDescription(value)}
-              placeholder=""
-              placeholderTextColor="#787CA5"
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-            />
-          </View>
+                styles.input,
+                {
+                  height: 100,
+                  justifyContent: 'flex-start',
+                  alignItems: 'flex-start',
+                  borderColor: isDescriptionFocused ? '#815BF5' : '#37384B',
+                },
+              ]}>
+              <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Task Description</Text>
+              <TextInput
+                multiline
+                style={[
+                  styles.inputSome,
+                  { textAlignVertical: 'top', paddingTop: 5, width: '100%' },
+                ]}
+                value={taskDescription}
+                onChangeText={(value) => setTaskDescription(value)}
+                placeholder=""
+                placeholderTextColor="#787CA5"
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+              />
+            </View>
 
             {/* selected users */}
             <View className="mt-2 flex w-full flex-col items-center gap-2">
               <View style={styles.input}>
-                <Text style={[styles.baseName, { fontFamily: 'LatoBold' }]}>
-                  Select User
-                </Text>
+                <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Select User</Text>
                 <CustomDropdownComponentTwo
                   data={users}
                   selectedValue={selectedUser}
@@ -319,17 +440,35 @@ export default function AssignTaskScreen() {
               </View>
 
               <View style={styles.input}>
-                <Text style={[styles.baseName, { fontFamily: 'LatoBold' }]}>
-                  Select Category
-                </Text>
+                <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Select Category</Text>
                 <CustomDropdownWithSearchAndAdd
                   data={categoryData}
                   selectedValue={category}
                   onSelect={(value) => setCategory(value)}
                   placeholder=""
-                  renderItem={(item) => renderDropdownItem(item, 'category')}
+                  onCreateCategory={(newCategoryName:string) => handleCreateCategory(newCategoryName)}
+                  setCategoryData={setCategoryData}
+                  isLoading={isLoading}
                 />
               </View>
+              {userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin' ? (
+                <View style={styles.searchContainer}>
+                  <InputContainer
+                    label="Create Category"
+                    value={newCategory}
+                    onChangeText={setNewCategory}
+                    placeholder=""
+                    className="flex-1  text-sm text-[#787CA5]"
+                    passwordError={''}
+                  />
+
+                  <TouchableOpacity onPress={handleCreateCategory}>
+                    <AntDesign  className='mt-8' name="pluscircleo" size={30} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                ''
+              )}
             </View>
 
             {/* Task priority */}
@@ -340,14 +479,14 @@ export default function AssignTaskScreen() {
               <View className="flex flex-row ">
                 <TouchableOpacity
                   className={
-                    activeButton === 'firstHalf'
+                    activeButton === 'High'
                       ? 'rounded-l-xl border border-[#37384B] bg-[#815BF5] '
                       : 'rounded-l-xl border border-[#37384B] bg-[#05071E]'
                   }
-                  onPress={() => handleButtonPress('firstHalf')}>
+                  onPress={() => handleButtonPress('High')}>
                   <Text
                     className={
-                      activeButton === 'firstHalf'
+                      activeButton === 'High'
                         ? 'p-3 text-sm text-white'
                         : 'p-3 text-sm text-[#787CA5]'
                     }
@@ -358,14 +497,14 @@ export default function AssignTaskScreen() {
 
                 <TouchableOpacity
                   className={
-                    activeButton === 'secondHalf'
+                    activeButton === 'Medium'
                       ? 'border border-[#37384B] bg-[#815BF5] '
                       : 'border border-[#37384B] bg-transparent '
                   }
-                  onPress={() => handleButtonPress('secondHalf')}>
+                  onPress={() => handleButtonPress('Medium')}>
                   <Text
                     className={
-                      activeButton === 'secondHalf'
+                      activeButton === 'Medium'
                         ? 'p-3 text-sm text-white'
                         : 'p-3 text-sm text-[#787CA5]'
                     }
@@ -376,14 +515,14 @@ export default function AssignTaskScreen() {
 
                 <TouchableOpacity
                   className={
-                    activeButton === 'thirdHalf'
+                    activeButton === 'Low'
                       ? 'rounded-r-xl border border-[#37384B] bg-[#815BF5] '
                       : 'rounded-r-xl border border-[#37384B]  bg-transparent '
                   }
-                  onPress={() => handleButtonPress('thirdHalf')}>
+                  onPress={() => handleButtonPress('Low')}>
                   <Text
                     className={
-                      activeButton === 'thirdHalf'
+                      activeButton === 'Low'
                         ? 'p-3 text-sm text-white'
                         : 'p-3 text-sm text-[#787CA5] '
                     }
@@ -441,7 +580,7 @@ export default function AssignTaskScreen() {
               <TouchableOpacity
                 onPress={() => {
                   setShowPicker(true);
-                  setMode('date'); // Open date picker first
+                  setMode('date');
                 }}>
                 <Image
                   className="absolute bottom-6 right-6 h-6 w-6"
@@ -466,7 +605,7 @@ export default function AssignTaskScreen() {
                   source={require('../../../../../assets/Tasks/link.png')}
                 />
                 <Text className="text-sm text-white">
-                  {links.length > 0 ? `${links.length} Links` : ''}
+                  {links.length > 0 ? `${links.length} Link` : ''}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setFileModalVisible(true)}>
@@ -474,7 +613,7 @@ export default function AssignTaskScreen() {
                   className="h-12 w-12"
                   source={require('../../../../../assets/Tasks/file.png')}
                 />
-                <Text className="text-sm text-white ml-1.5">
+                <Text className="ml-1.5 text-sm text-white">
                   {attachments.length > 0 ? `${attachments.length} File` : ''}
                 </Text>
               </TouchableOpacity>
@@ -484,7 +623,7 @@ export default function AssignTaskScreen() {
                   source={require('../../../../../assets/Tasks/Reminder.png')}
                 />
                 <Text className="mt-1 text-xs text-white" style={{ fontFamily: 'LatoBold' }}>
-                  {links.length > 0 ? `${links.length} Links` : ''}
+                  {links.length > 0 ? `` : ''}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setAudioModalVisible(true)}>
@@ -493,7 +632,7 @@ export default function AssignTaskScreen() {
                   source={require('../../../../../assets/Tasks/Audio.png')}
                 />
                 <Text className="text-sm text-white">
-                  {links.length > 0 ? `${links.length} Links` : ''}
+                  {links.length > 0 ? `` : ''}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -519,12 +658,18 @@ export default function AssignTaskScreen() {
             </View>
 
             <TouchableOpacity
+              onPress={assignTask}
+              disabled={taskLoading}
               className={`mb-10  flex h-[4rem] w-[90%] items-center justify-center rounded-full bg-[#37384B] p-5`}>
-              <Text
-                className="text-center  font-semibold text-white"
-                style={{ fontFamily: 'LatoBold' }}>
-                Assign Task
-              </Text>
+              {taskLoading ? (
+                <ActivityIndicator size="large" color="#FFFFFF" style={{ marginTop: 20 }} />
+              ) : (
+                <Text
+                  className="text-center  font-semibold text-white"
+                  style={{ fontFamily: 'Lato-Bold' }}>
+                  Assign Task
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -549,6 +694,7 @@ export default function AssignTaskScreen() {
         <ReminderModal
           isReminderModalVisible={isReminderModalVisible}
           setReminderModalVisible={setReminderModalVisible}
+          setAddedReminders={setAddedReminders}
         />
 
         {/* Audio Modal */}
@@ -563,12 +709,14 @@ export default function AssignTaskScreen() {
         <WeeklyModal
           isVisible={isWeeklyModalVisible}
           onClose={() => setWeeklyModalVisible(false)}
+          setWeekDays={setWeekDays}
         />
 
         {/* Monthly Modal */}
         <MonthlyModal
           isVisible={isMonthlyModalVisible}
           onClose={() => setMonthlyModalVisible(false)}
+          setMonthDays={setMonthDays}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -586,7 +734,7 @@ const styles = StyleSheet.create({
   inputSome: {
     flex: 1,
     padding: 8,
-    color: 'white',
+    color: '#fff',
     fontSize: 13,
     fontFamily: 'LatoBold',
     
@@ -679,5 +827,22 @@ const styles = StyleSheet.create({
     borderBottomEndRadius: 15,
     borderBottomStartRadius: 15,
     margin: 8,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    backgroundColor: '#05071E',
+    gap:5,
+    borderBottomColor: '#37384B',
+    marginHorizontal: 20,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    color: '#FFFFFF',
   },
 });

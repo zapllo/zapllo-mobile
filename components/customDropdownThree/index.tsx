@@ -93,7 +93,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#0A0D28',
   },
   selectedTextStyle: {
-    fontSize: 13,
+    fontSize: 12,
+    fontFamily:"Lato-Bold",
     color: 'white',
     fontWeight: '600',
     fontFamily:"LatoBold"

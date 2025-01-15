@@ -11,6 +11,7 @@ import {
   Image,
   KeyboardEvent,
   FlatList,
+  Alert,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import ProfileButton from '~/components/profile/ProfileButton';
@@ -20,6 +21,9 @@ import TaskDetailedComponent from '~/components/TaskComponents/TaskDetailedCompo
 import Modal from 'react-native-modal';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { MyTasksStackParamList } from './MyTaskStack';
+import axios from 'axios';
+import { backend_Host } from '~/config';
+import * as DocumentPicker from 'expo-document-picker';
 
 type Props = StackScreenProps<MyTasksStackParamList, 'PendingTask'>;
 type PendingTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'PendingTask'>;
@@ -48,6 +52,8 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
   const [triggerProgressModal, setTriggerProgressModal] = useState(false);
   const [description, setDescription] = useState('');
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [fileNames, setFileNames] = useState<string[]>([]);
+  const [attachments, setAttachments] = useState<(string | null)[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   console.log('00000000000', pendingTasks);
@@ -91,6 +97,64 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
     setShowMainModal(false);
     setTriggerProgressModal(true);
   };
+  const handleFileSelect = async (index: number) => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: '*/*',
+      });
+
+      console.log('Document Picker Result: ', result);
+
+      if (result.canceled) {
+        console.log('Document selection cancelled.');
+      } else if (result.assets && result.assets.length > 0) {
+        const { name, uri } = result.assets[0];
+
+        // Update URIs in attachments state for the selected index
+        setAttachments((prev) => {
+          const updated = [...prev];
+          updated[index] = uri;
+          console.log('Updated Attachments URIs: ', updated);
+          return updated;
+        });
+
+        // Update file names in fileNames state for the selected index
+        setFileNames((prev) => {
+          const updated = [...prev];
+          updated[index] = name;
+          console.log('Updated File Names: ', updated);
+          return updated;
+        });
+      }
+    } catch (err) {
+      console.error('Error picking document: ', err);
+    }
+  };
+
+  const updateTask = async () => {
+    try {
+      const payload = {
+        id: pendingTasks[0]._id,
+        status: 'InProgress',
+        comment: description,
+        userName: 'John Doe',
+        fileUrl: attachments,
+      };
+      console.log('payyyy', payload);
+      const response = await axios.patch(`${backend_Host}/tasks/update`, payload, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('Task updated successfully:', response.data);
+      setShowProgressModal(false);
+      Alert.alert('Success', 'Task updated successfully!');
+    } catch (error) {
+      console.error('Error updating task:', error);
+      Alert.alert('Error', 'Failed to update the task.');
+    }
+  };
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
@@ -122,12 +186,18 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
 
           <View className="flex flex-col gap-5">
             <TouchableOpacity
-              onPress={handleMoveToProgress}
+              onPress={() => {
+                handleMoveToProgress();
+              }}
               className="items-center rounded-full bg-[#A914DD] p-4">
               <Text className="text-base font-medium text-white">Move to Progress</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity className="items-center rounded-full bg-[#007B5B] p-4">
+            <TouchableOpacity
+              onPress={() => {
+                handleMoveToProgress();
+              }}
+              className="items-center rounded-full bg-[#007B5B] p-4">
               <Text className="text-base font-medium text-white">Move to Completed</Text>
             </TouchableOpacity>
           </View>
@@ -169,30 +239,37 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
           {/* file and image upload */}
           <View className="w-full ">
             <View className=" flex w-full flex-row items-center gap-2">
-              <Image
-                source={require('~/assets/commonAssets/fileLogo.png')}
-                className="h-6 w-5"
-              />
+              <Image source={require('~/assets/commonAssets/fileLogo.png')} className="h-6 w-5" />
               <Text className="text-sm text-[#787CA5]">Files</Text>
             </View>
 
-            <View className=" flex w-full flex-row items-center gap-3 pl-5 pt-1">
-              <Image
-                source={require('~/assets/commonAssets/fileUploadContainer.png')}
-                className="h-24 w-24"
-              />
-              <Image
-                source={require('~/assets/commonAssets/fileUploadContainer.png')}
-                className="h-24 w-24"
-              />
-              <Image
-                source={require('~/assets/commonAssets/fileUploadContainer.png')}
-                className="h-24 w-24"
-              />
+            <View className=" flex w-full flex-row items-center justify-center gap-5 pl-5 pt-1">
+              {/* Upload file containers */}
+              {['0', '1', '2'].map((index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => handleFileSelect(Number(index))}
+                  className="flex h-24 w-24 items-center justify-center rounded-lg border border-[#37384B]">
+                  {/* If file URI exists, show the file name, else show the placeholder image */}
+                  {attachments[Number(index)] ? (
+                    <Image
+                      source={{ uri: attachments[Number(index)] }}
+                      className="h-24 w-24 rounded-lg"
+                    />
+                  ) : (
+                    <Image
+                      source={require('~/assets/commonAssets/fileUploadContainer.png')}
+                      className="h-24 w-24"
+                    />
+                  )}
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
 
-          <TouchableOpacity className=" mt-10 h-16 w-full items-center justify-center rounded-full bg-[#37384B]">
+          <TouchableOpacity
+            onPress={updateTask}
+            className=" mt-10 h-16 w-full items-center justify-center rounded-full bg-[#37384B]">
             <Text className=" text-xl text-white">Update Task</Text>
           </TouchableOpacity>
         </View>

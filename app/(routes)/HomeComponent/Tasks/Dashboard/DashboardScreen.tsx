@@ -25,6 +25,8 @@ import getDateRange from '~/utils/GetDateRange';
 import TaskCard from '~/components/TaskComponents/TaskCard';
 import TaskStatusCard from '~/components/TaskComponents/TaskCountSection';
 import DashboardCard from '~/components/TaskComponents/DashboardCard';
+import DashboardCardTwo from '~/components/TaskComponents/DashboardCardTwo';
+import DashboardThree from '~/components/TaskComponents/DashboardThree';
 
 interface Task {
   _id: string;
@@ -102,7 +104,7 @@ export default function DashboardScreen() {
 
   // console.log('❌❌❌❌❌❌', JSON.stringify(userData?.data?._id,null,2));
 
-  const [selectedTeamSize, setSelectedTeamSize] = useState('');
+  const [selectedTeamSize, setSelectedTeamSize] = useState('This Week');
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
 
   const groupedByCategory = tasks.reduce((acc:any, task) => {
@@ -382,6 +384,8 @@ export default function DashboardScreen() {
   // //    getCount()
   // // },[groupedCategory])
 
+  console.log("oooooasssssssss>>>>>>>>>>>>>oooo",groupedCategory)
+
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
       <Navbar title="Dashboard" />
@@ -452,7 +456,7 @@ export default function DashboardScreen() {
                   <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                     <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FC842C] p-5">
                       <TouchableOpacity className="h-full w-full">
-                        <DashboardCard
+                        <DashboardThree
                           title="Employee Wise"
                           count={assignedUsers.length}
                           date={'25th December, 2024'}
@@ -470,7 +474,7 @@ export default function DashboardScreen() {
                     <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#D85570] p-5">
                       <TouchableOpacity className="h-full w-full">
                         {/* Overdue Tasks */}
-                        <DashboardCard
+                        <DashboardCardTwo
                           title="Category Wise"
                           // count={taskCounts.Today}
                           count={groupedCategory.length}
@@ -491,7 +495,7 @@ export default function DashboardScreen() {
                   <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                     <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5">
                       <TouchableOpacity className="h-full w-full">
-                        <DashboardCard
+                        <DashboardCardTwo
                           title="My Report"
                           count={myReports?.length}
                           tasks={tasks}
@@ -505,15 +509,17 @@ export default function DashboardScreen() {
                       </TouchableOpacity>
                     </View>
                     <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
-                      <TouchableOpacity className="h-full w-full">
+                      <TouchableOpacity  onPress={() => {
+                            navigation.navigate('Delegated', { employeeWiseData: delegatedData });
+                          }} className="h-full w-full">
                         <DashboardCard
                           title="Delegated"
-                          count={5}
-                          tasks={tasks}
+                          count={delegatedData?.length}
+                          tasks={delegatedData}
                           status="Pending"
                           borderColor="#A914DD"
                           onPress={() => {
-                            navigation.navigate('Delegated', { employeeWiseData: detailPageData });
+                            navigation.navigate('Delegated', { employeeWiseData: delegatedData });
                           }}
                         />
                       </TouchableOpacity>
@@ -524,24 +530,30 @@ export default function DashboardScreen() {
                 <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                   <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5">
                     <TouchableOpacity className="h-full w-full">
-                      <TaskCard
+                      <DashboardCardTwo
                         title="My Report"
-                        count={135}
+                        count={myReports?.length}
                         tasks={tasks}
                         status="Pending"
                         borderColor="#FDB314"
                         colors={['#CCC', '#FFF']}
+                        onPress={() => {
+                          navigation.navigate('MyReports', { employeeWiseData: myReports });
+                        }}
                       />
                     </TouchableOpacity>
                   </View>
                   <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
                     <TouchableOpacity className="h-full w-full">
-                      <TaskCard
+                      <DashboardCard
                         title="Delegated"
-                        count={56}
-                        tasks={tasks}
+                        count={delegatedData?.length}
+                        tasks={delegatedData}
                         status="Pending"
                         borderColor="#A914DD"
+                        onPress={() => {
+                          navigation.navigate('Delegated', { employeeWiseData: delegatedData });
+                        }}
                       />
                     </TouchableOpacity>
                   </View>

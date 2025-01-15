@@ -6,9 +6,10 @@ import * as Haptics from 'expo-haptics';
 interface WeeklyModalProps {
   isVisible: boolean;
   onClose: () => void;
+  setWeekDays: any;
 }
 
-const WeeklyModal: React.FC<WeeklyModalProps> = ({ isVisible, onClose }) => {
+const WeeklyModal: React.FC<WeeklyModalProps> = ({ isVisible, onClose ,setWeekDays}) => {
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
 
   const toggleDaySelection = (day: string) => {
@@ -32,23 +33,24 @@ const WeeklyModal: React.FC<WeeklyModalProps> = ({ isVisible, onClose }) => {
     { label: 'S', id: 'Sunday' },
   ];
 
+  const handelConfirm=()=>{
+    setWeekDays(selectedDays);
+    onClose()
+  }
+
   return (
     <Modal
       isVisible={isVisible}
       animationIn="slideInUp"
       animationOut="slideOutDown"
-      style={{ margin: 0, justifyContent: "center" }}
-    >
+      style={{ margin: 0, justifyContent: 'center' }}>
       <View className="rounded-xl bg-[#0A0D28] p-5 pb-8">
         <View className="mb-4 flex w-full flex-row items-center justify-between">
-          <Text className="text-lg text-white" style={{ fontFamily: "LatoBold" }}>
+          <Text className="text-lg text-white" style={{ fontFamily: 'Lato-Bold' }}>
             Select Days
           </Text>
           <TouchableOpacity onPress={onClose}>
-            <Image
-              source={require("../../../assets/commonAssets/cross.png")}
-              className="h-8 w-8"
-            />
+            <Image source={require('../../../assets/commonAssets/cross.png')} className="h-8 w-8" />
           </TouchableOpacity>
         </View>
 
@@ -57,21 +59,17 @@ const WeeklyModal: React.FC<WeeklyModalProps> = ({ isVisible, onClose }) => {
           {daysOfWeek.map((day) => (
             <TouchableOpacity
               key={day.id}
-              style={[
-                styles.dayBox,
-                selectedDays.includes(day.id) && styles.selectedDayBox,
-              ]}
-              onPress={() => toggleDaySelection(day.id)}
-            >
+              style={[styles.dayBox, selectedDays.includes(day.id) && styles.selectedDayBox]}
+              onPress={() => toggleDaySelection(day.id)}>
               <Text style={styles.dayText}>{day.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Confirm week */}
-        <View className='w-full flex justify-end items-end mt-10'>
-          <TouchableOpacity className='bg-[#46765f] w-1/4 items-center py-3 rounded-lg'>
-            <Text className='text-white'>Confirm</Text>
+        <View className="mt-10 flex w-full items-end justify-end">
+          <TouchableOpacity onPress={handelConfirm} className="w-1/4 items-center rounded-lg bg-[#46765f] py-3">
+            <Text className="text-white">Confirm</Text>
           </TouchableOpacity>
         </View>
       </View>

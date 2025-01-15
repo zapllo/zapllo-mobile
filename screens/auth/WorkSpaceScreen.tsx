@@ -109,7 +109,7 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
   const itemWidth = screenWidth > 450 ? screenWidth / 4 - 20 : screenWidth / 3-30; // Calculate item width based on screen size
   return (
     <View className="items-center pb-14 ">
-      <Text className="text-center text-2xl  text-white" style={{ fontFamily: 'Lato-Bold' }}>
+      <Text className="text-center text-2xl  text-white" style={{ fontFamily: 'LatoBold' }}>
         Create Your Workspace
       </Text>
       <Text className="my-2 text-center  text-white" style={{ fontFamily: 'Lato-Light' }}>
@@ -158,21 +158,25 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
         />
       </View>
 
+      <View className="mb-4 mt-2.5 flex items-start px-5">
       <Text
-        className="mb-2 ml-1 mt-3 px-5 pt-2 text-base  text-white"
-        style={{ fontFamily: 'Lato-Light' }}>
+        className="mb-2  mt-3 pt-2 text-base  text-white"
+        style={{ fontFamily: 'Lato' }}>
         Select the categories that are relevant to your business
       </Text>
+      </View>
 
-      <View className="flex-row flex-wrap items-center justify-start px-5">
+
+
+      <View className="flex-row flex-wrap items-center justify-start px-6">
         {categories.map((category, index) => (
           <TouchableOpacity
             key={index}
             style={{
               width: itemWidth, // Adjust dynamically based on screen size
-              marginBottom: 14,
+              marginBottom: 10,
               backgroundColor: selectedCategories.includes(category) ? '#815BF5' : '#37384B', // Tailwind colors in hex
-              paddingVertical: Platform.OS === 'ios' ? 10 : 8,
+              paddingVertical: Platform.OS === 'ios' ? 9 : 6,
               borderRadius: 10, // Rounded full
               alignItems: 'center',
               marginLeft: 10,
@@ -200,7 +204,7 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
       )}
 
       <View className="mb-4 mt-2.5 flex items-center px-5">
-        <Text className="text-[12px]   text-white" style={{ fontFamily: 'Lato-Light' }}>
+        <Text className="text-[12px]   text-white" style={{ fontFamily: 'Lato' }}>
           Don't worry you can add more later in the Settings panel
         </Text>
       </View>

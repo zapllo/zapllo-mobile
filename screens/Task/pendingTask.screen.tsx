@@ -250,7 +250,7 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
                   />
                 ))
               ) : (
-                <Text>No pending tasks available.</Text>
+                <Text className='text-white text-2xl mt-20 '>No pending tasks available.</Text>
               )}
             </ScrollView>
 

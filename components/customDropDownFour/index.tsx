@@ -1,4 +1,5 @@
 import { AntDesign } from '@expo/vector-icons';
+import axios from 'axios';
 import React, { useState } from 'react';
 import {
   View,
@@ -8,7 +9,12 @@ import {
   ScrollView,
   StyleSheet,
   Image,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
+import { useSelector } from 'react-redux';
+import { backend_Host } from '~/config';
+import { RootState } from '~/redux/store';
 
 interface DropdownItem {
   label: string;
@@ -20,6 +26,9 @@ interface CustomDropdownProps {
   placeholder?: string;
   onSelect: (value: any) => void;
   selectedValue?: any;
+  setCategoryData: any;
+  onCreateCategory:any;
+  isLoading:any;
 }
 
 const CustomDropdownWithSearchAndAdd: React.FC<CustomDropdownProps> = ({
@@ -27,11 +36,18 @@ const CustomDropdownWithSearchAndAdd: React.FC<CustomDropdownProps> = ({
   placeholder = 'Select an option',
   onSelect,
   selectedValue,
+  onCreateCategory,
+  setCategoryData,
+  isLoading
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [newItem, setNewItem] = useState('');
   const [items, setItems] = useState<DropdownItem[]>(data);
+  const [newCategory, setNewCategory] = useState('');
+  const { token, userData } = useSelector((state: RootState) => state.auth);
+
+  // console.log("PPPPP",data)
 
   const handleSelect = (value: any) => {
     setIsOpen(false);
@@ -39,27 +55,37 @@ const CustomDropdownWithSearchAndAdd: React.FC<CustomDropdownProps> = ({
   };
 
   const addItem = () => {
-    if (newItem.trim()) {
-      const newItemObject = { label: newItem, value: newItem };
-      setItems([...items, newItemObject]);
-      setNewItem('');
+    if (newItem.trim() === '') {
+      Alert.alert('Error', 'Category name cannot be empty');
+      return;
     }
+  
+    const newCategoryItem = {
+      label: newItem,
+      value: newItem.toLowerCase().replace(/\s+/g, '_'), // Example value
+    };
+  
+    // Prepend the new category to the dropdown list
+    const updatedItems = [newCategoryItem, ...items];
+    setItems(updatedItems);
+    setCategoryData(updatedItems); // Update parent category data if needed
+    onCreateCategory(newItem); // Call parent-provided function for API handling
+  
+    setNewItem('');
   };
+  
 
-  const filteredData = items.filter((item) =>
-    item.label.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredData = data?.filter((item) =>
+    item?.label?.toLowerCase()?.includes(searchQuery?.toLowerCase())
   );
+
+console.log("oooooo::::::",filteredData)
 
   return (
     <View style={styles.dropdownContainer}>
-      <TouchableOpacity
-        style={styles.dropdownButton}
-        onPress={() => setIsOpen(!isOpen)}
-      >
+      <TouchableOpacity style={styles.dropdownButton} onPress={() => setIsOpen(!isOpen)}>
         <Text style={styles.dropdownButtonText}>
-          {selectedValue
-            ? items.find((item) => item.value === selectedValue)?.label
-            : placeholder}
+          {selectedValue ? items.find((item) => item.value === selectedValue)?.label : placeholder}
         </Text>
         <AntDesign
           name={isOpen ? 'caretup' : 'caretdown'}
@@ -84,20 +110,18 @@ const CustomDropdownWithSearchAndAdd: React.FC<CustomDropdownProps> = ({
           <ScrollView
             nestedScrollEnabled
             showsVerticalScrollIndicator={false}
-            style={{ maxHeight: 150 }}
-          >
+            style={{ maxHeight: 150 }}>
+              {console.log("❌❌❌❌11112222",filteredData)}
             {filteredData.map((item) => (
               <TouchableOpacity
                 key={item.value}
                 style={styles.dropdownItem}
-                onPress={() => handleSelect(item.value)}
-              >
+                onPress={() => handleSelect(item.value)}>
                 <Text
                   style={[
                     styles.dropdownItemText,
                     selectedValue === item.value && styles.selectedItemText,
-                  ]}
-                >
+                  ]}>
                   {item.label}
                 </Text>
                 {selectedValue === item.value && (
@@ -106,18 +130,30 @@ const CustomDropdownWithSearchAndAdd: React.FC<CustomDropdownProps> = ({
               </TouchableOpacity>
             ))}
           </ScrollView>
-          <View style={styles.addItemContainer}>
-            <TextInput
-              style={styles.addItemInput}
-              placeholder="create category"
-              placeholderTextColor="#6a6a6a"
-              value={newItem}
-              onChangeText={setNewItem}
-            />
-            <TouchableOpacity style={styles.addButton} onPress={addItem}>
-              <Image className='w-5 h-5' source={require("../../assets/Tasks/addIcon.png")}/>
-            </TouchableOpacity>
-          </View>
+          {userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin' ? (
+            <View style={styles.addItemContainer}>
+              <TextInput
+                style={styles.addItemInput}
+                placeholder="create category"
+                placeholderTextColor="#6a6a6a"
+                value={newItem}
+                onChangeText={setNewItem}
+              />
+             <TouchableOpacity
+                style={styles.addButton}
+                onPress={addItem}
+                disabled={isLoading} // Disable the button while loading
+              >
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Image className="h-5 w-5" source={require('../../assets/Tasks/addIcon.png')} />
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : (
+            ''
+          )}
         </View>
       )}
     </View>
@@ -152,7 +188,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginTop: 15,
     zIndex: 100,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -161,6 +197,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#05071E',
     borderBottomWidth: 1,
     borderBottomColor: '#37384B',
+    zIndex: 100,
     zIndex: 100,
   },
   searchIcon: {
@@ -214,7 +251,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(0 122 90)',
     paddingVertical: 12,
     paddingHorizontal: 12,
-    borderRadius: "50%",
+    borderRadius: '50%',
   },
   addButtonText: {
     color: '#FFFFFF',

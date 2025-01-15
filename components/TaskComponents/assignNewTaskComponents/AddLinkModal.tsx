@@ -7,7 +7,7 @@ interface LinkModalProps {
   isLinkModalVisible: boolean;
   setLinkModalVisible: (visible: boolean) => void;
   links: string[];
-  setLinks: (links: string[]) => void;
+  setLinks: any;
 }
 
 const AddLinkModal: React.FC<LinkModalProps> = ({

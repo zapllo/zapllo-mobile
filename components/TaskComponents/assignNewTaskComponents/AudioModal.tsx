@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 import { Audio } from 'expo-av';
 import Slider from '@react-native-community/slider';
 import { Entypo } from '@expo/vector-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import AudioVisualizer from './AudioVisualizer';
+import * as MediaLibrary from 'expo-media-library';
 
 interface AudioModalProps {
   isAudioModalVisible: any;
@@ -166,8 +167,8 @@ const AudioModal: React.FC<AudioModalProps> = ({
                 </Text>
               </TouchableOpacity>
             ) : (
-              <View className="flex flex-row gap-3  h-32 w-full items-center justify-center">
-              <AudioVisualizer recording={recording} />
+              <View className="flex h-32 w-full  flex-row items-center justify-center gap-3">
+                <AudioVisualizer recording={recording} />
                 <TouchableOpacity
                   onPress={stopRecording}
                   className="flex flex-row items-center justify-center gap-2 rounded-lg bg-white p-2">
@@ -218,20 +219,23 @@ const AudioModal: React.FC<AudioModalProps> = ({
               minimumTrackTintColor="#815BF5"
               maximumTrackTintColor="gray"
               thumbTintColor="#ffffff"
-              onValueChange={(value) => sound?.setPositionAsync(value)}
+              onValueChange={(value) => sound?.setPositionAsync(value * 1000)}
             />
           </View>
         )}
         <View className="mt-16 w-full">
           <TouchableOpacity
             onPress={() => {
-              if (audioUrl) setAudioModalVisible(false);
+              if (audioUrl) {
+                Alert.alert('Audio Added!');
+                setAudioModalVisible(false);
+              }
             }}
             className="mb-10 flex h-[4rem] items-center justify-center rounded-full bg-[#37384B] p-5">
             <Text
               className="text-center font-semibold text-white"
               style={{ fontFamily: 'Lato-Bold' }}>
-              Upload Documents
+              Upload Audio
             </Text>
           </TouchableOpacity>
         </View>

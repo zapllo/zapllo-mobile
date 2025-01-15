@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Platform,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Modal from 'react-native-modal';
 
@@ -24,34 +18,40 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
   onChange,
   onCancel,
 }) => {
+  const handleConfirm = () => {
+    onChange(selectedDate);
+    onCancel();
+  };
+
   return (
     <Modal
       isVisible={visible}
       onBackdropPress={onCancel}
-      style={{ justifyContent: 'center', alignItems: 'center' }}
-    >
+      style={{ justifyContent: 'center', alignItems: 'center' }}>
       <View style={styles.modalContainer}>
-        <Text style={styles.modalTitle}>
-          {mode === 'date' ? 'Select Date' : 'Select Time'}
-        </Text>
+        <Text style={styles.modalTitle}>{mode === 'date' ? 'Select Date' : 'Select Time'}</Text>
         <DateTimePicker
           value={selectedDate}
           mode={mode}
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'} // Use spinner for iOS
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={(event, date) => {
-            if (date) onChange(date); // Trigger the onChange only if a date is selected
+            if (date) onChange(date); // Pass valid date to parent
           }}
         />
-        {/* Add action buttons for better control */}
         {Platform.OS === 'ios' && (
           <View style={styles.actionsContainer}>
-            <TouchableOpacity onPress={onCancel} style={styles.actionButton}>
+            <TouchableOpacity
+              onPress={onCancel}
+              style={[styles.actionButton, styles.cancelButton]}
+              accessible={true}
+              accessibilityLabel="Cancel date selection">
               <Text style={styles.actionText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => onChange(selectedDate)}
-              style={styles.actionButton}
-            >
+              onPress={handleConfirm}
+              style={[styles.actionButton, styles.confirmButton]}
+              accessible={true}
+              accessibilityLabel="Confirm selected date or time">
               <Text style={styles.actionText}>Confirm</Text>
             </TouchableOpacity>
           </View>
@@ -76,15 +76,24 @@ const styles = StyleSheet.create({
   actionsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: 15,
   },
   actionButton: {
-    padding: 10,
-    marginHorizontal: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  cancelButton: {
+    backgroundColor: '#FF5C5C',
+  },
+  confirmButton: {
+    backgroundColor: '#4CAF50',
+    marginLeft:20
   },
   actionText: {
     color: '#FFFFFF',
     fontSize: 16,
+    textAlign: 'center',
   },
 });
 

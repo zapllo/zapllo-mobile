@@ -90,13 +90,14 @@ const styles = StyleSheet.create({
     borderColor: '#37384B',
     borderRadius: 22,
     paddingHorizontal: 10,
-    backgroundColor: '#05071E',
+    backgroundColor: '#0A0D28',
   },
   selectedTextStyle: {
     fontSize: 12,
     fontFamily:"Lato-Bold",
     color: 'white',
-    fontWeight: '300',
+    fontWeight: '600',
+    fontFamily:"LatoBold"
   },
   dropdownMenu: {
     backgroundColor: '#05071E',

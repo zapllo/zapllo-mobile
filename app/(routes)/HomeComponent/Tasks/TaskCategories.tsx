@@ -111,7 +111,7 @@ export default function TaskCategories() {
       >
         <View className="rounded-t-3xl bg-[#0A0D28] flex items-center flex-col pb-16 ">
                 <View className="flex px-6 py-5 w-full items-center flex-row  justify-between">
-                    <Text className="text-2xl font-bold text-white" style={{fontFamily:"Lato-Bold"}}>
+                    <Text className="text-2xl font-bold text-white" style={{fontFamily:"LatoBold"}}>
                     Filters
                     </Text>
 
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     padding: 8,
     color: '#787CA5',
     fontSize: 13,
-    fontFamily:"lato-bold"
+    fontFamily:"LatoBold"
   },
 
 

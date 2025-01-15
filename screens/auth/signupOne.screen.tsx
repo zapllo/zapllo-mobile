@@ -188,9 +188,9 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
           />
           {!showWorkspace && (
             <>
-            <View className="flex h-full w-full items-center">
+            <View className="flex h-full w-full items-center pb-14">
               <View className="mb-4 flex items-center justify-center gap-4 ">
-                <Text className="text-2xl  text-white" style={{fontFamily:"Lato-Bold"}}>Let’s Get Started</Text>
+                <Text className="text-2xl  text-white" style={{fontFamily:"LatoBold"}}>Let’s Get Started</Text>
                 <Text className="font-light text-white" style={{fontFamily:"Lato-Light"}}>
                   Let's get started by filling out the form below.
                 </Text>
@@ -319,7 +319,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
               <InputContainer
                 label="Email Address"
                 value={formData.email}
-                onChangeText={(text) => handleChange('email', text)}
+                onChangeText={(text) => handleChange('email', text.toLowerCase())}
                 placeholder="Email Address"
                 className="flex-1  text-[#787CA5]"
                 passwordError={''}
@@ -418,7 +418,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
               {buttonSpinner ? (
                 <ActivityIndicator size="small" color={'white'} />
               ) : (
-                <Text className="text-center font-semibold text-white" style={{fontFamily:"Lato-Bold"}}>
+                <Text className="text-center font-semibold text-white" style={{fontFamily:"LatoBold"}}>
                   {showWorkspace ? 'Sign Up' : 'Create Work Space'}
                 </Text>
               )}
@@ -466,7 +466,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
                     </Text>
                   )}
                 </TouchableOpacity>
-                <View className="flex-row items-center justify-center bg-primary py-5 mb-10">
+                <View className="flex-row  items-center justify-center bg-primary py-5 mb-10">
                   <View className="flex-row">
                     <Text className="text-base  text-white font-light" style={{fontFamily:"Lato-Thin"}}>Already a </Text>
                     <GradientText
@@ -475,7 +475,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
                     />
                   </View>
                   <TouchableOpacity onPress={() => router.push('/(routes)/login' as any)}>
-                    <Text className="text-base font-extrabold text-white" style={{fontFamily:"Lato-Bold"}}>? Login Here</Text>
+                    <Text className="text-base font-extrabold text-white" style={{fontFamily:"LatoBold"}}>? Login Here</Text>
                   </TouchableOpacity>
                 </View>
               </View>

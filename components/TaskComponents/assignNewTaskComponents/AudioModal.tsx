@@ -147,7 +147,7 @@ const AudioModal: React.FC<AudioModalProps> = ({
       animationOut="slideOutDown">
       <View className="rounded-t-3xl bg-[#0A0D28] p-5">
         <View className="mb-10 mt-2 flex w-full flex-row items-center justify-between">
-          <Text className="text-2xl font-semibold text-white" style={{ fontFamily: 'Lato-Bold' }}>
+          <Text className="text-2xl font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
             Add Audio
           </Text>
           <TouchableOpacity onPress={() => setAudioModalVisible(false)}>
@@ -162,7 +162,7 @@ const AudioModal: React.FC<AudioModalProps> = ({
                 onPress={startRecording}
                 className="flex h-32 w-full flex-row items-center justify-center gap-4 rounded-2xl border border-dashed border-[#815BF5]">
                 <Image className="h-9 w-9" source={require('../../../assets/Tasks/voice.png')} />
-                <Text className="text-white" style={{ fontFamily: 'Lato-Bold' }}>
+                <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>
                   Tap to Record Your Voice Note
                 </Text>
               </TouchableOpacity>
@@ -171,9 +171,9 @@ const AudioModal: React.FC<AudioModalProps> = ({
                 <AudioVisualizer recording={recording} />
                 <TouchableOpacity
                   onPress={stopRecording}
-                  className="flex flex-row items-center justify-center gap-2 rounded-lg bg-white p-2">
+                  className="flex flex-row h-20 w-20 items-center justify-center gap-2 rounded-3xl bg-white p-2">
                   <View className="h-4 w-4 bg-red-600"></View>
-                  <Text className="text-gray-500" style={{ fontFamily: 'Lato-Bold' }}>
+                  <Text className="text-gray-500" style={{ fontFamily: 'LatoBold' }}>
                     Stop
                   </Text>
                 </TouchableOpacity>

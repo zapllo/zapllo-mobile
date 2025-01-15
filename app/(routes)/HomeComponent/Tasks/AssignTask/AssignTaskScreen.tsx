@@ -286,7 +286,7 @@ export default function AssignTaskScreen() {
                 borderColor: isDescriptionFocused ? '#815BF5' : '#37384B',
               },
             ]}>
-            <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Task Description</Text>
+            <Text style={[styles.baseName, { fontFamily: 'LatoBold' }]}>Task Description</Text>
             <TextInput
               multiline
               style={[
@@ -303,9 +303,9 @@ export default function AssignTaskScreen() {
           </View>
 
             {/* selected users */}
-            <View className="mt-5 flex w-full flex-col items-center gap-2">
+            <View className="mt-2 flex w-full flex-col items-center gap-2">
               <View style={styles.input}>
-                <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>
+                <Text style={[styles.baseName, { fontFamily: 'LatoBold' }]}>
                   Select User
                 </Text>
                 <CustomDropdownComponentTwo
@@ -318,7 +318,7 @@ export default function AssignTaskScreen() {
               </View>
 
               <View style={styles.input}>
-                <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>
+                <Text style={[styles.baseName, { fontFamily: 'LatoBold' }]}>
                   Select Category
                 </Text>
                 <CustomDropdownComponentFour
@@ -333,15 +333,15 @@ export default function AssignTaskScreen() {
 
             {/* Task priority */}
             <View className="mt-6 flex w-[90%] flex-col items-start justify-start gap-3">
-              <Text className="text-white " style={{ fontFamily: 'lato-bold' }}>
+              <Text className="text-white " style={{ fontFamily: 'LatoBold' }}>
                 Task Priority
               </Text>
-              <View className="flex flex-row">
+              <View className="flex flex-row ">
                 <TouchableOpacity
                   className={
                     activeButton === 'firstHalf'
                       ? 'rounded-l-xl border border-[#37384B] bg-[#815BF5] '
-                      : 'rounded-l-xl border border-[#37384B] bg-transparent '
+                      : 'rounded-l-xl border border-[#37384B] bg-[#05071E]'
                   }
                   onPress={() => handleButtonPress('firstHalf')}>
                   <Text
@@ -369,7 +369,7 @@ export default function AssignTaskScreen() {
                         : 'p-3 text-sm text-[#787CA5]'
                     }
                     style={{ fontFamily: 'Lato-Thin' }}>
-                    medium
+                    Medium
                   </Text>
                 </TouchableOpacity>
 
@@ -395,7 +395,7 @@ export default function AssignTaskScreen() {
 
             <View className="mt-6 flex w-[90%] flex-row items-center justify-start gap-4">
               <CheckboxTwo isChecked={isChecked} onPress={() => setIsChecked(!isChecked)} />
-              <Text className="text-white" style={{ fontFamily: 'Lato-Bold' }}>
+              <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>
                 Repeat
               </Text>
             </View>
@@ -419,15 +419,24 @@ export default function AssignTaskScreen() {
             )}
 
             <View className="relative">
+              <TouchableOpacity
+              onPress={() => {
+                setShowPicker(true);
+                setMode('date'); // Open date picker first
+              }}
+              style={{ width: '100%' }} // Ensure the touchable area covers the entire input
+            >
               <InputContainer
                 label="Due Date"
                 value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
-                onChangeText={(value) => setDueDate(new Date(value))}
+                onChangeText={() => {}} // No-op since input is not editable
                 placeholder=""
                 className="flex-1 text-sm text-[#787CA5]"
                 passwordError={''}
                 style={{ paddingEnd: 45 }}
+                editable={false} // Make the input non-editable
               />
+            </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
                   setShowPicker(true);
@@ -489,7 +498,7 @@ export default function AssignTaskScreen() {
             </View>
 
             <View className="mb-10 mt-6 flex w-[90%] flex-row items-center justify-between">
-              <Text className="text-white" style={{ fontFamily: 'Lato-Bold' }}>
+              <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>
                 Assign More Task
               </Text>
               <View
@@ -512,7 +521,7 @@ export default function AssignTaskScreen() {
               className={`mb-10  flex h-[4rem] w-[90%] items-center justify-center rounded-full bg-[#37384B] p-5`}>
               <Text
                 className="text-center  font-semibold text-white"
-                style={{ fontFamily: 'Lato-Bold' }}>
+                style={{ fontFamily: 'LatoBold' }}>
                 Assign Task
               </Text>
             </TouchableOpacity>
@@ -576,9 +585,10 @@ const styles = StyleSheet.create({
   inputSome: {
     flex: 1,
     padding: 8,
-    color: '#787CA5',
+    color: 'white',
     fontSize: 13,
-    fontFamily: 'lato-bold',
+    fontFamily: 'LatoBold',
+    
   },
   modalContent: {
     backgroundColor: 'white',

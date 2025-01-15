@@ -72,7 +72,7 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ recording, barCount =
       // Calculate wave effect
       const phase = phases[index].value;
       const offset = (index / barCount) * (2 * Math.PI);
-      const wave = Math.sin(phase + offset) * 8;
+      const wave = Math.sin(phase + offset) * 6;
       
       // Combine base height with wave effect
       const height = Math.max(2, audioLevels[index].value + wave);

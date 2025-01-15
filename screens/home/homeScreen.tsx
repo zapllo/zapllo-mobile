@@ -147,7 +147,7 @@ const HomeScreen: React.FC = () => {
           {/* Progress Bar with Gradient */}
           <View className=" my-3 flex h-36 w-full flex-col items-center gap-6 rounded-2xl border border-[#37384B] bg-[#10122d] bg-opacity-50 pl-5  pr-5 pt-5">
             <View className="flex w-full  flex-row items-center justify-between">
-              <Text className="text-lg text-white " style={{fontFamily:"Lato-Bold"}}>App Usage Progress</Text>
+              <Text className="text-lg text-white " style={{fontFamily:"LatoBold"}}>App Usage Progress</Text>
               <TouchableOpacity className='border border-white w-8 h-8 items-center justify-center flex rounded-full'>
                 <Image className='w-3 h-3' source={require("../../assets/HomeComponents/goto.png")}/>
               </TouchableOpacity>
@@ -207,7 +207,7 @@ const HomeScreen: React.FC = () => {
                   source={item.image}
                 />
                 <View className="w-ull">
-                  <Text className="text-lg text-[#e3dcdc]" style={{fontFamily:"Lato-Bold"}}>{item.title}</Text>
+                  <Text className="text-lg text-[#e3dcdc]" style={{fontFamily:"LatoBold"}}>{item.title}</Text>
                   <Text className="text-[13px] text-[#a9a9a9]" style={{fontFamily:"Lato-Light"}}>{item.description}</Text>
                 </View>
               </View>

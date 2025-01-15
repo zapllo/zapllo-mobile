@@ -27,7 +27,7 @@ const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose })
         <View className="mb-10 mt-2 flex w-full flex-row items-center justify-between">
           <Text
             className="text-2xl font-semibold text-white"
-            style={{ fontFamily: "Lato-Bold" }}
+            style={{ fontFamily: "LatoBold" }}
           >
             More
           </Text>
@@ -45,7 +45,7 @@ const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose })
               <Image className="w-16 h-16" source={require("../../assets/More/AllTAsk.png")} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => handleNavigation("/(routes)/all-tasks")}>
-              <Text className="text-white" style={{ fontFamily: "Lato-bold" }}>All Tasks</Text>
+              <Text className="text-white" style={{ fontFamily: "LatoBold" }}>All Tasks</Text>
             </TouchableOpacity>
           </View>
 
@@ -54,7 +54,7 @@ const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose })
               <Image className="w-16 h-16" source={require("../../assets/More/myTeam.png")} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => handleNavigation("/(routes)/my-team")}>
-              <Text className="text-white" style={{ fontFamily: "Lato-bold" }}>My Team</Text>
+              <Text className="text-white" style={{ fontFamily: "LatoBold" }}>My Team</Text>
             </TouchableOpacity>
           </View>
 
@@ -63,7 +63,7 @@ const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose })
               <Image className="w-16 h-16" source={require("../../assets/More/categories.png")} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => handleNavigation("/(routes)/categories")}>
-              <Text className="text-white" style={{ fontFamily: "Lato-bold" }}>Categories</Text>
+              <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Categories</Text>
             </TouchableOpacity>
           </View>
 
@@ -72,7 +72,7 @@ const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose })
               <Image className="w-16 h-16" source={require("../../assets/More/settings.png")} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => handleNavigation("/(routes)/settings")}>
-              <Text className="text-white" style={{ fontFamily: "Lato-bold" }}>Settings</Text>
+              <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Settings</Text>
             </TouchableOpacity>
           </View>
         </View>

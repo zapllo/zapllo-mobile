@@ -66,7 +66,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
         </Text>
       </View>
 
-      <View className="mt-7 flex  w-[28vw] flex-row items-center ">
+      <View className="mt-10 flex  w-[28vw] flex-row items-center ">
         <View className=" flex flex-row items-start">
           <View className="flex w-full flex-row">
             {tasks
@@ -118,5 +118,5 @@ const TaskCard: React.FC<TaskCardProps> = ({
     </>
   );
 };
-
+ 
 export default TaskCard;

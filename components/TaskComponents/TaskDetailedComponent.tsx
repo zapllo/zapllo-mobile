@@ -26,7 +26,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
   return (
     <TouchableOpacity onPress={() => setModalVisible(true)}>
-      <View className="mt-5 h-56 w-[95%] items-center gap-6 self-center rounded-3xl border border-[#37384B] p-4">
+      <View className="mt-5 h-48 w-[95%] items-center gap-6 self-center rounded-3xl border border-[#37384B] p-4">
         <Modal
           isVisible={modalVisible}
           onBackdropPress={() => setModalVisible(false)}
@@ -41,7 +41,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
             <View className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20 mt-16">
               {/* title */}
               <View className=" mb-7 flex w-full flex-row items-center justify-between">
-                <Text className="text-xl font-semibold text-white">{title}</Text>
+                <Text className="text-xl font-semibold text-white" style={{fontFamily:"LatoBold"}}>{title}</Text>
                 <TouchableOpacity onPress={() => setModalVisible(false)}>
                   <Image
                     source={require('../../assets/commonAssets/cross.png')}
@@ -51,15 +51,15 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
               </View>
 
               {/* assigned by an assigned to */}
-              <View className="mb-6 flex w-full flex-row items-center justify-start gap-8 ">
+              <View className="mb-6 flex w-full flex-row items-center justify-start gap-32 ">
                 <View className="flex flex-col">
                   <Text className="text-xs text-[#787CA5]">Assigned by</Text>
-                  <Text className=" text-[#815BF5] text-sm" >{assignedBy}</Text>
+                  <Text className=" text-[#815BF5] text-lg" style={{fontFamily:"LatoBold"}}>{assignedBy}</Text>
                 </View>
 
                 <View className="flex flex-col">
                   <Text className="text-xs text-[#787CA5]">Assigned to</Text>
-                  <Text className="text-[#D85570] text-sm">{assignedTo}</Text>
+                  <Text className="text-[#D85570] text-lg" style={{fontFamily:"LatoBold"}}>{assignedTo}</Text>
                 </View>
               </View>
 
@@ -67,42 +67,42 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
               <View className="mb-6 flex w-full items-start gap-5 ">
                 <View className="flex flex-col">
                   <Text className="text-xs text-[#787CA5]">Created date</Text>
-                  <Text className="text-lg text-white">
+                  <Text className="text-lg text-white"style={{fontFamily:"LatoBold"}}>
                     {moment(task?.createdAt).format('ddd, MMMM D - hh:mm A')}
                   </Text>
                 </View>
 
                 <View className="flex flex-col">
                   <Text className="text-xs text-[#787CA5]">Due date</Text>
-                  <Text className="text-lg text-[#EF4444]">
+                  <Text className="text-lg text-[#EF4444]" style={{fontFamily:"LatoBold"}}>
                     {moment(task?.dueDate).format('ddd, MMMM D - hh:mm A')}
                   </Text>
                 </View>
               </View>
 
               {/* features */}
-              <View className="mb-6 flex w-full flex-row items-center justify-between pr-14">
+              <View className="mb-6 flex w-full flex-row items-center justify-start gap-32">
                 <View className="flex gap-3">
                   <View className="flex flex-col">
-                    <Text className="text-xs text-[#787CA5]">Frequency</Text>
-                    <Text className="text-lg text-white">Once</Text>
+                    <Text className="text-xs text-[#787CA5]" >Frequency</Text>
+                    <Text className="text-lg text-white" style={{fontFamily:"LatoBold"}}>Once</Text>
                   </View>
 
                   <View className="flex flex-col">
                     <Text className="text-xs text-[#787CA5]">Category</Text>
-                    <Text className="text-white">{category}</Text>
+                    <Text className="text-white  text-lg" style={{fontFamily:"LatoBold"}}>{category}</Text>
                   </View>
                 </View>
 
                 <View className="flex gap-3">
                   <View className="flex flex-col">
                     <Text className="text-xs text-[#787CA5]">Status</Text>
-                    <Text className="mt-1 text-[#815BF5]">{task?.status}</Text>
+                    <Text className="mt-1 text-[#815BF5] text-lg"style={{fontFamily:"LatoBold"}}>{task?.status}</Text>
                   </View>
 
                   <View className="mt-1 flex flex-col">
                     <Text className="text-xs text-[#787CA5]">Priority</Text>
-                    <Text className="text-[#EF4444]">{task?.priority}</Text>
+                    <Text className="text-[#EF4444] text-lg"style={{fontFamily:"LatoBold"}}>{task?.priority}</Text>
                   </View>
                 </View>
               </View>
@@ -170,7 +170,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   />
                   <Text className="text-xs text-[#787CA5]">Reminders</Text>
                 </View>
-                <Text className=" text-lg text-white">Wed, December 25 - 12:13 PM</Text>
+                <Text className=" text-lg text-white"style={{fontFamily:"LatoBold"}}>Wed, December 25 - 12:13 PM</Text>
               </View>
 
               {/* line */}
@@ -196,7 +196,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   </View>
 
                   <TouchableOpacity className="mb-4 flex items-center rounded-xl bg-[#815BF5] p-2 pl-3 pr-3">
-                    <Text className="text-[11px] text-white">In Progress</Text>
+                    <Text className="text-[11px] text-white"style={{fontFamily:"LatoBold"}}>In Progress</Text>
                   </TouchableOpacity>
                 </View>
                 {/* line */}
@@ -212,7 +212,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   </View>
 
                   <TouchableOpacity className="mb-4 flex items-center rounded-xl bg-[#007B5B] p-2 pl-3 pr-3">
-                    <Text className="text-[11px] text-white">Completed</Text>
+                    <Text className="text-[11px] text-white"style={{fontFamily:"LatoBold"}}>Completed</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -224,32 +224,32 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         </Modal>
 
         <View className="flex w-full flex-row items-center justify-between">
-          <Text className="font-semibold text-white ">{title}</Text>
+          <Text className="font-semibold text-white "style={{fontFamily:"LatoBold"}}>{title}</Text>
           <Image source={require('../../assets/commonAssets/threeDot.png')} className="h-6 w-5" />
         </View>
 
-        <View className="flex w-full flex-row items-start gap-14">
+        <View className="flex w-full flex-row items-start gap-16">
           <View className="flex gap-3">
             <View className="flex flex-col">
               <Text className="text-xs text-[#787CA5]">Due Date</Text>
-              <Text className="text-[#EF4444] ">{dueDate}</Text>
+              <Text className="text-[#EF4444] "style={{fontFamily:"LatoBold"}}>{dueDate}</Text>
             </View>
 
-            <View className="flex max-w-28 flex-col">
+            <View className="flex flex-col">
               <Text className="text-xs text-[#787CA5]">Assigned to</Text>
-              <Text className="text-[#D85570]">{assignedTo}</Text>
+              <Text className="text-[#D85570]"style={{fontFamily:"LatoBold"}}>{assignedTo}</Text>
             </View>
           </View>
 
           <View className="flex gap-3">
-            <View className="flex max-w-28 flex-col">
+            <View className="flex flex-col">
               <Text className="text-xs text-[#787CA5]">Assigned by</Text>
-              <Text className="text-[#815BF5] ">{assignedBy}</Text>
+              <Text className="text-[#815BF5] "style={{fontFamily:"LatoBold"}}>{assignedBy}</Text>
             </View>
 
             <View className="flex flex-col ">
               <Text className="text-xs text-[#787CA5]">Category</Text>
-              <Text className="text-[#FDB314]">{category}</Text>
+              <Text className="text-[#FDB314]"style={{fontFamily:"LatoBold"}}>{category}</Text>
             </View>
           </View>
         </View>

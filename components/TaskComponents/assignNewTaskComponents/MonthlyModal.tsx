@@ -6,9 +6,10 @@ import * as Haptics from 'expo-haptics';
 interface MonthlyModalProps {
   isVisible: boolean;
   onClose: () => void;
+  setMonthDays:any;
 }
 
-const MonthlyModal: React.FC<MonthlyModalProps> = ({ isVisible, onClose }) => {
+const MonthlyModal: React.FC<MonthlyModalProps> = ({ isVisible, onClose,setMonthDays }) => {
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
 
   const toggleDaySelection = (day: number) => {
@@ -20,6 +21,11 @@ const MonthlyModal: React.FC<MonthlyModalProps> = ({ isVisible, onClose }) => {
     // Trigger haptic feedback
     Haptics.selectionAsync();
   };
+
+  const handelConfirm =()=>{
+    setMonthDays(selectedDays);
+    onClose()
+  }
 
   return (
     <Modal
@@ -63,7 +69,7 @@ const MonthlyModal: React.FC<MonthlyModalProps> = ({ isVisible, onClose }) => {
 
         {/* Confirm button */}
         <View className='w-full flex justify-end items-end'>
-          <TouchableOpacity className='bg-[#46765f] w-1/3 items-center py-4 rounded-lg'>
+          <TouchableOpacity onPress={handelConfirm} className='bg-[#46765f] w-1/3 items-center py-4 rounded-lg'>
             <Text className='text-white'>Confirm</Text>
           </TouchableOpacity>
         </View>

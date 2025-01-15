@@ -3,7 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Image, TextInput } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import * as Haptics from 'expo-haptics';
-import Animated, { Easing, useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
+import { TouchableOpacity } from 'react-native';
 
 interface DropdownItem {
   label: string;
@@ -16,6 +22,7 @@ interface CustomDropdownProps {
   selectedValue: any;
   onSelect: (value: any) => void;
   placeholder?: string;
+  // onCreateCategory: (newCategory: string) => void;
 }
 
 const CustomDropdownComponentFour: React.FC<CustomDropdownProps> = ({
@@ -23,10 +30,13 @@ const CustomDropdownComponentFour: React.FC<CustomDropdownProps> = ({
   selectedValue,
   onSelect,
   placeholder = '',
+  onCreateCategory
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const dropdownHeight = useSharedValue(0);
+
+  console.log('okkkkk', data);
 
   useEffect(() => {
     dropdownHeight.value = withTiming(isDropdownOpen ? 200 : 0, {
@@ -40,30 +50,30 @@ const CustomDropdownComponentFour: React.FC<CustomDropdownProps> = ({
   }));
 
   const filteredData = data.filter((item) =>
-    item.label.toLowerCase().includes(searchQuery.toLowerCase())
+    item?.label?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const renderItem = (item: DropdownItem) => (
-    <View style={styles.itemContainer}>
-      <Text style={styles.itemLabel}>{item.label}</Text>
-      {item.value === selectedValue && (
-        <AntDesign name="checkcircle" size={16} color="#faf9fd" style={styles.selectedIcon} />
-      )}
-    </View>
+    
+      <View style={styles.itemContainer}>
+        <Text style={styles.itemLabel}>{item.label}</Text>
+        {item.value === selectedValue && (
+          <AntDesign name="checkcircle" size={16} color="#faf9fd" style={styles.selectedIcon} />
+        )}
+      </View>
+     
+   
   );
 
   return (
     <Dropdown
-      style={[
-        styles.dropdown,
-        isDropdownOpen ? styles.dropdownOpen : styles.dropdownClosed,
-      ]}
+      style={[styles.dropdown, isDropdownOpen ? styles.dropdownOpen : styles.dropdownClosed]}
       placeholderStyle={styles.placeholderStyle}
       selectedTextStyle={styles.selectedTextStyle}
       inputSearchStyle={styles.inputSearchStyle}
       search
-      searchPlaceholder='search'
-      searchPlaceholderTextColor='#b9bbe2c3'
+      searchPlaceholder="search"
+      searchPlaceholderTextColor="#b9bbe2c3"
       value={selectedValue}
       data={filteredData}
       labelField="label"
@@ -90,8 +100,7 @@ const CustomDropdownComponentFour: React.FC<CustomDropdownProps> = ({
       containerStyle={[
         styles.dropdownMenu,
         isDropdownOpen ? styles.dropdownMenuOpen : styles.dropdownMenuClosed,
-      ]}
-    >
+      ]}>
       <Animated.View style={[styles.searchContainer, animatedStyle]}>
         <AntDesign name="search1" size={16} color="#787CA5" style={styles.searchIcon} />
         <TextInput
@@ -111,7 +120,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: 50,
-    overflow: "hidden"
+    overflow: 'hidden',
   },
   dropdownOpen: {
     borderBottomLeftRadius: 12,
@@ -148,7 +157,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     margin: 8,
     zIndex: 4,
-    overflow: "hidden"
+    overflow: 'hidden',
   },
   dropdownMenuOpen: {
     borderRadius: 12,

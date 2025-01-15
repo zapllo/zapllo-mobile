@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Keyboard,
   Animated,
+  Alert,
 } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import Modal from 'react-native-modal';
@@ -67,6 +68,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
   const uploadDocuments = () => {
     console.log('Reminders Data:', reminders);
     setAddedReminders(reminders);
+    Alert.alert("Reminder Added!")
     setReminderModalVisible(false);
   };
 
@@ -125,7 +127,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
           </TouchableOpacity>
         </View>
 
-        <View className=" w-full items-center">
+        <View className=" w-full items-center gap-5">
           {reminders.map((reminder, index) => (
             <View className="flex w-full  flex-row items-center justify-between">
               <View style={styles.input} className="w-[30%]">
@@ -142,7 +144,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
                 onChangeText={(text) => updateReminder(index, 'value', parseInt(text) || 0)}
                 keyboardType="numeric"
                 placeholder=""
-                className="h-14 w-[20%] rounded-full border border-[#37384B] p-2  text-white"
+                className="h-14 w-[20%] rounded-full border border-[#37384B] p-2  text-white text-center"
               />
 
               <View style={styles.input} className="w-[30%]">

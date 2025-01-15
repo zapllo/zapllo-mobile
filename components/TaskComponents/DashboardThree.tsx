@@ -25,13 +25,13 @@ interface TaskCardProps {
   onPress: any;
 }
 
-const DashboardCard: React.FC<TaskCardProps> = ({ title, count, tasks, borderColor,onPress }) => {
+const DashboardThree: React.FC<TaskCardProps> = ({ title, count, tasks, borderColor,onPress }) => {
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
   const colors = ['#c3c5f7', '#ccc', '#fff', '#3399FF', '#FF33A6'];
 
-  const getInitials = (assignedUser: { firstName?: string; lastName?: string }): string => {
-    const firstInitial = assignedUser?.firstName ? assignedUser.firstName[0].toUpperCase() : '';
-    const lastInitial = assignedUser?.lastName ? assignedUser.lastName[0].toUpperCase() : '';
+  const getInitials = (task: { firstName?: string; lastName?: string }): string => {
+    const firstInitial = task?.firstName ? task.firstName[0].toUpperCase() : '';
+    const lastInitial = task?.lastName ? task.lastName[0].toUpperCase() : '';
     return firstInitial + lastInitial;
   };
 
@@ -67,7 +67,7 @@ const DashboardCard: React.FC<TaskCardProps> = ({ title, count, tasks, borderCol
                   <Text
                     className=" text-center text-sm text-black"
                     style={{ fontFamily: 'Lato-Thin' }}>
-                    {getInitials(task.assignedUser)}
+                    {getInitials(task)}
                   </Text>
                 </View>
               </View>
@@ -96,4 +96,4 @@ const DashboardCard: React.FC<TaskCardProps> = ({ title, count, tasks, borderCol
   );
 };
 
-export default DashboardCard;
+export default DashboardThree;

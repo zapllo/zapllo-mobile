@@ -38,6 +38,7 @@ import WeeklyModal from '~/components/TaskComponents/assignNewTaskComponents/Wee
 import MonthlyModal from '~/components/TaskComponents/assignNewTaskComponents/MonthlyModal';
 import SelectDateModal from '~/components/TaskComponents/assignNewTaskComponents/SelectDateModal';
 import CustomDropdownComponentFour from '~/components/customDropDownFour';
+import { AntDesign } from '@expo/vector-icons';
 
 //delete the data :)
 const daysData = [
@@ -82,7 +83,6 @@ export default function AssignTaskScreen() {
   const [links, setLinks] = useState([]);
   const [comments, setComments] = useState([]);
   const [addedReminder, setAddedReminders] = useState([]);
-  const [reminders, setReminders] = useState([]);
   const [isDescriptionFocused, setDescriptionFocused] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -95,6 +95,7 @@ export default function AssignTaskScreen() {
   const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());
   const [selectedTime, setSelectedTime] = React.useState<Date>(new Date());
   const [dueDate, setDueDate] = React.useState<Date | null>(null);
+  const [newCategory, setNewCategory] = useState('');
 
   const handleFocus = () => setDescriptionFocused(true);
   const handleBlur = () => setDescriptionFocused(false);
@@ -119,27 +120,28 @@ export default function AssignTaskScreen() {
         setLoading(false);
       }
     };
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get(`${backend_Host}/category/get`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        console.log('>>>>>>>>>>', response?.data?.data, token);
-        const formattedData = processCategoryData(response.data.data);
-        setCategoryData(formattedData);
-      } catch (err: any) {
-        setError('Failed to fetch tasks. Please try again.');
-        console.error('API Error:', err.response || err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchUsers();
     fetchCategories();
   }, [token]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${backend_Host}/category/get`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log('>>>>>>>>>>', response?.data?.data, token);
+      const formattedData = processCategoryData(response.data.data);
+      setCategoryData(formattedData);
+    } catch (err: any) {
+      setError('Failed to fetch tasks. Please try again.');
+      console.error('API Error:', err.response || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const processUserData = (data) => {
     return data.map((user) => ({
@@ -175,7 +177,6 @@ export default function AssignTaskScreen() {
   };
   console.log('Formatted Due Date:', moment(dueDate).format('MMMM Do YYYY, h:mm a'));
 
-
   const handleButtonPress = (button: string) => {
     setActiveButton(button);
     Haptics.selectionAsync();
@@ -198,18 +199,6 @@ export default function AssignTaskScreen() {
     setRepeatType('');
   };
 
-  const toggleSwitch = () => {
-    setIsOn((previousState) => !previousState);
-    resetForm();
-    Animated.timing(position, {
-      toValue: isOn ? 0 : 1,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-
-    Haptics.selectionAsync();
-  };
-
   const translateX = position.interpolate({
     inputRange: [0, 1],
     outputRange: [0, 32],
@@ -223,42 +212,56 @@ export default function AssignTaskScreen() {
     setMonthlyModalVisible(true);
   };
 
+  const assignTask = async () => {
+    await handleCreateTask();
+    if (!isOn) {
+      navigation.goBack(); // Navigate back only if the toggle is off
+    } else {
+      resetForm(); // Reset the form if the toggle is on
+    }
+  };
+
+  const toggleSwitch = () => {
+    setIsOn((previousState) => !previousState);
+    Animated.timing(position, {
+      toValue: isOn ? 0 : 1,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+    Haptics.selectionAsync();
+  };
+
   const handleCreateTask = async () => {
     if (!taskTitle.trim()) {
       Alert.alert('Validation Error', 'Task Title is required.');
-      setLoading(false);
       return;
     }
 
     if (!taskDescription.trim()) {
       Alert.alert('Validation Error', 'Task Description is required.');
-      setLoading(false);
       return;
     }
 
     if (!activeButton) {
       Alert.alert('Validation Error', 'Priority level must be selected.');
-      setLoading(false);
       return;
     }
 
     if (!selectedUser) {
       Alert.alert('Validation Error', 'A user must be assigned.');
-      setLoading(false);
       return;
     }
 
     if (!category.trim()) {
       Alert.alert('Validation Error', 'Category is required.');
-      setLoading(false);
       return;
     }
 
     if (!dueDate) {
       Alert.alert('Validation Error', 'A due date must be selected.');
-      setLoading(false);
       return;
     }
+
     setTaskLoading(true);
     const payload = {
       title: taskTitle,
@@ -280,36 +283,93 @@ export default function AssignTaskScreen() {
       comments,
       reminders: addedReminder,
     };
+
     try {
-      const response = await axios.post(`${backend_Host}/tasks/create`, payload);
+      const response = await axios.post(`${backend_Host}/tasks/create`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       console.log('Task Created:', response.data);
       Alert.alert('Task successfully created!');
-      // Navigate to another screen or reset form
-      navigation.goBack();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating task:', error.response?.data || error.message);
-      // Alert.alert('Failed to create task. Please try again.');
+      Alert.alert('Failed to create task. Please try again.');
     } finally {
       setTaskLoading(false);
     }
   };
 
-  const renderDropdownItem = (item: any, type: 'user' | 'category') => {
+  const handleCreateCategory = async () => {
+    if (!newCategory) {
+      Alert.alert('Validation Error', 'Enter new category');
+      return;
+    }
+    try {
+      const response = await axios.post(
+        `${backend_Host}/category/create`,
+        {
+          name: newCategory, // Assuming "name" is required by the API
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const newCategoryy = response.data; // Access the new category details from the response
+      console.log('Category created:', newCategoryy);
+
+      // Update category data
+      fetchCategories();
+      const updatedData = [...categoryData, { label: newCategoryy.name, value: newCategoryy.id }];
+      setCategoryData(updatedData);
+      setCategory(newCategoryy.id);
+      Alert.alert('New Category Added');
+    } catch (error) {
+      console.error('Error creating category:', error);
+      Alert.alert('Failed to create category. Please try again.');
+    } finally {
+      setNewCategory('');
+    }
+  };
+
+  const renderDropdownItem = (
+    item: { label: string; value: any },
+    type: 'user' | 'category',
+    isCreateOption: boolean = false // Flag for the "Create Category" option
+  ) => {
+    // Determine if the item is selected
     const isSelected = type === 'user' ? item.value === selectedUser : item.value === category;
 
     return (
       <TouchableOpacity
         style={[
           styles.itemStyle,
-          isSelected && styles.selectedDropdownItemStyle, // Highlight selected item
+          isSelected && styles.selectedDropdownItemStyle, // Highlight if selected
+          isCreateOption && styles.createCategoryStyle, // Style for the "Create" option
         ]}
-        onPress={() => (type === 'user' ? setSelectedUser(item.value) : setCategory(item.value))}>
+        onPress={() => {
+          if (isCreateOption) {
+            onCreateCategory(item.label); // Handle category creation
+          } else {
+            if (type === 'user') {
+              setSelectedUser(item.value);
+            } else {
+              setCategory(item.value);
+            }
+          }
+        }}>
         <Text
           style={[
             styles.itemTextStyle,
-            isSelected && styles.selectedTextStyle, // Apply selected text style
+            isSelected && styles.selectedTextStyle, // Apply text style for selected
+            isCreateOption && styles.createCategoryTextStyle, // Text style for "Create"
           ]}>
-          {item.label}
+          {isCreateOption ? `Create Category: "${item.label}"` : item.label}
         </Text>
       </TouchableOpacity>
     );
@@ -383,9 +443,27 @@ export default function AssignTaskScreen() {
                   selectedValue={category}
                   onSelect={(value) => setCategory(value)}
                   placeholder=""
-                  renderItem={(item) => renderDropdownItem(item, 'category')}
+                  // onCreateCategory={(newCategoryName:string) => handleCreateCategory(newCategoryName)}
                 />
               </View>
+              {userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin' ? (
+                <View style={styles.searchContainer}>
+                  <InputContainer
+                    label="Create Category"
+                    value={newCategory}
+                    onChangeText={setNewCategory}
+                    placeholder=""
+                    className="flex-1  text-sm text-[#787CA5]"
+                    passwordError={''}
+                  />
+
+                  <TouchableOpacity onPress={handleCreateCategory}>
+                    <AntDesign  className='mt-8' name="pluscircleo" size={30} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                ''
+              )}
             </View>
 
             {/* Task priority */}
@@ -531,7 +609,7 @@ export default function AssignTaskScreen() {
                   source={require('../../../../../assets/Tasks/Reminder.png')}
                 />
                 <Text className="mt-1 text-xs text-white" style={{ fontFamily: 'LatoBold' }}>
-                  {links.length > 0 ? `${links.length} Links` : ''}
+                  {links.length > 0 ? `` : ''}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setAudioModalVisible(true)}>
@@ -540,7 +618,7 @@ export default function AssignTaskScreen() {
                   source={require('../../../../../assets/Tasks/Audio.png')}
                 />
                 <Text className="text-sm text-white">
-                  {links.length > 0 ? `${links.length} Links` : ''}
+                  {links.length > 0 ? `` : ''}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -566,7 +644,7 @@ export default function AssignTaskScreen() {
             </View>
 
             <TouchableOpacity
-              onPress={handleCreateTask}
+              onPress={assignTask}
               disabled={taskLoading}
               className={`mb-10  flex h-[4rem] w-[90%] items-center justify-center rounded-full bg-[#37384B] p-5`}>
               {taskLoading ? (
@@ -642,7 +720,7 @@ const styles = StyleSheet.create({
   inputSome: {
     flex: 1,
     padding: 8,
-    color: '#787CA5',
+    color: '#fff',
     fontSize: 13,
     fontFamily: 'lato-bold',
   },
@@ -734,5 +812,22 @@ const styles = StyleSheet.create({
     borderBottomEndRadius: 15,
     borderBottomStartRadius: 15,
     margin: 8,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    backgroundColor: '#05071E',
+    gap:5,
+    borderBottomColor: '#37384B',
+    marginHorizontal: 20,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    color: '#FFFFFF',
   },
 });

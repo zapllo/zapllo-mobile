@@ -96,6 +96,7 @@ export default function AssignTaskScreen() {
   const [selectedTime, setSelectedTime] = React.useState<Date>(new Date());
   const [dueDate, setDueDate] = React.useState<Date | null>(null);
   const [newCategory, setNewCategory] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFocus = () => setDescriptionFocused(true);
   const handleBlur = () => setDescriptionFocused(false);
@@ -132,7 +133,7 @@ export default function AssignTaskScreen() {
           'Content-Type': 'application/json',
         },
       });
-      console.log('>>>>>>>>>>', response?.data?.data, token);
+      // console.log('>>>>>>>>>>', response?.data?.data, token);
       const formattedData = processCategoryData(response.data.data);
       setCategoryData(formattedData);
     } catch (err: any) {
@@ -169,10 +170,10 @@ export default function AssignTaskScreen() {
       combinedDate.setMinutes(date.getMinutes());
       setDueDate(combinedDate); // Update due date
       setShowPicker(false); // Close modal
-      console.log('Mode:', mode);
-      console.log('Selected Date:', selectedDate);
-      console.log('Selected Time:', selectedTime);
-      console.log('Combined Due Date:', dueDate);
+      // console.log('Mode:', mode);
+      // console.log('Selected Date:', selectedDate);
+      // console.log('Selected Time:', selectedTime);
+      // console.log('Combined Due Date:', dueDate);
     }
   };
   console.log('Formatted Due Date:', moment(dueDate).format('MMMM Do YYYY, h:mm a'));
@@ -291,7 +292,7 @@ export default function AssignTaskScreen() {
           'Content-Type': 'application/json',
         },
       });
-      console.log('Task Created:', response.data);
+      // console.log('Task Created:', response.data);
       Alert.alert('Task successfully created!');
     } catch (error) {
       console.error('Error creating task:', error.response?.data || error.message);
@@ -301,16 +302,18 @@ export default function AssignTaskScreen() {
     }
   };
 
-  const handleCreateCategory = async () => {
-    if (!newCategory) {
+  const handleCreateCategory = async (cat:string) => {
+    console.log('Category created:❌❌❌❌❌❌❌❌❌❌❌❌❌❌111111');
+    if (!cat) {
       Alert.alert('Validation Error', 'Enter new category');
       return;
     }
+    setIsLoading(true)
     try {
       const response = await axios.post(
         `${backend_Host}/category/create`,
         {
-          name: newCategory, // Assuming "name" is required by the API
+          name: cat, // Assuming "name" is required by the API
         },
         {
           headers: {
@@ -321,19 +324,19 @@ export default function AssignTaskScreen() {
       );
 
       const newCategoryy = response.data; // Access the new category details from the response
-      console.log('Category created:', newCategoryy);
 
       // Update category data
       fetchCategories();
       const updatedData = [...categoryData, { label: newCategoryy.name, value: newCategoryy.id }];
       setCategoryData(updatedData);
+      console.log('Category created:❌❌❌❌❌❌❌❌❌❌❌❌❌❌',updatedData);
       setCategory(newCategoryy.id);
-      Alert.alert('New Category Added');
+      Alert.alert('New Category Addedsssss');
     } catch (error) {
       console.error('Error creating category:', error);
       Alert.alert('Failed to create category. Please try again.');
-    } finally {
-      setNewCategory('');
+    }finally{
+      setIsLoading(false)
     }
   };
 
@@ -443,7 +446,9 @@ export default function AssignTaskScreen() {
                   selectedValue={category}
                   onSelect={(value) => setCategory(value)}
                   placeholder=""
-                  // onCreateCategory={(newCategoryName:string) => handleCreateCategory(newCategoryName)}
+                  onCreateCategory={(newCategoryName:string) => handleCreateCategory(newCategoryName)}
+                  setCategoryData={setCategoryData}
+                  isLoading={isLoading}
                 />
               </View>
               {userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin' ? (

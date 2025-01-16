@@ -1,20 +1,19 @@
-import axios from 'axios';
-import moment from 'moment';
 import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
   Image,
-  Button,
   TouchableOpacity,
-  Linking,
   ScrollView,
   TextInput,
   Alert,
+  Animated,
 } from 'react-native';
 import Modal from 'react-native-modal';
-import { backend_Host } from '~/config';
+import axios from 'axios';
+import moment from 'moment';
 import * as DocumentPicker from 'expo-document-picker';
+import { backend_Host } from '~/config';
 
 interface TaskDetailedComponentProps {
   title: string;
@@ -39,42 +38,48 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [showMainModal, setShowMainModal] = useState(false);
   const [description, setDescription] = useState('');
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [fileNames, setFileNames] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<(string | null)[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const handleMoveToProgress = () => {
-    setShowMainModal(false);
-    setShowProgressModal(true);
+    // Animate fade out
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowMainModal(false);
+      setShowProgressModal(true);
+      // Animate fade in
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    });
   };
 
   const handleFileSelect = async (index: number) => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: '*/*',
+        type: '/',
       });
-
-      console.log('Document Picker Result: ', result);
 
       if (result.canceled) {
         console.log('Document selection cancelled.');
       } else if (result.assets && result.assets.length > 0) {
         const { name, uri } = result.assets[0];
 
-        // Update URIs in attachments state for the selected index
         setAttachments((prev) => {
           const updated = [...prev];
           updated[index] = uri;
-          console.log('Updated Attachments URIs: ', updated);
           return updated;
         });
 
-        // Update file names in fileNames state for the selected index
         setFileNames((prev) => {
           const updated = [...prev];
           updated[index] = name;
-          console.log('Updated File Names: ', updated);
           return updated;
         });
       }
@@ -92,14 +97,12 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         userName: 'John Doe',
         fileUrl: attachments,
       };
-      console.log('payyyy', payload);
       const response = await axios.patch(`${backend_Host}/tasks/update`, payload, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
 
-      console.log('Task updated successfully:', response.data);
       setShowProgressModal(false);
       Alert.alert('Success', 'Task updated successfully!');
     } catch (error) {
@@ -107,8 +110,6 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
       Alert.alert('Error', 'Failed to update the task.');
     }
   };
-
-  console.log('>>>>>>>>>>>ppppp', task);
 
   return (
     <TouchableOpacity onPress={() => setModalVisible(true)}>
@@ -124,7 +125,12 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
             contentContainerStyle={{ flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled">
-            <View className="mt-16 rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
+            <Animated.View
+              style={{
+                opacity: fadeAnim,
+                transform: [{ scale: fadeAnim }],
+              }}
+              className="mt-16 rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
               {/* title */}
               <View className=" mb-7 flex w-full flex-row items-center justify-between">
                 <Text
@@ -335,6 +341,8 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   <Text className=" text-center font-medium text-white">Update task status</Text>
                 </TouchableOpacity>
               </View>
+
+              {/* task progress */}
               <Modal
                 isVisible={showMainModal}
                 onBackdropPress={null as any} // Prevent closing when clicking outside
@@ -371,6 +379,8 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   </View>
                 </View>
               </Modal>
+
+              {/* move to progress */}
               <Modal
                 isVisible={showProgressModal}
                 onBackdropPress={null as any} // Prevent closing when clicking outside
@@ -451,7 +461,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   </TouchableOpacity>
                 </View>
               </Modal>
-            </View>
+            </Animated.View>
           </ScrollView>
         </Modal>
 

@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   TouchableOpacity,
+  Dimensions
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Navbar from '~/components/navbar';
@@ -60,6 +61,7 @@ const daysData = [
 ];
 
 export default function MyTaskScreen() {
+  const screenHeight = Dimensions.get('window').height;
   const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
   const [tasks, setTasks] = useState<Task[]>([]); // Store tasks fetched from API
   const [tasksData, setTasksData] = useState<Task[]>([]);
@@ -331,7 +333,9 @@ export default function MyTaskScreen() {
                   {taskCounts.Completed}
                 </Text>
 
-                <View className="flex w-full flex-row items-center justify-between gap-20 pt-5">
+                <View className={`flex w-full flex-row items-center justify-between ${
+                  screenHeight > 900 ? 'pt-7' : 'pt-5'
+                }`}>
                   <View className="relative flex flex-row ">
                     {tasks
                       .filter((task) => task.status === 'Completed') // Filter by status
@@ -339,12 +343,12 @@ export default function MyTaskScreen() {
                       .map((task, index) => (
                         <View key={task._id} className="relative flex flex-row">
                           <View
-                            className="-m-1 h-10 w-10 rounded-full border-2 border-[#007B5B]"
+                            className="-m-1 flex h-11 w-11 items-center justify-center rounded-full border-2"
                             style={{
                               borderColor: '#007B5B',
                               backgroundColor: colors[index % colors.length], // Set background color
                             }}>
-                            <Text className=" mt-2 text-center text-sm  text-black">
+                            <Text className="text-center text-sm  text-black">
                               {getInitials(task?.assignedUser)} {/* Display initials */}
                             </Text>
                           </View>

@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   TouchableOpacity,
+  Dimensions
 } from 'react-native';
 import Navbar from '~/components/navbar';
 import CustomDropdown from '~/components/customDropDown';
@@ -81,6 +82,7 @@ export default function DashboardScreen() {
   const [delegatedData, setDelegatedData] = useState();
   const [categoryTasks, setCategoryTasks] = useState([]);
   const [groupedCategory, setGroupedCategory] = useState([]);
+  
   const [taskCounts, setTaskCounts] = useState<TaskStatusCounts>({
     Overdue: 0,
     Pending: 0,
@@ -106,6 +108,7 @@ export default function DashboardScreen() {
 
   const [selectedTeamSize, setSelectedTeamSize] = useState('This Week');
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
+
 
   const groupedByCategory = tasks.reduce((acc:any, task) => {
     const categoryName = task.category.name;

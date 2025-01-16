@@ -34,6 +34,7 @@ const daysData = [
 ];
 
 const DelegatedScreen: React.FC<Props> = ({ navigation }) => {
+  
   const route = useRoute<DelegatedScreenRouteProp>();
   const { employeeWiseData } = route.params;
   // const navigation = useNavigation<PendingTaskScreenRouteProp>();

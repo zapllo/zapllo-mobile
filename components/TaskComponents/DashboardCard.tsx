@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity,Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/core';
 import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
@@ -26,6 +26,7 @@ interface TaskCardProps {
 }
 
 const DashboardCard: React.FC<TaskCardProps> = ({ title, count, tasks, borderColor,onPress }) => {
+  const screenHeight = Dimensions.get('window').height;
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
   const colors = ['#c3c5f7', '#ccc', '#fff', '#3399FF', '#FF33A6'];
 
@@ -40,20 +41,22 @@ const DashboardCard: React.FC<TaskCardProps> = ({ title, count, tasks, borderCol
   return (
     <>
       <View className="flex items-start">
-        <Text className="w-[30vh] text-white text-lg" style={{ fontFamily: 'LatoBold' }}>
+        <Text className="w-[30vh] text-white mb-2" style={{ fontFamily: 'LatoBold' }}>
           {title}
         </Text>
         <Text
-          className="text-white text-5xl mt-4"
+          className="text-white text-5xl mt-1"
           style={{  fontFamily: 'LatoBold' }}>
           {count}
         </Text>
-        <Text className="w-[40vw] pt-2 text-sm text-white " style={{ fontFamily: 'LatoBold' }}>
+        <Text className="w-[40vw] pt-2 text-xs  text-white " style={{ fontFamily: 'LatoBold' }}>
           25th Dec, 2024
         </Text>
       </View>
 
-      <View className="mt-8 flex  w-[28vw] flex-row items-center ">
+      <View className={`flex w-[28vw] flex-row items-center ${
+        screenHeight > 900 ? 'mt-12' : 'mt-8'
+      }`}>
         <View className=" flex flex-row items-start">
           <View className="flex w-full flex-row">
             {tasks?.slice(0, 2).map((task, index) => (

@@ -228,7 +228,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
           <Image source={require('../../assets/commonAssets/threeDot.png')} className="h-6 w-5" />
         </View>
 
-        <View className="flex w-full flex-row items-start gap-16">
+        <View className="flex w-full flex-row items-start gap-20">
           <View className="flex gap-3">
             <View className="flex flex-col">
               <Text className="text-xs text-[#787CA5]">Due Date</Text>

@@ -7,6 +7,8 @@ import { useNavigation } from "expo-router";
 import { TouchableOpacity } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "~/redux/store";
+import SettingEditableComponent from "~/components/settings/SettingEditableComponent";
+import SettingEditableForNumberComponent from "~/components/settings/SettingEditableForNumberComponent";
 
 // Define the type for your navigation
 type RootStackParamList = {
@@ -44,7 +46,11 @@ export default function SettingScreen() {
               <View className="w-full items-start gap-2">
               <Text className="text-[#787CA5] text-sm mt-2 mb-1">Support</Text>
               <Text className="text-[#787CA5] ">Company Name</Text>
-              <Text className="text-white text-base">Zapllo Technologies PVT LTD</Text>
+              <SettingEditableComponent
+              title="Zapllo Technologies PVT LTD"
+              />
+              
+              
                 {/* line */}
                 <View className="h-0.5 w-full bg-[#37384B] mt-5 mb-8"></View>
               </View>
@@ -53,7 +59,9 @@ export default function SettingScreen() {
             {/* Industry */}
               <View className="w-full items-start gap-2">
               <Text className="text-[#787CA5] ">Industry</Text>
-              <Text className="text-white text-base">Technology</Text>
+              <SettingEditableComponent
+              title="Technology"
+              />
                 {/* line */}
                 <View className="h-0.5 w-full bg-[#37384B] mt-5 mb-8"></View>
               </View>
@@ -62,7 +70,9 @@ export default function SettingScreen() {
               {/* Company Description*/}
               <View className="w-full items-start gap-2">
                 <Text className="text-[#787CA5] ">Company Description</Text>
-                <Text className="text-white text-base">Information & Technology Company</Text>
+                <SettingEditableComponent
+                title="Information & Technology Company"
+                /> 
                 {/* line */}
                 <View className="h-0.5 w-full bg-[#37384B] mt-5 mb-8"></View>
               </View>
@@ -71,7 +81,9 @@ export default function SettingScreen() {
               {/* Team Size */}
               <View className="w-full items-start gap-2">
                 <Text className="text-[#787CA5] ">Team Size</Text>
-                <Text className="text-white text-base">10-20</Text>
+                <SettingEditableForNumberComponent
+                title="11-12"
+                />
                 {/* line */}
                 <View className="h-0.5 w-full bg-[#37384B] mt-5 mb-8"></View>
               </View>

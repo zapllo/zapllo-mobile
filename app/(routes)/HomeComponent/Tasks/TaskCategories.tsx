@@ -4,15 +4,13 @@ import { useNavigation } from 'expo-router';
 import { StackNavigationProp } from '@react-navigation/stack';
 import NavbarTwo from '~/components/navbarTwo';
 import GradientButton from '~/components/GradientButton';
-import CategoryComponent from './CategoryComponent';
-import Modal from 'react-native-modal';
-import CheckboxTwo from '~/components/CheckBoxTwo';
+import CategoryComponent from '../../../../components/Dashboard/CategoryComponent';
+
 
 export default function TaskCategories() {
   const navigation = useNavigation<StackNavigationProp<any>>();
   const [taskDescription, setTaskDescription] = useState("");
   const [isModalVisible, setModalVisible] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
   const [categories, setCategories] = useState<string[]>(['Automation', 'Customer Support']);
 
   const toggleModal = () => {

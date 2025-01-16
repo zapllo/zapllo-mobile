@@ -451,24 +451,7 @@ export default function AssignTaskScreen() {
                   isLoading={isLoading}
                 />
               </View>
-              {userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin' ? (
-                <View style={styles.searchContainer}>
-                  <InputContainer
-                    label="Create Category"
-                    value={newCategory}
-                    onChangeText={setNewCategory}
-                    placeholder=""
-                    className="flex-1  text-sm text-[#787CA5]"
-                    passwordError={''}
-                  />
 
-                  <TouchableOpacity onPress={handleCreateCategory}>
-                    <AntDesign  className='mt-8' name="pluscircleo" size={30} color="#fff" />
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                ''
-              )}
             </View>
 
             {/* Task priority */}
@@ -666,7 +649,7 @@ export default function AssignTaskScreen() {
               ) : (
                 <Text
                   className="text-center  font-semibold text-white"
-                  style={{ fontFamily: 'Lato-Bold' }}>
+                  style={{ fontFamily: 'LatoBold' }}>
                   Assign Task
                 </Text>
               )}

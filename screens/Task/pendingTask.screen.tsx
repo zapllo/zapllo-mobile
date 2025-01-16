@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,17 +9,15 @@ import {
   Keyboard,
   TextInput,
   Image,
-  KeyboardEvent,
-  FlatList,
+  
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
-import ProfileButton from '~/components/profile/ProfileButton';
+import { RouteProp, useRoute } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
+import ProfileButton from '~/components/profile/ProfileButton';
 import CustomDropdown from '~/components/customDropDown';
 import TaskDetailedComponent from '~/components/TaskComponents/TaskDetailedComponent';
-import Modal from 'react-native-modal';
-import { RouteProp, useRoute } from '@react-navigation/native';
-import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
+
 import { MyTasksStackParamList } from './myTask/MyTaskStack';
 
 type Props = StackScreenProps<MyTasksStackParamList, 'PendingTask'>;
@@ -40,62 +38,13 @@ const daysData = [
 
 const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<PendingTaskScreenRouteProp>();
-  const { pendingTasks } = route.params; // Safely access pendingTasks
+  const { pendingTasks } = route.params;
 
   const [selectedTeamSize, setSelectedTeamSize] = useState(null);
   const [search, setSearch] = useState('');
-  const [showMainModal, setShowMainModal] = useState(true);
-  const [showProgressModal, setShowProgressModal] = useState(false);
-  const [triggerProgressModal, setTriggerProgressModal] = useState(false);
-  const [description, setDescription] = useState('');
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  console.log('okkkkkkk>>>>>>>>>', pendingTasks);
-
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      (event: KeyboardEvent) => {
-        setKeyboardHeight(event.endCoordinates.height);
-      }
-    );
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardHeight(0);
-    });
-
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-  }, []);
-
-  const handleShowProgressModal = useCallback(() => {
-    setShowProgressModal(true);
-    setTriggerProgressModal(false);
-  }, []);
-
-  useEffect(() => {
-    if (triggerProgressModal) {
-      timerRef.current = setTimeout(handleShowProgressModal, 500);
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [triggerProgressModal, handleShowProgressModal]);
-
-  const handleMoveToProgress = () => {
-    setShowMainModal(false);
-    setTriggerProgressModal(true);
-  };
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
-      {/* Navbar */}
       <View className="flex h-20 w-full flex-row items-center justify-between p-5">
         <View className="flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-full bg-[#37384B]">
           <TouchableOpacity onPress={() => navigation.navigate('DashboardHome')}>
@@ -106,98 +55,6 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
         <ProfileButton />
       </View>
 
-      {/* Main Modal */}
-      <Modal
-        isVisible={showMainModal}
-        onBackdropPress={null as any} // Prevent closing when clicking outside
-        style={{ margin: 0, justifyContent: 'flex-end' }}
-        animationIn="slideInUp"
-        animationOut="slideOutDown">
-        <View className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
-          <View className="mb-14 mt-2 flex w-full flex-row items-center justify-between">
-            <Text className="text-xl font-semibold text-white">Task Progress</Text>
-            <TouchableOpacity onPress={() => setShowMainModal(false)}>
-              <Image source={require('../../assets/commonAssets/cross.png')} className="h-8 w-8" />
-            </TouchableOpacity>
-          </View>
-
-          <View className="flex flex-col gap-5">
-            <TouchableOpacity
-              onPress={handleMoveToProgress}
-              className="items-center rounded-full bg-[#A914DD] p-4">
-              <Text className="text-base font-medium text-white">Move to Progress</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity className="items-center rounded-full bg-[#007B5B] p-4">
-              <Text className="text-base font-medium text-white">Move to Completed</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Progress Modal */}
-      <Modal
-        isVisible={showProgressModal}
-        onBackdropPress={null as any} // Prevent closing when clicking outside
-        style={{ margin: 0, justifyContent: 'flex-end' }}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        useNativeDriver={false}>
-        <View
-          className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20"
-          style={{ marginBottom: keyboardHeight }}>
-          <View className="mb-6 mt-2 flex w-full flex-row items-center justify-between">
-            <Text className="text-xl font-semibold text-white">In Progress</Text>
-            <TouchableOpacity onPress={() => setShowProgressModal(false)}>
-              <Image source={require('../../assets/commonAssets/cross.png')} className="h-8 w-8" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Description */}
-          <View
-            className="mb-8 rounded-2xl border border-[#37384B] pl-6 pr-6"
-            style={{ height: 150, justifyContent: 'flex-start', alignItems: 'flex-start' }}>
-            <TextInput
-              multiline
-              className="text-white"
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Description"
-              placeholderTextColor="#787CA5"
-              style={{ textAlignVertical: 'top', paddingTop: 11, width: '100%', paddingBottom: 11 }}
-            />
-          </View>
-          {/* file and image upload */}
-          <View className="w-full ">
-            <View className=" flex w-full flex-row items-center gap-2">
-              <Image
-                source={require('../../assets/commonAssets/fileLogo.png')}
-                className="h-6 w-5"
-              />
-              <Text className="text-sm text-[#787CA5]">Files</Text>
-            </View>
-
-            <View className=" flex w-full flex-row items-center gap-3 pl-5 pt-1">
-              <Image
-                source={require('../../assets/commonAssets/fileUploadContainer.png')}
-                className="h-24 w-24"
-              />
-              <Image
-                source={require('../../assets/commonAssets/fileUploadContainer.png')}
-                className="h-24 w-24"
-              />
-              <Image
-                source={require('../../assets/commonAssets/fileUploadContainer.png')}
-                className="h-24 w-24"
-              />
-            </View>
-          </View>
-
-          <TouchableOpacity className=" mt-10 h-16 w-full items-center justify-center rounded-full bg-[#37384B]">
-            <Text className=" text-xl text-white">Update Task</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
@@ -205,7 +62,6 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled">
           <View className="mb-20 flex-1 items-center">
-            {/* Dropdown */}
             <View className="mb-3 mt-4 flex w-full items-center">
               <CustomDropdown
                 data={daysData}
@@ -215,7 +71,6 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
               />
             </View>
 
-            {/* Search Bar */}
             <View className="flex w-full flex-row items-center justify-center gap-5">
               <TextInput
                 value={search}
@@ -253,48 +108,6 @@ const PendingTaskScreen: React.FC<Props> = ({ navigation }) => {
                 <Text className='text-white text-2xl mt-20 '>No pending tasks available.</Text>
               )}
             </ScrollView>
-
-            {/* <FlatList
-              data={pendingTasks}
-              keyExtractor={(item) => item._id}
-              renderItem={({ item }) => (
-                <TaskDetailedComponent
-                  title={item.title}
-                  dueDate={new Date(item.dueDate).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                  assignedTo={`${item.assignedUser?.firstName} ${item.assignedUser?.lastName}`}
-                  assignedBy={`${item.user?.firstName} ${item.user?.lastName}`}
-                  category={item.category?.name}
-                />
-              )}
-              ListEmptyComponent={<Text>No pending tasks available.</Text>}
-            /> */}
-
-            {/* Task Boxes */}
-            {/* <TaskDetailedComponent
-              title="Zapllo design wireframe"
-              dueDate="Dec 25, 2024"
-              assignedTo="Deep Patel"
-              assignedBy="Subhadeep Banerjee"
-              category="Marketing"
-            />
-            <TaskDetailedComponent
-              title="New Marketing Campaign"
-              dueDate="Dec 28, 2024"
-              assignedTo="Alice Johnson"
-              assignedBy="John Smith"
-              category="Design"
-            />
-            <TaskDetailedComponent
-              title="Final Presentation"
-              dueDate="Jan 5, 2025"
-              assignedTo="Mike Ross"
-              assignedBy="Harvey Specter"
-              category="Sales"
-            /> */}
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>

@@ -23,7 +23,6 @@ import { RouteProp, useRoute } from '@react-navigation/native';
 import { MyTasksStackParamList } from './MyTaskStack';
 import axios from 'axios';
 import { backend_Host } from '~/config';
-import * as DocumentPicker from 'expo-document-picker';
 
 type Props = StackScreenProps<MyTasksStackParamList, 'PendingTask'>;
 type PendingTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'PendingTask'>;
@@ -47,114 +46,53 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
 
   const [selectedTeamSize, setSelectedTeamSize] = useState("This week");
   const [search, setSearch] = useState('');
-  const [showMainModal, setShowMainModal] = useState(true);
-  const [showProgressModal, setShowProgressModal] = useState(false);
-  const [triggerProgressModal, setTriggerProgressModal] = useState(false);
-  const [description, setDescription] = useState('');
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [fileNames, setFileNames] = useState<string[]>([]);
-  const [attachments, setAttachments] = useState<(string | null)[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  // const [showMainModal, setShowMainModal] = useState(true);
+  // const [showProgressModal, setShowProgressModal] = useState(false);
+  // const [triggerProgressModal, setTriggerProgressModal] = useState(false);
+ 
 
   console.log('00000000000', pendingTasks);
 
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      (event: KeyboardEvent) => {
-        setKeyboardHeight(event.endCoordinates.height);
-      }
-    );
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardHeight(0);
-    });
+  // useEffect(() => {
+  //   const keyboardDidShowListener = Keyboard.addListener(
+  //     'keyboardDidShow',
+  //     (event: KeyboardEvent) => {
+  //       setKeyboardHeight(event.endCoordinates.height);
+  //     }
+  //   );
+  //   const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+  //     setKeyboardHeight(0);
+  //   });
 
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-  }, []);
+  //   return () => {
+  //     keyboardDidShowListener.remove();
+  //     keyboardDidHideListener.remove();
+  //   };
+  // }, []);
 
-  const handleShowProgressModal = useCallback(() => {
-    setShowProgressModal(true);
-    setTriggerProgressModal(false);
-  }, []);
+  // const handleShowProgressModal = useCallback(() => {
+  //   setShowProgressModal(true);
+  //   setTriggerProgressModal(false);
+  // }, []);
 
-  useEffect(() => {
-    if (triggerProgressModal) {
-      timerRef.current = setTimeout(handleShowProgressModal, 500);
-    }
+  // useEffect(() => {
+  //   if (triggerProgressModal) {
+  //     timerRef.current = setTimeout(handleShowProgressModal, 500);
+  //   }
 
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [triggerProgressModal, handleShowProgressModal]);
+  //   return () => {
+  //     if (timerRef.current) {
+  //       clearTimeout(timerRef.current);
+  //       timerRef.current = null;
+  //     }
+  //   };
+  // }, [triggerProgressModal, handleShowProgressModal]);
 
-  const handleMoveToProgress = () => {
-    setShowMainModal(false);
-    setTriggerProgressModal(true);
-  };
-  const handleFileSelect = async (index: number) => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: '*/*',
-      });
-
-      console.log('Document Picker Result: ', result);
-
-      if (result.canceled) {
-        console.log('Document selection cancelled.');
-      } else if (result.assets && result.assets.length > 0) {
-        const { name, uri } = result.assets[0];
-
-        // Update URIs in attachments state for the selected index
-        setAttachments((prev) => {
-          const updated = [...prev];
-          updated[index] = uri;
-          console.log('Updated Attachments URIs: ', updated);
-          return updated;
-        });
-
-        // Update file names in fileNames state for the selected index
-        setFileNames((prev) => {
-          const updated = [...prev];
-          updated[index] = name;
-          console.log('Updated File Names: ', updated);
-          return updated;
-        });
-      }
-    } catch (err) {
-      console.error('Error picking document: ', err);
-    }
-  };
-
-  const updateTask = async () => {
-    try {
-      const payload = {
-        id: pendingTasks[0]._id,
-        status: 'InProgress',
-        comment: description,
-        userName: 'John Doe',
-        fileUrl: attachments,
-      };
-      console.log('payyyy', payload);
-      const response = await axios.patch(`${backend_Host}/tasks/update`, payload, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      console.log('Task updated successfully:', response.data);
-      setShowProgressModal(false);
-      Alert.alert('Success', 'Task updated successfully!');
-    } catch (error) {
-      console.error('Error updating task:', error);
-      Alert.alert('Error', 'Failed to update the task.');
-    }
-  };
+  // const handleMoveToProgress = () => {
+  //   setShowMainModal(false);
+  //   setTriggerProgressModal(true);
+  // };
+ 
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
@@ -170,110 +108,10 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
       </View>
 
       {/* Main Modal */}
-      <Modal
-        isVisible={showMainModal}
-        onBackdropPress={null as any} // Prevent closing when clicking outside
-        style={{ margin: 0, justifyContent: 'flex-end' }}
-        animationIn="slideInUp"
-        animationOut="slideOutDown">
-        <View className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
-          <View className="mb-14 mt-2 flex w-full flex-row items-center justify-between">
-            <Text className="text-xl font-semibold text-white">Task Progress</Text>
-            <TouchableOpacity onPress={() => setShowMainModal(false)}>
-              <Image source={require('~/assets/commonAssets/cross.png')} className="h-8 w-8" />
-            </TouchableOpacity>
-          </View>
-
-          <View className="flex flex-col gap-5">
-            <TouchableOpacity
-              onPress={() => {
-                handleMoveToProgress();
-              }}
-              className="items-center rounded-full bg-[#A914DD] p-4">
-              <Text className="text-base font-medium text-white">Move to Progress</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                handleMoveToProgress();
-              }}
-              className="items-center rounded-full bg-[#007B5B] p-4">
-              <Text className="text-base font-medium text-white">Move to Completed</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+     
 
       {/* Progress Modal */}
-      <Modal
-        isVisible={showProgressModal}
-        onBackdropPress={null as any} // Prevent closing when clicking outside
-        style={{ margin: 0, justifyContent: 'flex-end' }}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        useNativeDriver={false}>
-        <View
-          className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20"
-          style={{ marginBottom: keyboardHeight }}>
-          <View className="mb-6 mt-2 flex w-full flex-row items-center justify-between">
-            <Text className="text-xl font-semibold text-white">In Progress</Text>
-            <TouchableOpacity onPress={() => setShowProgressModal(false)}>
-              <Image source={require('~/assets/commonAssets/cross.png')} className="h-8 w-8" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Description */}
-          <View
-            className="mb-8 rounded-2xl border border-[#37384B] pl-6 pr-6"
-            style={{ height: 150, justifyContent: 'flex-start', alignItems: 'flex-start' }}>
-            <TextInput
-              multiline
-              className="text-white"
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Description"
-              placeholderTextColor="#787CA5"
-              style={{ textAlignVertical: 'top', paddingTop: 11, width: '100%', paddingBottom: 11 }}
-            />
-          </View>
-          {/* file and image upload */}
-          <View className="w-full ">
-            <View className=" flex w-full flex-row items-center gap-2">
-              <Image source={require('~/assets/commonAssets/fileLogo.png')} className="h-6 w-5" />
-              <Text className="text-sm text-[#787CA5]">Files</Text>
-            </View>
-
-            <View className=" flex w-full flex-row items-center justify-center gap-5 pl-5 pt-1">
-              {/* Upload file containers */}
-              {['0', '1', '2'].map((index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => handleFileSelect(Number(index))}
-                  className="flex h-24 w-24 items-center justify-center rounded-lg border border-[#37384B]">
-                  {/* If file URI exists, show the file name, else show the placeholder image */}
-                  {attachments[Number(index)] ? (
-                    <Image
-                      source={{ uri: attachments[Number(index)] }}
-                      className="h-24 w-24 rounded-lg"
-                    />
-                  ) : (
-                    <Image
-                      source={require('~/assets/commonAssets/fileUploadContainer.png')}
-                      className="h-24 w-24"
-                    />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          <TouchableOpacity
-            onPress={updateTask}
-            className=" mt-10 h-16 w-full items-center justify-center rounded-full bg-[#37384B]">
-            <Text className=" text-xl text-white">Update Task</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+      
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
@@ -323,6 +161,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
                     assignedBy={`${task.user?.firstName} ${task.user?.lastName}`}
                     category={task.category?.name}
                     task={task}
+                    taskId={task._id}
                   />
                 ))
               ) : (

@@ -1,20 +1,19 @@
-import axios from 'axios';
-import moment from 'moment';
 import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
   Image,
-  Button,
   TouchableOpacity,
-  Linking,
   ScrollView,
   TextInput,
   Alert,
+  Animated,
 } from 'react-native';
 import Modal from 'react-native-modal';
-import { backend_Host } from '~/config';
+import axios from 'axios';
+import moment from 'moment';
 import * as DocumentPicker from 'expo-document-picker';
+import { backend_Host } from '~/config';
 
 interface TaskDetailedComponentProps {
   title: string;
@@ -39,42 +38,48 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [showMainModal, setShowMainModal] = useState(false);
   const [description, setDescription] = useState('');
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [fileNames, setFileNames] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<(string | null)[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const handleMoveToProgress = () => {
-    setShowMainModal(false);
-    setShowProgressModal(true);
+    // Animate fade out
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowMainModal(false);
+      setShowProgressModal(true);
+      // Animate fade in
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    });
   };
 
   const handleFileSelect = async (index: number) => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: '*/*',
+        type: '/',
       });
-
-      console.log('Document Picker Result: ', result);
 
       if (result.canceled) {
         console.log('Document selection cancelled.');
       } else if (result.assets && result.assets.length > 0) {
         const { name, uri } = result.assets[0];
 
-        // Update URIs in attachments state for the selected index
         setAttachments((prev) => {
           const updated = [...prev];
           updated[index] = uri;
-          console.log('Updated Attachments URIs: ', updated);
           return updated;
         });
 
-        // Update file names in fileNames state for the selected index
         setFileNames((prev) => {
           const updated = [...prev];
           updated[index] = name;
-          console.log('Updated File Names: ', updated);
           return updated;
         });
       }
@@ -92,14 +97,12 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         userName: 'John Doe',
         fileUrl: attachments,
       };
-      console.log('payyyy', payload);
       const response = await axios.patch(`${backend_Host}/tasks/update`, payload, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
 
-      console.log('Task updated successfully:', response.data);
       setShowProgressModal(false);
       Alert.alert('Success', 'Task updated successfully!');
     } catch (error) {
@@ -107,8 +110,6 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
       Alert.alert('Error', 'Failed to update the task.');
     }
   };
-
-  console.log('>>>>>>>>>>>ppppp', task);
 
   return (
     <TouchableOpacity onPress={() => setModalVisible(true)}>
@@ -124,7 +125,12 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
             contentContainerStyle={{ flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled">
-            <View className="mt-16 rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
+            <Animated.View
+              style={{
+                opacity: fadeAnim,
+                transform: [{ scale: fadeAnim }],
+              }}
+              className="mt-16 rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
               {/* title */}
               <View className=" mb-7 flex w-full flex-row items-center justify-between">
                 <Text
@@ -335,6 +341,8 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   <Text className=" text-center font-medium text-white">Update task status</Text>
                 </TouchableOpacity>
               </View>
+
+              {/* task progress */}
               <Modal
                 isVisible={showMainModal}
                 onBackdropPress={null as any} // Prevent closing when clicking outside
@@ -371,6 +379,8 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   </View>
                 </View>
               </Modal>
+
+              {/* move to progress */}
               <Modal
                 isVisible={showProgressModal}
                 onBackdropPress={null as any} // Prevent closing when clicking outside
@@ -451,7 +461,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   </TouchableOpacity>
                 </View>
               </Modal>
-            </View>
+            </Animated.View>
           </ScrollView>
         </Modal>
 
@@ -497,231 +507,6 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         </View>
       </View>
     </TouchableOpacity>
-  );
-
-  // Render the main modal content
-  const renderMainModalContent = () => (
-    <ScrollView
-      contentContainerStyle={{ flexGrow: 1 }}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled">
-      <View className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20 mt-16">
-        <View className="mb-7 flex w-full flex-row items-center justify-between">
-          <Text className="text-xl font-semibold text-white" style={{ fontFamily: "LatoBold" }}>{title}</Text>
-          <TouchableOpacity onPress={handleMainModalToggle}>
-            <Image
-              source={require('../../assets/commonAssets/cross.png')}
-              className="h-8 w-8"
-            />
-          </TouchableOpacity>
-        </View>
-
-        {/* Task Details Section */}
-        <View className="mb-6 flex w-full flex-row items-center justify-start gap-32">
-          <View className="flex flex-col">
-            <Text className="text-xs text-[#787CA5]">Assigned by</Text>
-            <Text className="text-[#815BF5] text-lg" style={{ fontFamily: "LatoBold" }}>{assignedBy}</Text>
-          </View>
-
-          <View className="flex flex-col">
-            <Text className="text-xs text-[#787CA5]">Assigned to</Text>
-            <Text className="text-[#D85570] text-lg" style={{ fontFamily: "LatoBold" }}>{assignedTo}</Text>
-          </View>
-        </View>
-
-        {/* Dates Section */}
-        <View className="mb-6 flex w-full items-start gap-5">
-          <View className="flex flex-col">
-            <Text className="text-xs text-[#787CA5]">Created date</Text>
-            <Text className="text-lg text-white" style={{ fontFamily: "LatoBold" }}>
-              {moment(task?.createdAt).format('ddd, MMMM D - hh:mm A')}
-            </Text>
-          </View>
-
-          <View className="flex flex-col">
-            <Text className="text-xs text-[#787CA5]">Due date</Text>
-            <Text className="text-lg text-[#EF4444]" style={{ fontFamily: "LatoBold" }}>
-              {moment(task?.dueDate).format('ddd, MMMM D - hh:mm A')}
-            </Text>
-          </View>
-        </View>
-
-        {/* Task Status Section */}
-        <View className="mb-6 flex w-full flex-row items-center justify-start gap-32">
-          <View className="flex gap-3">
-            <View className="flex flex-col">
-              <Text className="text-xs text-[#787CA5]">Frequency</Text>
-              <Text className="text-lg text-white" style={{ fontFamily: "LatoBold" }}>Once</Text>
-            </View>
-
-            <View className="flex flex-col">
-              <Text className="text-xs text-[#787CA5]">Category</Text>
-              <Text className="text-white text-lg" style={{ fontFamily: "LatoBold" }}>{category}</Text>
-            </View>
-          </View>
-
-          <View className="flex gap-3">
-            <View className="flex flex-col">
-              <Text className="text-xs text-[#787CA5]">Status</Text>
-              <Text className="mt-1 text-[#815BF5] text-lg" style={{ fontFamily: "LatoBold" }}>{task?.status}</Text>
-            </View>
-
-            <View className="mt-1 flex flex-col">
-              <Text className="text-xs text-[#787CA5]">Priority</Text>
-              <Text className="text-[#EF4444] text-lg" style={{ fontFamily: "LatoBold" }}>{task?.priority}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Description Section */}
-        <View className="mb-6 flex w-full flex-col gap-1">
-          <Text className="text-xs text-[#787CA5]">Description</Text>
-          <Text className="text-base text-white">{task?.description}</Text>
-        </View>
-
-        <View className="mb-8 mt-2 h-0.5 w-full bg-[#37384B]" />
-
-        {/* Links Section */}
-        <View className="mb-6 flex flex-col gap-2">
-          <View className="flex flex-row items-center justify-start gap-2">
-            <Image
-              source={require('../../assets/commonAssets/links.png')}
-              className="h-5 w-5"
-            />
-            <Text className="text-xs text-[#787CA5]">Links</Text>
-          </View>
-
-          <View className="ml-6 gap-2">
-            {task?.links.map((link, index) => (
-              <TouchableOpacity key={index} onPress={() => Linking.openURL(link)}>
-                <Text style={{ color: '#815BF5' }}>{link}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Files Section */}
-        <View className="mb-6 flex w-full flex-col">
-          <View className="flex w-full flex-row items-center gap-2">
-            <Image
-              source={require('../../assets/commonAssets/fileLogo.png')}
-              className="h-6 w-5"
-            />
-            <Text className="text-xs text-[#787CA5]">Files</Text>
-          </View>
-
-          <View className="flex w-full flex-row items-center gap-3 pl-5 pt-1">
-            {[1, 2, 3].map((_, index) => (
-              <Image
-                key={index}
-                source={require('../../assets/commonAssets/fileUploadContainer.png')}
-                className="h-24 w-24"
-              />
-            ))}
-          </View>
-        </View>
-
-        {/* Reminders Section */}
-        <View className="mb-6 w-full flex-col gap-2">
-          <View className="flex w-full flex-row items-center gap-2">
-            <Image
-              source={require('../../assets/commonAssets/reminders.png')}
-              className="h-6 w-5"
-            />
-            <Text className="text-xs text-[#787CA5]">Reminders</Text>
-          </View>
-          <Text className="text-lg text-white" style={{ fontFamily: "LatoBold" }}>
-            Wed, December 25 - 12:13 PM
-          </Text>
-        </View>
-
-        <View className="mb-8 mt-2 h-0.5 w-full bg-[#37384B]" />
-
-        {/* Task Updates Section */}
-        <View className="mb-6 w-full flex-col gap-2">
-          <View className="mb-6 flex w-full flex-row items-center gap-2">
-            <Image
-              source={require('../../assets/commonAssets/allTasks.png')}
-              className="h-6 w-5"
-            />
-            <Text className="text-xs text-[#787CA5]">Task Updates</Text>
-          </View>
-
-          {/* Update Items */}
-          {[
-            { status: 'In Progress', bgColor: '#815BF5' },
-            { status: 'Completed', bgColor: '#007B5B' }
-          ].map((update, index) => (
-            <React.Fragment key={index}>
-              <View className="flex w-full flex-row items-center justify-between">
-                <View className="items-center-start flex flex-row gap-2">
-                  <View className="h-10 w-10 rounded-full bg-white" />
-                  <View>
-                    <Text className="text-lg text-white">{assignedBy}</Text>
-                    <Text className="text-xs text-[#787CA5]">a moment ago</Text>
-                  </View>
-                </View>
-
-                <TouchableOpacity 
-                  className="mb-4 flex items-center rounded-xl p-2 pl-3 pr-3"
-                  style={{ backgroundColor: update.bgColor }}>
-                  <Text className="text-[11px] text-white" style={{ fontFamily: "LatoBold" }}>
-                    {update.status}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <View className="mb-3 mt-3 h-0.5 w-full bg-[#37384B]" />
-            </React.Fragment>
-          ))}
-        </View>
-
-        {/* Open Nested Modal Button */}
-        <TouchableOpacity 
-          onPress={handleOpenNestedModal}
-          className="mt-4 bg-[#815BF5] p-3 rounded-xl">
-          <Text className="text-white text-center" style={{ fontFamily: "LatoBold" }}>
-            Open Nested Modal
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
-  );
-
-  return (
-    <View>
-      {renderTaskCard()}
-
-      {/* Main Modal */}
-      <Modal
-        isVisible={isMainModalVisible}
-        onBackdropPress={handleMainModalClose}
-        style={{ margin: 0, justifyContent: 'flex-end', marginTop: 10 }}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        useNativeDriver={false}
-        propagateSwipe={true}>
-        {renderMainModalContent()}
-      </Modal>
-
-      {/* Nested Modal */}
-      <Modal
-        isVisible={isNestedModalVisible}  // Nested modal visibility is independent
-        onBackdropPress={handleNestedModalClose}  // Close nested modal on backdrop press
-        onBackButtonPress={handleNestedModalClose} // Close nested modal on hardware back button
-        style={{ margin: 0, justifyContent: 'center' }}
-        animationIn="zoomIn"
-        animationOut="zoomOut"
-        useNativeDriver={false}
-        propagateSwipe={true}>
-        <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 16 }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Nested Modal</Text>
-          <Text>This is the content of the nested modal.</Text>
-          <TouchableOpacity onPress={handleNestedModalClose} style={{ marginTop: 16 }}>
-            <Text style={{ color: '#815BF5', textAlign: 'center', fontSize: 16 }}>Close</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-    </View>
   );
 };
 

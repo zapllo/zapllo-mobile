@@ -37,8 +37,8 @@ import { Button } from 'react-native';
 import WeeklyModal from '~/components/TaskComponents/assignNewTaskComponents/WeeklyModal';
 import MonthlyModal from '~/components/TaskComponents/assignNewTaskComponents/MonthlyModal';
 import SelectDateModal from '~/components/TaskComponents/assignNewTaskComponents/SelectDateModal';
-import CustomDropdownComponentFour from '~/components/customDropDownFour';
 import { AntDesign } from '@expo/vector-icons';
+import CustomDropdownWithSearchAndAdd from '~/components/customDropDownFour';
 
 //delete the data :)
 const daysData = [
@@ -434,14 +434,14 @@ export default function AssignTaskScreen() {
                   data={users}
                   selectedValue={selectedUser}
                   onSelect={(value) => setSelectedUser(value)}
-                  placeholder="Select a user"
+                  placeholder=""
                   renderItem={(item) => renderDropdownItem(item, 'user')}
                 />
               </View>
 
               <View style={styles.input}>
                 <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Select Category</Text>
-                <CustomDropdownComponentFour
+                <CustomDropdownWithSearchAndAdd
                   data={categoryData}
                   selectedValue={category}
                   onSelect={(value) => setCategory(value)}

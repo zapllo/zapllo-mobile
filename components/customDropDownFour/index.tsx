@@ -31,7 +31,7 @@ interface CustomDropdownProps {
   isLoading:any;
 }
 
-const CustomDropdownComponentFour: React.FC<CustomDropdownProps> = ({
+const CustomDropdownWithSearchAndAdd: React.FC<CustomDropdownProps> = ({
   data,
   placeholder = 'Select an option',
   onSelect,
@@ -198,6 +198,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#37384B',
     zIndex: 100,
+    zIndex: 100,
   },
   searchIcon: {
     marginRight: 10,
@@ -258,4 +259,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomDropdownComponentFour;
+export default CustomDropdownWithSearchAndAdd;

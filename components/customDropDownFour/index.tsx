@@ -6,7 +6,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
+  FlatList,
   StyleSheet,
   Image,
   Alert,
@@ -27,8 +27,8 @@ interface CustomDropdownProps {
   onSelect: (value: any) => void;
   selectedValue?: any;
   setCategoryData: any;
-  onCreateCategory:any;
-  isLoading:any;
+  onCreateCategory: any;
+  isLoading: any;
 }
 
 const CustomDropdownWithSearchAndAdd: React.FC<CustomDropdownProps> = ({
@@ -38,16 +38,13 @@ const CustomDropdownWithSearchAndAdd: React.FC<CustomDropdownProps> = ({
   selectedValue,
   onCreateCategory,
   setCategoryData,
-  isLoading
+  isLoading,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [newItem, setNewItem] = useState('');
   const [items, setItems] = useState<DropdownItem[]>(data);
-  const [newCategory, setNewCategory] = useState('');
   const { token, userData } = useSelector((state: RootState) => state.auth);
-
-  // console.log("PPPPP",data)
 
   const handleSelect = (value: any) => {
     setIsOpen(false);
@@ -59,27 +56,23 @@ const CustomDropdownWithSearchAndAdd: React.FC<CustomDropdownProps> = ({
       Alert.alert('Error', 'Category name cannot be empty');
       return;
     }
-  
+
     const newCategoryItem = {
       label: newItem,
-      value: newItem.toLowerCase().replace(/\s+/g, '_'), // Example value
+      value: newItem.toLowerCase().replace(/\s+/g, '_'),
     };
-  
-    // Prepend the new category to the dropdown list
+
     const updatedItems = [newCategoryItem, ...items];
     setItems(updatedItems);
-    setCategoryData(updatedItems); // Update parent category data if needed
-    onCreateCategory(newItem); // Call parent-provided function for API handling
-  
+    setCategoryData(updatedItems);
+    onCreateCategory(newItem);
+
     setNewItem('');
   };
-  
 
   const filteredData = data?.filter((item) =>
     item?.label?.toLowerCase()?.includes(searchQuery?.toLowerCase())
   );
-
-console.log("oooooo::::::",filteredData)
 
   return (
     <View style={styles.dropdownContainer}>
@@ -107,29 +100,31 @@ console.log("oooooo::::::",filteredData)
               onChangeText={setSearchQuery}
             />
           </View>
-          <ScrollView
-            nestedScrollEnabled
-            showsVerticalScrollIndicator={false}
-            style={{ maxHeight: 150 }}>
-              {console.log("❌❌❌❌11112222",filteredData)}
-            {filteredData.map((item) => (
+          <FlatList
+            data={filteredData}
+            keyExtractor={(item) => item.value}
+            renderItem={({ item }) => (
               <TouchableOpacity
-                key={item.value}
                 style={styles.dropdownItem}
-                onPress={() => handleSelect(item.value)}>
+                onPress={() => handleSelect(item.value)}
+              >
                 <Text
                   style={[
                     styles.dropdownItemText,
                     selectedValue === item.value && styles.selectedItemText,
-                  ]}>
+                  ]}
+                >
                   {item.label}
                 </Text>
                 {selectedValue === item.value && (
                   <AntDesign name="checkcircle" size={16} color="#f8f8fb" style={styles.itemIcon} />
                 )}
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            )}
+            nestedScrollEnabled
+            showsVerticalScrollIndicator={false}
+            style={{ maxHeight: 150 }}
+          />
           {userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin' ? (
             <View style={styles.addItemContainer}>
               <TextInput
@@ -139,10 +134,10 @@ console.log("oooooo::::::",filteredData)
                 value={newItem}
                 onChangeText={setNewItem}
               />
-             <TouchableOpacity
+              <TouchableOpacity
                 style={styles.addButton}
                 onPress={addItem}
-                disabled={isLoading} // Disable the button while loading
+                disabled={isLoading}
               >
                 {isLoading ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
@@ -197,7 +192,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#05071E',
     borderBottomWidth: 1,
     borderBottomColor: '#37384B',
-    zIndex: 100,
     zIndex: 100,
   },
   searchIcon: {

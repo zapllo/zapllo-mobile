@@ -1,6 +1,6 @@
 import { AntDesign } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Image, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, Image, TextInput, TouchableOpacity, FlatList } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
 interface DropdownItem {
@@ -66,14 +66,11 @@ const CustomDropdownComponentTwo: React.FC<CustomDropdownProps> = ({
               onChangeText={setSearchQuery}
             />
           </View>
-          <ScrollView
-            nestedScrollEnabled
-            showsVerticalScrollIndicator={false}
-            style={{ maxHeight: 150 }}
-          >
-            {filteredData.map((item) => (
+          <FlatList
+            data={filteredData}
+            keyExtractor={(item) => item.value.toString()}
+            renderItem={({ item }) => (
               <TouchableOpacity
-                key={item.value}
                 style={styles.dropdownItem}
                 onPress={() => handleSelect(item.value)}
               >
@@ -96,8 +93,11 @@ const CustomDropdownComponentTwo: React.FC<CustomDropdownProps> = ({
                   )}
                 </View>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            )}
+            nestedScrollEnabled
+            showsVerticalScrollIndicator={false}
+            style={{ maxHeight: 150 }}
+          />
         </View>
       )}
     </View>

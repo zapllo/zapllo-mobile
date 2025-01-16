@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/core';
 import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
@@ -41,6 +41,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
 }) => {
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
   const colors = ['#c3c5f7', '#ccc', '#fff', '#3399FF', '#FF33A6'];
+  const screenHeight = Dimensions.get('window').height;
 
   const getInitials = (assignedUser: { firstName?: string; lastName?: string }): string => {
     const firstInitial = assignedUser?.firstName ? assignedUser.firstName[0].toUpperCase() : '';
@@ -66,7 +67,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
         </Text>
       </View>
 
-      <View className="mt-10 flex  w-[28vw] flex-row items-center ">
+      <View className={`flex w-[28vw] flex-row items-center ${
+        screenHeight > 900 ? 'mt-12' : 'mt-8'
+      }`}>
         <View className=" flex flex-row items-start">
           <View className="flex w-full flex-row">
             {tasks

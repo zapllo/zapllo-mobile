@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Navbar from '~/components/navbar';
@@ -61,6 +62,7 @@ const daysData = [
 ];
 
 export default function DelegatedTaskScreen() {
+  const screenHeight = Dimensions.get('window').height;
   const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
   const [tasks, setTasks] = useState<Task[]>([]); // Store tasks fetched from API
   const [tasksData, setTasksData] = useState<Task[]>([]);
@@ -336,14 +338,16 @@ export default function DelegatedTaskScreen() {
               </View>
               <View className="mb-2 mt-2 h-[167px] w-[93%] rounded-3xl bg-[#007B5B] p-5 pb-7 pt-7 ">
                 <View className=" flex w-full flex-row items-center justify-between">
-                  <Text className="text-white ">Completed Tasks</Text>
+                  <Text className="text-white " style={{ fontFamily: 'LatoBold' }}>Completed Tasks</Text>
                   <Text className="text-xs text-white">22-12-2024 to 28-12-2024</Text>
                 </View>
-                <Text className=" mt-2  text-white" style={{ fontSize: 34 }}>
+                <Text className=" mt-2  text-white text-5xl" style={{ fontFamily: 'LatoBold' }}>
                   {taskCounts.Completed}
                 </Text>
 
-                <View className="flex w-full flex-row items-center justify-between gap-20 pt-5">
+                <View className={`flex w-full flex-row items-center justify-between ${
+                  screenHeight > 900 ? 'pt-7' : 'pt-5'
+                }`}>
                   <View className="relative flex flex-row ">
                     {tasks
                       .filter((task) => task.status === 'Completed') // Filter by status
@@ -351,12 +355,12 @@ export default function DelegatedTaskScreen() {
                       .map((task, index) => (
                         <View key={task._id} className="relative flex flex-row">
                           <View
-                            className="-m-1 h-9 w-9 rounded-full border border-[#007B5B]"
+                            className="-m-1 flex h-11 w-11 items-center justify-center rounded-full border-2"
                             style={{
                               borderColor: '#007B5B',
                               backgroundColor: colors[index % colors.length], // Set background color
                             }}>
-                            <Text className=" mt-2 text-center text-sm  text-black">
+                            <Text className=" text-center text-sm  text-black">
                               {getInitials(task?.assignedUser)} {/* Display initials */}
                             </Text>
                           </View>
@@ -377,7 +381,7 @@ export default function DelegatedTaskScreen() {
                     )}
                   </View>
 
-                  <View className=" flex h-8 w-8 items-center justify-center rounded-full border border-white ">
+                  <View className=" -mt-4 flex h-11 w-14 items-center justify-center self-end rounded-full border border-white ">
                     <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                   </View>
                 </View>

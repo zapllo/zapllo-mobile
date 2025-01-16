@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Modal from 'react-native-modal';
+import * as Haptics from 'expo-haptics';
 
 interface SelectDateModalProps {
   visible: boolean;
@@ -19,7 +20,13 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
   onCancel,
 }) => {
   const handleConfirm = () => {
+    Haptics.selectionAsync(); // Trigger haptic feedback
     onChange(selectedDate);
+    onCancel();
+  };
+
+  const handleCancel = () => {
+    Haptics.selectionAsync(); // Trigger haptic feedback
     onCancel();
   };
 
@@ -41,7 +48,7 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
         {Platform.OS === 'ios' && (
           <View style={styles.actionsContainer}>
             <TouchableOpacity
-              onPress={onCancel}
+              onPress={handleCancel}
               style={[styles.actionButton, styles.cancelButton]}
               accessible={true}
               accessibilityLabel="Cancel date selection">
@@ -52,7 +59,7 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
               style={[styles.actionButton, styles.confirmButton]}
               accessible={true}
               accessibilityLabel="Confirm selected date or time">
-              <Text style={styles.actionText}>Confirm</Text>
+              <Text style={[styles.actionText, { color: '#5367cb' }]}>Confirm</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -83,17 +90,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 5,
   },
-  cancelButton: {
-    backgroundColor: '#FF5C5C',
-  },
+  cancelButton: {},
   confirmButton: {
-    backgroundColor: '#4CAF50',
-    marginLeft:20
+    marginLeft: 15,
   },
   actionText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: '#cb5353',
+    fontSize: 15,
     textAlign: 'center',
+    fontWeight: '600',
   },
 });
 

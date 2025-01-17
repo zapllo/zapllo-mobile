@@ -3,7 +3,7 @@ import React from "react";
 
 import { StackNavigationProp } from "@react-navigation/stack";
 import NavbarTwo from "~/components/navbarTwo";
-import { useNavigation } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import { TouchableOpacity } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "~/redux/store";
@@ -37,7 +37,7 @@ export default function SettingScreen() {
             {/* Navbar */}
             <NavbarTwo
                 title="Settings"
-                onBackPress={() => navigation.navigate("(routes)/home/index")}
+                onBackPress={() => navigation.goBack()}
             />
 
             <View className="flex items-center w-[90%] ml-5 mr-5 mt-3  h-full mb-12 ">
@@ -111,7 +111,9 @@ export default function SettingScreen() {
                    {/* Task App Seeting */}
                   <View className="w-full item-start gap-4">
                   <Text className="text-[#787CA5] mt-9">Task App Seeting</Text>
-                      <TouchableOpacity className="flex  pr-2 flex-row items-center justify-between w-full">
+                      <TouchableOpacity 
+                      onPress={() => router.push("/(routes)/settings/notification" as any)}
+                      className="flex  pr-2 flex-row items-center justify-between w-full">
                         <Text className="text-white text-base">Notifications & Reminders</Text>
                           <Image 
                           source={require("../../assets/commonAssets/smallGoto.png")}

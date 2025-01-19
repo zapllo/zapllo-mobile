@@ -5,6 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import NavbarTwo from '~/components/navbarTwo';
 import GradientButton from '~/components/GradientButton';
 import CategoryComponent from '../../../../components/Dashboard/CategoryComponent';
+import Navbar from '~/components/navbar';
 
 
 export default function TaskCategories() {
@@ -26,19 +27,21 @@ export default function TaskCategories() {
       <KeyboardAvoidingView
         className="w-full"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <NavbarTwo
+        <Navbar
           title="Task Categories"
-          onBackPress={() => navigation.navigate('(routes)/home/index')}
+          
         />
         <ScrollView
           className="h-full w-full flex-grow"
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
           <View className="h-full w-full items-center pb-20">
+
+
             <View
               style={[
                 styles.input,
-                { height: 57, justifyContent: 'flex-start', alignItems: 'flex-start', width: "90%", marginBottom: 34, marginTop: 20 },
+                { height: 57, justifyContent: 'flex-start', alignItems: 'flex-start', width: "90%", marginBottom: 30, marginTop: 20 },
               ]}>
               <TextInput
                 multiline
@@ -50,6 +53,24 @@ export default function TaskCategories() {
                 onChangeText={(value) => setTaskDescription(value)}
                 placeholder="Search Category"
                 placeholderTextColor="#787CA5"></TextInput>
+            </View>
+
+            <View className='w-[90%] border mb-8 border-[#37384B] py-5 px-7 rounded-3xl gap-4 flex flex-col' >
+              <View className='w-full items-center justify-between flex flex-row'>
+                <View className=' items-center flex flex-row gap-5'>
+                  <Image className='h-7 w-7' source={require("../../../../assets/ZAi/Ai.png")}/>
+                  <Image className='h-[24px] w-[108px]   ' source={require("../../../../assets/ZAi/ZaplloAi.png")}/>
+                </View>
+                <TouchableOpacity className=''>
+                  <Image className='w-8 h-8' source={require("../../../../assets/Tasks/add.png")}/>
+                </TouchableOpacity>
+              </View>
+              <Text className='text-sm text-[#787CA5]'>Use our intelligent AI engine to analyze your industry and carefully curate a selection of categories for your workflow.</Text>
+            </View>
+            
+
+            <View className='w-[90%] mb-5 items-start'>
+            <Text className='text-sm text-[#787CA5]'>Categories</Text>
             </View>
 
             {categories.map((category, index) => (

@@ -14,10 +14,8 @@ import {
 import NavbarTwo from '~/components/navbarTwo';
 import { router, useNavigation } from 'expo-router';
 import { StackNavigationProp } from '@react-navigation/stack';
-import ProfileButton from '~/components/profile/ProfileButton';
 import InputContainer from '~/components/InputContainer';
 import { Dropdown } from 'react-native-element-dropdown';
-import { Button } from 'react-native-paper';
 import { useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '~/redux/store';
 import { useDispatch } from 'react-redux';
@@ -268,7 +266,9 @@ const ProfileScreen: React.FC = () => {
 
               {/* My Tickets */}
               <View className="mt-4 w-full items-center gap-5">
-                <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
+                <TouchableOpacity 
+                onPress={()=>router.push("/(routes)/profile/Tickits" as any)}
+                className="flex  w-full flex-row items-center justify-between pr-2">
                   <Text className="text-base text-white" style={{ fontFamily: 'LatoBold' }}>
                     My Tickets
                   </Text>

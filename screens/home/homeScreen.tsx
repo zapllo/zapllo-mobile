@@ -41,49 +41,56 @@ const componentsData: HomeScreenComponents[] = [
     title: 'Zapllo Task',
     screen: '(routes)/HomeComponent/Tasks',
     description: 'Delegate one time and recurring task to your team',
-    image: require('~/assets/HomeComponents/ZTask.png'), // Add image path
+    image: require('~/assets/HomeComponents/ZTask.png'),
   },
   {
     id: '2',
     title: 'Zapllo Attendance',
     screen: '(routes)/HomeComponent/Attendance',
     description: 'Track your Team Attendance & Breaks',
-    image: require('~/assets/HomeComponents/ZAttendance.png'), // Add image path
+    image: require('~/assets/HomeComponents/ZAttendance.png'), 
   },
   {
     id: '3',
     title: 'Zapllo Events',
     screen: '(routes)/HomeComponent/Events',
-    description: 'Track your Team Attendance & Breaks',
-    image: require('~/assets/HomeComponents/ZEvents.png'), // Add image path
+    description: 'Live Q&A Classes and Weekly Business Growth Sessions',
+    image: require('~/assets/HomeComponents/ZEvents.png'), 
   },
   {
     id: '4',
     title: 'Zapllo Intranet',
     screen: '(routes)/settings',
     description: 'Manage all your Important Company Links',
-    image: require('~/assets/HomeComponents/ZEvents.png'), // Add image path
+    image: require('~/assets/HomeComponents/ZInternet.png'), 
   },
   {
     id: '5',
     title: 'Zapllo Workflows',
     screen: '(routes)/HomeComponent/Tasks/Workflows',
     description: 'Automate, Integrate & Connect anything effortlessly',
-    image: require('~/assets/HomeComponents/ZAttendance.png'), // Add image path
+    image: require('~/assets/HomeComponents/ZWorkflow.png'), 
   },
   {
     id: '6',
     title: 'Zapllo Leaves',
     screen: '(routes)/HomeComponent/Leaves',
-    description: 'Track, Convert & Assign Leads to your Sales Team',
-    image: require('~/assets/HomeComponents/ZLeave.png'), // Add image path
+    description: 'Manage your Employee Leaves & Holidays',
+    image: require('~/assets/HomeComponents/ZLeave.png'), 
   },
   {
     id: '7',
     title: 'Zapllo CRM',
     screen: '(routes)/HomeComponent/Tasks/TaskCategories',
-    description: 'Track, Convert & Assign Leads to your Sales Team',
-    image: require('~/assets/HomeComponents/ZCRM.png'), // Add image path
+    description: 'rack, Convert & Assign Leads to your Sales Team',
+    image: require('~/assets/HomeComponents/ZCRM.png'), 
+  },
+  {
+    id: '8',
+    title: 'Zapllo AI Assistant',
+    screen: '(routes)/HomeComponent/AIAssistant',
+    description: 'Upgrade your experience by 10X with our proprietory AI Technology',
+    image: require('~/assets/HomeComponents/ZAi.png'), 
   },
 ];
 

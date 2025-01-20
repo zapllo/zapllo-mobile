@@ -7,8 +7,6 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation } from "expo-router";
 import TickitCard from "~/components/profile/TickitCard";
 import Modal from 'react-native-modal';
-import CustomDropdown from "~/components/customDropDown";
-import InputContainer from "~/components/InputContainer";
 import CustomDropdownComponentThree from "~/components/customDropdownThree";
 
 
@@ -38,7 +36,9 @@ export default function TickitScreen() {
     const newTicket = {
       status: "Pending",
       message: newTicketMessage,
-      date: new Date().toLocaleString()
+      date: new Date().toLocaleString(),
+      category
+
     };
     setTickets([...tickets, newTicket]);
     setModalVisible(false);

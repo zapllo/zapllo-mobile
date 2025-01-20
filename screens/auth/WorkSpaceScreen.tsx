@@ -177,7 +177,7 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
               marginBottom: 10,
               backgroundColor: selectedCategories.includes(category) ? '#815BF5' : '#37384B', // Tailwind colors in hex
               paddingVertical: Platform.OS === 'ios' ? 9 : 6,
-              borderRadius: 10, // Rounded full
+              borderRadius: 10, 
               alignItems: 'center',
               marginLeft: 10,
             }}

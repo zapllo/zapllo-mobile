@@ -65,6 +65,7 @@ export default function MyTaskScreen() {
   const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
   const [tasks, setTasks] = useState<Task[]>([]); // Store tasks fetched from API
   const [tasksData, setTasksData] = useState<Task[]>([]);
+  const [formattedDateRange, setFormattedDateRange] = useState('');
   const [taskCounts, setTaskCounts] = useState<TaskStatusCounts>({
     Overdue: 0,
     Pending: 0,
@@ -88,7 +89,7 @@ export default function MyTaskScreen() {
 
   // console.log('useerrrr>🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳🧑🏻‍🦳', JSON.stringify(userData?.data?._id, null, 2));
 
-  const [selectedTeamSize, setSelectedTeamSize] = useState('');
+  const [selectedTeamSize, setSelectedTeamSize] = useState('This Week');
   const navigation = useNavigation<NavigationProp<MyTasksStackParamList>>();
 
   const filterTasksByDate = (tasks: Task[], dateRange: any) => {
@@ -101,11 +102,28 @@ export default function MyTaskScreen() {
       return taskDueDate.isSameOrAfter(startDate) && taskDueDate.isBefore(endDate);
     });
   };
+  const formatWithSuffix = (date:any) => {
+    // return moment(date).format('Do MMM, YYYY');
+    return moment(date).format("MMM Do YY");
+  };
 
   useEffect(() => {
     const dateRange = getDateRange(selectedTeamSize);
+
+    if (dateRange.startDate && dateRange.endDate) {
+      if (selectedTeamSize === 'Today' || selectedTeamSize === 'Yesterday') {
+        // For single dates (Today or Yesterday)
+        setFormattedDateRange(formatWithSuffix(dateRange.startDate));
+      } else {
+        // For ranges (Week, Month, Year, etc.)
+        const formattedStart = formatWithSuffix(dateRange.startDate);
+        const formattedEnd = formatWithSuffix(dateRange.endDate);
+        setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
+      }
+    } else {
+      setFormattedDateRange('Invalid date range');
+    }
     const myTasksByDate = filterTasksByDate(tasksData, dateRange);
-    console.log('🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻', tasksData.length);
     setTasks(myTasksByDate);
     setTaskCounts(countStatuses(myTasksByDate));
   }, [selectedTeamSize]);
@@ -239,18 +257,18 @@ export default function MyTaskScreen() {
                   <TouchableOpacity
                     className="h-full w-full"
                     onPress={() => {
-                      const filteredTasks = tasks.filter((task) => task.status === 'Today');
-                      navigation.navigate('PendingTask', { filteredTasks });
+                      const todaysTasks = tasks.filter((task) => task.status === 'Today');
+                      navigation.navigate('ToadysTask', { todaysTasks });
                     }}>
                     <TaskCard
                       title="Today’s Task"
                       count={taskCounts.Today}
                       tasks={tasks}
+                      date={formattedDateRange}
                       status="Today"
                       borderColor="#FC842C"
                       onPress={() => {
                         const todaysTasks = tasks.filter((task) => task.status === 'Today');
-                        console.log('okkkkkk>>>>>>>>>>>>>', todaysTasks);
                         navigation.navigate('ToadysTask', { todaysTasks });
                       }}
                     />
@@ -261,14 +279,15 @@ export default function MyTaskScreen() {
                   <TouchableOpacity
                     className="h-full w-full"
                     onPress={() => {
-                      const filteredTasks = tasks.filter((task) => task.status === 'Overdue');
-                      navigation.navigate('PendingTask', { filteredTasks });
+                      const overdueTasks = tasks.filter((task) => task.status === 'Overdue');
+                      navigation.navigate('OverdueTask', { overdueTasks });
                     }}>
                     {/* Overdue Tasks */}
                     <TaskCard
                       title="Overdue Tasks"
                       count={taskCounts.Overdue}
                       tasks={tasks}
+                      date={formattedDateRange}
                       status="Overdue"
                       borderColor="#D85570"
                       onPress={() => {
@@ -292,6 +311,7 @@ export default function MyTaskScreen() {
                       title="Pending Tasks"
                       count={taskCounts.Pending}
                       tasks={tasks}
+                      date={formattedDateRange}
                       status="Pending"
                       borderColor="#FDB314"
                       colors={['#CCC', '#FFF']}
@@ -306,18 +326,19 @@ export default function MyTaskScreen() {
                   <TouchableOpacity
                     className="h-full w-full"
                     onPress={() => {
-                      const filteredTasks = tasks.filter((task) => task.status === 'Pending');
-                      navigation.navigate('PendingTask', { filteredTasks });
+                      const inProgressTasks = tasks.filter((task) => task.status === 'In Progress');
+                      navigation.navigate('InprogressTask', { inProgressTasks });
                     }}>
                     <TaskCard
                       title="In Progress Tasks"
-                      count={taskCounts.InProgress}
+                      count={taskCounts['In Progress']}
                       tasks={tasks}
-                      status="InProgress"
+                      date={formattedDateRange}
+                      status="In Progress"
                       borderColor="#A914DD"
                       onPress={() => {
-                        const filteredTasks = tasks.filter((task) => task.status === 'InProgress');
-                        navigation.navigate('PendingTask', { filteredTasks });
+                        const inProgressTasks = tasks.filter((task) => task.status === 'In Progress');
+                        navigation.navigate('InprogressTask', { inProgressTasks });
                       }}
                     />
                   </TouchableOpacity>
@@ -327,7 +348,7 @@ export default function MyTaskScreen() {
               <View className="my-1 h-[167px] w-[93%] rounded-3xl bg-[#007B5B] p-5 pb-7 pt-7 ">
                 <View className=" flex w-full flex-row items-center justify-between">
                   <Text className="text-white " style={{ fontFamily: 'LatoBold' }}>Completed Tasks</Text>
-                  <Text className="text-xs text-white">22-12-2024 to 28-12-2024</Text>
+                  <Text className="text-xs text-white">{formattedDateRange}</Text>
                 </View>
                 <Text className=" mt-4  text-white text-5xl " style={{ fontFamily: 'LatoBold' }}>
                   {taskCounts.Completed}
@@ -374,7 +395,7 @@ export default function MyTaskScreen() {
                       const completedTasks = tasks.filter((task) => task.status === 'Completed');
                       navigation.navigate('CompletedTask', { completedTasks });
                     }}
-                    className="-mt-4 flex h-11 w-14 items-center justify-center self-end rounded-full border border-white">
+                    className="-mt-4 flex h-11 w-11 items-center justify-center self-end rounded-full border border-white">
                     <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                   </TouchableOpacity>
                 </View>
@@ -384,13 +405,14 @@ export default function MyTaskScreen() {
                   <TouchableOpacity
                     className="h-full w-full"
                     onPress={() => {
-                      const filteredTasks = tasks.filter((task) => task.status === 'In Time');
-                      navigation.navigate('PendingTask', { filteredTasks });
+                      const inTimeTasks = tasks.filter((task) => task.status === 'In Time');
+                      navigation.navigate('InTimeTask', { inTimeTasks });
                     }}>
                     <TaskCard
                       title="In Time Tasks"
                       count={taskCounts['In Time']}
                       tasks={tasks}
+                      date={formattedDateRange}
                       status="In Time"
                       colors={['#CCC', '#FFF']}
                       borderColor="#815BF5"
@@ -405,13 +427,14 @@ export default function MyTaskScreen() {
                   <TouchableOpacity
                     className="h-full w-full"
                     onPress={() => {
-                      const filteredTasks = tasks.filter((task) => task.status === status);
-                      navigation.navigate('PendingTask', { filteredTasks });
+                      const delayedTasks = tasks.filter((task) => task.status === 'Delayed');
+                      navigation.navigate('DelayedTask', { delayedTasks });
                     }}>
                     <TaskCard
                       title="Delayed Tasks"
                       count={taskCounts.Delayed}
                       tasks={tasks}
+                      date={formattedDateRange}
                       status="Delayed"
                       colors={['#CCC', '#FFF']}
                       borderColor="#DE7560"

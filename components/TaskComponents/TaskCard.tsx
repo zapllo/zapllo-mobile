@@ -28,6 +28,7 @@ interface TaskCardProps {
   backgroundColor: string;
   borderColor: string;
   onPress:any;
+  date:any;
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({
@@ -37,7 +38,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
   status,
   backgroundColor,
   borderColor,
-  onPress
+  onPress,
+  date
 }) => {
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
   const colors = ['#c3c5f7', '#ccc', '#fff', '#3399FF', '#FF33A6'];
@@ -63,7 +65,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
           {count}
         </Text>
         <Text className="w-[40vw] pt-2 text-xs  text-white" style={{ fontFamily: 'LatoBold' }}>
-          25th Dec, 2024
+          {date}
         </Text>
       </View>
 

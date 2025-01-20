@@ -4,7 +4,8 @@ import DashboardScreen from "./DashboardScreen";
 import EmployeeWiseScreen from "~/screens/Task/EmployeeWise.screen";
 import MyReportScreen from "~/screens/Task/MyReportScreen";
 import CategoryWiseScreen from "~/screens/Task/CategoryWiseScreen";
-import DelegatedScreen from "~/screens/Task/DelegatedScreen";
+import DelegatedScreen from "~/screens/Task/delegatedTask/DelegatedScreen";
+
 // Define the TaskStatus type
 type TaskStatus = 'Pending' | 'InProgress' | 'Completed'; // Add other statuses as needed
 

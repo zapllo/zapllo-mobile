@@ -7,14 +7,14 @@ interface CustomDropdownProps {
   data: Array<{ label: string; value: any }>;
   selectedValue?: any;
   onSelect: (value: any) => void;
-  renderItem: (item: any) => JSX.Element;
+ 
 }
 
 const CustomDropdownComponentThree: React.FC<CustomDropdownProps> = ({
   data,
   selectedValue,
   onSelect,
-  renderItem,
+
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [currentValue, setCurrentValue] = useState(selectedValue || (data.length > 0 ? data[0].value : null));

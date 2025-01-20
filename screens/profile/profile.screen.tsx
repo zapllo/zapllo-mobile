@@ -70,7 +70,7 @@ const ProfileScreen: React.FC = () => {
           {/* Navbar */}
           <NavbarTwo
             title="Profile"
-            onBackPress={() => navigation.navigate('(routes)/home/index')}
+            onBackPress={() => navigation.goBack()}
           />
 
           {/* container */}

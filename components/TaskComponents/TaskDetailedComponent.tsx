@@ -1,20 +1,22 @@
+import axios from 'axios';
+import moment from 'moment';
 import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
   Image,
+  Button,
   TouchableOpacity,
+  Linking,
   ScrollView,
   TextInput,
   Alert,
-  Animated,
 } from 'react-native';
 import Modal from 'react-native-modal';
-import axios from 'axios';
-import moment from 'moment';
-import * as DocumentPicker from 'expo-document-picker';
 import { backend_Host } from '~/config';
-
+import * as DocumentPicker from 'expo-document-picker';
+import dayjs from 'dayjs';
+import { ActivityIndicator } from 'react-native';
 interface TaskDetailedComponentProps {
   title: string;
   dueDate: string;
@@ -38,48 +40,51 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [showMainModal, setShowMainModal] = useState(false);
   const [description, setDescription] = useState('');
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [fileNames, setFileNames] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<(string | null)[]>([]);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [taskStatus, setTaskStatus] = useState('');
+  const [taskStatusLoading, setTaskStatusLoading] = useState(false);
 
   const handleMoveToProgress = () => {
-    // Animate fade out
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      setShowMainModal(false);
-      setShowProgressModal(true);
-      // Animate fade in
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    });
+    setTaskStatus('In Progress');
+    setShowMainModal(false);
+    setShowProgressModal(true);
+  };
+
+  const handleMoveToCompleted = () => {
+    setTaskStatus('Completed');
+    setShowMainModal(false);
+    setShowProgressModal(true);
   };
 
   const handleFileSelect = async (index: number) => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: '/',
+        type: '*/*',
       });
+
+      console.log('Document Picker Result: ', result);
 
       if (result.canceled) {
         console.log('Document selection cancelled.');
       } else if (result.assets && result.assets.length > 0) {
         const { name, uri } = result.assets[0];
 
+        // Update URIs in attachments state for the selected index
         setAttachments((prev) => {
           const updated = [...prev];
           updated[index] = uri;
+          console.log('Updated Attachments URIs: ', updated);
           return updated;
         });
 
+        // Update file names in fileNames state for the selected index
         setFileNames((prev) => {
           const updated = [...prev];
           updated[index] = name;
+          console.log('Updated File Names: ', updated);
           return updated;
         });
       }
@@ -89,27 +94,62 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   };
 
   const updateTask = async () => {
+    setTaskStatusLoading(true);
     try {
       const payload = {
-        id: taskId,
-        status: 'InProgress',
+        id: task?._id,
+        status: taskStatus,
         comment: description,
-        userName: 'John Doe',
+        userName: assignedTo,
         fileUrl: attachments,
       };
+      console.log('payyyy', payload);
       const response = await axios.patch(`${backend_Host}/tasks/update`, payload, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
 
+      console.log('Task updated successfully:', response.data);
       setShowProgressModal(false);
       Alert.alert('Success', 'Task updated successfully!');
     } catch (error) {
       console.error('Error updating task:', error);
       Alert.alert('Error', 'Failed to update the task.');
+    } finally {
+      setTaskStatusLoading(false);
+      setDescription('');
+      setAttachments([]);
     }
   };
+
+  console.log('>>>>>>>>>>>task detaillllllll', task);
+
+  const formatReminder = (dueDate, reminder) => {
+    if (!dueDate || !reminder) return null;
+
+    const dueDateTime = dayjs(dueDate);
+    let reminderDateTime = dueDateTime;
+
+    switch (reminder.type) {
+      case 'minutes':
+        reminderDateTime = dueDateTime.subtract(reminder.value, 'minute');
+        break;
+      case 'hours':
+        reminderDateTime = dueDateTime.subtract(reminder.value, 'hour');
+        break;
+      case 'days':
+        reminderDateTime = dueDateTime.subtract(reminder.value, 'day');
+        break;
+      default:
+        return null; // Handle unsupported types gracefully
+    }
+
+    return reminderDateTime.format('ddd, MMMM D - h:mm A'); // Example format: "Wed, December 25 - 12:13 PM"
+  };
+
+  const reminder = task?.reminders?.[0]; // Use the first reminder if available
+  const reminderText = formatReminder(task?.dueDate, reminder);
 
   return (
     <TouchableOpacity onPress={() => setModalVisible(true)}>
@@ -125,12 +165,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
             contentContainerStyle={{ flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled">
-            <Animated.View
-              style={{
-                opacity: fadeAnim,
-                transform: [{ scale: fadeAnim }],
-              }}
-              className="mt-16 rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
+            <View className="mt-16 rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
               {/* title */}
               <View className=" mb-7 flex w-full flex-row items-center justify-between">
                 <Text
@@ -186,7 +221,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   <View className="flex flex-col">
                     <Text className="text-xs text-[#787CA5]">Frequency</Text>
                     <Text className="text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
-                      Once
+                      {task?.repeat ? task?.repeatType : 'Once'}
                     </Text>
                   </View>
 
@@ -256,18 +291,22 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                 </View>
 
                 <View className=" flex w-full flex-row items-center gap-3 pl-5 pt-1">
-                  <Image
-                    source={require('../../assets/commonAssets/fileUploadContainer.png')}
-                    className="h-24 w-24"
-                  />
-                  <Image
-                    source={require('../../assets/commonAssets/fileUploadContainer.png')}
-                    className="h-24 w-24"
-                  />
-                  <Image
-                    source={require('../../assets/commonAssets/fileUploadContainer.png')}
-                    className="h-24 w-24"
-                  />
+                  {task?.attachment?.length ? (
+                    task.attachment.map((att, index) => (
+                      <View
+                        key={index}
+                        className="flex h-24 w-24 items-center justify-center rounded-lg border border-[#37384B]">
+                        <Image source={{ uri: att }} className="h-24 w-24 rounded-lg" />
+                      </View>
+                    ))
+                  ) : (
+                    <View className="flex h-24 w-24 items-center justify-center rounded-lg border border-[#37384B]">
+                      <Image
+                        source={require('~/assets/commonAssets/fileUploadContainer.png')}
+                        className="h-24 w-24"
+                      />
+                    </View>
+                  )}
                 </View>
               </View>
 
@@ -281,7 +320,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   <Text className="text-xs text-[#787CA5]">Reminders</Text>
                 </View>
                 <Text className=" text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
-                  Wed, December 25 - 12:13 PM
+                  {reminderText || 'No Reminder Set'}
                 </Text>
               </View>
 
@@ -341,8 +380,6 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   <Text className=" text-center font-medium text-white">Update task status</Text>
                 </TouchableOpacity>
               </View>
-
-              {/* task progress */}
               <Modal
                 isVisible={showMainModal}
                 onBackdropPress={null as any} // Prevent closing when clicking outside
@@ -371,7 +408,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
                     <TouchableOpacity
                       onPress={() => {
-                        handleMoveToProgress();
+                        handleMoveToCompleted();
                       }}
                       className="items-center rounded-full bg-[#007B5B] p-4">
                       <Text className="text-base font-medium text-white">Move to Completed</Text>
@@ -379,8 +416,6 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   </View>
                 </View>
               </Modal>
-
-              {/* move to progress */}
               <Modal
                 isVisible={showProgressModal}
                 onBackdropPress={null as any} // Prevent closing when clicking outside
@@ -388,11 +423,9 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                 animationIn="slideInUp"
                 animationOut="slideOutDown"
                 useNativeDriver={false}>
-                <View
-                  className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20"
-                  style={{ marginBottom: 20 }}>
+                <View className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20" style={{ marginBottom: 20 }}>
                   <View className="mb-6 mt-2 flex w-full flex-row items-center justify-between">
-                    <Text className="text-xl font-semibold text-white">In Progress</Text>
+                    <Text className="text-xl font-semibold text-white">{taskStatus}</Text>
                     <TouchableOpacity onPress={() => setShowProgressModal(false)}>
                       <Image
                         source={require('~/assets/commonAssets/cross.png')}
@@ -455,13 +488,18 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   </View>
 
                   <TouchableOpacity
+                    disabled={taskStatusLoading}
                     onPress={updateTask}
                     className=" mt-10 h-16 w-full items-center justify-center rounded-full bg-[#37384B]">
-                    <Text className=" text-xl text-white">Update Task</Text>
+                    {taskStatusLoading ? (
+                      <ActivityIndicator size={'small'} color={'#fff'} />
+                    ) : (
+                      <Text className=" text-xl text-white">Update Task</Text>
+                    )}
                   </TouchableOpacity>
                 </View>
               </Modal>
-            </Animated.View>
+            </View>
           </ScrollView>
         </Modal>
 

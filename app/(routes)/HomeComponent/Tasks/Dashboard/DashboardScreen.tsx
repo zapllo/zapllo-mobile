@@ -8,7 +8,7 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   TouchableOpacity,
-  Dimensions
+  Dimensions,
 } from 'react-native';
 import Navbar from '~/components/navbar';
 import CustomDropdown from '~/components/customDropDown';
@@ -73,7 +73,7 @@ const daysData = [
 ];
 
 export default function DashboardScreen() {
-  const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
+  const { token, userData } = useSelector((state: RootState) => state.auth);
   const [tasks, setTasks] = useState<Task[]>([]); // Store tasks fetched from API
   const [assignedUsers, setAssignedUsers] = useState<Task[]>([]);
   const [tasksData, setTasksData] = useState<Task[]>([]);
@@ -82,7 +82,8 @@ export default function DashboardScreen() {
   const [delegatedData, setDelegatedData] = useState();
   const [categoryTasks, setCategoryTasks] = useState([]);
   const [groupedCategory, setGroupedCategory] = useState([]);
-  
+  const [formattedDateRange, setFormattedDateRange] = useState('');
+
   const [taskCounts, setTaskCounts] = useState<TaskStatusCounts>({
     Overdue: 0,
     Pending: 0,
@@ -109,8 +110,7 @@ export default function DashboardScreen() {
   const [selectedTeamSize, setSelectedTeamSize] = useState('This Week');
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
 
-
-  const groupedByCategory = tasks.reduce((acc:any, task) => {
+  const groupedByCategory = tasks.reduce((acc: any, task) => {
     const categoryName = task.category.name;
     if (!acc[categoryName]) {
       acc[categoryName] = [];
@@ -138,12 +138,43 @@ export default function DashboardScreen() {
     });
   };
 
+  const formatWithSuffix = (date:any) => {
+    // return moment(date).format('Do MMM, YYYY');
+    return moment(date).format("MMM Do YY");
+
+  };
+
+
+  // useEffect(() => {
+  //   const dateRange = getDateRange(selectedTeamSize);
+  //   const myTasksByDate = filterTasksByDate(tasksData, dateRange);
+  //   setTasks(myTasksByDate);
+  //   setTaskCounts(countStatuses(myTasksByDate));
+  // }, [selectedTeamSize]);
+
   useEffect(() => {
     const dateRange = getDateRange(selectedTeamSize);
+
+    if (dateRange.startDate && dateRange.endDate) {
+      if (selectedTeamSize === 'Today' || selectedTeamSize === 'Yesterday') {
+        // For single dates (Today or Yesterday)
+        setFormattedDateRange(formatWithSuffix(dateRange.startDate));
+      } else {
+        // For ranges (Week, Month, Year, etc.)
+        const formattedStart = formatWithSuffix(dateRange.startDate);
+        const formattedEnd = formatWithSuffix(dateRange.endDate);
+        setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
+      }
+    } else {
+      setFormattedDateRange('Invalid date range');
+    }
+
     const myTasksByDate = filterTasksByDate(tasksData, dateRange);
     setTasks(myTasksByDate);
     setTaskCounts(countStatuses(myTasksByDate));
   }, [selectedTeamSize]);
+
+  console.log("todayyyyyy<<<<<<",formattedDateRange)
 
   // const myTasksCounts = countStatuses(myTasks
 
@@ -240,32 +271,34 @@ export default function DashboardScreen() {
           const filteredTasks = tasksData.filter(
             (task) => task.assignedUser?._id === userData?.data?._id
           );
-          
+
           const categoryStatusCount = filteredTasks.reduce((acc, task) => {
-            const categoryName = task.category?.name || "Uncategorized";
-          
+            const categoryName = task.category?.name || 'Uncategorized';
+
             if (!acc[categoryName]) {
               acc[categoryName] = {};
             }
-          
-            const status = task.status || "Unknown";
-          
+
+            const status = task.status || 'Unknown';
+
             if (!acc[categoryName][status]) {
               acc[categoryName][status] = 0;
             }
-          
+
             acc[categoryName][status] += 1;
-          
+
             return acc;
           }, {});
-          const taskCountsArray = Object.entries(categoryStatusCount).map(([categoryName, data]) => ({
-            categoryName,
-            ...data
-          }));
+          const taskCountsArray = Object.entries(categoryStatusCount).map(
+            ([categoryName, data]) => ({
+              categoryName,
+              ...data,
+            })
+          );
 
-          setMyReports(taskCountsArray)
-          
-          console.log("+++++++++++++++++++++",taskCountsArray.length);
+          setMyReports(taskCountsArray);
+
+          console.log('+++++++++++++++++++++', taskCountsArray.length);
 
           const groupedTasks = tasksData.reduce((acc, task) => {
             if (!acc[task.status]) acc[task.status] = [];
@@ -275,11 +308,8 @@ export default function DashboardScreen() {
 
           const assignedToUser = (userId) =>
             tasksData.filter((task) => task.assignedUser._id === userId);
-          
-          console.log(assignedToUser("676ba9521364993ac8498b93"));
-          
-          
-          
+
+          console.log(assignedToUser('676ba9521364993ac8498b93'));
 
           const filterCategory = () => {
             // Group tasks by category
@@ -304,7 +334,6 @@ export default function DashboardScreen() {
 
             // Now, update the state with the grouped data
             setCategoryTasks(groupedByCategory);
-            
           };
 
           // Call the filterCategory function to group tasks by category
@@ -360,34 +389,7 @@ export default function DashboardScreen() {
     );
   };
 
-  // const getCount = () => {
-  //   var assigned = [];
-  //   groupedCategory.forEach((cat) => {
-  //     cat?.tasks?.forEach((e) => {
-  //       if (e?.assignedUser?._id == userData?.data?._id) {
-  //         console.log('❌❌❌❌>>>>>', JSON.stringify(e.category?.name, null, 2));
-
-  //         assigned.push(e);
-  //       }
-  //     });
-  //   });
-  //   const filteredData = assigned.filter((item, index, array) => {
-  //     const categoryName = item.category?.name;
-  //     console.log('❌❌❌❌', JSON.stringify(categoryName, null, 2));
-  //     return array.findIndex((obj) => obj.category?.name === categoryName) === index;
-  //   });
-  //   setMyReports(filteredData);
-
-  //   // return count;
-  // };
-
-  // console.log(">>>>>>>>>>>>>>",myReports)
-
-  // // useEffect(()=>{
-  // //    getCount()
-  // // },[groupedCategory])
-
-  console.log("oooooasssssssss>>>>>>>>>>>>>oooo",groupedCategory)
+  console.log(":::::::::::::::::::",taskCounts)
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
@@ -429,7 +431,7 @@ export default function DashboardScreen() {
                   <TaskStatusCard
                     imageSource={require('../../../../../assets/commonAssets/Progress.png')}
                     status="In Progress"
-                    count={taskCounts?.InProgress}
+                    count={taskCounts?.['In Progress']}
                   />
                   <TaskStatusCard
                     imageSource={require('../../../../../assets/commonAssets/Completed.png')}
@@ -462,7 +464,7 @@ export default function DashboardScreen() {
                         <DashboardThree
                           title="Employee Wise"
                           count={assignedUsers.length}
-                          date={'25th December, 2024'}
+                          date={formattedDateRange}
                           tasks={assignedUsers}
                           borderColor="#FC842C"
                           onPress={() => {
@@ -481,7 +483,7 @@ export default function DashboardScreen() {
                           title="Category Wise"
                           // count={taskCounts.Today}
                           count={groupedCategory.length}
-                          date={'22-12-2024 to 28-12-2024'}
+                          date={formattedDateRange}
                           tasks={tasks}
                           status="Overdue"
                           borderColor="#D85570"
@@ -502,6 +504,7 @@ export default function DashboardScreen() {
                           title="My Report"
                           count={myReports?.length}
                           tasks={tasks}
+                          date={formattedDateRange}
                           status="Pending"
                           borderColor="#FDB314"
                           colors={['#CCC', '#FFF']}
@@ -512,13 +515,16 @@ export default function DashboardScreen() {
                       </TouchableOpacity>
                     </View>
                     <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
-                      <TouchableOpacity  onPress={() => {
-                            navigation.navigate('Delegated', { employeeWiseData: delegatedData });
-                          }} className="h-full w-full">
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate('Delegated', { employeeWiseData: delegatedData });
+                        }}
+                        className="h-full w-full">
                         <DashboardCard
                           title="Delegated"
                           count={delegatedData?.length}
                           tasks={delegatedData}
+                          date={formattedDateRange}
                           status="Pending"
                           borderColor="#A914DD"
                           onPress={() => {

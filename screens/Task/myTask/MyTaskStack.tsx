@@ -2,11 +2,13 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import MyTaskScreen from '~/app/(routes)/HomeComponent/Tasks/MyTaskScreen';
 import MyTaskPendingScreen from './MyTaskPendingScreen';
-import TodaysTaskScreen from '../TodaysTaskScreen';
-import OverdueTaskScreen from '../OverdueTaskScreen';
-import CompletedTaskScreen from '../CompletedTaskScreen';
-import InTimeTaskScreen from '../InTimeTaskScreen';
-import DelayedTaskScreen from '../DelayedTaskScreen';
+import TodaysTaskScreen from './TodaysTaskScreen';
+import OverdueTaskScreen from './OverdueTaskScreen';
+import CompletedTaskScreen from './CompletedTaskScreen';
+import InTimeTaskScreen from './InTimeTaskScreen';
+import DelayedTaskScreen from './DelayedTaskScreen';
+import InProgressTaskScreen from './InProgressTaskScreen';
+
 type TaskStatus = 'Pending' | 'InProgress' | 'Completed'; // Add other statuses as needed
 
 // Define the Task interface
@@ -30,6 +32,7 @@ export type MyTasksStackParamList = {
   CompletedTask: { completedTasks: Task[] };
   InTimeTask: { inTimeTasks: Task[] };
   DelayedTask: { delayedTasks: Task[] };
+  InprogressTask: { inProgressTasks: Task[] };
 
   // EmployeeWise: undefined;
 };
@@ -46,6 +49,7 @@ const MyTasksStack = () => {
       <Stack.Screen name="CompletedTask" component={CompletedTaskScreen} />
       <Stack.Screen name="InTimeTask" component={InTimeTaskScreen} />
       <Stack.Screen name="DelayedTask" component={DelayedTaskScreen} />
+      <Stack.Screen name="InprogressTask" component={InProgressTaskScreen} />
 
       {/* <Stack.Screen name="EmployeeWise" component={EmployeeWiseScreen}/> */}
     </Stack.Navigator>

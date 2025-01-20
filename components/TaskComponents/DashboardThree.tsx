@@ -23,9 +23,10 @@ interface TaskCardProps {
   backgroundColor: string;
   borderColor: string;
   onPress: any;
+  date:any;
 }
 
-const DashboardThree: React.FC<TaskCardProps> = ({ title, count, tasks, borderColor,onPress }) => {
+const DashboardThree: React.FC<TaskCardProps> = ({ title, count, tasks, borderColor,onPress,date }) => {
   const screenHeight = Dimensions.get('window').height;
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
   const colors = ['#c3c5f7', '#ccc', '#fff', '#3399FF', '#FF33A6'];
@@ -50,7 +51,7 @@ const DashboardThree: React.FC<TaskCardProps> = ({ title, count, tasks, borderCo
           {count}
         </Text>
         <Text className="w-[40vw] pt-2 text-xs  text-white " style={{ fontFamily: 'LatoBold' }}>
-          25th Dec, 2024
+       {date}
         </Text>
       </View>
 

@@ -135,7 +135,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
                   data={notificationTypes}
                   selectedValue={reminder.notificationType}
                   onSelect={(value) => updateReminder(index, 'notificationType', value)}
-                  renderItem={renderIndustryItem}
+          
                 />
               </View>
 
@@ -152,7 +152,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
                   data={daysData}
                   selectedValue={reminder.type}
                   onSelect={(value) => updateReminder(index, 'type', value)}
-                  renderItem={renderIndustryItem}
+               
                 />
               </View>
 

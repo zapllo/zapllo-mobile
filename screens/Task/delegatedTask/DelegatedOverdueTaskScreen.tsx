@@ -18,12 +18,12 @@ import CustomDropdown from '~/components/customDropDown';
 import TaskDetailedComponent from '~/components/TaskComponents/TaskDetailedComponent';
 import Modal from 'react-native-modal';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { MyTasksStackParamList } from './MyTaskStack';
 import CheckboxTwo from '~/components/CheckBoxTwo';
 import GradientButton from '~/components/GradientButton';
+import { DelegatedTaskStackParamList } from '~/app/(routes)/HomeComponent/Tasks/DelegatedTaskStack';
 
-type Props = StackScreenProps<MyTasksStackParamList, 'PendingTask'>;
-type PendingTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'PendingTask'>;
+type Props = StackScreenProps<DelegatedTaskStackParamList, 'OverdueTask'>;
+type OverdueTaskScreenRouteProp = RouteProp<DelegatedTaskStackParamList, 'OverdueTask'>;
 
 const daysData = [
   { label: 'Today', value: 'Overdue' },
@@ -38,11 +38,9 @@ const daysData = [
   { label: 'Custom', value: 'Custom' },
 ];
 
-const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
-  const route = useRoute<PendingTaskScreenRouteProp>();
-  const { pendingTasks } = route.params;
-
-  console.log(">>>>>>>>pending>>>>>>>>",pendingTasks)
+const DelegatedOverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
+  const route = useRoute<OverdueTaskScreenRouteProp>();
+  const { overdueTasks } = route.params;
 
   const [selectedTeamSize, setSelectedTeamSize] = useState("This week");
   const [search, setSearch] = useState('');
@@ -58,11 +56,11 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView className="h-full flex-1 bg-primary">
       <View className="flex h-20 w-full flex-row items-center justify-between p-5">
         <View className="flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-full bg-[#37384B]">
-          <TouchableOpacity onPress={() => navigation.navigate('DashboardHome')}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
             <AntDesign name="arrowleft" size={24} color="#ffffff" />
           </TouchableOpacity>
         </View>
-        <Text className="h-full pl-4 text-2xl font-semibold text-[#FFFFFF]">Pending Tasks</Text>
+        <Text className="h-full pl-4 text-2xl font-semibold text-[#FFFFFF]">Overdue Tasks</Text>
         <ProfileButton />
       </View>
 
@@ -101,8 +99,8 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
             </View>
 
             <ScrollView>
-              {pendingTasks?.length > 0 ? (
-                pendingTasks.map((task:any) => (
+              {overdueTasks?.length > 0 ? (
+                overdueTasks.map((task:any) => (
                   <TaskDetailedComponent
                     key={task._id}
                     title={task.title}
@@ -207,7 +205,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-export default MyTaskPendingScreen;
+export default DelegatedOverdueTaskScreen;
 const styles = StyleSheet.create({
   input: {
     borderColor: '#37384B',
@@ -228,3 +226,5 @@ const styles = StyleSheet.create({
 
   },
 });
+
+

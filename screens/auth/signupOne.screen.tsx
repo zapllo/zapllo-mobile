@@ -26,6 +26,7 @@ import { Ionicons } from '@expo/vector-icons';
 import CountryPicker from 'react-native-country-picker-modal';
 import InputContainer from '~/components/InputContainer';
 import { Dropdown } from 'react-native-element-dropdown';
+import countryData from '../../data/country.json'
 
 const { width, height } = Dimensions.get('window');
 
@@ -61,17 +62,15 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
   const [confirmPasswordError, setConfirmPasswordError] = useState<string>('');
   const [isConfirmPasswordTouched, setIsConfirmPasswordTouched] = useState<boolean>(false);
-  const data = [
-    { label: '+91', value: '+91', icon: require('~/assets/sign-in/india.png') },
-    { label: '+222', value: '+222' },
-    { label: '+102', value: '+102' },
-    { label: '+100', value: '+100' },
-    { label: '+69', value: '+69' },
-    { label: '++100', value: '++100' },
-    { label: '+11', value: '+11' },
-    { label: '+12', value: '+12' },
-  ];
-  const [numberValue, setNumberValue] = useState(data[0]?.value || null);
+  const findIndianDialCode = () => {
+    const indianCode = countryData.find(country => country.dial_code === '+91');
+    return indianCode || countryData[0]; // Fallback to first country if India not found
+  };
+  const initializeCountryDropdown = () => {
+    const defaultCountry = findIndianDialCode();
+    return defaultCountry?.dial_code || '+91';
+  };
+  const [numberValue, setNumberValue] = useState(initializeCountryDropdown());
 
   const handleChange = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -216,104 +215,102 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
                 className="flex-1  text-sm text-[#787CA5]"
               />
 
-              {/* drop down numbers and phone numbers */}
-              <View className="mb-4 flex w-[69%]  flex-row items-center justify-center gap-2">
-                <Dropdown
-                  style={{
-                    borderWidth: 1,
-                    borderColor: '#37384B',
-                    borderRadius: 29,
-                    backgroundColor: '#05071E',
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
-                    height: 55,
-                    marginTop: 27,
-                    width: 100,
-                  }}
-                  placeholderStyle={{
-                    fontSize: 14,
-                    color: '#787CA5',
-                  }}
-                  selectedTextStyle={{
-                    fontSize: 10,
-                    color: '#787CA5',
-                    marginLeft: 2,
-                  }}
-                  iconStyle={[
-                    {
-                      width: 20,
-                      height: 20,
-                      transform: [{ rotate: isDropdownOpen ? '180deg' : '0deg' }],
-                    },
-                  ]}
-                  containerStyle={{
-                    backgroundColor: '#05071E',
-                    borderColor: '#37384B',
-                    borderRadius: 20,
-                    overflow: 'hidden',
-                  }}
-                  data={data}
-                  labelField="label"
-                  valueField="value"
-                  placeholder="Select Code"
-                  value={numberValue}
-                  onFocus={() => setIsDropdownOpen(true)} // Handle open state
-                  onBlur={() => setIsDropdownOpen(false)} // Handle close state
-                  onChange={(item) => setNumberValue(item.value)} // Handle selection
-                  renderLeftIcon={() => {
-                    const selectedItem = data.find((item) => item.value === numberValue);
-                    return (
-                      <Image
-                        source={selectedItem?.icon}
-                        style={{ width: 15, height: 20, marginRight: 5 }}
-                        resizeMode="contain"
-                      />
-                    );
-                  }}
-                  renderItem={(item) => {
-                    const isSelected = item.value === numberValue;
-                    return (
-                      <TouchableOpacity
-                        style={[
-                          {
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            padding: 10,
-                            borderBottomColor: '#4e5278',
-                            backgroundColor: isSelected ? '#4e5278' : 'transparent',
-                            borderBottomWidth: 1,
-                          },
-                        ]}
-                        onPress={() => setNumberValue(item.value)}>
-                        <Image
-                          source={item.icon}
-                          style={{ width: 15, height: 20, marginRight: 10 }}
-                          resizeMode="contain"
-                        />
-                        <Text
-                          style={{
-                            fontSize: 14,
-                            color: isSelected ? '#FFFFFF' : '#787CA5',
-                            fontWeight: isSelected ? 'bold' : 'normal',
-                          }}>
-                          {item.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  }}
-                />
+                  <View className="mb-4 flex w-[69%]  flex-row items-center justify-center gap-2">
+                  <Dropdown
+                    search
+                    searchPlaceholder='search'
+                    inputSearchStyle={{
+                      borderRadius:20,
+                      borderWidth:0,
+                      color: 'white',
+                    }}
+                    searchPlaceholderTextColor='#787CA5'
+                    style={{
+                      borderWidth: 1,
+                      borderColor: '#37384B',
+                      borderRadius: 29,
+                      backgroundColor: '#05071E',
+                      paddingHorizontal: 12,
+                      paddingVertical: 10,
+                      height: 55,
+                      marginTop: 27,
+                      width: 100,
+                    }}
+                    placeholderStyle={{
+                      fontSize: 14,
+                      color: '#787CA5',
+                    }}
+                    selectedTextStyle={{
+                      fontSize: 10,
+                      color: '#787CA5',
+                      marginLeft: 2,
+                    }}
+                    iconStyle={[
+                      {
+                        width: 10,
+                        height: 20,
+                        transform: [{ rotate: isDropdownOpen ? '180deg' : '0deg' }],
+                      },
+                    ]}
+                    containerStyle={{
+                      backgroundColor: '#05071E',
+                      borderColor: '#37384B',
+                      borderRadius: 20,
+                      overflow: 'hidden',
+                    }}
+                    data={countryData}
+                    labelField="dial_code"
+                    valueField="dial_code"
+                    placeholder="Select Code"
+                    value={numberValue}
+                    onFocus={() => setIsDropdownOpen(true)}
+                    onBlur={() => setIsDropdownOpen(false)}
+                    onChange={(item) => setNumberValue(item.dial_code)}
+                    renderLeftIcon={() => {
+                      const selectedItem = countryData.find((item) => item.dial_code === numberValue);
+                      return (
+                        <Text style={{ fontSize: 13 }}>{selectedItem?.flag}</Text>
+                      );
+                    }}
+                    renderItem={(item) => {
+                      const isSelected = item.dial_code === numberValue;
+                      return (
+                        <TouchableOpacity
+                          style={[
+                            {
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              padding: 2,
+                              borderBottomColor: '#4e5278',
+                              backgroundColor: isSelected ? '#4e5278' : 'transparent',
+                              borderBottomWidth: 1,
+                            },
+                          ]}
+                          onPress={() => setNumberValue(item.dial_code)}>
+                          <Text style={{ fontSize: 20, marginRight: 10 }}>{item.flag}</Text>
+                          <Text
+                            style={{
+                              fontSize: 11,
+                              color: isSelected ? '#FFFFFF' : '#787CA5',
+                              fontWeight: isSelected ? 'bold' : 'normal',
+                            }}>
+                            {item.dial_code}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    }}
+                  />
 
-                {/* numbers */}
-                <InputContainer
-                  label="WhatsApp Number"
-                  value={formData.phone}
-                  onChangeText={(text) => handleChange('phone', text)}
-                  placeholder="7863983914"
-                  keyboardType="numeric"
-                  className="flex-1 p-2 text-sm text-[#787CA5]"
-                  passwordError={''}
-                />
-              </View>
+                  <InputContainer
+                    label="WhatsApp Number"
+                    value={formData.phone}
+                    onChangeText={(text) => handleChange('phone', text)}
+                    placeholder="7863983914"
+                    keyboardType="numeric"
+                    className="flex-1 p-2 text-sm text-[#787CA5]"
+                    passwordError={''}
+                  />
+                </View>
 
               {/* email input */}
               <InputContainer

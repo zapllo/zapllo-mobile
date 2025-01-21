@@ -3,15 +3,21 @@ import React, { useState } from "react";
 import NavbarTwo from "~/components/navbarTwo";
 import { useNavigation } from "expo-router";
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 
 export default function BillingScreen() {
   const navigation = useNavigation();
   const [selectedOption, setSelectedOption] = useState('teams');
 
+  const handleOptionPress = (option: string) => {
+    setSelectedOption(option);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+  };
+
   return (
-    <SafeAreaView className="h-full w-full flex-1 bg-[#05071E]">
+    <SafeAreaView className="h-full w-full flex-1 bg-[#05071E] ">
       <ScrollView
-        className="h-full w-full flex-grow"
+        className="h-full w-full flex-grow "
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}>
         {/* Navbar */}
@@ -55,7 +61,7 @@ export default function BillingScreen() {
             <View className="w-full flex flex-row items-center justify-between">
               <TouchableOpacity
                 className="w-1/2 items-center"
-                onPress={() => setSelectedOption('teams')}
+                onPress={() => handleOptionPress('teams')}
               >
                 <LinearGradient
                   start={{ x: 0, y: 0 }}
@@ -63,12 +69,12 @@ export default function BillingScreen() {
                   colors={selectedOption === 'teams' ? ["#815BF5", "#FC8929"] : ["#05071E", "#05071E"]}
                   style={styles.tablet}
                 >
-                  <Text className={`text-sm ${selectedOption === 'teams' ? 'text-white' : 'text-[#676B93]'}`} style={{ fontFamily: "LatoBold" }}>Zapllo Teams</Text>
+                  <Text className={`text-sm  ${selectedOption === 'teams' ? 'text-white' : 'text-[#676B93]'}`} style={{ fontFamily: "LatoBold" }}>Zapllo Teams</Text>
                 </LinearGradient>
               </TouchableOpacity>
               <TouchableOpacity
                 className="w-1/2 items-center"
-                onPress={() => setSelectedOption('plans')}
+                onPress={() => handleOptionPress('plans')}
               >
                 <LinearGradient
                   start={{ x: 0, y: 0 }}
@@ -76,10 +82,51 @@ export default function BillingScreen() {
                   colors={selectedOption === 'plans' ? ["#815BF5", "#FC8929"] : ["#05071E", "#05071E"]}
                   style={styles.tablet}
                 >
-                  <Text className={`text-sm ${selectedOption === 'plans' ? 'text-white' : 'text-[#676B93]'}`} style={{ fontFamily: "LatoBold" }}>Zapllo Plans</Text>
+                  <Text className={`text-sm  ${selectedOption === 'plans' ? 'text-white' : 'text-[#676B93]'}`} style={{ fontFamily: "LatoBold" }}>Zapllo Plans</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
+          </View>
+
+          <View className=" w-[90%] bg-[#0A0D28] p-6 rounded-3xl mt-10 mb-32">
+            <Text className="text-white mb-7"style={{ fontFamily: "LatoBold" }}>Zapllo tasks</Text>
+          <View className="flex flex-row items-end gap-3">
+            <Text className="text-white text-5xl"style={{ fontFamily: "LatoBold" }}>₹1999
+            </Text>
+            <Text className="text-[#676B93] pb-1"style={{ fontFamily: "LatoBold" }}> / per user per year
+            </Text>
+          </View>
+          <Text className="text-white mt-7 "style={{ fontFamily: "LatoBold" }}>Manage your Tasks like a pro
+          </Text>
+          <TouchableOpacity className="w-full my-9 rounded-full py-4 items-center justify-center border border-[#A485FF]">
+            <Text className="text-white " style={{ fontFamily: "LatoBold" }}>Subscribe</Text>
+          </TouchableOpacity>
+
+          <View className="w-full bg-[#424882] h-0.5 mb-9"></View>
+
+          <View className="w-full flex flex-col gap-8">
+            <Text className="text-white my-2 " style={{ fontFamily: "LatoBold" }}>Task Delegation App</Text>
+            <View className="flex items-center flex-row gap-2">
+              <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")}/>
+              <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Delegate Unlimited Tasks</Text>
+            </View>
+            <View className="flex items-center flex-row gap-2">
+              <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")}/>
+              <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Team Performance Report</Text>
+            </View>
+            <View className="flex items-center flex-row gap-2">
+              <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")}/>
+              <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Links Management for Your Team</Text>
+            </View>
+            <View className="flex items-center flex-row gap-2">
+              <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")}/>
+              <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Email Notification</Text>
+            </View>
+            <View className="flex items-center flex-row gap-2">
+              <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")}/>
+              <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Whats App Notification</Text>
+            </View>
+          </View>
           </View>
         </View>
       </ScrollView>
@@ -89,8 +136,8 @@ export default function BillingScreen() {
 
 const styles = StyleSheet.create({
   tablet: {
-    borderRadius: 999, // Ensures the gradient is rounded
-    paddingHorizontal: 10,
-    paddingVertical: 10,
+    borderRadius: 9999,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
   },
 });

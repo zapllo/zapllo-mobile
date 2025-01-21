@@ -170,16 +170,17 @@ export default function TaskCategories() {
             ))}
           </View>
         </ScrollView>
-        <View style={{ position: 'absolute', bottom: 85, width: '100%', alignItems: 'center' }}>
 
-          <GradientButton
-            title="Add New Category"
-            onPress={addNewCategory}
-            imageSource={require('../../assets/Tasks/addIcon.png')}
-          />
-        </View>
 
       </KeyboardAvoidingView>
+      <View style={{ position: 'absolute', bottom: 85, width: '100%', alignItems: 'center' }}>
+
+<GradientButton
+  title="Add New Category"
+  onPress={addNewCategory}
+  imageSource={require('../../assets/Tasks/addIcon.png')}
+/>
+</View>
     </SafeAreaView>
   );
 }

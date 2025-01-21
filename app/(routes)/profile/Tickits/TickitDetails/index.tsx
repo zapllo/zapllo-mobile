@@ -7,7 +7,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 
 const TickitDetails: React.FC = () => {
   const navigation = useNavigation<StackNavigationProp<any>>()
-  const { status, message, date } = useLocalSearchParams();
+  const { status, message, date,category } = useLocalSearchParams();
 
   return (
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary">
@@ -30,15 +30,15 @@ const TickitDetails: React.FC = () => {
 
           <View className='flex flex-col gap-1'>
             <Text className='text-[#787CA5] text-sm'style={{fontFamily:"LatoBold"}}
-            >Date:<Text className='text-white text-sm'style={{fontFamily:"LatoBold"}}>{date}</Text>
+            >Date: <Text className='text-white text-sm'style={{fontFamily:"LatoBold"}}>{date}</Text>
             </Text>
-            <Text className='text-[#787CA5] text-sm' style={{fontFamily:"LatoBold"}}>Category:<Text className='text-white text-sm' style={{fontFamily:"LatoBold"}}>Report An Error</Text>
+            <Text className='text-[#787CA5] text-sm' style={{fontFamily:"LatoBold"}}>Category: <Text className='text-white text-sm' style={{fontFamily:"LatoBold"}}> {category}</Text>
             </Text>
             <Text className='text-[#787CA5] text-sm' style={{fontFamily:"LatoBold"}}>Subcategory: <Text className='text-white text-sm' style={{fontFamily:"LatoBold"}}>Report An Error</Text>
             </Text>
-            <Text className='text-[#787CA5] text-sm' style={{fontFamily:"LatoBold"}}>Description:<Text className='text-white text-sm'style={{fontFamily:"LatoBold"}}>Error</Text>
+            <Text className='text-[#787CA5] text-sm' style={{fontFamily:"LatoBold"}}>Description: <Text className='text-white text-sm'style={{fontFamily:"LatoBold"}}>Error</Text>
             </Text>
-            <Text className='text-[#787CA5] text-sm' style={{fontFamily:"LatoBold"}}>Subject:<Text className='text-[#EF4444] text-sm'style={{fontFamily:"LatoBold"}}>Error</Text>
+            <Text className='text-[#787CA5] text-sm' style={{fontFamily:"LatoBold"}}>Subject: <Text className='text-[#EF4444] text-sm'style={{fontFamily:"LatoBold"}}>Error</Text>
             </Text>
           </View>
 

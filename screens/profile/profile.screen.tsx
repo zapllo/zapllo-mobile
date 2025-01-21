@@ -270,7 +270,7 @@ const ProfileScreen: React.FC = () => {
                 onPress={()=>router.push("/(routes)/profile/Tickits" as any)}
                 className="flex  w-full flex-row items-center justify-between pr-2">
                   <Text className="text-base text-white" style={{ fontFamily: 'LatoBold' }}>
-                    My Tickets
+                    Tickets
                   </Text>
                   <Image
                     source={require('../../assets/commonAssets/smallGoto.png')}
@@ -280,33 +280,8 @@ const ProfileScreen: React.FC = () => {
                 <View className="h-0.5 w-full bg-[#37384B] "></View>
               </View>
 
-              {/* Raise a Tickets*/}
-              <View className="mt-4 w-full items-center gap-5">
-                <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{ fontFamily: 'LatoBold' }}>
-                    Raise a Tickets
-                  </Text>
-                  <Image
-                    source={require('../../assets/commonAssets/smallGoto.png')}
-                    className="mb-1 h-3 w-3"
-                  />
-                </TouchableOpacity>
-                <View className="h-0.5 w-full bg-[#37384B] "></View>
-              </View>
 
-              {/* Mobile App */}
-              <View className="mt-4 w-full items-center gap-5">
-                <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{ fontFamily: 'LatoBold' }}>
-                    Mobile App
-                  </Text>
-                  <Image
-                    source={require('../../assets/commonAssets/smallGoto.png')}
-                    className="mb-1 h-3 w-3"
-                  />
-                </TouchableOpacity>
-                <View className="h-0.5 w-full bg-[#37384B] "></View>
-              </View>
+
 
               {/* Events */}
               <View className="mt-4 w-full items-center gap-5">

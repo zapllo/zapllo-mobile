@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "start": "expo start",
     "prebuild": "expo prebuild",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" && prettier -c \"**/*.{js,jsx,ts,tsx,json}\"",
@@ -68,7 +68,6 @@
     "react-native-screens": "~4.1.0",
     "react-native-sound": "^0.11.2",
     "react-native-vector-icons": "^10.2.0",
-    "react-native-waveform": "^0.2.1",
     "react-native-web": "~0.19.10",
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",

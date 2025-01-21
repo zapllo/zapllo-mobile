@@ -11,8 +11,12 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      ["expo-router"],
-      ["expo-document-picker"],
+      [
+        "expo-router"
+      ],
+      [
+        "expo-document-picker"
+      ],
       [
         "expo-image-picker",
         {
@@ -33,14 +37,29 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "y"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.poojazapllo.zapllpMobile"
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3937b303-4c09-42e8-9a9d-f3ffd81adcd7"
       }
     }
   }

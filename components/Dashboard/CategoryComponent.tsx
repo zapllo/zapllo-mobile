@@ -5,19 +5,21 @@ import Modal from 'react-native-modal';
 
 interface CategoryComponentProps {
   title: string;
+  isEditing: boolean;
   onAddPress?: () => void;
   onDeletePress?: () => void;
 }
 
 const CategoryComponent: React.FC<CategoryComponentProps> = ({
   title,
+  isEditing: initialEditingState,
   onAddPress,
   onDeletePress
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(initialEditingState);
   const [editableTitle, setEditableTitle] = useState(title);
   const [isVisible, setIsVisible] = useState(true);
-  const [deleteModal,setDeleteModal] = useState(false)
+  const [deleteModal, setDeleteModal] = useState(false);
 
   const handleEditPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -37,21 +39,18 @@ const CategoryComponent: React.FC<CategoryComponentProps> = ({
 
   if (!isVisible) {
     return null;
-
-
   }
-    
-  
+
   const confirmDelete = () => {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setIsVisible(false);
-      setDeleteModal(false);
-    };
-  
-    const cancelDelete = () => {
-      Haptics.selectionAsync();
-      setDeleteModal(false);
-    };
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    setIsVisible(false);
+    setDeleteModal(false);
+  };
+
+  const cancelDelete = () => {
+    Haptics.selectionAsync();
+    setDeleteModal(false);
+  };
 
   return (
     <View
@@ -91,29 +90,29 @@ const CategoryComponent: React.FC<CategoryComponentProps> = ({
         )}
       </View>
 
-            <Modal
-              isVisible={deleteModal}
-              onBackdropPress={cancelDelete}
-              style={{ justifyContent: 'flex-end', margin: 0 }}
-            >
-              <View style={{ backgroundColor: '#0A0D28', padding: 20, borderTopLeftRadius: 30, borderTopRightRadius: 30,paddingBottom:55,paddingTop:35 }}>
-                <View style={{ alignItems: 'center' }}>
-                  <Image style={{ width: 80, height: 80, marginBottom: 20 }} source={require("../../assets/Tickit/delIcon.png")} />
-                  <Text style={{ color: 'white', fontSize: 24 }}>Are you sure you want to</Text>
-                  <Text style={{ color: 'white', fontSize: 24, marginBottom: 10 }}>delete this ticket?</Text>
-                  <Text style={{ color: '#787CA5' }}>You're going to delete the "Demo"</Text>
-                  <Text style={{ color: '#787CA5', marginBottom: 20 }}>ticket. Are you sure?</Text>
-                  <View  style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
-                    <TouchableOpacity style={{ backgroundColor: '#37384B', padding: 15, borderRadius: 30, flex: 1, marginRight: 10 }} onPress={cancelDelete}>
-                      <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'LatoBold' }}>No, Keep It.</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={{ backgroundColor: '#EF4444', padding: 15, borderRadius: 30, flex: 1 }} onPress={confirmDelete}>
-                      <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'LatoBold' }}>Delete</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            </Modal>
+      <Modal
+        isVisible={deleteModal}
+        onBackdropPress={cancelDelete}
+        style={{ justifyContent: 'flex-end', margin: 0 }}
+      >
+        <View style={{ backgroundColor: '#0A0D28', padding: 20, borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingBottom: 55, paddingTop: 35 }}>
+          <View style={{ alignItems: 'center' }}>
+            <Image style={{ width: 80, height: 80, marginBottom: 20 }} source={require("../../assets/Tickit/delIcon.png")} />
+            <Text style={{ color: 'white', fontSize: 24 }}>Are you sure you want to</Text>
+            <Text style={{ color: 'white', fontSize: 24, marginBottom: 10 }}>delete this ticket?</Text>
+            <Text style={{ color: '#787CA5' }}>You're going to delete the "Demo"</Text>
+            <Text style={{ color: '#787CA5', marginBottom: 20 }}>ticket. Are you sure?</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+              <TouchableOpacity style={{ backgroundColor: '#37384B', padding: 15, borderRadius: 30, flex: 1, marginRight: 10 }} onPress={cancelDelete}>
+                <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'LatoBold' }}>No, Keep It.</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={{ backgroundColor: '#EF4444', padding: 15, borderRadius: 30, flex: 1 }} onPress={confirmDelete}>
+                <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'LatoBold' }}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

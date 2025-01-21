@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, Platform, ScrollView, StyleSheet, TouchableOpacity, Image, TextInput,KeyboardAvoidingView } from 'react-native';
+import { View, Text, SafeAreaView, Platform, ScrollView, StyleSheet, TouchableOpacity, Image, TextInput, KeyboardAvoidingView } from 'react-native';
 import { useNavigation } from 'expo-router';
 import { StackNavigationProp } from '@react-navigation/stack';
 import NavbarTwo from '~/components/navbarTwo';
@@ -9,16 +9,18 @@ import Navbar from '~/components/navbar';
 import { Modal } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
-
 export default function TaskCategories() {
   const navigation = useNavigation<StackNavigationProp<any>>();
   const [taskDescription, setTaskDescription] = useState("");
   const [isModalVisible, setModalVisible] = useState(false);
-  const [categories, setCategories] = useState<string[]>(['Automation', 'Customer Support']);
-  const [AiModalOpen,SetAiModalOpen] = useState(false);
+  const [categories, setCategories] = useState<{ title: string, isEditing: boolean }[]>([
+    { title: 'Automation', isEditing: false },
+    { title: 'Customer Support', isEditing: false }
+  ]);
+  const [AiModalOpen, SetAiModalOpen] = useState(false);
   const [AiSelectedItems, setAiSelectedItems] = useState<number[]>([]);
 
-  //fake ai data
+  // Fake AI data
   const aiCategories = ['Medical Staffing', 'Financial Analysis', 'Retail Management', 'Logistics Optimization', 'Healthcare Solutions'];
 
   const toggleModal = () => {
@@ -26,7 +28,7 @@ export default function TaskCategories() {
   };
 
   const addNewCategory = () => {
-    setCategories([...categories, `New Category ${categories.length + 1}`]);
+    setCategories([...categories, { title: ``, isEditing: true }]);
   };
 
   const toggleAiSelection = (index: number) => {
@@ -40,27 +42,23 @@ export default function TaskCategories() {
 
   const confirmAndSaveCategories = () => {
     const selectedCategories = AiSelectedItems.map(index => aiCategories[index]);
-    setCategories([...categories, ...selectedCategories]);
+    setCategories([...categories, ...selectedCategories.map(title => ({ title, isEditing: false }))]);
     SetAiModalOpen(false);
   };
-  
 
   return (
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary">
       <KeyboardAvoidingView
         className="w-full"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <Navbar
-          title="Task Categories"
-          
-        />
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        
+        >
+        <Navbar title="Task Categories" />
         <ScrollView
-          className="h-full w-full flex-grow"
+          className="h-full w-full flex-grow "
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
-          <View className="h-full w-full items-center pb-20">
-
-
+          <View className="h-full w-full items-center pb-36">
             <View
               style={[
                 styles.input,
@@ -78,22 +76,20 @@ export default function TaskCategories() {
                 placeholderTextColor="#787CA5"></TextInput>
             </View>
 
-
-            {/* opeen a  modal when click those modal add as as a categories*/}
             <TouchableOpacity
-            onPress={()=>SetAiModalOpen(true)}
-            className='w-[90%] border mb-8 border-[#37384B] py-5 px-7 rounded-3xl gap-4 flex flex-col' >
+              onPress={() => SetAiModalOpen(true)}
+              className='w-[90%] border mb-8 border-[#37384B] py-5 px-7 rounded-3xl gap-4 flex flex-col'>
               <View className='w-full items-center justify-between flex flex-row'>
                 <View className=' items-center flex flex-row gap-5'>
-                  <Image className='h-7 w-7' source={require("../../assets/ZAi/Ai.png")}/>
-                  <Image className='h-[24px] w-[108px]   ' source={require("../../assets/ZAi/ZaplloAi.png")}/>
+                  <Image className='h-7 w-7' source={require("../../assets/ZAi/Ai.png")} />
+                  <Image className='h-[24px] w-[108px]' source={require("../../assets/ZAi/ZaplloAi.png")} />
                 </View>
                 <TouchableOpacity className=''>
-                  <Image className='w-8 h-8' source={require("../../assets/Tasks/add.png")}/>
+                  <Image className='w-8 h-8' source={require("../../assets/Tasks/add.png")} />
                 </TouchableOpacity>
               </View>
-              <Text className='text-sm text-[#787CA5]' style={{fontFamily:"LatoBold"}}>Use our intelligent AI engine to analyze your industry and carefully curate a selection of categories for your workflow.</Text>
-            </TouchableOpacity >
+              <Text className='text-sm text-[#787CA5]' style={{ fontFamily: "LatoBold" }}>Use our intelligent AI engine to analyze your industry and carefully curate a selection of categories for your workflow.</Text>
+            </TouchableOpacity>
             <Modal
               animationType="slide"
               transparent={true}
@@ -118,11 +114,11 @@ export default function TaskCategories() {
                     </TouchableOpacity>
                   </View>
 
-                  <Text className='text-[#787CA5] text-xs' style={{fontFamily:"LatoBold"}}>Our intelligent AI engine has analyzed your industry and carefully curated a selection of categories. Choose the ones that suit your business, and let’s add them to your workflow effortlessly!
+                  <Text className='text-[#787CA5] text-xs' style={{ fontFamily: "LatoBold" }}>Our intelligent AI engine has analyzed your industry and carefully curated a selection of categories. Choose the ones that suit your business, and let’s add them to your workflow effortlessly!
                   </Text>
 
                   <View className='mt-14 flex flex-col gap-6'>
-                  {aiCategories.map((category, index) => (
+                    {aiCategories.map((category, index) => (
                       <TouchableOpacity
                         key={index}
                         onPress={() => toggleAiSelection(index)}
@@ -132,45 +128,42 @@ export default function TaskCategories() {
                         }}>
 
                         <View>
-                        <Text className='text-xl text-white'style={{fontFamily:"LatoBold"}}>{category}</Text>
-                        {
-                           AiSelectedItems.includes(index) ? 
-                            <Text className='text-xs text-[#37384B]' style={{fontFamily:"LatoBold"}}>Tap to unselect</Text>
-                            :
-                            <Text className='text-xs text-[#37384B]'style={{fontFamily:"LatoBold"}}>Tap to select
-                            </Text>           
-                        }
+                          <Text className='text-xl text-white' style={{ fontFamily: "LatoBold" }}>{category}</Text>
+                          {
+                            AiSelectedItems.includes(index) ?
+                              <Text className='text-xs text-[#37384B]' style={{ fontFamily: "LatoBold" }}>Tap to unselect</Text>
+                              :
+                              <Text className='text-xs text-[#37384B]' style={{ fontFamily: "LatoBold" }}>Tap to select
+                              </Text>
+                          }
                         </View>
                         {
                           AiSelectedItems.includes(index) &&
-                          <Image className='w-8 h-8' source={require('../../assets/Tasks/isEditing.png')}/>
+                          <Image className='w-8 h-8' source={require('../../assets/Tasks/isEditing.png')} />
                         }
-                        
+
                       </TouchableOpacity>
                     ))}
                   </View>
 
-                  <TouchableOpacity 
-                  onPress={confirmAndSaveCategories}
-                  className='w-full items-center p-3 mt-8 bg-[rgb(1,122,91)] rounded-full'>
-                    <Text className='text-white text-lg font-bold ' style={{fontFamily:"LatoBold"}}>Confirm & Save</Text>
+                  <TouchableOpacity
+                    onPress={confirmAndSaveCategories}
+                    className='w-full items-center p-3 mt-8 bg-[rgb(1,122,91)] rounded-full'>
+                    <Text className='text-white text-lg font-bold ' style={{ fontFamily: "LatoBold" }}>Confirm & Save</Text>
                   </TouchableOpacity>
                 </View>
               </ScrollView>
             </Modal>
 
-
-
-
-
             <View className='w-[90%] mb-5 items-start'>
-            <Text className='text-sm text-[#787CA5]'>Categories</Text>
+              <Text className='text-sm text-[#787CA5]'>Categories</Text>
             </View>
 
             {categories.map((category, index) => (
               <CategoryComponent
                 key={index}
-                title={category}
+                title={category.title}
+                isEditing={category.isEditing}
                 onAddPress={toggleModal}
                 onDeletePress={() => console.log('Delete pressed')}
               />

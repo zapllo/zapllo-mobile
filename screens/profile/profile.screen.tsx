@@ -252,7 +252,9 @@ const ProfileScreen: React.FC = () => {
 
               {/* Tutorials */}
               <View className="w-full items-center gap-5">
-                <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
+                <TouchableOpacity 
+                onPress={()=>router.push("/(routes)/profile/tutorials" as any)}
+                className="flex  w-full flex-row items-center justify-between pr-2">
                   <Text className="text-base text-white" style={{ fontFamily: 'LatoBold' }}>
                     Tutorials
                   </Text>

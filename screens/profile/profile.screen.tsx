@@ -21,6 +21,8 @@ import { AppDispatch, RootState } from '~/redux/store';
 import { useDispatch } from 'react-redux';
 import { logOut } from '~/redux/slices/authSlice';
 import ProfileImage from '~/components/profile/ProfileImage';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Modal from 'react-native-modal';
 
 // Define the type for your navigation
 type RootStackParamList = {
@@ -48,6 +50,7 @@ const ProfileScreen: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [numberValue, setNumberValue] = useState(data[0]?.value || null);
   const [buttonSpinner, setButtonSpinner] = useState(false);
+  const [profileModal, setProfileModal] = useState(false); 
 
   const handleLogout = () => {
     setButtonSpinner(true);
@@ -77,11 +80,19 @@ const ProfileScreen: React.FC = () => {
           {/* container */}
           <View className="mb-12 mt-3 flex h-full   w-full items-center">
             {/*profile photo name and role */}
-            <View className="flex w-[90%] flex-row items-center justify-start gap-4">
-            <ProfileImage 
-              profilePic={userData?.data?.profilePic || userData?.user?.profilePic}
-              firstName={userData?.user?.firstName || userData?.data?.firstName}
-            />
+            <View className="flex w-[90%] flex-row items-center justify-start gap-5">
+
+              <TouchableOpacity 
+              onPress={()=>setProfileModal(true)}
+              className='w-18 h-18 border border-[#0A0D28] rounded-full'>
+                <MaterialCommunityIcons className=' absolute z-20 rounded-full p-1.5 bg-[#111434] bottom-0 -right-2' name="camera-retake" size={12} color="#b5afaf" />
+                <ProfileImage 
+                profilePic={userData?.data?.profilePic || userData?.user?.profilePic}
+                firstName={userData?.user?.firstName || userData?.data?.firstName}
+                />
+              </TouchableOpacity>
+
+
               <View className=" flex flex-col items-start gap-1">
                 <Text
                   className="text-xl font-medium text-white"
@@ -374,6 +385,38 @@ const ProfileScreen: React.FC = () => {
               )}
             </TouchableOpacity>
           </View>
+
+                  <Modal
+                    isVisible={profileModal}
+                    onBackdropPress={() => setProfileModal(false)}
+                    style={{ margin: 0, justifyContent: 'flex-end' }}
+                    animationIn="slideInUp"
+                    animationOut="slideOutDown">
+                    <View className="mb-10 mt-2 flex-col w-full justify-center flex items-center">
+
+                      <View
+                      className=' items-center w-[95%]  mb-2 rounded-2xl bg-[#14173b] p-4 '
+                      >
+                        <TouchableOpacity
+                        className='items-center w-full rounded-2xl pb-3 '
+                        >
+                          <Text className='text-white text-lg' style={{ fontFamily: 'LatoBold' }}>Add profile photo</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                        className='items-center w-full rounded-2xl pt-3 '
+                        >
+                          <Text className='text-white text-lg' style={{ fontFamily: 'LatoBold' }}>Delete profile photo</Text>
+                        </TouchableOpacity>
+                      </View>
+                    
+                      <TouchableOpacity 
+                      className=' items-center w-[95%] rounded-2xl mt-3 bg-[#14173b] p-3 '
+                      onPress={() => setProfileModal(false)}>
+                        <Text className='text-white text-lg' style={{ fontFamily: 'LatoBold' }}>Cancel</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                  </Modal>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -73,6 +73,7 @@ export default function TutorialsScreen() {
 
 
 
+
           </View>
           </View>
 
@@ -102,4 +103,7 @@ const styles = StyleSheet.create({
     fontFamily: 'lato-Bold',
     
   },
-})
+});
+
+
+

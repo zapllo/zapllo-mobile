@@ -26,7 +26,9 @@ export default function ProfileButton() {
         {userData?.data?.profilePic ? (
           <Image className='h-12 w-12 rounded-full border-4 border-primary' source={{ uri: userData?.data?.profilePic }} />
         ) : (
-          <View className="h-12 w-12 rounded-full border-4 border-primary bg-white" />
+          <View className="h-12 w-12 items-center justify-center rounded-full border-4 border-primary bg-[#8a75c8]">
+            <Text className='text-lg font-bold text-[#6648c2]'>{userData?.data?.firstName.slice(0, 2)}</Text>
+          </View>
         )}
       </LinearGradient>
     </TouchableOpacity>

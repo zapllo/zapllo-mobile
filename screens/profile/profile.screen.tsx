@@ -20,6 +20,7 @@ import { useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '~/redux/store';
 import { useDispatch } from 'react-redux';
 import { logOut } from '~/redux/slices/authSlice';
+import ProfileImage from '~/components/profile/ProfileImage';
 
 // Define the type for your navigation
 type RootStackParamList = {
@@ -77,14 +78,10 @@ const ProfileScreen: React.FC = () => {
           <View className="mb-12 mt-3 flex h-full   w-full items-center">
             {/*profile photo name and role */}
             <View className="flex w-[90%] flex-row items-center justify-start gap-4">
-              <View className="h-16 w-16 rounded-full bg-white ">
-                {(userData?.data?.profilePic || userData?.user?.profilePic) && (
-                  <Image
-                    className="h-16 w-16 rounded-full"
-                    source={{ uri: userData?.data?.profilePic }}
-                  />
-                )}
-              </View>
+            <ProfileImage 
+              profilePic={userData?.data?.profilePic || userData?.user?.profilePic}
+              firstName={userData?.user?.firstName || userData?.data?.firstName}
+            />
               <View className=" flex flex-col items-start gap-1">
                 <Text
                   className="text-xl font-medium text-white"

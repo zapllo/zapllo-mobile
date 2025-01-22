@@ -300,6 +300,23 @@ const ProfileScreen: React.FC = () => {
               </View>
 
 
+                {/* Checklist */}
+                <View className="mt-4 w-full items-center gap-5">
+                <TouchableOpacity 
+                onPress={()=>router.push("/(routes)/profile/Checklist" as any)}
+                className="flex  w-full flex-row items-center justify-between pr-2">
+                  <Text className="text-base text-white" style={{ fontFamily: 'LatoBold' }}>
+                  Checklist
+                  </Text>
+                  <Image
+                    source={require('../../assets/commonAssets/smallGoto.png')}
+                    className="mb-1 h-3 w-3"
+                  />
+                </TouchableOpacity>
+                <View className="h-0.5 w-full bg-[#37384B] "></View>
+              </View>
+
+
 
 
               {/* Events */}

@@ -238,6 +238,7 @@ const ProfileScreen: React.FC = () => {
                 {/* change pasword buttons */}
 
                 <TouchableOpacity
+                onPress={()=>router.push("/(routes)/profile/ChangePassword" as any)}
                   className={`mt-6 flex  h-[3.7rem] w-[90%] items-center justify-center rounded-full bg-[#37384B] p-2.5`}>
                   {buttonSpinner ? (
                     <ActivityIndicator size="small" color={'white'} />

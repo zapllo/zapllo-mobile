@@ -1,7 +1,7 @@
 import { View, Text, SafeAreaView, KeyboardAvoidingView, ScrollView, Image, Platform, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import InputContainer from "~/components/InputContainer";
-import { Feather } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "expo-router";
 
 export default function ChangePassWordScreen() {
@@ -9,6 +9,8 @@ export default function ChangePassWordScreen() {
     const [newPassword,setNewPassword] = useState("");
     const [error, setError] = useState<string>('');
     const navigation = useNavigation();
+
+      const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
 
       const handlePasswordValidation = (value: string) => {
         const passwordOneNumber = /(?=.*[0-9])/;
@@ -20,7 +22,9 @@ export default function ChangePassWordScreen() {
           setError('Write at least 6 characters');
         } else {
           setError('');
-        }   
+        }
+        setNewPassword(value)
+        setIsPasswordTouched(true);   
       };
 
       
@@ -64,11 +68,31 @@ export default function ChangePassWordScreen() {
                 <InputContainer
                   label="New Password"
                   value={newPassword}
-                  onChangeText={()=>setNewPassword}
+                  onChangeText={handlePasswordValidation}
                   placeholder="**********"
                   className="flex-1  text-[#787CA5]"
                   passwordError={error}
                 />
+
+              {isPasswordTouched && (
+                <>
+                  {error ? (
+                    <View className="ml-8 mt-2 flex-row self-start items-center">
+                      <Ionicons name="close-circle" size={16} color="#EE4848" />
+                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
+                        {error}
+                      </Text>
+                    </View>
+                  ) : (
+                    <View className="ml-8 mt-2 flex-row self-start items-center">
+                      <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
+                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500" style={{fontFamily:"Lato-Light"}}>
+                        Password is valid!
+                      </Text>
+                    </View>
+                  )}
+                </>
+              )}
                 <TouchableOpacity 
                 className="p-4 items-center w-[70%] my-7 bg-[#34785D] rounded-full">
                     <Text className="text-white" style={{fontFamily:"LatoBold"}}>Change Password</Text>

@@ -28,6 +28,8 @@ import TaskStatusCard from '~/components/TaskComponents/TaskCountSection';
 import DashboardCard from '~/components/TaskComponents/DashboardCard';
 import DashboardCardTwo from '~/components/TaskComponents/DashboardCardTwo';
 import DashboardThree from '~/components/TaskComponents/DashboardThree';
+import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
+
 
 interface Task {
   _id: string;
@@ -83,6 +85,10 @@ export default function DashboardScreen() {
   const [categoryTasks, setCategoryTasks] = useState([]);
   const [groupedCategory, setGroupedCategory] = useState([]);
   const [formattedDateRange, setFormattedDateRange] = useState('');
+  const [isCustomDateModalVisible, setIsCustomDateModalVisible] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState<Date>(new Date());
+  const [customEndDate, setCustomEndDate] = useState<Date>(new Date());
+
 
   const [taskCounts, setTaskCounts] = useState<TaskStatusCounts>({
     Overdue: 0,
@@ -159,7 +165,11 @@ export default function DashboardScreen() {
       if (selectedTeamSize === 'Today' || selectedTeamSize === 'Yesterday') {
         // For single dates (Today or Yesterday)
         setFormattedDateRange(formatWithSuffix(dateRange.startDate));
-      } else {
+      }
+      if (selectedTeamSize === 'Custom') {
+        setIsCustomDateModalVisible(true);
+      }
+      else {
         // For ranges (Week, Month, Year, etc.)
         const formattedStart = formatWithSuffix(dateRange.startDate);
         const formattedEnd = formatWithSuffix(dateRange.endDate);
@@ -389,7 +399,21 @@ export default function DashboardScreen() {
     );
   };
 
-  console.log(":::::::::::::::::::",taskCounts)
+  console.log(":::::::::::::::::::",taskCounts);
+
+  const handleCustomDateApply = (startDate: Date, endDate: Date) => {
+    setCustomStartDate(startDate);
+    setCustomEndDate(endDate);
+    // Use these dates to filter your tasks
+    const customDateRange = {
+      startDate,
+      endDate: new Date(endDate.setHours(23, 59, 59, 999)), // End of the selected day
+    };
+    const customFilteredTasks = filterTasksByDate(tasksData, customDateRange);
+    setTasks(customFilteredTasks);
+    setTaskCounts(countStatuses(customFilteredTasks));
+  };
+
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
@@ -572,6 +596,17 @@ export default function DashboardScreen() {
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+      <CustomDateRangeModal
+  isVisible={isCustomDateModalVisible}
+  onClose={() => {
+    setIsCustomDateModalVisible(false);
+    setSelectedTeamSize('This Week'); // Reset to default if modal is closed
+  }}
+  onApply={handleCustomDateApply}
+  initialStartDate={customStartDate}
+  initialEndDate={customEndDate}
+/>
+      
     </SafeAreaView>
   );
 }

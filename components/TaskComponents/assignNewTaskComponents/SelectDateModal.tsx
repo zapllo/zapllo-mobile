@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Modal from 'react-native-modal';
@@ -6,7 +6,6 @@ import * as Haptics from 'expo-haptics';
 
 interface SelectDateModalProps {
   visible: boolean;
-  mode: 'date' | 'time';
   selectedDate: Date;
   onChange: (date: Date) => void;
   onCancel: () => void;
@@ -14,15 +13,20 @@ interface SelectDateModalProps {
 
 const SelectDateModal: React.FC<SelectDateModalProps> = ({
   visible,
-  mode,
   selectedDate,
   onChange,
   onCancel,
 }) => {
-  const handleConfirm = () => {
+  const [currentMode, setCurrentMode] = useState<'date' | 'time'>('date');
+
+  const handleConfirm = (date: Date) => {
     Haptics.selectionAsync(); // Trigger haptic feedback
-    onChange(selectedDate);
-    onCancel();
+    if (currentMode === 'date') {
+      setCurrentMode('time'); // Switch to time mode after confirming date
+    } else {
+      onChange(date);
+      onCancel();
+    }
   };
 
   const handleCancel = () => {
@@ -36,13 +40,13 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
       onBackdropPress={onCancel}
       style={{ justifyContent: 'center', alignItems: 'center' }}>
       <View style={styles.modalContainer}>
-        <Text style={styles.modalTitle}>{mode === 'date' ? 'Select Date' : 'Select Time'}</Text>
+        <Text style={styles.modalTitle}>{currentMode === 'date' ? 'Select Date' : 'Select Time'}</Text>
         <DateTimePicker
           value={selectedDate}
-          mode={mode}
+          mode={currentMode}
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={(event, date) => {
-            if (date) onChange(date); // Pass valid date to parent
+            if (date) handleConfirm(date); // Pass valid date to handleConfirm
           }}
         />
         {Platform.OS === 'ios' && (
@@ -55,7 +59,7 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
               <Text style={styles.actionText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={handleConfirm}
+              onPress={() => handleConfirm(selectedDate)}
               style={[styles.actionButton, styles.confirmButton]}
               accessible={true}
               accessibilityLabel="Confirm selected date or time">

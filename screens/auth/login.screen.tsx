@@ -86,7 +86,7 @@ export default function Loginscreen() {
 
         // Navigate to the home screen
         Alert.alert(response.data.message);
-        dispatch(logIn({ token, userData }));
+        dispatch(logIn({ token:token, userData:userData }));
         router.push('/(routes)/home');
       } else {
         setError(response.data.message || 'Invalid credentials');

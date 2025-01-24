@@ -3,20 +3,22 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ActivityIndicator } from 'react-native';
 
 interface GradientButtonProps {
   title: string;
   onPress?: () => void;
-  imageSource: any; // You can specify a more specific type if needed
+  imageSource: any; 
+  loading:any
 }
 
-const ImageContainer: React.FC<{ source: any }> = ({ source }) => {
+const ImageContainer: React.FC<{ source: any}> = ({ source}) => {
   return (
     <Image source={source} style={styles.image} />
   );
 };
 
-const GradientButton: React.FC<GradientButtonProps> = ({ title, onPress, imageSource }) => {
+const GradientButton: React.FC<GradientButtonProps> = ({ title, onPress, imageSource,loading }) => {
   return (
     <View className="w-[90%]">
       <TouchableOpacity
@@ -31,7 +33,7 @@ const GradientButton: React.FC<GradientButtonProps> = ({ title, onPress, imageSo
         >
           <ImageContainer source={imageSource} />
           <Text className="text-center font-semibold text-white text-lg" style={{ fontFamily: "LatoBold" }}>
-            {title}
+            {loading ? <ActivityIndicator size="small" color='#fff'/> :title}
           </Text>
         </LinearGradient>
       </TouchableOpacity>

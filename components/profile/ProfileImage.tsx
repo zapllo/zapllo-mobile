@@ -1,32 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Image, Text } from 'react-native';
 
 interface ProfileImageProps {
   profilePic?: string;
   firstName?: string;
+  lastName?: string;
   size?: number;
   backgroundColor?: string;
   textColor?: string;
+  image:any
 }
 
 const ProfileImage: React.FC<ProfileImageProps> = ({
   profilePic,
   firstName,
+  lastName,
   size = 64, // default size of 64 (equivalent to h-16 w-16)
   backgroundColor = '#8a75c8',
-  textColor = '#6648c2'
+  textColor = '#6648c2',
+  image
 }) => {
+
   const getInitials = () => {
-    if (!firstName) return '';
-    const words = firstName.split(' ');
-    if (words.length >= 2) {
-      return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
-    }
-    return firstName.slice(0, 2);
+    if (!firstName && !lastName) return '';
+    const firstInitial = firstName?.charAt(0).toUpperCase() || '';
+    const lastInitial = lastName?.charAt(0).toUpperCase() || '';
+    return firstInitial + lastInitial;
   };
 
   return (
-    <View 
+    <View
       style={{
         height: size,
         width: size,
@@ -34,24 +37,24 @@ const ProfileImage: React.FC<ProfileImageProps> = ({
         backgroundColor,
         justifyContent: 'center',
         alignItems: 'center',
-        overflow: 'hidden'
+        overflow: 'hidden',
       }}
     >
-      {profilePic ? (
+      {image ? (
         <Image
           style={{
             height: size,
             width: size,
-            borderRadius: size / 2
+            borderRadius: size / 2,
           }}
-          source={{ uri: profilePic }}
+          source={{ uri: image }}
         />
       ) : (
-        <Text 
+        <Text
           style={{
             color: textColor,
             fontSize: size * 0.4,
-            fontWeight: 'bold'
+            fontWeight: 'bold',
           }}
         >
           {getInitials()}

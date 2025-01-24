@@ -229,9 +229,7 @@ useEffect(() => {
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary">
       <KeyboardAvoidingView
         className="w-full"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        
-        >
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <Navbar title="Task Categories" />
         <ScrollView
           className="h-full w-full flex-grow "
@@ -241,7 +239,14 @@ useEffect(() => {
             <View
               style={[
                 styles.input,
-                { height: 57, justifyContent: 'flex-start', alignItems: 'flex-start', width: "90%", marginBottom: 30, marginTop: 20 },
+                {
+                  height: 57,
+                  justifyContent: 'flex-start',
+                  alignItems: 'flex-start',
+                  width: '90%',
+                  marginBottom: 30,
+                  marginTop: 20,
+                },
               ]}>
               <TextInput
                 multiline
@@ -257,33 +262,41 @@ useEffect(() => {
 
             <TouchableOpacity
               onPress={() => SetAiModalOpen(true)}
-              className='w-[90%] border mb-8 border-[#37384B] py-5 px-7 rounded-3xl gap-4 flex flex-col'>
-              <View className='w-full items-center justify-between flex flex-row'>
-                <View className=' items-center flex flex-row gap-5'>
-                  <Image className='h-7 w-7' source={require("../../assets/ZAi/Ai.png")} />
-                  <Image className='h-[24px] w-[108px]' source={require("../../assets/ZAi/ZaplloAi.png")} />
+              className="mb-8 flex w-[90%] flex-col gap-4 rounded-3xl border border-[#37384B] px-7 py-5">
+              <View className="flex w-full flex-row items-center justify-between">
+                <View className=" flex flex-row items-center gap-5">
+                  <Image className="h-7 w-7" source={require('../../assets/ZAi/Ai.png')} />
+                  <Image
+                    className="h-[24px] w-[108px]"
+                    source={require('../../assets/ZAi/ZaplloAi.png')}
+                  />
                 </View>
-                <TouchableOpacity className=''>
-                  <Image className='w-8 h-8' source={require("../../assets/Tasks/add.png")} />
+                <TouchableOpacity className="">
+                  <Image className="h-8 w-8" source={require('../../assets/Tasks/add.png')} />
                 </TouchableOpacity>
               </View>
-              <Text className='text-sm text-[#787CA5]' style={{ fontFamily: "LatoBold" }}>Use our intelligent AI engine to analyze your industry and carefully curate a selection of categories for your workflow.</Text>
+              <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
+                Use our intelligent AI engine to analyze your industry and carefully curate a
+                selection of categories for your workflow.
+              </Text>
             </TouchableOpacity>
             <Modal
               animationType="slide"
               transparent={true}
               visible={AiModalOpen}
-              onRequestClose={() => SetAiModalOpen(false)}
-            >
+              onRequestClose={() => SetAiModalOpen(false)}>
               <ScrollView
                 contentContainerStyle={{ flexGrow: 1 }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled">
-                <View className="mt-16 rounded-t-3xl bg-[#0A0D28] h-full p-5 pb-20">
+                <View className="mt-16 h-full rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
                   <View className=" mb-7 flex w-full flex-row items-center justify-between">
-                    <View className=' items-center flex flex-row gap-5'>
-                      <Image className='h-7 w-7' source={require("../../assets/ZAi/Ai.png")} />
-                      <Image className='h-[24px] w-[108px]' source={require("../../assets/ZAi/ZaplloAi.png")} />
+                    <View className=" flex flex-row items-center gap-5">
+                      <Image className="h-7 w-7" source={require('../../assets/ZAi/Ai.png')} />
+                      <Image
+                        className="h-[24px] w-[108px]"
+                        source={require('../../assets/ZAi/ZaplloAi.png')}
+                      />
                     </View>
                     <TouchableOpacity onPress={() => SetAiModalOpen(false)}>
                       <Image
@@ -293,7 +306,10 @@ useEffect(() => {
                     </TouchableOpacity>
                   </View>
 
-                  <Text className='text-[#787CA5] text-xs' style={{ fontFamily: "LatoBold" }}>Our intelligent AI engine has analyzed your industry and carefully curated a selection of categories. Choose the ones that suit your business, and let’s add them to your workflow effortlessly!
+                  <Text className="text-xs text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
+                    Our intelligent AI engine has analyzed your industry and carefully curated a
+                    selection of categories. Choose the ones that suit your business, and let’s add
+                    them to your workflow effortlessly!
                   </Text>
 
                   <View className='mt-14 flex flex-col gap-6'>
@@ -301,41 +317,53 @@ useEffect(() => {
                       <TouchableOpacity
                         key={index}
                         onPress={() => toggleAiSelection(index)}
-                        className='w-full p-4 flex flex-row justify-between items-center rounded-2xl  border '
+                        className="flex w-full flex-row items-center justify-between rounded-2xl border  p-4 "
                         style={{
                           borderColor: AiSelectedItems.includes(index) ? '#815BF5' : '#37384B',
                         }}>
-
                         <View>
-                          <Text className='text-xl text-white' style={{ fontFamily: "LatoBold" }}>{category}</Text>
-                          {
-                            AiSelectedItems.includes(index) ?
-                              <Text className='text-xs text-[#37384B]' style={{ fontFamily: "LatoBold" }}>Tap to unselect</Text>
-                              :
-                              <Text className='text-xs text-[#37384B]' style={{ fontFamily: "LatoBold" }}>Tap to select
-                              </Text>
-                          }
+                          <Text className="text-xl text-white" style={{ fontFamily: 'LatoBold' }}>
+                            {category}
+                          </Text>
+                          {AiSelectedItems.includes(index) ? (
+                            <Text
+                              className="text-xs text-[#37384B]"
+                              style={{ fontFamily: 'LatoBold' }}>
+                              Tap to unselect
+                            </Text>
+                          ) : (
+                            <Text
+                              className="text-xs text-[#37384B]"
+                              style={{ fontFamily: 'LatoBold' }}>
+                              Tap to select
+                            </Text>
+                          )}
                         </View>
-                        {
-                          AiSelectedItems.includes(index) &&
-                          <Image className='w-8 h-8' source={require('../../assets/Tasks/isEditing.png')} />
-                        }
-
+                        {AiSelectedItems.includes(index) && (
+                          <Image
+                            className="h-8 w-8"
+                            source={require('../../assets/Tasks/isEditing.png')}
+                          />
+                        )}
                       </TouchableOpacity>
                     ))}
                   </View>
 
                   <TouchableOpacity
                     onPress={confirmAndSaveCategories}
-                    className='w-full items-center p-3 mt-8 bg-[rgb(1,122,91)] rounded-full'>
-                    <Text className='text-white text-lg font-bold ' style={{ fontFamily: "LatoBold" }}>Confirm & Save</Text>
+                    className="mt-8 w-full items-center rounded-full bg-[rgb(1,122,91)] p-3">
+                    <Text
+                      className="text-lg font-bold text-white "
+                      style={{ fontFamily: 'LatoBold' }}>
+                      Confirm & Save
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </ScrollView>
             </Modal>
 
-            <View className='w-[90%] mb-5 items-start'>
-              <Text className='text-sm text-[#787CA5]'>Categories</Text>
+            <View className="mb-5 w-[90%] items-start">
+              <Text className="text-sm text-[#787CA5]">Categories</Text>
             </View>
             {
   loading ? (
@@ -387,7 +415,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 30,
     padding: 8,
-    paddingLeft:20,
+    paddingLeft: 20,
   },
   inputSome: {
     color: 'white',

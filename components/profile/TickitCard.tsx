@@ -5,13 +5,15 @@ import Modal from 'react-native-modal';
 import { useRouter } from 'expo-router';
 
 interface TickitCardProps {
-  status: string;
-  message: string;
-  date: string;
-  category:string;
+  status: any;
+  message: any;
+  date: any;
+  category:any;
+  subCategory:any;
+  subject:any
 }
 
-const TickitCard: React.FC<TickitCardProps> = ({ status, message, date,category }) => {
+const TickitCard: React.FC<TickitCardProps> = ({ status, message, date,category,subCategory,subject }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const router = useRouter();
@@ -32,10 +34,11 @@ const TickitCard: React.FC<TickitCardProps> = ({ status, message, date,category 
     setIsModalVisible(false);
   };
 
+
   const navigateToDetail = () => {
     router.push({
       pathname: '/(routes)/profile/Tickits/TickitDetails' as any,
-      params: { status, message, date,category },
+      params: { status, message, date,category,subCategory,subject },
     });
   };
 

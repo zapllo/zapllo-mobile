@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   ScrollView,
   Text,
@@ -11,13 +11,8 @@ import {
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import ProfileButton from '~/components/profile/ProfileButton';
-import Feather from 'react-native-vector-icons/Feather';
 import { LinearGradient } from 'expo-linear-gradient';
 import Navbar from '~/components/navbar';
-import { useSelector } from 'react-redux';
-import { RootState } from '~/redux/store';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import { backend_Host } from '~/config';
 

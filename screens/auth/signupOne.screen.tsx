@@ -178,12 +178,21 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
+          
+          <View 
+          className='flex mt-16 relative items-center'
+          style={{ marginVertical: verticalScale(25) }}
+          >
+          <TouchableOpacity className='w-10 ml-4 h-9 absolute left-1 bottom-6 '>
+            <Image resizeMode="contain" className='w-full h-full' source={require("../../assets/sign-in/back.png")}/>
+          </TouchableOpacity>
           <Image
-            className="h-9 self-center mt-16"
-            style={{ marginVertical: verticalScale(25) }}
+            className="h-9"
             source={require('../../assets/sign-in/logo.png')}
             resizeMode="contain"
           />
+          </View>
+
           {!showWorkspace && (
             <>
             <View className="flex h-full w-full items-center pb-14">

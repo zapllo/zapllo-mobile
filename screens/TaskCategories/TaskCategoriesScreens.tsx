@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, SafeAreaView, Platform, ScrollView, StyleSheet, TouchableOpacity, Image, TextInput, KeyboardAvoidingView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, SafeAreaView, Platform, ScrollView, StyleSheet, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from 'expo-router';
 import { StackNavigationProp } from '@react-navigation/stack';
 import NavbarTwo from '~/components/navbarTwo';
@@ -8,44 +8,223 @@ import CategoryComponent from '../../components/Dashboard/CategoryComponent';
 import Navbar from '~/components/navbar';
 import { Modal } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { backend_Host } from '~/config';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { RootState } from '~/redux/store';
 
 export default function TaskCategories() {
   const navigation = useNavigation<StackNavigationProp<any>>();
+  const { token, userData } = useSelector((state: RootState) => state.auth);
   const [taskDescription, setTaskDescription] = useState("");
   const [isModalVisible, setModalVisible] = useState(false);
-  const [categories, setCategories] = useState<{ title: string, isEditing: boolean }[]>([
-    { title: 'Automation', isEditing: false },
-    { title: 'Customer Support', isEditing: false }
-  ]);
+  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);  
+  const [error, setError] = useState('');
+  const [categories, setCategories] = useState<{ id: string; name: string; isEditing: boolean }[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState(categories);
   const [AiModalOpen, SetAiModalOpen] = useState(false);
   const [AiSelectedItems, setAiSelectedItems] = useState<number[]>([]);
+  const[aiCategories,setAiCategories]=useState([])
+  
 
-  // Fake AI data
-  const aiCategories = ['Medical Staffing', 'Financial Analysis', 'Retail Management', 'Logistics Optimization', 'Healthcare Solutions'];
+useEffect(()=>{
+fetchCategories();
+handleSuggestCategories()
+},[token])
+
+useEffect(() => {
+  const search = taskDescription?.toLowerCase();
+  const filtered = categories?.filter((category) =>
+    category?.name?.toLowerCase().includes(search)
+  );
+  setFilteredCategories(filtered);
+}, [taskDescription, categories]);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
 
   const addNewCategory = () => {
-    setCategories([...categories, { title: ``, isEditing: true }]);
+    setCategories([...categories, { name: ``, isEditing: true }]);
   };
 
   const toggleAiSelection = (index: number) => {
     setAiSelectedItems((prevSelectedItems) =>
       prevSelectedItems.includes(index)
-        ? prevSelectedItems.filter((item) => item !== index)
-        : [...prevSelectedItems, index]
+        ? prevSelectedItems.filter((item) => item !== index) 
+        : [...prevSelectedItems, index] 
     );
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); 
   };
 
-  const confirmAndSaveCategories = () => {
-    const selectedCategories = AiSelectedItems.map(index => aiCategories[index]);
-    setCategories([...categories, ...selectedCategories.map(title => ({ title, isEditing: false }))]);
+  const confirmAndSaveCategories = async () => {
+    
+    const selectedCategories = AiSelectedItems.map((index) => aiCategories[index]);
+  
+    if (selectedCategories.length === 0) {
+      Alert.alert('No Selection', 'Please select at least one category.');
+      return;
+    }
+  
+    for (const category of selectedCategories) {
+       await handleAddCategory(category);
+       fetchCategories()        
+    }
+  
     SetAiModalOpen(false);
   };
+  
+ 
 
+  const fetchCategories = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${backend_Host}/category/get`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const formattedCategories = response?.data?.data?.map((category: any) => ({
+        id: category?._id,
+        name: category?.name,
+        isEditing: false,
+      }));
+  
+      setCategories(formattedCategories);
+      setFilteredCategories(formattedCategories);
+    } catch (err: any) {
+      setError('Failed to fetch tasks. Please try again.');
+      console.error('API Error:', err.response || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleEditMode = (id: string) => {
+    setCategories((prevCategories) =>
+      prevCategories.map((category) =>
+        category.id === id
+          ? { ...category, isEditing: !category.isEditing }
+          : { ...category, isEditing: false }
+      )
+    );
+  };
+  const handleAddCategory = async (cat:string) => {
+    console.log('Category created:❌❌❌❌❌❌❌❌❌❌❌❌❌❌111111');
+    if (!cat) {
+      Alert.alert('Validation Error', 'Enter new category');
+      return;
+    }
+    setIsLoading(true)
+    try {
+      const response = await axios.post(
+        `${backend_Host}/category/create`,
+        {
+          name: cat, 
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const newCategoryy = response.data; // Access the new category details from the response
+      console.log("newww>>>>>>>>",newCategoryy)
+      fetchCategories();
+      
+    } catch (error) {
+      console.error('Error creating category:', error);
+      Alert.alert('Failed to create category. Please try again.');
+    }finally{
+      setIsLoading(false)
+    }
+  };
+
+  const handleSuggestCategories = async () => {
+
+    try {
+      const response = await axios.post(
+        `${backend_Host}/category/suggest`,
+        {
+        "industry": "Technology"
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const suggestCategoryy = response?.data?.categories; // Access the new category details from the response
+      setAiCategories(suggestCategoryy)
+    } catch (error) {
+      console.error('Error suggeting categories:', error);
+      Alert.alert('Failed to suggest category. Please try again.');
+    }finally{
+    }
+  };
+
+  const handleUpdateCategory = async (id: string, newName: string) => {
+    if (!newName.trim()) {
+      Alert.alert('Validation Error', 'Category name cannot be empty.');
+      return;
+    }
+  
+    try {
+      const response = await axios.patch(
+        `${backend_Host}/category/edit`,
+        { name: newName,
+          categoryId:id
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+  
+      const updatedCategory = response.data.data;
+
+  
+      // // Update the local state
+      setCategories((prevCategories) =>
+        prevCategories.map((category) =>
+          category.id === id
+            ? { ...category, name: updatedCategory.name, isEditing: false }
+            : category
+        )
+      );
+  
+      Alert.alert('Success', 'Category updated successfully.');
+    } catch (err: any) {
+      console.error('API Error:', err.response || err.message);
+      Alert.alert('Failed to update category. Please try again.');
+    }
+  };
+  const handelDeleteCategory = async (id: string) => {
+    try {
+      const response = await axios.delete(`${backend_Host}/category/delete`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        data: {
+          categoryId: id, // Send the ID in the body
+        },
+      });
+      Alert.alert('Success', 'Category deleted successfully.');
+    } catch (err: any) {
+      console.error('API Error:', err.response || err.message);
+      Alert.alert('Failed to delete category. Please try again.');
+    }
+  };
+  
   return (
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary">
       <KeyboardAvoidingView
@@ -58,7 +237,7 @@ export default function TaskCategories() {
           className="h-full w-full flex-grow "
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
-          <View className="h-full w-full items-center pb-36">
+          <View className="h-full w-full items-center pb-44">
             <View
               style={[
                 styles.input,
@@ -71,7 +250,7 @@ export default function TaskCategories() {
                   { textAlignVertical: 'top', paddingTop: 10, width: '100%' },
                 ]}
                 value={taskDescription}
-                onChangeText={(value) => setTaskDescription(value)}
+                onChangeText={setTaskDescription}
                 placeholder="Search Category"
                 placeholderTextColor="#787CA5"></TextInput>
             </View>
@@ -118,7 +297,7 @@ export default function TaskCategories() {
                   </Text>
 
                   <View className='mt-14 flex flex-col gap-6'>
-                    {aiCategories.map((category, index) => (
+                    {aiCategories?.map((category, index) => (
                       <TouchableOpacity
                         key={index}
                         onPress={() => toggleAiSelection(index)}
@@ -158,16 +337,33 @@ export default function TaskCategories() {
             <View className='w-[90%] mb-5 items-start'>
               <Text className='text-sm text-[#787CA5]'>Categories</Text>
             </View>
+            {
+  loading ? (
+   
+    <ActivityIndicator color={'#fff'} size={'large'} />
+  ) : (
+    filteredCategories?.length > 0 ? (
+      filteredCategories
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((category: any) => (
+          <CategoryComponent
+            key={category.id}
+            id={category.id}
+            title={category.name}
+            onAddPress={(cat: string) => handleAddCategory(cat)}
+            isEditing={category.isEditing}
+            onEditToggle={() => toggleEditMode(category.id)}
+            onUpdate={(newName: string) => handleUpdateCategory(category.id, newName)}
+            onDeletePress={() => handelDeleteCategory(category.id)} 
+          />
+        ))
+    ) : (
+      <Text>No categories available</Text> 
+    )
+  )
+}
 
-            {categories.map((category, index) => (
-              <CategoryComponent
-                key={index}
-                title={category.title}
-                isEditing={category.isEditing}
-                onAddPress={toggleModal}
-                onDeletePress={() => console.log('Delete pressed')}
-              />
-            ))}
+            
           </View>
         </ScrollView>
         <View style={{ position: 'absolute', bottom: 85, width: '100%', alignItems: 'center' }}>
@@ -175,6 +371,7 @@ export default function TaskCategories() {
           <GradientButton
             title="Add New Category"
             onPress={addNewCategory}
+            loading={isLoading}
             imageSource={require('../../assets/Tasks/addIcon.png')}
           />
         </View>

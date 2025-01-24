@@ -6,15 +6,18 @@ import Modal from 'react-native-modal';
 interface CategoryComponentProps {
   title: string;
   isEditing: boolean;
-  onAddPress?: () => void;
-  onDeletePress?: () => void;
+  onAddPress?:any;
+  onUpdate?:any;
+  onDeletePress?:any;
 }
 
 const CategoryComponent: React.FC<CategoryComponentProps> = ({
   title,
   isEditing: initialEditingState,
+  onUpdate,
   onAddPress,
-  onDeletePress
+  onDeletePress,
+
 }) => {
   const [isEditing, setIsEditing] = useState(initialEditingState);
   const [editableTitle, setEditableTitle] = useState(title);
@@ -29,7 +32,12 @@ const CategoryComponent: React.FC<CategoryComponentProps> = ({
   const handleSavePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsEditing(false);
-    // Optionally, you can call a function to save the updated title
+
+    if (onUpdate && title) {
+      onUpdate(editableTitle); // Call onUpdate if an id/title exists
+    } else if (onAddPress) {
+      onAddPress(editableTitle); // Call onAddPress for new categories
+    }
   };
 
   const handleDelete = () => {
@@ -42,6 +50,7 @@ const CategoryComponent: React.FC<CategoryComponentProps> = ({
   }
 
   const confirmDelete = () => {
+    onDeletePress()
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     setIsVisible(false);
     setDeleteModal(false);

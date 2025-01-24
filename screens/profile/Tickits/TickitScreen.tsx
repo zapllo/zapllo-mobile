@@ -73,10 +73,17 @@ export default function TickitScreen() {
           <GradientButton title="Raise a Ticket" imageSource={require('../../../assets/Tasks/addIcon.png')} onPress={() => setModalVisible(true)} />
         </View>
 
-        <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+        <Modal 
+        animationType="slide" 
+        transparent={true} 
+        visible={modalVisible} 
+        onRequestClose={() => setModalVisible(false)}
+        >
 
-        <KeyboardAvoidingView className="w-full" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <ScrollView className="rounded-t-3xl bg-[#0A0D28] p-5">
+        <KeyboardAvoidingView  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <ScrollView 
+          
+          className="mt-52  rounded-t-3xl h-full bg-[#0A0D28] p-5">
               <View className="mb-10 mt-2 flex w-full flex-row items-center justify-between">
                 <Text className="text-2xl font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
                 Raise a Ticket 

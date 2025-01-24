@@ -10,21 +10,18 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  StyleSheet,
   Dimensions,
 } from 'react-native';
 import InputContainer from '~/components/InputContainer';
-import { Entypo, Ionicons } from '@expo/vector-icons';
+import {  Ionicons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
 import { GradientText } from '~/components/GradientText';
 import Checkbox from '~/components/Checkbox';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { backend_Host } from '~/config';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '~/redux/store';
 import { logIn } from '~/redux/slices/authSlice';
-const { width, height } = Dimensions.get('window');
 
 export default function Loginscreen() {
   const dispatch = useDispatch<AppDispatch>();

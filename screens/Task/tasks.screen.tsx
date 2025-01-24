@@ -32,11 +32,11 @@ export default function TasksScreen() {
           backgroundColor: '#05071E', // Tab bar background
           borderWidth: 1,
           borderColor: '#815BF5',
-          height: 56,
+          height: 52,
           position: 'absolute',
-          bottom: 29,
+          bottom: 30,
           borderRadius: 30,
-          marginHorizontal: 16,
+          marginHorizontal: 10,
           display: 'flex',
           borderTopWidth:1,
           justifyContent: 'center',
@@ -44,16 +44,22 @@ export default function TasksScreen() {
         tabBarIcon: ({ focused }) => {
           // Set images for each tab
           let icon;
+          let zName;
           if (route.name === 'Dashboard') {
             icon = require('~/assets/tabBarImages/dashboard.png');
+            zName = "home";
           } else if (route.name === 'My Task') {
             icon = require('~/assets/tabBarImages/mytask.png');
+            zName = "All Tasks";
           } else if (route.name === 'My Apps') {
             icon = require('~/assets/tabBarImages/delegatedtask.png');
+            zName = "Dashboard";
           } else if (route.name === 'Delegated Task') {
             icon = require('~/assets/tabBarImages/Frame.png');
+            zName = "Delegated";
           } else if (route.name === 'All Task') {
             icon = require('~/assets/tabBarImages/alltask.png');
+            zName = "More";
           }
 
           return (
@@ -63,7 +69,10 @@ export default function TasksScreen() {
               focused && styles.activeImageContainer,
             ]}
           >
+            <View className='flex flex-col items-center h-9'>
             <Image source={icon} style={styles.icon} />
+            <Text  className='text-white w-full text-[8px]' style={{ fontFamily: 'LatoLight' }}>{zName}</Text>
+            </View>
           </View>
             );
             },
@@ -112,28 +121,32 @@ export default function TasksScreen() {
 
 const styles = StyleSheet.create({
   icon: {
-    width: 24, // Width of the icon image
-    height: 24, // Height of the icon image
+    width: 15, // Width of the icon image
+    height: 17, // Height of the icon image
     resizeMode: 'contain',
   },
   imageContainer: {
     width: 60, // Default background width
-    height: 60, // Default background height
+    height: 40, // Default background height
     padding: 10,
     borderRadius: 30, // Make the background circular
-    marginTop: 16,
+    marginTop: 12,
     backgroundColor: 'transparent', // Default (non-focused) background color
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    
   },
   activeImageContainer: {
-    width: 60, // Width of active tab background
-    height: 44, // Height of active tab background
-    borderRadius: 35, // Rounded background
+    width: 65, // Width of active tab background
+    height: 42, // Height of active tab background
+    borderRadius: 60, // Rounded background
     backgroundColor: '#815BF5', // Background color for active tab
     alignItems: 'center',
     justifyContent: 'center',
+    display:"flex",
+    
+  
   },
   fixedImage: {
     position: 'absolute',

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useMemo } from 'react';
 import { View, Text, SafeAreaView, Platform, ScrollView, StyleSheet, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from 'expo-router';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -22,7 +22,6 @@ export default function TaskCategories() {
   const [isLoading, setIsLoading] = useState(false);  
   const [error, setError] = useState('');
   const [categories, setCategories] = useState<{ id: string; name: string; isEditing: boolean }[]>([]);
-  const [filteredCategories, setFilteredCategories] = useState(categories);
   const [AiModalOpen, SetAiModalOpen] = useState(false);
   const [AiSelectedItems, setAiSelectedItems] = useState<number[]>([]);
   const[aiCategories,setAiCategories]=useState([])
@@ -93,7 +92,7 @@ useEffect(() => {
       }));
   
       setCategories(formattedCategories);
-      setFilteredCategories(formattedCategories);
+      // setFilteredCategories(formattedCategories);
     } catch (err: any) {
       setError('Failed to fetch tasks. Please try again.');
       console.error('API Error:', err.response || err.message);
@@ -224,6 +223,13 @@ useEffect(() => {
       Alert.alert('Failed to delete category. Please try again.');
     }
   };
+
+  const filteredCategories = useMemo(() => {
+    const search = taskDescription.toLowerCase();
+    return categories.filter((category) => 
+      category.name.toLowerCase().includes(search)
+    );
+  }, [taskDescription, categories]);
   
   return (
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary">

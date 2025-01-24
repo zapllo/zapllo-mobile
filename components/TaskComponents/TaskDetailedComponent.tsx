@@ -123,8 +123,6 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
     }
   };
 
-  console.log('>>>>>>>>>>>task detaillllllll', task);
-
   const formatReminder = (dueDate, reminder) => {
     if (!dueDate || !reminder) return null;
 

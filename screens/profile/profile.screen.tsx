@@ -396,7 +396,7 @@ const ProfileScreen: React.FC = () => {
                     <View className="mb-10 mt-2 flex-col w-full justify-center flex items-center">
 
                       <View
-                      className=' items-center w-[95%]  mb-2 rounded-2xl bg-[#14173b] p-4 '
+                      className=' items-center w-[95%]  mb-2 rounded-2xl bg-[#0A0D28] p-4 '
                       >
                         <TouchableOpacity
                         className='items-center w-full rounded-2xl pb-3 '
@@ -411,7 +411,7 @@ const ProfileScreen: React.FC = () => {
                       </View>
                     
                       <TouchableOpacity 
-                      className=' items-center w-[95%] rounded-2xl mt-3 bg-[#14173b] p-3 '
+                      className=' items-center w-[95%] rounded-2xl mt-3 bg-[#0A0D28] p-3 '
                       onPress={() => setProfileModal(false)}>
                         <Text className='text-white text-lg' style={{ fontFamily: 'LatoBold' }}>Cancel</Text>
                       </TouchableOpacity>

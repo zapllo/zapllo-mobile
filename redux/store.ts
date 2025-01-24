@@ -7,7 +7,7 @@ import authReducer from './slices/authSlice'; // Your auth slice
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage, // Use AsyncStorage for React Native
-  whitelist: ['auth'], // Persist only the 'auth' slice
+  whitelist: ['auth'], 
 };
 
 // Persist the auth reducer
@@ -17,13 +17,12 @@ export const store = configureStore({
   reducer: {
     auth: persistedReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({ serializableCheck: false }),
 });
 
 // Create and export the persistor
 export const persistor = persistStore(store);
 
-// Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
-
-export default store;

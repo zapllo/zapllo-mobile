@@ -2,29 +2,22 @@ import '../global.css';
 import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
 import { Stack } from 'expo-router';
-import { View } from 'react-native';
 import { useEffect, useState } from 'react';
 import { FontAwesome } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import React from 'react';
 import { Provider } from 'react-redux';
-import store, { RootState, persistor } from '~/redux/store';
+import { RootState, persistor, store } from '~/redux/store';
 import { useSelector } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { useDispatch } from 'react-redux';
-import { useAsyncStorage } from '@react-native-async-storage/async-storage';
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
+// export { ErrorBoundary } from 'expo-router';
 
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
+// export const unstable_settings = {
+//   initialRouteName: '(tabs)',
+// };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -64,13 +57,12 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const dispatch = useDispatch();
-  const isLoggedin = useSelector((state: RootState) => state.auth.isLoggedIn);
-
+  const { token } = useSelector((state: RootState) => state.auth);
+  console.log("iiiiiiiisssss",token)
 
   return (
     <>
-      {!isLoggedin ? (
+      {token ? (
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(routes)/home/index" />
           <Stack.Screen name="(routes)/HomeComponent/AIAssistant/index" />
@@ -83,10 +75,10 @@ function RootLayoutNav() {
           <Stack.Screen name="(routes)/HomeComponent/Tutorials/index" />
           <Stack.Screen name="(routes)/HomeComponent/WABA/index" />
           <Stack.Screen name="(routes)/HomeComponent/Workflows/index" />
-          <Stack.Screen name="(routes)/profile/index"/>
-          <Stack.Screen name="(routes)/settings/index"/>
-          <Stack.Screen name='(routes)/HomeComponent/Tasks/AssignTaskScreen'/>
-          <Stack.Screen name='(routes)/HomeComponent/Tasks/TaskCategories'/>
+          <Stack.Screen name="(routes)/profile/index" />
+          <Stack.Screen name="(routes)/settings/index" />
+          <Stack.Screen name="(routes)/HomeComponent/Tasks/AssignTaskScreen" />
+          <Stack.Screen name="(routes)/HomeComponent/Tasks/TaskCategories" />
         </Stack>
       ) : (
         <Stack screenOptions={{ headerShown: false }}>

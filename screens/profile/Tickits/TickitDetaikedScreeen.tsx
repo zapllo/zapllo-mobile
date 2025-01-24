@@ -5,14 +5,15 @@ import TickitCard from "~/components/profile/TickitCard";
 interface DetailScreenProps {
     route: {
       params: {
-        status: string;
-        message: string;
-        date: string;
+        status: any;
+        message: any;
+        date: any;
+        subCategory:any;
       };
     };
   }
 const TickitDetaikedScreeen:React.FC<DetailScreenProps> = ({ route }) => {
-    const { status, message, date } = route.params;
+    const { status, message, date,subCategory } = route.params;
 
     return (
       <View >

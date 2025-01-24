@@ -35,8 +35,39 @@ export default function Loginscreen() {
   });
   const [error, setError] = useState({
     password: '',
+    email: '',
   });
   const [isChecked, setIsChecked] = useState(false);
+
+
+  // Add email touched state
+const [isEmailTouched, setIsEmailTouched] = useState(false);
+
+// Modify the email validation function
+const handleEmailValidation = (value: string) => {
+  const email = value.toLowerCase();
+  
+  if (!email) {
+    setError({
+      ...error,
+      email: 'Email is required',
+    });
+  } else if (!email.includes('@') || !email.includes('.')) {
+    setError({
+      ...error,
+      email: 'Invalid email address',
+    });
+  } else {
+    setError({
+      ...error,
+      email: '',
+    });
+  }
+  
+  setUserInfo({ ...userInfo, email: email });
+  setIsEmailTouched(true);
+};
+
 
   const handlePasswordValidation = (value: string) => {
     const password = value;
@@ -126,12 +157,36 @@ export default function Loginscreen() {
             <InputContainer
               label="Email Address"
               value={userInfo.email}
-              onChangeText={(value) => setUserInfo({ ...userInfo, email: value.toLowerCase() })}
+              onChangeText={handleEmailValidation}
               placeholder="Email Address"
               className="flex-1  text-sm text-[#787CA5]"
-              passwordError={''}
-            
+              passwordError={error?.email}
+          
             />
+
+            {/* Add this after the email InputContainer */}
+            {isEmailTouched && (
+              <>
+                {error?.email ? (
+                  <View className="ml-8 mt-2 flex-row self-start items-center">
+                    <Ionicons name="close-circle" size={16} color="#EE4848" />
+                    <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500">
+                      {error.email}
+                    </Text>
+                  </View>
+                ) : (
+                  <View className="ml-8 mt-2 flex-row self-start items-center">
+                    <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
+                    <Text 
+                      className="font-pathwayExtreme ml-1 self-start text-sm text-green-500" 
+                      style={{fontFamily:"Lato-Light"}}
+                    >
+                      Email is valid!
+                    </Text>
+                  </View>
+                )}
+              </>
+            )}
 
             <View className="relative w-full items-center">
               <InputContainer
@@ -158,7 +213,7 @@ export default function Loginscreen() {
             {isPasswordTouched && (
               <>
                 {error?.password ||responseError ? (
-                  <View className="ml-8 mt-2 flex-row self-start">
+                  <View className="ml-8 mt-2 flex-row self-start items-center">
                     <Ionicons name="close-circle" size={16} color="#EE4848" />
                     <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500">
                       {error?.password || responseError}

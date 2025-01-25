@@ -22,7 +22,7 @@ import axios from 'axios';
 import { backend_Host } from '~/config';
 import { Image } from 'react-native';
 import moment from 'moment';
-import getDateRange from '~/utils/GetDateRange';
+import {getDateRange} from '~/utils/GetDateRange';
 import TaskStatusCard from '~/components/card/TaskStatusCard';
 import TaskCard from '~/components/TaskComponents/TaskCard';
 import { MyTasksStackParamList } from '~/screens/Task/myTask/MyTaskStack';

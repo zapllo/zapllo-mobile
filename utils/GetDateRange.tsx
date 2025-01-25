@@ -1,7 +1,6 @@
-import moment from 'moment';
+import moment from "moment";
 
-// Function to get date range based on option
-const getDateRange = (option:any) => {
+export const getDateRange = (option: string, tasksData: Task[]) => {
   let dateRange = { startDate: {}, endDate: {} };
 
   switch (option) {
@@ -24,10 +23,21 @@ const getDateRange = (option:any) => {
       dateRange = { startDate: moment().startOf('month'), endDate: moment().endOf('month') };
       break;
     case 'Next Month':
-      dateRange = { startDate: moment().add(1, 'month').startOf('month'), endDate: moment().add(1, 'month').endOf('month') };
+      dateRange = { startDate: moment().add(1, 'months').startOf('month'), endDate: moment().add(1, 'months').endOf('month') };
       break;
     case 'This Year':
       dateRange = { startDate: moment().startOf('year'), endDate: moment().endOf('year') };
+      break;
+    case 'All Time':
+      const startDate = tasksData.reduce(
+        (minDate, task) => (moment(task.createdAt).isBefore(minDate) ? moment(task.createdAt) : minDate),
+        moment()
+      );
+      const endDate = tasksData.reduce(
+        (maxDate, task) => (moment(task.dueDate).isAfter(maxDate) ? moment(task.dueDate) : maxDate),
+        moment()
+      );
+      dateRange = { startDate, endDate };
       break;
     default:
       break;
@@ -35,5 +45,3 @@ const getDateRange = (option:any) => {
 
   return dateRange;
 };
-
-export default getDateRange;

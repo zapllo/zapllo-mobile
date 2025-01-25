@@ -538,42 +538,42 @@ export default function AssignTaskScreen() {
             ) : (
               ''
             )}
-<View className="relative">
-  <TouchableOpacity
-    onPress={() => {
-      setShowPicker(true);
-    }}
-    style={{ width: '100%' }} // Ensure the touchable area covers the entire input
-  >
-    <InputContainer
-      label="Due Date"
-      value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
-      onChangeText={() => {}} // No-op since input is not editable
-      placeholder=""
-      className="flex-1 text-sm text-[#787CA5]"
-      passwordError={''}
-      style={{ paddingEnd: 45 }}
-      editable={false} // Make the input non-editable
-    />
-  </TouchableOpacity>
-  <TouchableOpacity
-    onPress={() => {
-      setShowPicker(true);
-    }}>
-    <Image
-      className="absolute bottom-6 right-6 h-6 w-6"
-      source={require('../../../../../assets/Tasks/calender.png')}
-    />
-  </TouchableOpacity>
-  {showPicker && (
-    <SelectDateModal
-      visible={showPicker}
-      selectedDate={selectedDate}
-      onChange={handleChange}
-      onCancel={() => setShowPicker(false)}
-    />
-  )}
-</View>
+        <View className="relative">
+          <TouchableOpacity
+            onPress={() => {
+              setShowPicker(true);
+            }}
+            style={{ width: '100%' }} // Ensure the touchable area covers the entire input
+          >
+            <InputContainer
+              label="Due Date"
+              value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
+              onChangeText={() => {}} // No-op since input is not editable
+              placeholder=""
+              className="flex-1 text-sm text-[#787CA5]"
+              passwordError={''}
+              style={{ paddingEnd: 45 }}
+              editable={false} // Make the input non-editable
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setShowPicker(true);
+            }}>
+            <Image
+              className="absolute bottom-6 right-6 h-6 w-6"
+              source={require('../../../../../assets/Tasks/calender.png')}
+            />
+          </TouchableOpacity>
+          {showPicker && (
+            <SelectDateModal
+              visible={showPicker}
+              selectedDate={selectedDate}
+              onChange={handleChange}
+              onCancel={() => setShowPicker(false)}
+            />
+          )}
+        </View>
 
             <View className=" mt-6 flex w-[90%] flex-row items-center gap-3">
               <TouchableOpacity onPress={() => setLinkModalVisible(true)}>

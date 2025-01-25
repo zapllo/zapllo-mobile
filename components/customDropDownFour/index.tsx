@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
   },
   dropdownButtonText: {
-    color: '#ffff',
+    color: 'white',
     fontSize: 14,
     flex: 1,
   },

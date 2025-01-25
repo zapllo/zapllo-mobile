@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  StyleSheet,
   Text,
   Alert,
   Image,
@@ -18,25 +17,26 @@ import { backend_Host } from '~/config';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '~/redux/store';
 import { logIn } from '~/redux/slices/authSlice';
-import { router } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 import { ActivityIndicator } from 'react-native';
 import { GradientText } from '~/components/GradientText';
 import { Ionicons } from '@expo/vector-icons';
-import CountryPicker from 'react-native-country-picker-modal';
 import InputContainer from '~/components/InputContainer';
 import { Dropdown } from 'react-native-element-dropdown';
-import countryData from '../../data/country.json'
+import countryData from '../../data/country.json';
 
 const { width, height } = Dimensions.get('window');
 
 // Utility for scaling sizes
 const verticalScale = (size: number) => (height / 812) * size; // Base screen height of 812
+
 interface SignupScreenProps {
   navigation: {
     navigate: (route: string) => void;
   };
 }
-const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
+
+const SignupScreen: React.FC<SignupScreenProps> = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -61,6 +61,13 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
   const [confirmPasswordError, setConfirmPasswordError] = useState<string>('');
   const [isConfirmPasswordTouched, setIsConfirmPasswordTouched] = useState<boolean>(false);
+  const [emailError, setEmailError] = useState<string>('');
+  const [isEmailTouched, setIsEmailTouched] = useState<boolean>(false);
+  const [firstNameError, setFirstNameError] = useState<string>('');
+  const [lastNameError, setLastNameError] = useState<string>('');
+  const [phoneError, setPhoneError] = useState<string>('');
+  const navigation = useNavigation();
+
   const findIndianDialCode = () => {
     const indianCode = countryData.find(country => country.dial_code === '+91');
     return indianCode || countryData[0]; // Fallback to first country if India not found
@@ -74,20 +81,18 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const handleChange = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
-  const handlePasswordValidation = (value: string) => {
-    const passwordOneNumber = /(?=.*[0-9])/;
-    const passwordSixValue = /(?=.{6,})/;
 
-  if (!passwordOneNumber.test(value)) {
-      setError('Write at least one number');
-    } else if (!passwordSixValue.test(value)) {
-      setError('Write at least 6 characters');
-    } else {
-      setError('');
-    }
-    setFormData((prev) => ({ ...prev, password: value }));
-    setIsPasswordTouched(true);
+  const handleEmailValidation = (value: string) => {
+    setFormData((prev) => ({ ...prev, email: value }));
+  
   };
+
+  const handlePasswordValidation = (value: string) => {
+    
+    setFormData((prev) => ({ ...prev, password: value }));
+    
+  };
+
   const handleConfirmPasswordValidation = (value: string) => {
     setFormData((prev) => ({ ...prev, confirmPassword: value }));
     setIsConfirmPasswordTouched(true);
@@ -100,25 +105,67 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   };
 
   const handleValidation = (): boolean => {
-    const { firstName, lastName, phone, email, password, confirmPassword } = formData;
+    const { firstName, lastName, phone, email, password, confirmPassword,description,companyName } = formData;
 
-    if (!firstName || !lastName || !phone || !email || !password || !confirmPassword) {
-      Alert.alert('Validation Error', 'All fields are required.');
-      return false;
+    let valid = true;
+
+    if (!firstName) {
+      setFirstNameError('First name is required');
+      valid = false;
+    } else {
+      setFirstNameError('');
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert('Validation Error', 'Please enter a valid email address.');
-      return false;
+    if (!lastName) {
+      setLastNameError('Last name is required');
+      valid = false;
+    } else {
+      setLastNameError('');
     }
 
-    if (password !== confirmPassword) {
-      Alert.alert('Validation Error', 'Passwords do not match.');
-      return false;
+    if (!phone) {
+      setPhoneError('WhatsApp number is required');
+      valid = false;
+    } else {
+      setPhoneError('');
     }
 
-    return true;
+    if (!email) {
+      setEmailError('Email is required');
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError('Invalid email address');
+      valid = false;
+    } else {
+      setEmailError('');
+    }
+
+    if (!password) {
+      setError('Password is required');
+      valid = false;
+    } else if (!/(?=.*[0-9])/.test(password)) {
+      setError('Write at least one number');
+      valid = false;
+    } else if (!/(?=.{6,})/.test(password)) {
+      setError('Write at least 6 characters');
+      valid = false;
+    } else {
+      setError('');
+    }
+
+    if (!confirmPassword){
+      setConfirmPasswordError('Password is required');
+    } 
+    else if (password !== confirmPassword) {
+      setConfirmPasswordError('Passwords do not match');
+      valid = false;
+    } else {
+      setConfirmPasswordError('');
+    }
+
+    
+
+    return valid;
   };
 
   const handleNextOrSignUp = async () => {
@@ -144,19 +191,15 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
           const response = await axios.post(`${backend_Host}/users/signup`, payload);
           console.log('okkkkkkkk', response);
           if (response.data.success) {
-            // Store user data in AsyncStorage
-            // await AsyncStorage.setItem("userData", JSON.stringify(response.data.data));
             const token = response?.data?.token;
             const userData = response?.data;
 
-            // Navigate to the home screen
             Alert.alert('Success', 'You have signed up successfully!');
             dispatch(logIn({ token, userData }));
             router.push('/(routes)/home');
           } else {
             Alert.alert(response.data.message || 'Invalid credentials');
           }
-          //   navigation.navigate(Route.LOGIN);
         } catch (error: any) {
           Alert.alert('Signup Failed', error.response.data.error || 'Something went wrong!');
           console.log('>>>>>>>>>>>>', error.response.data.error);
@@ -183,9 +226,15 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
           className='flex mt-16 relative items-center'
           style={{ marginVertical: verticalScale(25) }}
           >
-          <TouchableOpacity className='w-10 ml-4 h-9 absolute left-1 bottom-6 '>
-            <Image resizeMode="contain" className='w-full h-full' source={require("../../assets/sign-in/back.png")}/>
-          </TouchableOpacity>
+            {
+              showWorkspace && 
+              <TouchableOpacity 
+              onPress={()=>router.push("/(routes)/signup/pageOne")}
+              className='w-10 ml-4 h-9 absolute left-1 bottom-6 '>
+                <Image resizeMode="contain" className='w-full h-full' source={require("../../assets/sign-in/back.png")}/>
+              </TouchableOpacity>
+            }
+
           <Image
             className="h-9"
             source={require('../../assets/sign-in/logo.png')}
@@ -210,8 +259,17 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
                 onChangeText={(text) => handleChange('firstName', text)}
                 placeholder="First Name"
                 className="flex-1  text-[#787CA5]"
-                passwordError={''}
+                passwordError={firstNameError}
               />
+
+              {firstNameError && (
+                <View className="ml-8 mt-2 flex-row self-start items-center">
+                  <Ionicons name="close-circle" size={16} color="#EE4848" />
+                  <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
+                    {firstNameError}
+                  </Text>
+                </View>
+              )}
 
               {/* last name */}
               <InputContainer
@@ -219,116 +277,143 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
                 value={formData.lastName}
                 onChangeText={(text) => handleChange('lastName', text)}
                 placeholder="Last Name"
-                passwordError={''}
+                passwordError={lastNameError}
                 className="flex-1  text-sm text-[#787CA5]"
               />
 
-                  <View className="mb-4 flex w-[69%]  flex-row items-center justify-center gap-2">
-                  <Dropdown
-                    search
-                    searchPlaceholder='search'
-                    inputSearchStyle={{
-                      borderRadius:20,
-                      borderWidth:0,
-                      color: 'white',
-                    }}
-                    searchPlaceholderTextColor='#787CA5'
-                    style={{
-                      borderWidth: 1,
-                      borderColor: '#37384B',
-                      borderRadius: 29,
-                      backgroundColor: '#05071E',
-                      paddingHorizontal: 12,
-                      paddingVertical: 10,
-                      height: 55,
-                      marginTop: 27,
-                      width: 100,
-                    }}
-                    placeholderStyle={{
-                      fontSize: 14,
-                      color: '#787CA5',
-                    }}
-                    selectedTextStyle={{
-                      fontSize: 10,
-                      color: '#787CA5',
-                      marginLeft: 2,
-                    }}
-                    iconStyle={[
-                      {
-                        width: 10,
-                        height: 20,
-                        transform: [{ rotate: isDropdownOpen ? '180deg' : '0deg' }],
-                      },
-                    ]}
-                    containerStyle={{
-                      backgroundColor: '#05071E',
-                      borderColor: '#37384B',
-                      borderRadius: 20,
-                      overflow: 'hidden',
-                    }}
-                    data={countryData}
-                    labelField="dial_code"
-                    valueField="dial_code"
-                    placeholder="Select Code"
-                    value={numberValue}
-                    onFocus={() => setIsDropdownOpen(true)}
-                    onBlur={() => setIsDropdownOpen(false)}
-                    onChange={(item) => setNumberValue(item.dial_code)}
-                    renderLeftIcon={() => {
-                      const selectedItem = countryData.find((item) => item.dial_code === numberValue);
-                      return (
-                        <Text style={{ fontSize: 13 }}>{selectedItem?.flag}</Text>
-                      );
-                    }}
-                    renderItem={(item) => {
-                      const isSelected = item.dial_code === numberValue;
-                      return (
-                        <TouchableOpacity
-                          style={[
-                            {
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              padding: 2,
-                              borderBottomColor: '#4e5278',
-                              backgroundColor: isSelected ? '#4e5278' : 'transparent',
-                              borderBottomWidth: 1,
-                            },
-                          ]}
-                          onPress={() => setNumberValue(item.dial_code)}>
-                          <Text style={{ fontSize: 20, marginRight: 10 }}>{item.flag}</Text>
-                          <Text
-                            style={{
-                              fontSize: 11,
-                              color: isSelected ? '#FFFFFF' : '#787CA5',
-                              fontWeight: isSelected ? 'bold' : 'normal',
-                            }}>
-                            {item.dial_code}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    }}
-                  />
-
-                  <InputContainer
-                    label="WhatsApp Number"
-                    value={formData.phone}
-                    onChangeText={(text) => handleChange('phone', text)}
-                    placeholder="7863983914"
-                    keyboardType="numeric"
-                    className="flex-1 p-2 text-sm text-[#787CA5]"
-                    passwordError={''}
-                  />
+              {lastNameError && (
+                <View className="ml-8 mt-2 flex-row self-start items-center">
+                  <Ionicons name="close-circle" size={16} color="#EE4848" />
+                  <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
+                    {lastNameError}
+                  </Text>
                 </View>
+              )}
+
+              <View className="mb-4 flex w-[69%]  flex-row items-center justify-center gap-2">
+                <Dropdown
+                  search
+                  searchPlaceholder='search'
+                  inputSearchStyle={{
+                    borderRadius:20,
+                    borderWidth:0,
+                    color: 'white',
+                  }}
+                  searchPlaceholderTextColor='#787CA5'
+                  style={{
+                    borderWidth: 1,
+                    borderColor: '#37384B',
+                    borderRadius: 29,
+                    backgroundColor: '#05071E',
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    height: 55,
+                    marginTop: 27,
+                    width: 100,
+                  }}
+                  placeholderStyle={{
+                    fontSize: 14,
+                    color: '#787CA5',
+                  }}
+                  selectedTextStyle={{
+                    fontSize: 10,
+                    color: '#787CA5',
+                    marginLeft: 2,
+                  }}
+                  iconStyle={[
+                    {
+                      width: 10,
+                      height: 20,
+                      transform: [{ rotate: isDropdownOpen ? '180deg' : '0deg' }],
+                    },
+                  ]}
+                  containerStyle={{
+                    backgroundColor: '#05071E',
+                    borderColor: '#37384B',
+                    borderRadius: 20,
+                    overflow: 'hidden',
+                  }}
+                  data={countryData}
+                  labelField="dial_code"
+                  valueField="dial_code"
+                  placeholder="Select Code"
+                  value={numberValue}
+                  onFocus={() => setIsDropdownOpen(true)}
+                  onBlur={() => setIsDropdownOpen(false)}
+                  onChange={(item) => setNumberValue(item.dial_code)}
+                  renderLeftIcon={() => {
+                    const selectedItem = countryData.find((item) => item.dial_code === numberValue);
+                    return (
+                      <Text style={{ fontSize: 13 }}>{selectedItem?.flag}</Text>
+                    );
+                  }}
+                  renderItem={(item) => {
+                    const isSelected = item.dial_code === numberValue;
+                    return (
+                      <TouchableOpacity
+                        style={[
+                          {
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            padding: 2,
+                            borderBottomColor: '#4e5278',
+                            backgroundColor: isSelected ? '#4e5278' : 'transparent',
+                            borderBottomWidth: 1,
+                          },
+                        ]}
+                        onPress={() => setNumberValue(item.dial_code)}>
+                        <Text style={{ fontSize: 20, marginRight: 10 }}>{item.flag}</Text>
+                        <Text
+                          style={{
+                            fontSize: 11,
+                            color: isSelected ? '#FFFFFF' : '#787CA5',
+                            fontWeight: isSelected ? 'bold' : 'normal',
+                          }}>
+                          {item.dial_code}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+
+                <InputContainer
+                  label="WhatsApp Number"
+                  value={formData.phone}
+                  onChangeText={(text) => handleChange('phone', text)}
+                  placeholder="7863983914"
+                  keyboardType="numeric"
+                  className="flex-1 p-2 text-sm text-[#787CA5]"
+                  passwordError={phoneError}
+                />
+              </View>
+
+              {phoneError && (
+                <View className="ml-8 mt-2 flex-row self-start items-center">
+                  <Ionicons name="close-circle" size={16} color="#EE4848" />
+                  <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
+                    {phoneError}
+                  </Text>
+                </View>
+              )}
 
               {/* email input */}
               <InputContainer
                 label="Email Address"
                 value={formData.email}
-                onChangeText={(text) => handleChange('email', text.toLowerCase())}
+                onChangeText={handleEmailValidation}
                 placeholder="Email Address"
                 className="flex-1  text-[#787CA5]"
-                passwordError={''}
+                passwordError={emailError}
               />
+
+              { emailError && (
+                <View className="ml-8 mt-2 flex-row self-start items-center">
+                  <Ionicons name="close-circle" size={16} color="#EE4848" />
+                  <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
+                    {emailError}
+                  </Text>
+                </View>
+              )}
 
               {/* password input */}
               <View className="relative w-full items-center">
@@ -352,26 +437,18 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
 
-              {isPasswordTouched && (
-                <>
-                  {error ? (
+            
+                  {error && (
                     <View className="ml-8 mt-2 flex-row self-start items-center">
                       <Ionicons name="close-circle" size={16} color="#EE4848" />
                       <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
                         {error}
                       </Text>
                     </View>
-                  ) : (
-                    <View className="ml-8 mt-2 flex-row self-start items-center">
-                      <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
-                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500" style={{fontFamily:"Lato-Light"}}>
-                        Password is valid!
-                      </Text>
-                    </View>
-                  )}
-                </>
-              )}
-
+             
+                  )}    
+                      
+            
               {/* confirm password */}
               <View className="relative w-full items-center">
                 <InputContainer
@@ -394,25 +471,17 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
 
-              {isConfirmPasswordTouched && (
-                <>
-                  {confirmPasswordError ? (
+
+                  {confirmPasswordError && (
                     <View className="ml-8 mt-2 flex-row self-start items-center">
                       <Ionicons name="close-circle" size={16} color="#EE4848" />
                       <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
                         {confirmPasswordError}
                       </Text>
                     </View>
-                  ) : (
-                    <View className="ml-8 mt-2 flex-row self-start items-center">
-                      <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
-                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500" style={{fontFamily:"Lato-Light"}}>
-                        Password matched!
-                      </Text>
-                    </View>
+                
                   )}
-                </>
-              )}
+         
            
             <View className="w-full px-4 mt-16">
             <TouchableOpacity

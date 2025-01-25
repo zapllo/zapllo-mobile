@@ -42,22 +42,36 @@ const daysData = [
   { label: 'Custom', value: 'Custom' },
 ];
 
+const frequencyOptions = [
+  { label: 'Daily', value: 'Daily' },
+  { label: 'Weekly', value: 'Weekly' },
+  { label: 'Monthly', value: 'Monthly' },
+];
+
+const priorityOptions = [
+  { label: 'High', value: 'High' },
+  { label: 'Medium', value: 'Medium' },
+  { label: 'Low', value: 'Low' },
+];
+
 const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<PendingTaskScreenRouteProp>();
   const { pendingTasks } = route.params;
   const { token, userData } = useSelector((state: RootState) => state.auth);
   console.log('>>>>>>>>pending>>>>>>>>', pendingTasks);
-
   const [selectedTeamSize, setSelectedTeamSize] = useState('This week');
   const [search, setSearch] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [taskDescription, setTaskDescription] = useState('');
   const [isChecked, setIsChecked] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
+  const [selectedFrequencies, setSelectedFrequencies] = useState<string[]>([]);
+  const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<any[]>(pendingTasks);
   const [users, setUsers] = useState([]);
-
+  const [activeFilter, setActiveFilter] = useState('Category');
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -81,16 +95,17 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
             'Content-Type': 'application/json',
           },
         });
-        console.log("uuuuuuuuuuu",response?.data?.data)
+        console.log('uuuuuuuuuuu', response?.data?.data);
+        setUsers(response?.data?.data)
         // const formattedData = processUserData(response.data.data);
         // setUsers(formattedData);
       } catch (err: any) {
         console.error('API Error:', err.response || err.message);
-      } 
+      }
     };
     fetchUsers();
     fetchCategories();
-  },[token]);
+  }, [token]);
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
@@ -102,17 +117,38 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  // Apply filter logic on "Apply Filter" button click
   const applyFilter = () => {
+    let tasksMatchingFilters = pendingTasks;
+
+    // Filter by Categories
     if (selectedCategories.length > 0) {
-      const tasksMatchingCategories = pendingTasks.filter((task: any) =>
+      tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
         selectedCategories.includes(task.category?._id)
       );
-      setFilteredTasks(tasksMatchingCategories);
-    } else {
-      // If no category selected, reset to all tasks
-      setFilteredTasks(pendingTasks);
     }
+
+    // Filter by Assigned To
+    if (selectedAssignees.length > 0) {
+      tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
+        selectedAssignees.includes(task.assignedUser?._id)
+      );
+    }
+
+    // Filter by Frequency
+    if (selectedFrequencies.length > 0) {
+      tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
+        selectedFrequencies.includes(task?.repeatType)
+      );
+    }
+
+    // Filter by Priority
+    if (selectedPriorities.length > 0) {
+      tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
+        selectedPriorities.includes(task?.priority)
+      );
+    }
+
+    setFilteredTasks(tasksMatchingFilters);
     toggleModal(); // Close modal
   };
 
@@ -128,6 +164,10 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
       );
     });
   }, [search, filteredTasks]);
+
+  const getFilterBackgroundColor = (filter: string) => {
+    return activeFilter === filter ? '#37384B' : '#0A0D28'; // Example colors
+  };
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
@@ -216,7 +256,13 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
                 Filters
               </Text>
             </View>
-            <TouchableOpacity onPress={() => setSelectedCategories([])}>
+            <TouchableOpacity
+              onPress={() => {
+                setSelectedCategories([]);
+                setSelectedAssignees([]);
+                setSelectedFrequencies([]);
+                setSelectedPriorities([]);
+              }}>
               <Text className="text-lg text-white" style={{ fontFamily: 'Lato-Regular' }}>
                 Clear All
               </Text>
@@ -225,16 +271,28 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
 
           <View className="mb-6 flex w-full flex-row border border-y-[#37384B]">
             <View className="w-[40%] border-r border-r-[#37384B] pb-20">
-              <TouchableOpacity className="h-14 w-full items-start bg-[#37384B]">
+              <TouchableOpacity
+                onPress={() => setActiveFilter('Category')}
+                className="h-14 w-full items-start"
+                style={{ backgroundColor: getFilterBackgroundColor('Category') }}>
                 <Text className="h-full p-4 px-6 text-white">Category</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="h-14 w-full items-start border-b border-b-[#37384B]">
+              <TouchableOpacity
+                className="h-14 w-full items-start border-b border-b-[#37384B]"
+                style={{ backgroundColor: getFilterBackgroundColor('AssignedTo') }}
+                onPress={() => setActiveFilter('AssignedTo')}>
                 <Text className="h-full p-4 px-6 text-white">Assigned to</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="h-14 w-full items-start border-b border-b-[#37384B]">
+              <TouchableOpacity
+                className="h-14 w-full items-start border-b border-b-[#37384B]"
+                style={{ backgroundColor: getFilterBackgroundColor('Frequency') }}
+                onPress={() => setActiveFilter('Frequency')}>
                 <Text className="h-full p-4 px-6 text-white">Frequency</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="h-14 w-full items-start border-b border-b-[#37384B]">
+              <TouchableOpacity
+                className="h-14 w-full items-start border-b border-b-[#37384B]"
+                style={{ backgroundColor: getFilterBackgroundColor('Priority') }}
+                onPress={() => setActiveFilter('Priority')}>
                 <Text className="h-full p-4 px-6 text-white">Priority</Text>
               </TouchableOpacity>
             </View>
@@ -253,15 +311,67 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
                   placeholderTextColor="#787CA5"></TextInput>
               </View>
 
-              {categories.map((category) => (
-                <View key={category._id} className="flex w-full flex-row items-center gap-3">
-                  <CheckboxTwo
-                    isChecked={selectedCategories.includes(category._id)}
-                    onPress={() => handleCategorySelection(category._id)}
-                  />
-                  <Text className="text-lg text-white">{category.name}</Text>
-                </View>
-              ))}
+              {activeFilter === 'Category' &&
+                categories.map((category) => (
+                  <View key={category._id} className="flex w-full flex-row items-center gap-3">
+                    <CheckboxTwo
+                      isChecked={selectedCategories.includes(category._id)}
+                      onPress={() => handleCategorySelection(category._id)}
+                    />
+                    <Text className="text-lg text-white">{category.name}</Text>
+                  </View>
+                ))}
+
+              {activeFilter === 'AssignedTo' &&
+                users.map((user) => (
+                  <View key={user._id} className="flex w-full flex-row items-center gap-3">
+                    <CheckboxTwo
+                      isChecked={selectedAssignees.includes(user._id)}
+                      onPress={() =>
+                        setSelectedAssignees((prev) =>
+                          prev.includes(user._id)
+                            ? prev.filter((id) => id !== user._id)
+                            : [...prev, user._id]
+                        )
+                      }
+                    />
+                    <Text className="text-lg text-white">{`${user.firstName} ${user.lastName}`}</Text>
+                  </View>
+                ))}
+
+              {activeFilter === 'Frequency' &&
+                frequencyOptions.map((freq) => (
+                  <View key={freq.value} className="flex w-full flex-row items-center gap-3">
+                    <CheckboxTwo
+                      isChecked={selectedFrequencies.includes(freq.value)}
+                      onPress={() =>
+                        setSelectedFrequencies((prev) =>
+                          prev.includes(freq.value)
+                            ? prev.filter((f) => f !== freq.value)
+                            : [...prev, freq.value]
+                        )
+                      }
+                    />
+                    <Text className="text-lg text-white">{freq.label}</Text>
+                  </View>
+                ))}
+
+              {activeFilter === 'Priority' &&
+                priorityOptions.map((priority) => (
+                  <View key={priority.value} className="flex w-full flex-row items-center gap-3">
+                    <CheckboxTwo
+                      isChecked={selectedPriorities.includes(priority.value)}
+                      onPress={() =>
+                        setSelectedPriorities((prev) =>
+                          prev.includes(priority.value)
+                            ? prev.filter((p) => p !== priority.value)
+                            : [...prev, priority.value]
+                        )
+                      }
+                    />
+                    <Text className="text-lg text-white">{priority.label}</Text>
+                  </View>
+                ))}
             </View>
           </View>
 

@@ -111,7 +111,7 @@ const handleEmailValidation = (value: string) => {
         password: userInfo.password,
       });
 
-      if (response.data.success) {
+      if (response.data.success && isChecked) {
         const token = response?.data?.token;
         const userData = response?.data;
 

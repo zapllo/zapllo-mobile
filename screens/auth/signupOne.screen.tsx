@@ -83,30 +83,13 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
 
   const handleEmailValidation = (value: string) => {
     setFormData((prev) => ({ ...prev, email: value }));
-    setIsEmailTouched(true);
-
-    if (!value) {
-      setEmailError('Email is required');
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      setEmailError('Invalid email address');
-    } else {
-      setEmailError('');
-    }
+  
   };
 
   const handlePasswordValidation = (value: string) => {
-    const passwordOneNumber = /(?=.*[0-9])/;
-    const passwordSixValue = /(?=.{6,})/;
-
-    if (!passwordOneNumber.test(value)) {
-      setError('Write at least one number');
-    } else if (!passwordSixValue.test(value)) {
-      setError('Write at least 6 characters');
-    } else {
-      setError('');
-    }
+    
     setFormData((prev) => ({ ...prev, password: value }));
-    setIsPasswordTouched(true);
+    
   };
 
   const handleConfirmPasswordValidation = (value: string) => {
@@ -179,9 +162,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
       setConfirmPasswordError('');
     }
 
-    if (showWorkspace) {
-
-    }
+    
 
     return valid;
   };
@@ -450,21 +431,16 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
               </View>
 
             
-                  {error ? (
+                  {error && (
                     <View className="ml-8 mt-2 flex-row self-start items-center">
                       <Ionicons name="close-circle" size={16} color="#EE4848" />
                       <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
                         {error}
                       </Text>
                     </View>
-                  ) : (
-                    <View className="ml-8 mt-2 flex-row self-start items-center">
-                      <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
-                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500" style={{fontFamily:"Lato-Light"}}>
-                        Password is valid!
-                      </Text>
-                    </View>
-                  )}
+             
+                  )}    
+                      
             
               {/* confirm password */}
               <View className="relative w-full items-center">
@@ -489,20 +465,14 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
               </View>
 
 
-                  {confirmPasswordError ? (
+                  {confirmPasswordError && (
                     <View className="ml-8 mt-2 flex-row self-start items-center">
                       <Ionicons name="close-circle" size={16} color="#EE4848" />
                       <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
                         {confirmPasswordError}
                       </Text>
                     </View>
-                  ) : (
-                    <View className="ml-8 mt-2 flex-row self-start items-center">
-                      <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
-                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500" style={{fontFamily:"Lato-Light"}}>
-                        Password matched!
-                      </Text>
-                    </View>
+                
                   )}
          
            

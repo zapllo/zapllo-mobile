@@ -18,14 +18,21 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
   onCancel,
 }) => {
   const [currentMode, setCurrentMode] = useState<'date' | 'time'>('date');
+  const [tempDate, setTempDate] = useState<Date>(selectedDate);
 
-  const handleConfirm = (date: Date) => {
-    Haptics.selectionAsync(); // Trigger haptic feedback
-    if (currentMode === 'date') {
-      setCurrentMode('time'); // Switch to time mode after confirming date
-    } else {
-      onChange(date);
-      onCancel();
+  const handleConfirm = (event: any, date?: Date) => {
+    if (date) {
+      Haptics.selectionAsync(); // Trigger haptic feedback
+      if (currentMode === 'date') {
+        setTempDate(date); // Store the selected date temporarily
+        setCurrentMode('time'); // Switch to time mode
+      } else {
+        const finalDate = new Date(tempDate);
+        finalDate.setHours(date.getHours());
+        finalDate.setMinutes(date.getMinutes());
+        onChange(finalDate); // Pass the complete datetime
+        onCancel();
+      }
     }
   };
 
@@ -42,12 +49,10 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
       <View style={styles.modalContainer}>
         <Text style={styles.modalTitle}>{currentMode === 'date' ? 'Select Date' : 'Select Time'}</Text>
         <DateTimePicker
-          value={selectedDate}
+          value={tempDate}
           mode={currentMode}
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={(event, date) => {
-            if (date) handleConfirm(date); // Pass valid date to handleConfirm
-          }}
+          onChange={handleConfirm}
         />
         {Platform.OS === 'ios' && (
           <View style={styles.actionsContainer}>
@@ -59,7 +64,7 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
               <Text style={styles.actionText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => handleConfirm(selectedDate)}
+              onPress={() => handleConfirm(null, tempDate)}
               style={[styles.actionButton, styles.confirmButton]}
               accessible={true}
               accessibilityLabel="Confirm selected date or time">

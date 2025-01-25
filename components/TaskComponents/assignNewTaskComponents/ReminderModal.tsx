@@ -9,10 +9,12 @@ import {
   Keyboard,
   Animated,
   Alert,
+  Platform,
 } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import Modal from 'react-native-modal';
 import CustomDropdownComponentThree from '~/components/customDropdownThree';
+import { KeyboardAvoidingView } from 'react-native';
 
 const daysData = [
   { label: 'Days', value: 'days' },
@@ -42,6 +44,21 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
   const [selectedIndustry, setSelectedIndustry] = useState(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const animatedHeight = useRef(new Animated.Value(0)).current;
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+    useEffect(() => {
+      const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+        setKeyboardVisible(true);
+      });
+      const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+        setKeyboardVisible(false);
+      });
+  
+      return () => {
+        keyboardDidShowListener.remove();
+        keyboardDidHideListener.remove();
+      };
+    }, []);
 
   const [reminders, setReminders] = useState([
     { notificationType: 'email', type: 'days', value: 1, sent: false },
@@ -117,7 +134,10 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
       style={{ margin: 0, justifyContent: 'flex-end' }}
       animationIn="slideInUp"
       animationOut="slideOutDown">
-      <Animated.View style={[styles.modalContent, { marginBottom: animatedHeight }]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1, justifyContent: 'flex-end' }}>
+      <Animated.View style={[styles.modalContent]}>
         <View className="mb-7 mt-2 flex w-full flex-row items-center justify-between">
           <Text className="text-2xl font-semibold text-white" style={{ fontFamily: 'Lato-Bold' }}>
             Add Task Reminders
@@ -169,6 +189,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
             </View>
           ))}
           <View className="mt-16 w-full">
+          {!isKeyboardVisible &&
             <TouchableOpacity
               onPress={uploadDocuments}
               className="mb-10 flex h-[4rem] items-center justify-center rounded-full bg-[#37384B] p-5">
@@ -178,9 +199,11 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
                 Add Reminder
               </Text>
             </TouchableOpacity>
+            }
           </View>
         </View>
       </Animated.View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };

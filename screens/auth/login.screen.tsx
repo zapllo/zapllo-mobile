@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import {
-  Text,
   SafeAreaView,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   View,
   Image,
   TouchableOpacity,
-  ActivityIndicator,
+  Text,
   Alert,
-  Dimensions,
+  ActivityIndicator,
+  Platform,
 } from 'react-native';
 import InputContainer from '~/components/InputContainer';
-import {  Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
 import { GradientText } from '~/components/GradientText';
 import Checkbox from '~/components/Checkbox';
@@ -27,7 +26,6 @@ export default function Loginscreen() {
   const dispatch = useDispatch<AppDispatch>();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [buttonSpinner, setButtonSpinner] = useState(false);
-  const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
   const [responseError, setResponseError] = useState('');
   const [userInfo, setUserInfo] = useState({
     email: '',
@@ -35,44 +33,40 @@ export default function Loginscreen() {
   });
   const [error, setError] = useState({
     password: '',
+    email: '',
   });
   const [isChecked, setIsChecked] = useState(false);
 
-  const handlePasswordValidation = (value: string) => {
-    const password = value;
-    const passwordOneNumber = /(?=.*[0-9])/;
-    const passwordSixValue = /(?=.{6,})/;
-
-     if (!passwordOneNumber.test(password)) {
-      setError({
-        ...error,
-        password: 'Write at least one number',
-      });
-      setUserInfo({ ...userInfo, password: '' });
-    } else if (!passwordSixValue.test(password)) {
-      setError({
-        ...error,
-        password: 'Write at least 6 characters',
-      });
-      setUserInfo({ ...userInfo, password: '' });
-    } else {
-      setError({
-        ...error,
-        password: '',
-      });
+  const validateEmail = (email: string) => {
+    if (!email) {
+      return 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return 'Invalid email address';
     }
-    setUserInfo({ ...userInfo, password: value });
-    setIsPasswordTouched(true);
+    return '';
   };
 
-  const isEmailValid = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  const validatePassword = (password: string) => {
+    if (!/(?=.*[0-9])/.test(password)) {
+      return 'Write at least one number';
+    } else if (!/(?=.{6,})/.test(password)) {
+      return 'Write at least 6 characters';
+    }
+    return '';
   };
-
-  const isFormValid = isEmailValid(userInfo.email) && !error.password && isChecked;
 
   const handleLogin = async () => {
+    const emailError = validateEmail(userInfo.email);
+    const passwordError = validatePassword(userInfo.password);
+
+    if (emailError || passwordError || !isChecked) {
+      setError({
+        email: emailError,
+        password: passwordError,
+      });
+      return;
+    }
+
     setButtonSpinner(true);
     try {
       const response = await axios.post(`${backend_Host}/users/login`, {
@@ -84,19 +78,26 @@ export default function Loginscreen() {
         const token = response?.data?.token;
         const userData = response?.data;
 
-        // Navigate to the home screen
         Alert.alert(response.data.message);
-        dispatch(logIn({ token:token, userData:userData }));
+        dispatch(logIn({ token: token, userData: userData }));
         router.push('/(routes)/home');
       } else {
         setError(response.data.message || 'Invalid credentials');
       }
     } catch (err: any) {
       console.error('Login error:', err.response.data.error || err.message);
-      setResponseError(err.response.data.error)
+      setResponseError(err.response.data.error);
     } finally {
       setButtonSpinner(false);
     }
+  };
+
+  const isFormValid = () => {
+    return (
+      !validateEmail(userInfo.email) &&
+      !validatePassword(userInfo.password) &&
+      isChecked
+    );
   };
 
   return (
@@ -125,19 +126,28 @@ export default function Loginscreen() {
 
             <InputContainer
               label="Email Address"
-              value={userInfo.email}
-              onChangeText={(value) => setUserInfo({ ...userInfo, email: value.toLowerCase() })}
+              value={userInfo.email.toLowerCase()}
+              onChangeText={(value) => setUserInfo({ ...userInfo, email: value })}
               placeholder="Email Address"
               className="flex-1  text-sm text-[#787CA5]"
-              passwordError={''}
-            
+              passwordError={error?.email}
             />
+
+            {error.email ? (
+              <View className="ml-8 mt-2 flex-row self-start items-center">
+                <Ionicons name="close-circle" size={16} color="#EE4848" />
+                <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500">
+                  {error.email}
+                </Text>
+              </View>
+            ) : <></>
+          }
 
             <View className="relative w-full items-center">
               <InputContainer
                 label="Password"
                 value={userInfo.password}
-                onChangeText={handlePasswordValidation}
+                onChangeText={(value) => setUserInfo({ ...userInfo, password: value })}
                 placeholder="**********"
                 secureTextEntry={!isPasswordVisible}
                 className="flex-1  text-sm text-[#787CA5]"
@@ -155,39 +165,35 @@ export default function Loginscreen() {
               </TouchableOpacity>
             </View>
 
-            {isPasswordTouched && (
-              <>
-                {error?.password ||responseError ? (
-                  <View className="ml-8 mt-2 flex-row self-start">
-                    <Ionicons name="close-circle" size={16} color="#EE4848" />
-                    <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500">
-                      {error?.password || responseError}
-                    </Text>
-                  </View>
-                ) : (
-                  <View className="ml-8 mt-2 flex-row self-start items-center">
-                    <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
-                    <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500" style={{fontFamily:"Lato-Light"}}>
-                      Password is valid!
-                    </Text>
-                  </View>
-                )}
-              </>
-            )}
+            {error.password ? (
+              <View className="ml-8 mt-2 flex-row self-start items-center">
+                <Ionicons name="close-circle" size={16} color="#EE4848" />
+                <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500">
+                  {error.password}
+                </Text>
+              </View>
+            ):<></>
+          }
 
             <TouchableOpacity
               className="mr-9 mt-16 self-end"
               onPress={() => router.push('/(routes)/forgot-PassWord' as any)}>
-              <Text className="text-sm  text-white" style={{fontFamily:"Lato-Light"}}>Forgot  password?</Text>
+              <Text className="text-sm  text-white" style={{ fontFamily: 'Lato-Light' }}>
+                Forgot password?
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              className={`mb-10 mt-3 flex h-[3.6rem] w-[89%] items-center justify-center rounded-full p-2.5 ${isFormValid ? 'bg-[#815BF5]' : 'bg-[#37384B]'}`}
+              className={`mb-10 mt-3 flex h-[3.6rem] w-[89%] items-center justify-center rounded-full p-2.5 ${
+                isFormValid() ? 'bg-[#815BF5]' : 'bg-[#37384B]'
+              }`}
               onPress={handleLogin}>
               {buttonSpinner ? (
                 <ActivityIndicator size="small" color={'white'} />
               ) : (
-                <Text className="text-center  font-semibold text-white"  style={{fontFamily:"LatoBold"}}>Login</Text>
+                <Text className="text-center  font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
+                  Login
+                </Text>
               )}
             </TouchableOpacity>
 
@@ -196,11 +202,15 @@ export default function Loginscreen() {
             </View>
             <View className="flex-row items-center justify-center bg-primary py-5">
               <View className="flex-row">
-                <Text className="text-base  text-white" style={{fontFamily:"Lato-Light"}}>Not a </Text>
+                <Text className="text-base  text-white" style={{ fontFamily: 'Lato-Light' }}>
+                  Not a{' '}
+                </Text>
                 <GradientText text="Zapllonian" textStyle={{ fontSize: 16, fontWeight: '400' }} />
               </View>
               <Link href="/(routes)/signup/pageOne">
-                <Text className="text-base font-extrabold text-white" style={{fontFamily:"LatoBold"}}>? Register Here</Text>
+                <Text className="text-base font-extrabold text-white" style={{ fontFamily: 'LatoBold' }}>
+                  ? Register Here
+                </Text>
               </Link>
             </View>
           </View>

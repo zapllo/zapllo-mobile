@@ -161,7 +161,7 @@ export default function TickitScreen() {
           className="h-full w-full flex-grow"
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
-          <View className="h-full w-full items-center pb-20">
+          <View className="h-full w-full items-center pb-36">
             <View
               style={[
                 styles.input,
@@ -210,108 +210,107 @@ export default function TickitScreen() {
             title="Raise a Ticket"
             imageSource={require('../../../assets/Tasks/addIcon.png')}
             onPress={() => setModalVisible(true)}
+            
           />
+         <Modal
+            isVisible={modalVisible}
+            onBackdropPress={() => setModalVisible(false)}
+            style={{ margin: 0, justifyContent: 'flex-end' }}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+              <ScrollView
+                className='rounded-t-3xl'
+                style={{ width: '100%', height: '70%', backgroundColor: '#0A0D28', padding: 20, }}
+                contentContainerStyle={{ flexGrow: 1 }}>
+                <View className="mb-10 mt-2 flex w-full flex-row items-center justify-between">
+                  <Text
+                    className="text-2xl font-semibold text-white"
+                    style={{ fontFamily: 'LatoBold' }}>
+                    Raise a Ticket
+                  </Text>
+                  <TouchableOpacity onPress={() => setModalVisible(false)}>
+                    <Image
+                      source={require('../../../assets/commonAssets/cross.png')}
+                      className="h-8 w-8"
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                <View className="flex flex-col gap-6">
+                  <CustomDropdownComponentThree
+                    data={categoryData}
+                    selectedValue={category}
+                    onSelect={(value) => setCategory(value)}
+                  />
+
+                  <CustomDropdownComponentThree
+                    data={subCategoryData}
+                    selectedValue={subCategory}
+                    onSelect={(value) => setSubCategory(value)}
+                  />
+                </View>
+
+                <View
+                  style={[
+                    styles.input,
+                    {
+                      justifyContent: 'flex-start',
+                      alignItems: 'flex-start',
+                      borderColor: isDescriptionFocused ? '#815BF5' : '#37384B',
+                    },
+                  ]}>
+                  <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Subject</Text>
+                  <TextInput
+                    multiline
+                    style={[
+                      styles.inputSome,
+                      { textAlignVertical: 'top', paddingTop: 5, width: '100%' },
+                    ]}
+                    value={newTicketMessage}
+                    onChangeText={(value) => setNewTicketMessage(value)}
+                    placeholder=""
+                    placeholderTextColor="#787CA5"
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                  />
+                </View>
+
+                <View
+                  style={[
+                    styles.input,
+                    {
+                      height: 100,
+                      justifyContent: 'flex-start',
+                      alignItems: 'flex-start',
+                      borderColor: isDescriptionFocused ? '#815BF5' : '#37384B',
+                    },
+                  ]}>
+                  <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Description</Text>
+                  <TextInput
+                    multiline
+                    style={[
+                      styles.inputSome,
+                      { textAlignVertical: 'top', paddingTop: 5, width: '100%' },
+                    ]}
+                    value={tickitDescription}
+                    onChangeText={(value) => setTickitDescription(value)}
+                    placeholder=""
+                    placeholderTextColor="#787CA5"
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  className="my-10 items-center rounded-full bg-[#815BF5] p-4"
+                  onPress={handelAddNewTicket}>
+                  <Text style={styles.modalButtonText}>Submit</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </KeyboardAvoidingView>
+          </Modal>
         </View>
 
-        <Modal 
-        animationType="slide" 
-        transparent={true} 
-        visible={modalVisible} 
-        onRequestClose={() => setModalVisible(false)}
-        >
 
-        <KeyboardAvoidingView  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <ScrollView 
-          
-          className="mt-52  rounded-t-3xl h-full bg-[#0A0D28] p-5">
-              <View className="mb-10 mt-2 flex w-full flex-row items-center justify-between">
-                <Text
-                  className="text-2xl font-semibold text-white"
-                  style={{ fontFamily: 'LatoBold' }}>
-                  Raise a Ticket
-                </Text>
-                <TouchableOpacity onPress={() => setModalVisible(false)}>
-                  <Image
-                    source={require('../../../assets/commonAssets/cross.png')}
-                    className="h-8 w-8"
-                  />
-                </TouchableOpacity>
-              </View>
-
-              <View className="flex flex-col gap-6">
-                <CustomDropdownComponentThree
-                  data={categoryData}
-                  selectedValue={category}
-                  onSelect={(value) => setCategory(value)}
-                />
-
-                <CustomDropdownComponentThree
-                  data={subCategoryData}
-                  selectedValue={subCategory}
-                  onSelect={(value) => setSubCategory(value)}
-                />
-              </View>
-
-              <View
-                style={[
-                  styles.input,
-                  {
-                    justifyContent: 'flex-start',
-                    alignItems: 'flex-start',
-                    borderColor: isDescriptionFocused ? '#815BF5' : '#37384B',
-                  },
-                ]}>
-                <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Subject</Text>
-                <TextInput
-                  multiline
-                  style={[
-                    styles.inputSome,
-                    { textAlignVertical: 'top', paddingTop: 5, width: '100%' },
-                  ]}
-                  value={newTicketMessage}
-                  onChangeText={(value) => setNewTicketMessage(value)}
-                  placeholder=""
-                  placeholderTextColor="#787CA5"
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
-                />
-              </View>
-
-              {/* desc */}
-              <View
-                style={[
-                  styles.input,
-                  {
-                    height: 100,
-                    justifyContent: 'flex-start',
-                    alignItems: 'flex-start',
-                    borderColor: isDescriptionFocused ? '#815BF5' : '#37384B',
-                  },
-                ]}>
-                <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Description</Text>
-                <TextInput
-                  multiline
-                  style={[
-                    styles.inputSome,
-                    { textAlignVertical: 'top', paddingTop: 5, width: '100%' },
-                  ]}
-                  value={tickitDescription}
-                  onChangeText={(value) => setTickitDescription(value)}
-                  placeholder=""
-                  placeholderTextColor="#787CA5"
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
-                />
-              </View>
-
-              <TouchableOpacity
-                className="my-10 items-center rounded-full bg-[#815BF5] p-4"
-                onPress={handelAddNewTicket}>
-                <Text style={styles.modalButtonText}>Submit</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </KeyboardAvoidingView>
-        </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

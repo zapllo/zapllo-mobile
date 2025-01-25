@@ -162,16 +162,22 @@ export default function AssignTaskScreen() {
       setSelectedDate(date);
       setMode('time'); // Switch to time picker
     } else {
-      // Update selected time and combine with selected date
+      // Update selected time
       setSelectedTime(date);
-      const combinedDate = new Date(selectedDate);
-      combinedDate.setHours(date.getHours());
-      combinedDate.setMinutes(date.getMinutes());
-      setDueDate(combinedDate); // Update due date
       setShowPicker(false); // Close modal
-      console.log('Combined Due Date:', combinedDate); // Debugging log
     }
   };
+  
+  // Combine date and time into dueDate whenever they change
+  useEffect(() => {
+    if (selectedDate && selectedTime) {
+      const combinedDate = new Date(selectedDate);
+      combinedDate.setHours(selectedTime.getHours());
+      combinedDate.setMinutes(selectedTime.getMinutes());
+      setDueDate(combinedDate);
+      console.log('Combined Due Date:', combinedDate); // Debugging log
+    }
+  }, [selectedDate, selectedTime]);
   console.log('Formatted Due Date:', moment(dueDate).format('MMMM Do YYYY, h:mm a'));
 
   const handleButtonPress = (button: string) => {

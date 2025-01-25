@@ -117,7 +117,7 @@ export default function DashboardScreen() {
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
 
   const groupedByCategory = tasks.reduce((acc: any, task) => {
-    const categoryName = task.category.name;
+    const categoryName = task?.category?.name;
     if (!acc[categoryName]) {
       acc[categoryName] = [];
     }

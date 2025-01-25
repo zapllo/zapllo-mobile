@@ -17,7 +17,7 @@ import { backend_Host } from '~/config';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '~/redux/store';
 import { logIn } from '~/redux/slices/authSlice';
-import { router } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 import { ActivityIndicator } from 'react-native';
 import { GradientText } from '~/components/GradientText';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,7 +36,7 @@ interface SignupScreenProps {
   };
 }
 
-const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
+const SignupScreen: React.FC<SignupScreenProps> = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -66,6 +66,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const [firstNameError, setFirstNameError] = useState<string>('');
   const [lastNameError, setLastNameError] = useState<string>('');
   const [phoneError, setPhoneError] = useState<string>('');
+  const navigation = useNavigation();
 
   const findIndianDialCode = () => {
     const indianCode = countryData.find(country => country.dial_code === '+91');
@@ -225,9 +226,15 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
           className='flex mt-16 relative items-center'
           style={{ marginVertical: verticalScale(25) }}
           >
-          <TouchableOpacity className='w-10 ml-4 h-9 absolute left-1 bottom-6 '>
-            <Image resizeMode="contain" className='w-full h-full' source={require("../../assets/sign-in/back.png")}/>
-          </TouchableOpacity>
+            {
+              showWorkspace && 
+              <TouchableOpacity 
+              onPress={()=>router.push("/(routes)/signup/pageOne")}
+              className='w-10 ml-4 h-9 absolute left-1 bottom-6 '>
+                <Image resizeMode="contain" className='w-full h-full' source={require("../../assets/sign-in/back.png")}/>
+              </TouchableOpacity>
+            }
+
           <Image
             className="h-9"
             source={require('../../assets/sign-in/logo.png')}

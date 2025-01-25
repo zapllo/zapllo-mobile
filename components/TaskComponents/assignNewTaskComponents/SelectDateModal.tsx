@@ -75,7 +75,7 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
             style={[styles.actionButton, styles.confirmButton]}
             accessible={true}
             accessibilityLabel="Confirm selected date or time">
-            <Text style={[styles.actionText, { color: '#5367cb' }]}>Confirm</Text>
+            <Text style={[styles.actionText, { color: 'white' }]}>Confirm</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -99,18 +99,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 15,
+    gap:6,
   },
   actionButton: {
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
   },
-  cancelButton: {},
+  cancelButton: {
+    backgroundColor: '#1A1D3D',
+  },
   confirmButton: {
     marginLeft: 15,
+    backgroundColor:"#5367CB"
   },
   actionText: {
-    color: '#cb5353',
+    color: 'white',
     fontSize: 15,
     textAlign: 'center',
     fontWeight: '600',

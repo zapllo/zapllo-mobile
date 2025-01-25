@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "zapllpMobile",
-    "slug": "zapllpMobile",
+    "name": "Zapllo",
+    "slug": "Zapllo",
     "version": "1.0.0",
     "newArchEnabled": true,
-    "scheme": "zapllpMobile",
+    "scheme": "Zapllo",
     "web": {
       "bundler": "metro",
       "output": "static",

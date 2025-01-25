@@ -80,9 +80,12 @@ export default function Loginscreen() {
         password: userInfo.password,
       });
 
+      console.log("iiiiiii",response)
+
       if (response.data.success) {
         const token = response?.data?.token;
         const userData = response?.data;
+        console.log("login token>>>>>>>",token,userData)
 
         // Navigate to the home screen
         Alert.alert(response.data.message);

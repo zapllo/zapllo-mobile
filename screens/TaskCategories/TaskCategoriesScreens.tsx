@@ -32,13 +32,6 @@ fetchCategories();
 handleSuggestCategories()
 },[token])
 
-useEffect(() => {
-  const search = taskDescription?.toLowerCase();
-  const filtered = categories?.filter((category) =>
-    category?.name?.toLowerCase().includes(search)
-  );
-  setFilteredCategories(filtered);
-}, [taskDescription, categories]);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);

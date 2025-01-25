@@ -121,7 +121,9 @@ export default function TickitScreen() {
         {
           user:userData?.data?._id || userData?.data?._id, 
           subject:newTicketMessage,
-          description:tickitDescription
+          description:tickitDescription,
+          category:category,
+          subcategory:subCategory
         },
         {
           headers: {

@@ -56,7 +56,7 @@ export default function ForgotPasswordScreen() {
             >
               <Feather name="home" size={22} color="#fff" />
               <TouchableOpacity
-              // onPress={navigation.goBack()}
+              onPress={()=>navigation.goBack()}
               >
                     <Text className="text-white text-lg"  style={{fontFamily:"LatoBold"}} >
                     Back to Login

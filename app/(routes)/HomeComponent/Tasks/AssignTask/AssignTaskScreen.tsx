@@ -232,6 +232,8 @@ export default function AssignTaskScreen() {
     Haptics.selectionAsync();
   };
 
+  console.log("object",category)
+
   const handleCreateTask = async () => {
     if (!taskTitle.trim()) {
       Alert.alert('Validation Error', 'Task Title is required.');

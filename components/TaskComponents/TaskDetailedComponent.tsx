@@ -11,12 +11,14 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  Platform,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import { backend_Host } from '~/config';
 import * as DocumentPicker from 'expo-document-picker';
 import dayjs from 'dayjs';
 import { ActivityIndicator } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native';
 interface TaskDetailedComponentProps {
   title: string;
   dueDate: string;
@@ -151,7 +153,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
   return (
     <TouchableOpacity onPress={() => setModalVisible(true)}>
-      <View className="mt-5 h-48 w-[95%] items-center gap-6 self-center rounded-3xl border border-[#37384B] p-4">
+      <View className="mt-5 h-52 w-[95%] items-center gap-6 self-center rounded-3xl border border-[#37384B] p-4">
         <Modal
           isVisible={modalVisible}
           onBackdropPress={() => setModalVisible(false)}
@@ -374,7 +376,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
                 <TouchableOpacity
                   onPress={() => setShowMainModal(true)}
-                  className="mt-3 w-1/2 self-center rounded-lg bg-gray-700 p-3">
+                  className="mt-3 w-full self-center rounded-3xl bg-gray-700 py-5 p-3">
                   <Text className=" text-center font-medium text-white">Update task status</Text>
                 </TouchableOpacity>
               </View>
@@ -421,7 +423,9 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                 animationIn="slideInUp"
                 animationOut="slideOutDown"
                 useNativeDriver={false}>
-                <View className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20" style={{ marginBottom: 20 }}>
+                <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}                    style={{ flex: 1, justifyContent: 'flex-end' }}>
+                <View className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20" >
                   <View className="mb-6 mt-2 flex w-full flex-row items-center justify-between">
                     <Text className="text-xl font-semibold text-white">{taskStatus}</Text>
                     <TouchableOpacity onPress={() => setShowProgressModal(false)}>
@@ -496,6 +500,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                     )}
                   </TouchableOpacity>
                 </View>
+                </KeyboardAvoidingView>
               </Modal>
             </View>
           </ScrollView>
@@ -509,7 +514,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         </View>
 
         <View className="flex w-full flex-row items-start gap-20">
-          <View className="flex gap-3">
+          <View className="flex gap-3 " >
             <View className="flex flex-col">
               <Text className="text-xs text-[#787CA5]">Due Date</Text>
               <Text className="text-[#EF4444] " style={{ fontFamily: 'LatoBold' }}>
@@ -528,14 +533,14 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
           <View className="flex gap-3">
             <View className="flex flex-col">
               <Text className="text-xs text-[#787CA5]">Assigned by</Text>
-              <Text className="text-[#815BF5] " style={{ fontFamily: 'LatoBold' }}>
+              <Text className="text-[#815BF5] w-32" style={{ fontFamily: 'LatoBold' }}>
                 {assignedBy}
               </Text>
             </View>
 
             <View className="flex flex-col ">
               <Text className="text-xs text-[#787CA5]">Category</Text>
-              <Text className="text-[#FDB314]" style={{ fontFamily: 'LatoBold' }}>
+              <Text className="text-[#FDB314] w-32" style={{ fontFamily: 'LatoBold' }}>
                 {category}
               </Text>
             </View>

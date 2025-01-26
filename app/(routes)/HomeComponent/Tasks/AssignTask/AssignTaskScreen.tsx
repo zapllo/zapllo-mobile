@@ -543,7 +543,7 @@ export default function AssignTaskScreen() {
               ''
             )}
 
-            <View className="relative">
+<View className="relative">
               <TouchableOpacity
               onPress={() => {
                 setShowPicker(true);

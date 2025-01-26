@@ -102,6 +102,7 @@ export default function AssignTaskScreen() {
   const handleBlur = () => setDescriptionFocused(false);
 
   const position = useRef(new Animated.Value(0)).current;
+  
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -156,15 +157,19 @@ export default function AssignTaskScreen() {
       label: cat?.name,
     }));
   };
-  const handleChange = (date: Date) => {
-    if (mode === 'date') {
-      // Update selected date
-      setSelectedDate(date);
-      setMode('time'); // Switch to time picker
-    } else {
-      // Update selected time
-      setSelectedTime(date);
-      setShowPicker(false); // Close modal
+  const [tempDate, setTempDate] = useState<Date>(new Date());
+  const handleChange = (event: any, selectedDate?: Date) => {
+    if (selectedDate) {
+      setTempDate(selectedDate);
+      if (mode === 'date') {
+        setMode('time'); // Switch to time picker after date is selected
+      } else {
+        const combinedDate = new Date(tempDate);
+        combinedDate.setHours(selectedDate.getHours());
+        combinedDate.setMinutes(selectedDate.getMinutes());
+        setDueDate(combinedDate);
+        setShowPicker(false); // Close picker after time is selected
+      }
     }
   };
   
@@ -544,42 +549,45 @@ export default function AssignTaskScreen() {
             ) : (
               ''
             )}
-        <View className="relative">
-          <TouchableOpacity
-            onPress={() => {
-              setShowPicker(true);
-            }}
-            style={{ width: '100%' }} // Ensure the touchable area covers the entire input
-          >
-            <InputContainer
-              label="Due Date"
-              value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
-              onChangeText={() => {}} // No-op since input is not editable
-              placeholder=""
-              className="flex-1 text-sm text-[#787CA5]"
-              passwordError={''}
-              style={{ paddingEnd: 45 }}
-              editable={false} // Make the input non-editable
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setShowPicker(true);
-            }}>
-            <Image
-              className="absolute bottom-6 right-6 h-6 w-6"
-              source={require('../../../../../assets/Tasks/calender.png')}
-            />
-          </TouchableOpacity>
-          {showPicker && (
-            <SelectDateModal
-              visible={showPicker}
-              selectedDate={selectedDate}
-              onChange={handleChange}
-              onCancel={() => setShowPicker(false)}
-            />
-          )}
-        </View>
+    <View className="relative">
+      <TouchableOpacity
+        onPress={() => {
+          setShowPicker(true);
+          setMode('date'); // Start with date picker
+        }}
+        style={{ width: '100%' }} // Ensure the touchable area covers the entire input
+      >
+        <InputContainer
+          label="Due Date"
+          value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
+          onChangeText={() => {}} // No-op since input is not editable
+          placeholder=""
+          className="flex-1 text-sm text-[#787CA5]"
+          passwordError={''}
+          style={{ paddingEnd: 45 }}
+          editable={false} // Make the input non-editable
+        />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          setShowPicker(true);
+          setMode('date'); // Start with date picker
+        }}
+      >
+        <Image
+          className="absolute bottom-6 right-6 h-6 w-6"
+          source={require('../../../../../assets/Tasks/calender.png')}
+        />
+      </TouchableOpacity>
+      {showPicker && (
+        <DateTimePicker
+          value={tempDate}
+          mode={mode}
+          display="default"
+          onChange={handleChange}
+        />
+      )}
+    </View>
 
             <View className=" mt-6 flex w-[90%] flex-row items-center gap-3">
               <TouchableOpacity onPress={() => setLinkModalVisible(true)}>

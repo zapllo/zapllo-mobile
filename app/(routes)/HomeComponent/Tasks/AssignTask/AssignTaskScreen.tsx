@@ -579,11 +579,23 @@ export default function AssignTaskScreen() {
           source={require('../../../../../assets/Tasks/calender.png')}
         />
       </TouchableOpacity>
-      {showPicker && (
+      {showPicker && Platform.OS === 'ios' && (
+        <SelectDateModal
+          visible={showPicker}
+          selectedDate={tempDate}
+          onChange={(date) => {
+            setTempDate(date);
+            setDueDate(date);
+            setShowPicker(false);
+          }}
+          onCancel={() => setShowPicker(false)}
+        />
+      )}
+      {showPicker && Platform.OS === 'android' && (
         <DateTimePicker
           value={tempDate}
           mode={mode}
-          display="default"
+          display={'default'}
           onChange={handleChange}
         />
       )}

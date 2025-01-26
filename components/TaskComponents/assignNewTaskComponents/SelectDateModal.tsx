@@ -18,21 +18,29 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
   onCancel,
 }) => {
   const [currentMode, setCurrentMode] = useState<'date' | 'time'>('date');
-  const [tempDate, setTempDate] = useState<Date>(selectedDate);
+  const [tempDate, setTempDate] = useState(selectedDate);
 
-  const handleConfirm = (event: any, date?: Date) => {
+  const handleConfirm = () => {
+    Haptics.selectionAsync(); // Trigger haptic feedback
+    if (currentMode === 'date') {
+      setCurrentMode('time'); // Switch to time mode after confirming date
+    } else {
+      onChange(tempDate);
+      onCancel();
+    }
+  };
+
+  const handleDateChange = (event: any, date?: Date) => {
     if (date) {
-      Haptics.selectionAsync(); // Trigger haptic feedback
-      if (currentMode === 'date') {
-        setTempDate(date); // Store the selected date temporarily
-        setCurrentMode('time'); // Switch to time mode
-      } else {
-        const finalDate = new Date(tempDate);
-        finalDate.setHours(date.getHours());
-        finalDate.setMinutes(date.getMinutes());
-        onChange(finalDate); // Pass the complete datetime
-        onCancel();
-      }
+      setTempDate((prevDate) => {
+        const newDate = new Date(prevDate);
+        if (currentMode === 'date') {
+          newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+        } else {
+          newDate.setHours(date.getHours(), date.getMinutes());
+        }
+        return newDate;
+      });
     }
   };
 
@@ -52,26 +60,24 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
           value={tempDate}
           mode={currentMode}
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleConfirm}
+          onChange={handleDateChange}
         />
-        {Platform.OS === 'ios' && (
-          <View style={styles.actionsContainer}>
-            <TouchableOpacity
-              onPress={handleCancel}
-              style={[styles.actionButton, styles.cancelButton]}
-              accessible={true}
-              accessibilityLabel="Cancel date selection">
-              <Text style={styles.actionText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => handleConfirm(null, tempDate)}
-              style={[styles.actionButton, styles.confirmButton]}
-              accessible={true}
-              accessibilityLabel="Confirm selected date or time">
-              <Text style={[styles.actionText, { color: '#5367cb' }]}>Confirm</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity
+            onPress={handleCancel}
+            style={[styles.actionButton, styles.cancelButton]}
+            accessible={true}
+            accessibilityLabel="Cancel date selection">
+            <Text style={styles.actionText}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleConfirm}
+            style={[styles.actionButton, styles.confirmButton]}
+            accessible={true}
+            accessibilityLabel="Confirm selected date or time">
+            <Text style={[styles.actionText, { color: 'white' }]}>Confirm</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </Modal>
   );
@@ -93,18 +99,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 15,
+    gap:6,
   },
   actionButton: {
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
   },
-  cancelButton: {},
+  cancelButton: {
+    backgroundColor: '#1A1D3D',
+  },
   confirmButton: {
     marginLeft: 15,
+    backgroundColor:"#5367CB"
   },
   actionText: {
-    color: '#cb5353',
+    color: 'white',
     fontSize: 15,
     textAlign: 'center',
     fontWeight: '600',

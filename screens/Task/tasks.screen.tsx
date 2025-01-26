@@ -47,13 +47,13 @@ export default function TasksScreen() {
           let zName;
           if (route.name === 'Dashboard') {
             icon = require('~/assets/tabBarImages/dashboard.png');
-            zName = "home";
+            zName = "Home";
           } else if (route.name === 'My Task') {
             icon = require('~/assets/tabBarImages/mytask.png');
-            zName = "All Tasks";
+            zName = "My Tasks";
           } else if (route.name === 'My Apps') {
             icon = require('~/assets/tabBarImages/delegatedtask.png');
-            zName = "Dashboard";
+            zName = "My Apps";
           } else if (route.name === 'Delegated Task') {
             icon = require('~/assets/tabBarImages/Frame.png');
             zName = "Delegated";
@@ -71,7 +71,7 @@ export default function TasksScreen() {
           >
             <View className='flex flex-col items-center h-9'>
             <Image source={icon} style={styles.icon} />
-            <Text  className='text-white w-full text-[8px]' style={{ fontFamily: 'LatoLight' }}>{zName}</Text>
+            <Text  className='text-white w-full text-[11px]' style={{ fontFamily: 'LatoRegular' }}>{zName}</Text>
             </View>
           </View>
             );

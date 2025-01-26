@@ -57,7 +57,7 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
       <View style={styles.modalContainer}>
         <Text style={styles.modalTitle}>{currentMode === 'date' ? 'Select Date' : 'Select Time'}</Text>
         <DateTimePicker
-          value={tempDate}
+          value={selectedDate}
           mode={currentMode}
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleDateChange}

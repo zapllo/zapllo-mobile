@@ -195,8 +195,9 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
             const userData = response?.data;
 
             Alert.alert('Success', 'You have signed up successfully!');
-            dispatch(logIn({ token, userData }));
-            router.push('/(routes)/home');
+            // dispatch(logIn({ token, userData }));
+            // router.push('/(routes)/home');
+            router.push('/(routes)/login' as any)
           } else {
             Alert.alert(response.data.message || 'Invalid credentials');
           }

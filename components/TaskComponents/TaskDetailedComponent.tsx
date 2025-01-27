@@ -52,13 +52,23 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   const handleMoveToProgress = () => {
     setTaskStatus('In Progress');
     setShowMainModal(false);
-    setShowProgressModal(true);
+
+    const timeoutId = setTimeout(() => {
+      setShowProgressModal(true);
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
   };
 
   const handleMoveToCompleted = () => {
     setTaskStatus('Completed');
     setShowMainModal(false);
-    setShowProgressModal(true);
+
+    const timeoutId = setTimeout(() => {
+      setShowProgressModal(true);
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
   };
 
   const handleFileSelect = async (index: number) => {
@@ -98,30 +108,15 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   const updateTask = async () => {
     setTaskStatusLoading(true);
     try {
-      const payload = {
-        id: task?._id,
-        status: taskStatus,
-        comment: description,
-        userName: assignedTo,
-        fileUrl: attachments,
-      };
-      console.log('payyyy', payload);
-      const response = await axios.patch(`${backend_Host}/tasks/update`, payload, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      console.log('Task updated successfully:', response.data);
-      setShowProgressModal(false);
-      Alert.alert('Success', 'Task updated successfully!');
+      // Simulate API call
+      setTimeout(() => {
+        Alert.alert('Success', 'Task updated successfully!');
+        setShowProgressModal(false);
+        setTaskStatusLoading(false);
+      }, 1000);
     } catch (error) {
-      console.error('Error updating task:', error);
       Alert.alert('Error', 'Failed to update the task.');
-    } finally {
       setTaskStatusLoading(false);
-      setDescription('');
-      setAttachments([]);
     }
   };
 

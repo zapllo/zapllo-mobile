@@ -242,7 +242,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
-
+{/* filter modal */}
       <Modal
         isVisible={isModalVisible}
         onBackdropPress={toggleModal}

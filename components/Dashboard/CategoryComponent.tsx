@@ -108,9 +108,9 @@ const CategoryComponent: React.FC<CategoryComponentProps> = ({
           <View style={{ alignItems: 'center' }}>
             <Image style={{ width: 80, height: 80, marginBottom: 20 }} source={require("../../assets/Tickit/delIcon.png")} />
             <Text style={{ color: 'white', fontSize: 24 }}>Are you sure you want to</Text>
-            <Text style={{ color: 'white', fontSize: 24, marginBottom: 10 }}>delete this ticket?</Text>
-            <Text style={{ color: '#787CA5' }}>You're going to delete the "Demo"</Text>
-            <Text style={{ color: '#787CA5', marginBottom: 20 }}>ticket. Are you sure?</Text>
+            <Text style={{ color: 'white', fontSize: 24, marginBottom: 10 }}>delete this category?</Text>
+            <Text style={{ color: '#787CA5' }}>You're going to delete the category</Text>
+            <Text style={{ color: '#787CA5', marginBottom: 20 }}> Are you sure?</Text>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
               <TouchableOpacity style={{ backgroundColor: '#37384B', padding: 15, borderRadius: 30, flex: 1, marginRight: 10 }} onPress={cancelDelete}>
                 <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'LatoBold' }}>No, Keep It.</Text>

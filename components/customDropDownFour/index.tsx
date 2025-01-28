@@ -49,6 +49,8 @@ const CustomDropdownWithSearchAndAdd: React.FC<CustomDropdownProps> = ({
   const handleSelect = (value: any) => {
     setIsOpen(false);
     onSelect(value);
+
+    console.log('>>>>>>>vall', value);
   };
 
   const addItem = () => {
@@ -69,17 +71,28 @@ const CustomDropdownWithSearchAndAdd: React.FC<CustomDropdownProps> = ({
 
     setNewItem('');
   };
-
   const filteredData = data?.filter((item) =>
     item?.label?.toLowerCase()?.includes(searchQuery?.toLowerCase())
   );
 
+  console.log('Selected Value:', selectedValue);
+  console.log('Items:', items);
+  console.log(
+    'Matching Item:',
+    items.find((item) => item.value === selectedValue)
+  );
+
+  const selectval = selectedValue
+    ? filteredData.find((item) => item.value === selectedValue)?.label || placeholder
+    : placeholder;
+
+    console.log("<<<<<object>>>>>",selectval)
+    console.log("<<<<<object>>>>>😌",filteredData)
+
   return (
     <View style={styles.dropdownContainer}>
       <TouchableOpacity style={styles.dropdownButton} onPress={() => setIsOpen(!isOpen)}>
-        <Text style={styles.dropdownButtonText}>
-          {selectedValue ? items.find((item) => item.value === selectedValue)?.label : placeholder}
-        </Text>
+        <Text style={styles.dropdownButtonText}>{selectval}</Text>
         <AntDesign
           name={isOpen ? 'caretup' : 'caretdown'}
           size={14}
@@ -106,14 +119,12 @@ const CustomDropdownWithSearchAndAdd: React.FC<CustomDropdownProps> = ({
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.dropdownItem}
-                onPress={() => handleSelect(item.value)}
-              >
+                onPress={() => handleSelect(item.value)}>
                 <Text
                   style={[
                     styles.dropdownItemText,
                     selectedValue === item.value && styles.selectedItemText,
-                  ]}
-                >
+                  ]}>
                   {item.label}
                 </Text>
                 {selectedValue === item.value && (
@@ -134,11 +145,7 @@ const CustomDropdownWithSearchAndAdd: React.FC<CustomDropdownProps> = ({
                 value={newItem}
                 onChangeText={setNewItem}
               />
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={addItem}
-                disabled={isLoading}
-              >
+              <TouchableOpacity style={styles.addButton} onPress={addItem} disabled={isLoading}>
                 {isLoading ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
@@ -167,7 +174,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
   },
   dropdownButtonText: {
-    color: 'white',
+    color: '#fff',
     fontSize: 14,
     flex: 1,
   },
@@ -217,7 +224,7 @@ const styles = StyleSheet.create({
   },
   selectedItemText: {
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#fff',
   },
   itemIcon: {
     marginLeft: 10,

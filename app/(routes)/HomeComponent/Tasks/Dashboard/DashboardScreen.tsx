@@ -486,7 +486,7 @@ export default function DashboardScreen() {
                   <TaskStatusCard
                     imageSource={require('../../../../../assets/commonAssets/Progress.png')}
                     status="In Progress"
-                    count={taskCounts?.['In Progress']}
+                    count={taskCounts?.['In Progress'] || taskCounts?.InProgress}
                   />
                   <TaskStatusCard
                     imageSource={require('../../../../../assets/commonAssets/Completed.png')}

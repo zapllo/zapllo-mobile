@@ -31,7 +31,7 @@ export const getDateRange = (option: string, tasksData: Task[],customStartDate:a
     case 'Custom':
       dateRange = { startDate: moment(customStartDate).startOf('day'), endDate: moment(customEndDate).endOf('day') };
     case 'All Time':
-      const startDate = tasksData.reduce(
+      const startDate = tasksData?.reduce(
         (minDate, task) => (moment(task.createdAt).isBefore(minDate) ? moment(task.createdAt) : minDate),
         moment()
       );

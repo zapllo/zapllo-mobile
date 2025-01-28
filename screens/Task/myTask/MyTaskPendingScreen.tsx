@@ -25,6 +25,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import axios from 'axios';
 import { backend_Host } from '~/config';
+import { getDateRange } from '~/utils/GetDateRange';
+import moment from 'moment';
 
 type Props = StackScreenProps<MyTasksStackParamList, 'PendingTask'>;
 type PendingTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'PendingTask'>;
@@ -72,6 +74,15 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
   const [filteredTasks, setFilteredTasks] = useState<any[]>(pendingTasks);
   const [users, setUsers] = useState([]);
   const [activeFilter, setActiveFilter] = useState('Category');
+  const [formattedDateRange, setFormattedDateRange] = useState('');
+  const [tasks, setTasks] = useState([]);
+
+
+
+  const formatWithSuffix = (date:any) => {
+    // return moment(date).format('Do MMM, YYYY');
+    return moment(date).format("MMM Do YY");
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -107,6 +118,39 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
     fetchCategories();
   }, [token]);
 
+  useEffect(() => {
+    // Update tasks based on selected date range
+    const dateRange = getDateRange(selectedTeamSize,pendingTasks);
+  
+    if (dateRange.startDate && dateRange.endDate) {
+      const formattedStart = formatWithSuffix(dateRange.startDate);
+      const formattedEnd = formatWithSuffix(dateRange.endDate);
+  
+      if (selectedTeamSize === 'Today' || selectedTeamSize === 'Yesterday') {
+        setFormattedDateRange(formattedStart);
+      } else {
+        setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
+      }
+    } else {
+      setFormattedDateRange('Invalid date range');
+    }
+  
+    // Filter tasks by date
+    const filteredByDate = filterTasksByDate(pendingTasks, dateRange);
+    setFilteredTasks(filteredByDate);
+  }, [selectedTeamSize, pendingTasks]);
+  
+  const filterTasksByDate = (tasks: any[], dateRange: { startDate: string; endDate: string }) => {
+    const { startDate, endDate } = dateRange;
+  
+    return tasks.filter((task) => {
+      const taskDueDate = moment(task?.dueDate);
+      return taskDueDate.isSameOrAfter(startDate, 'day') && taskDueDate.isSameOrBefore(endDate, 'day');
+    });
+  };
+  
+ 
+
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
@@ -118,40 +162,40 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const applyFilter = () => {
-    let tasksMatchingFilters = pendingTasks;
-
+    let tasksMatchingFilters = filteredTasks; // Use tasks already filtered by date
+  
     // Filter by Categories
     if (selectedCategories.length > 0) {
       tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
         selectedCategories.includes(task.category?._id)
       );
     }
-
+  
     // Filter by Assigned To
     if (selectedAssignees.length > 0) {
       tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
         selectedAssignees.includes(task.assignedUser?._id)
       );
     }
-
+  
     // Filter by Frequency
     if (selectedFrequencies.length > 0) {
       tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
         selectedFrequencies.includes(task?.repeatType)
       );
     }
-
+  
     // Filter by Priority
     if (selectedPriorities.length > 0) {
       tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
         selectedPriorities.includes(task?.priority)
       );
     }
-
-    setFilteredTasks(tasksMatchingFilters);
+  
+    setFilteredTasks(tasksMatchingFilters); // Update the filtered tasks
     toggleModal(); // Close modal
   };
-
+  
   // Search filtered tasks using `useMemo`
   const searchedTasks = useMemo(() => {
     return filteredTasks.filter((task: any) => {

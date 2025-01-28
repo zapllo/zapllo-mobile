@@ -330,13 +330,13 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
               {/* Task updates */}
               <View className=" mb-6 w-full flex-col gap-2">
-                <View className=" mb-6 flex w-full flex-row items-center gap-2">
+                {/* <View className=" mb-6 flex w-full flex-row items-center gap-2">
                   <Image
                     source={require('../../assets/commonAssets/allTasks.png')}
                     className="h-6 w-5"
                   />
                   <Text className="text-xs text-[#787CA5]">Task Updates</Text>
-                </View>
+                </View> */}
 
                 <View className="flex w-full flex-row items-center justify-between">
                   <View className=" items-center-start flex flex-row gap-2">

@@ -61,7 +61,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
   const { pendingTasks } = route.params;
   const { token, userData } = useSelector((state: RootState) => state.auth);
   console.log('>>>>>>>>pending>>>>>>>>', pendingTasks);
-  const [selectedTeamSize, setSelectedTeamSize] = useState('This week');
+  const [selectedTeamSize, setSelectedTeamSize] = useState('This Week');
   const [search, setSearch] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [taskDescription, setTaskDescription] = useState('');
@@ -77,11 +77,9 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
   const [formattedDateRange, setFormattedDateRange] = useState('');
   const [tasks, setTasks] = useState([]);
 
-
-
-  const formatWithSuffix = (date:any) => {
+  const formatWithSuffix = (date: any) => {
     // return moment(date).format('Do MMM, YYYY');
-    return moment(date).format("MMM Do YY");
+    return moment(date).format('MMM Do YY');
   };
 
   useEffect(() => {
@@ -107,7 +105,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
           },
         });
         console.log('uuuuuuuuuuu', response?.data?.data);
-        setUsers(response?.data?.data)
+        setUsers(response?.data?.data);
         // const formattedData = processUserData(response.data.data);
         // setUsers(formattedData);
       } catch (err: any) {
@@ -120,12 +118,12 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
 
   useEffect(() => {
     // Update tasks based on selected date range
-    const dateRange = getDateRange(selectedTeamSize,pendingTasks);
-  
+    const dateRange = getDateRange(selectedTeamSize, pendingTasks);
+
     if (dateRange.startDate && dateRange.endDate) {
       const formattedStart = formatWithSuffix(dateRange.startDate);
       const formattedEnd = formatWithSuffix(dateRange.endDate);
-  
+
       if (selectedTeamSize === 'Today' || selectedTeamSize === 'Yesterday') {
         setFormattedDateRange(formattedStart);
       } else {
@@ -134,22 +132,22 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
     } else {
       setFormattedDateRange('Invalid date range');
     }
-  
+
     // Filter tasks by date
     const filteredByDate = filterTasksByDate(pendingTasks, dateRange);
     setFilteredTasks(filteredByDate);
-  }, [selectedTeamSize, pendingTasks]);
-  
+  }, [selectedTeamSize]);
+
   const filterTasksByDate = (tasks: any[], dateRange: { startDate: string; endDate: string }) => {
     const { startDate, endDate } = dateRange;
-  
+
     return tasks.filter((task) => {
       const taskDueDate = moment(task?.dueDate);
-      return taskDueDate.isSameOrAfter(startDate, 'day') && taskDueDate.isSameOrBefore(endDate, 'day');
+      return (
+        taskDueDate.isSameOrAfter(startDate, 'day') && taskDueDate.isSameOrBefore(endDate, 'day')
+      );
     });
   };
-  
- 
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
@@ -163,39 +161,39 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
 
   const applyFilter = () => {
     let tasksMatchingFilters = filteredTasks; // Use tasks already filtered by date
-  
+
     // Filter by Categories
     if (selectedCategories.length > 0) {
       tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
         selectedCategories.includes(task.category?._id)
       );
     }
-  
+
     // Filter by Assigned To
     if (selectedAssignees.length > 0) {
       tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
         selectedAssignees.includes(task.assignedUser?._id)
       );
     }
-  
+
     // Filter by Frequency
     if (selectedFrequencies.length > 0) {
       tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
         selectedFrequencies.includes(task?.repeatType)
       );
     }
-  
+
     // Filter by Priority
     if (selectedPriorities.length > 0) {
       tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
         selectedPriorities.includes(task?.priority)
       );
     }
-  
+
     setFilteredTasks(tasksMatchingFilters); // Update the filtered tasks
     toggleModal(); // Close modal
   };
-  
+
   // Search filtered tasks using `useMemo`
   const searchedTasks = useMemo(() => {
     return filteredTasks.filter((task: any) => {
@@ -234,7 +232,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
             <View className="mb-3 mt-4 flex w-full items-center">
               <CustomDropdown
                 data={daysData}
-                placeholder="Select Filters"
+                placeholder="This Week"
                 selectedValue={selectedTeamSize}
                 onSelect={(value) => setSelectedTeamSize(value)}
               />
@@ -286,7 +284,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
-{/* filter modal */}
+      {/* filter modal */}
       <Modal
         isVisible={isModalVisible}
         onBackdropPress={toggleModal}

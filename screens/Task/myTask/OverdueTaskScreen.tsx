@@ -10,6 +10,7 @@ import {
   TextInput,
   Image,
   StyleSheet,
+  FlatList,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import ProfileButton from '~/components/profile/ProfileButton';
@@ -25,6 +26,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import axios from 'axios';
 import { backend_Host } from '~/config';
+import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
 
 type Props = StackScreenProps<MyTasksStackParamList, 'OverdueTask'>;
 type OverdueTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'OverdueTask'>;
@@ -72,6 +74,9 @@ const OverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
   const [filteredTasks, setFilteredTasks] = useState<any[]>(overdueTasks);
   const [users, setUsers] = useState([]);
   const [activeFilter, setActiveFilter] = useState('Category');
+      const [isCustomDateModalVisible, setIsCustomDateModalVisible] = useState(false);
+      const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
+      const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -166,6 +171,31 @@ const OverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
     return activeFilter === filter ? '#37384B' : '#0A0D28'; // Example colors
   };
 
+    const handleCustomDateApply = (startDate: Date, endDate: Date) => {
+          // Set custom date range state
+          setCustomStartDate(startDate);
+          setCustomEndDate(endDate);
+      
+          // Create a custom date range for filtering
+          const customDateRange = {
+            startDate: moment(startDate).startOf('day').toDate(),
+            endDate: moment(endDate).endOf('day').toDate(),
+          };
+      
+          // Filter tasks based on the custom date range
+          // const customFilteredTasks = filterTasksByDate(pendingTasks, customDateRange);
+          // setTasks(customFilteredTasks);
+          // setTaskCounts(countStatuses(customFilteredTasks));
+      
+          // Format the custom date range for display
+          const formattedStart = formatWithSuffix(moment(startDate));
+          const formattedEnd = formatWithSuffix(moment(endDate));
+          setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
+      
+          setSelectedTeamSize(formattedDateRange)
+          setIsCustomDateModalVisible(false);
+    };
+
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
       <View className="flex h-20 w-full flex-row items-center justify-between p-5">
@@ -189,7 +219,14 @@ const OverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
                 data={daysData}
                 placeholder="Select Filters"
                 selectedValue={selectedTeamSize}
-                onSelect={(value) => setSelectedTeamSize(value)}
+                onSelect={(value) => {
+                  setSelectedTeamSize(value);
+                  if (value === 'Custom') {
+                    setIsCustomDateModalVisible(true); // Open custom date modal
+                  } else {
+                    setIsCustomDateModalVisible(false); // Close modal for predefined filters
+                  }
+                }}
               />
             </View>
 
@@ -294,7 +331,7 @@ const OverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-            <View className="flex w-[60%] flex-col gap-6 p-4">
+            <View className="flex w-[60%] flex-col gap-6 p-4 h-96">
               <View style={[styles.input, { height: 57, borderRadius: 16 }]}>
                 <Image
                   className="ml-2 mr-2 h-4 w-4"
@@ -309,32 +346,41 @@ const OverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
               </View>
 
               {activeFilter === 'Category' &&
-                categories.map((category) => (
-                  <View key={category._id} className="flex w-full flex-row items-center gap-3">
-                    <CheckboxTwo
-                      isChecked={selectedCategories.includes(category._id)}
-                      onPress={() => handleCategorySelection(category._id)}
-                    />
-                    <Text className="text-lg text-white">{category.name}</Text>
-                  </View>
-                ))}
+                     <FlatList
+                     data={categories}
+                     keyExtractor={(item) => item._id}
+                     renderItem={({ item }) => (
+                       <View className="flex w-full flex-row items-center gap-3 mb-5">
+                         <CheckboxTwo
+                           isChecked={selectedCategories.includes(item._id)}
+                           onPress={() => handleCategorySelection(item._id)}
+                         />
+                         <Text className="text-lg text-white">{item.name}</Text>
+                       </View>
+                     )}
+                   />}
 
-              {activeFilter === 'AssignedTo' &&
-                users.map((user) => (
-                  <View key={user._id} className="flex w-full flex-row items-center gap-3">
-                    <CheckboxTwo
-                      isChecked={selectedAssignees.includes(user._id)}
-                      onPress={() =>
-                        setSelectedAssignees((prev) =>
-                          prev.includes(user._id)
-                            ? prev.filter((id) => id !== user._id)
-                            : [...prev, user._id]
-                        )
-                      }
-                    />
-                    <Text className="text-lg text-white">{`${user.firstName} ${user.lastName}`}</Text>
-                  </View>
-                ))}
+                {activeFilter === 'AssignedTo' && (
+                        <FlatList
+                          data={users}
+                          keyExtractor={(user) => user._id}
+                          renderItem={({ item: user }) => (
+                            <View className="flex w-full flex-row items-center gap-3">
+                              <CheckboxTwo
+                                isChecked={selectedAssignees.includes(user._id)}
+                                onPress={() =>
+                                  setSelectedAssignees((prev) =>
+                                    prev.includes(user._id)
+                                      ? prev.filter((id) => id !== user._id)
+                                      : [...prev, user._id]
+                                  )
+                                }
+                              />
+                              <Text className="text-lg text-white">{`${user.firstName} ${user.lastName}`}</Text>
+                            </View>
+                          )}
+                        />
+                     )}
 
               {activeFilter === 'Frequency' &&
                 frequencyOptions.map((freq) => (
@@ -375,6 +421,17 @@ const OverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
           <GradientButton title="Apply Filter" onPress={applyFilter} imageSource={''} />
         </View>
       </Modal>
+
+      <CustomDateRangeModal
+        isVisible={isCustomDateModalVisible}
+        onClose={() => {
+          setIsCustomDateModalVisible(false);
+          setSelectedTeamSize(selectedTeamSize);
+        }}
+        onApply={handleCustomDateApply}
+        initialStartDate={customStartDate || new Date()}
+        initialEndDate={customEndDate || new Date()}
+      />
     </SafeAreaView>
   );
 };

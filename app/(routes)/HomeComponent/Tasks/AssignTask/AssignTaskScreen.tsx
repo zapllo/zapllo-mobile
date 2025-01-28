@@ -102,7 +102,6 @@ export default function AssignTaskScreen() {
   const handleBlur = () => setDescriptionFocused(false);
 
   const position = useRef(new Animated.Value(0)).current;
-  
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -135,7 +134,8 @@ export default function AssignTaskScreen() {
         },
       });
       // console.log('>>>>>>>>>>', response?.data?.data, token);
-      const formattedData = processCategoryData(response.data.data);
+      const formattedData = processCategoryData(response?.data?.data);
+      console.log(">>>>catttt",formattedData)
       setCategoryData(formattedData);
     } catch (err: any) {
       setError('Failed to fetch tasks. Please try again.');
@@ -172,7 +172,7 @@ export default function AssignTaskScreen() {
       }
     }
   };
-  
+
   // Combine date and time into dueDate whenever they change
   useEffect(() => {
     if (selectedDate && selectedTime) {
@@ -239,7 +239,7 @@ export default function AssignTaskScreen() {
     Haptics.selectionAsync();
   };
 
-  console.log("object",category)
+  console.log('object', category);
 
   const handleCreateTask = async () => {
     if (!taskTitle.trim()) {
@@ -311,13 +311,13 @@ export default function AssignTaskScreen() {
     }
   };
 
-  const handleCreateCategory = async (cat:string) => {
+  const handleCreateCategory = async (cat: string) => {
     console.log('Category created:❌❌❌❌❌❌❌❌❌❌❌❌❌❌111111');
     if (!cat) {
       Alert.alert('Validation Error', 'Enter new category');
       return;
     }
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const response = await axios.post(
         `${backend_Host}/category/create`,
@@ -335,17 +335,19 @@ export default function AssignTaskScreen() {
       const newCategoryy = response.data; // Access the new category details from the response
 
       // Update category data
+
+     
       fetchCategories();
       const updatedData = [...categoryData, { label: newCategoryy.name, value: newCategoryy.id }];
       setCategoryData(updatedData);
-      console.log('Category created:❌❌❌❌❌❌❌❌❌❌❌❌❌❌',updatedData);
+      console.log('Category created:❌❌❌❌❌❌❌❌❌❌❌❌❌❌', updatedData);
       setCategory(newCategoryy.id);
       Alert.alert('New Category Addedsssss');
     } catch (error) {
       console.error('Error creating category:', error);
       Alert.alert('Failed to create category. Please try again.');
-    }finally{
-      setIsLoading(false)
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -443,7 +445,7 @@ export default function AssignTaskScreen() {
                   data={users}
                   selectedValue={selectedUser}
                   onSelect={(value) => setSelectedUser(value)}
-                  placeholder=""
+                  placeholder="Select User"
                   renderItem={(item) => renderDropdownItem(item, 'user')}
                 />
               </View>
@@ -454,13 +456,14 @@ export default function AssignTaskScreen() {
                   data={categoryData}
                   selectedValue={category}
                   onSelect={(value) => setCategory(value)}
-                  placeholder=""
-                  onCreateCategory={(newCategoryName:string) => handleCreateCategory(newCategoryName)}
+                  placeholder="Select category"
+                  onCreateCategory={(newCategoryName: string) =>
+                    handleCreateCategory(newCategoryName)
+                  }
                   setCategoryData={setCategoryData}
                   isLoading={isLoading}
                 />
               </View>
-
             </View>
 
             {/* Task priority */}
@@ -549,57 +552,56 @@ export default function AssignTaskScreen() {
             ) : (
               ''
             )}
-    <View className="relative">
-      <TouchableOpacity
-        onPress={() => {
-          setShowPicker(true);
-          setMode('date'); // Start with date picker
-        }}
-        style={{ width: '100%' }} // Ensure the touchable area covers the entire input
-      >
-        <InputContainer
-          label="Due Date"
-          value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
-          onChangeText={() => {}} // No-op since input is not editable
-          placeholder=""
-          className="flex-1 text-sm text-[#787CA5]"
-          passwordError={''}
-          style={{ paddingEnd: 45 }}
-          editable={false} // Make the input non-editable
-        />
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => {
-          setShowPicker(true);
-          setMode('date'); // Start with date picker
-        }}
-      >
-        <Image
-          className="absolute bottom-6 right-6 h-6 w-6"
-          source={require('../../../../../assets/Tasks/calender.png')}
-        />
-      </TouchableOpacity>
-      {showPicker && Platform.OS === 'ios' && (
-        <SelectDateModal
-          visible={showPicker}
-          selectedDate={tempDate}
-          onChange={(date) => {
-            setTempDate(date);
-            setDueDate(date);
-            setShowPicker(false);
-          }}
-          onCancel={() => setShowPicker(false)}
-        />
-      )}
-      {showPicker && Platform.OS === 'android' && (
-        <DateTimePicker
-          value={tempDate}
-          mode={mode}
-          display={'default'}
-          onChange={handleChange}
-        />
-      )}
-    </View>
+            <View className="relative">
+              <TouchableOpacity
+                onPress={() => {
+                  setShowPicker(true);
+                  setMode('date'); // Start with date picker
+                }}
+                style={{ width: '100%' }} // Ensure the touchable area covers the entire input
+              >
+                <InputContainer
+                  label="Due Date"
+                  value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
+                  onChangeText={() => {}} // No-op since input is not editable
+                  placeholder=""
+                  className="flex-1 text-sm text-[#787CA5]"
+                  passwordError={''}
+                  style={{ paddingEnd: 45 }}
+                  editable={false} // Make the input non-editable
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowPicker(true);
+                  setMode('date'); // Start with date picker
+                }}>
+                <Image
+                  className="absolute bottom-6 right-6 h-6 w-6"
+                  source={require('../../../../../assets/Tasks/calender.png')}
+                />
+              </TouchableOpacity>
+              {showPicker && Platform.OS === 'ios' && (
+                <SelectDateModal
+                  visible={showPicker}
+                  selectedDate={tempDate}
+                  onChange={(date) => {
+                    setTempDate(date);
+                    setDueDate(date);
+                    setShowPicker(false);
+                  }}
+                  onCancel={() => setShowPicker(false)}
+                />
+              )}
+              {showPicker && Platform.OS === 'android' && (
+                <DateTimePicker
+                  value={tempDate}
+                  mode={mode}
+                  display={'default'}
+                  onChange={handleChange}
+                />
+              )}
+            </View>
 
             <View className=" mt-6 flex w-[90%] flex-row items-center gap-3">
               <TouchableOpacity onPress={() => setLinkModalVisible(true)}>
@@ -634,9 +636,7 @@ export default function AssignTaskScreen() {
                   className="h-12 w-12"
                   source={require('../../../../../assets/Tasks/Audio.png')}
                 />
-                <Text className="text-sm text-white">
-                  {links.length > 0 ? `` : ''}
-                </Text>
+                <Text className="text-sm text-white">{links.length > 0 ? `` : ''}</Text>
               </TouchableOpacity>
             </View>
 
@@ -740,7 +740,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 13,
     fontFamily: 'LatoBold',
-    
   },
   modalContent: {
     backgroundColor: 'white',
@@ -836,7 +835,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     backgroundColor: '#05071E',
-    gap:5,
+    gap: 5,
     borderBottomColor: '#37384B',
     marginHorizontal: 20,
   },

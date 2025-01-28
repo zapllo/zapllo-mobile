@@ -1,35 +1,84 @@
-import { View, Text, SafeAreaView, KeyboardAvoidingView, ScrollView, Image, Platform, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
-import InputContainer from "~/components/InputContainer";
-import { Feather, Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "expo-router";
+import {
+  View,
+  Text,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  ScrollView,
+  Image,
+  Platform,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import React, { useState } from 'react';
+import InputContainer from '~/components/InputContainer';
+import { Feather, Ionicons } from '@expo/vector-icons';
+import { useNavigation } from 'expo-router';
+import axios from 'axios';
+import { backend_Host } from '~/config';
+import { useSelector } from 'react-redux';
+import { RootState } from '~/redux/store';
 
 export default function ChangePassWordScreen() {
-    const [currentPassword,setCurrentPassword] = useState("");
-    const [newPassword,setNewPassword] = useState("");
-    const [error, setError] = useState<string>('');
-    const navigation = useNavigation();
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [error, setError] = useState<string>('');
+  const navigation = useNavigation();
+  const { token } = useSelector((state: RootState) => state.auth);
+  const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
-      const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
+  const handlePasswordValidation = (value: string) => {
+    const passwordOneNumber = /(?=.*[0-9])/;
+    const passwordSixValue = /(?=.{6,})/;
 
-      const handlePasswordValidation = (value: string) => {
-        const passwordOneNumber = /(?=.*[0-9])/;
-        const passwordSixValue = /(?=.{6,})/;
-    
-      if (!passwordOneNumber.test(value)) {
-          setError('Write at least one number');
-        } else if (!passwordSixValue.test(value)) {
-          setError('Write at least 6 characters');
-        } else {
-          setError('');
+    if (!passwordOneNumber.test(value)) {
+      setError('Write at least one number');
+    } else if (!passwordSixValue.test(value)) {
+      setError('Write at least 6 characters');
+    } else {
+      setError('');
+    }
+    setNewPassword(value);
+    setIsPasswordTouched(true);
+  };
+
+  const handelChangePassword = async () => {
+    if (!currentPassword.trim()) {
+      Alert.alert('Validation Error', 'Current password cannot be empty.');
+      return;
+    }
+
+    if (!newPassword.trim()) {
+      Alert.alert('Validation Error', 'New password cannot be empty.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.patch(
+        `${backend_Host}/changePassword`,
+        { currentPassword: currentPassword, newPassword: newPassword },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         }
-        setNewPassword(value)
-        setIsPasswordTouched(true);   
-      };
+      );
 
-      
+      Alert.alert('Success', 'Password updated successfully.');
+      navigation.goBack()
+    } catch (err: any) {
+      console.error('API Error:', err.response || err.message);
+      Alert.alert('Failed to update password. Please try again.');
+    } finally {
+      setLoading(false);
+      setCurrentPassword('');
+      setNewPassword('');
+    }
+  };
 
-   
   return (
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary ">
       <KeyboardAvoidingView
@@ -40,11 +89,15 @@ export default function ChangePassWordScreen() {
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
           <View className="h-full w-full items-center">
-            <View className="w-full m-4 ">
-             <TouchableOpacity 
-             onPress={() => navigation.goBack()}
-             className='w-10 ml-4 h-9 justify-start flex items-start'>
-                <Image resizeMode="contain" className='w-full h-full' source={require("~/assets/sign-in/back.png")}/>
+            <View className="m-4 w-full ">
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                className="ml-4 flex h-9 w-10 items-start justify-start">
+                <Image
+                  resizeMode="contain"
+                  className="h-full w-full"
+                  source={require('~/assets/sign-in/back.png')}
+                />
               </TouchableOpacity>
             </View>
             <Image
@@ -52,54 +105,64 @@ export default function ChangePassWordScreen() {
               source={require('~/assets/sign-in/sign_in.png')}
               resizeMode="contain"
             />
-            <View className="border border-[#37384B] rounded-xl p-5 py-8 w-[90%]">
-                <Text className="text-white font-bold text-2xl" >Change Your Password
-                </Text>
-         
-                <InputContainer
-                  label="Current Password"
-                  value={currentPassword}
-                  onChangeText={()=>setCurrentPassword}
-                  placeholder="**********"
-                  className="flex-1  text-[#787CA5]"
-                  passwordError={error}
-                />
+            <View className="w-[90%] rounded-xl border border-[#37384B] p-5 py-8">
+              <Text className="text-2xl font-bold text-white">Change Your Password</Text>
 
-                <InputContainer
-                  label="New Password"
-                  value={newPassword}
-                  onChangeText={handlePasswordValidation}
-                  placeholder="**********"
-                  className="flex-1  text-[#787CA5]"
-                  passwordError={error}
-                />
+              <InputContainer
+                label="Current Password"
+                value={currentPassword}
+                onChangeText={(text) => setCurrentPassword(text)}
+                placeholder="**********"
+                className="flex-1  text-[#787CA5]"
+                passwordError={error}
+              />
+
+              <InputContainer
+                label="New Password"
+                value={newPassword}
+                onChangeText={handlePasswordValidation}
+                placeholder="**********"
+                className="flex-1  text-[#787CA5]"
+                passwordError={error}
+              />
 
               {isPasswordTouched && (
                 <>
                   {error ? (
-                    <View className="ml-8 mt-2 flex-row self-start items-center">
+                    <View className="ml-8 mt-2 flex-row items-center self-start">
                       <Ionicons name="close-circle" size={16} color="#EE4848" />
-                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
+                      <Text
+                        className="font-pathwayExtreme ml-1 self-start text-sm text-red-500"
+                        style={{ fontFamily: 'Lato-Light' }}>
                         {error}
                       </Text>
                     </View>
                   ) : (
-                    <View className="ml-8 mt-2 flex-row self-start items-center">
+                    <View className="ml-8 mt-2 flex-row items-center self-start">
                       <Ionicons name="checkmark-circle" size={16} color="#80ED99" />
-                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-green-500" style={{fontFamily:"Lato-Light"}}>
+                      <Text
+                        className="font-pathwayExtreme ml-1 self-start text-sm text-green-500"
+                        style={{ fontFamily: 'Lato-Light' }}>
                         Password is valid!
                       </Text>
                     </View>
                   )}
                 </>
               )}
-                <TouchableOpacity 
-                className="p-4 items-center w-[70%] my-7 bg-[#34785D] rounded-full">
-                    <Text className="text-white" style={{fontFamily:"LatoBold"}}>Change Password</Text>
-                </TouchableOpacity>
-
+              <TouchableOpacity
+                disabled={loading}
+                onPress={handelChangePassword}
+                className="my-7 w-[70%] items-center rounded-full bg-[#34785D] p-4">
+                {loading ? (
+                  <ActivityIndicator size={'small'} color={'#fff'} />
+                ) : (
+                  <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>
+                    Change Password
+                  </Text>
+                )}
+              </TouchableOpacity>
             </View>
-            </View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

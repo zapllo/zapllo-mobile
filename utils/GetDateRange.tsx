@@ -1,6 +1,6 @@
 import moment from "moment";
 
-export const getDateRange = (option: string, tasksData: Task[]) => {
+export const getDateRange = (option: string, tasksData: Task[],customStartDate:any,customEndDate:any) => {
   let dateRange = { startDate: {}, endDate: {} };
 
   switch (option) {
@@ -28,6 +28,8 @@ export const getDateRange = (option: string, tasksData: Task[]) => {
     case 'This Year':
       dateRange = { startDate: moment().startOf('year'), endDate: moment().endOf('year') };
       break;
+    case 'Custom':
+      dateRange = { startDate: moment(customStartDate).startOf('day'), endDate: moment(customEndDate).endOf('day') };
     case 'All Time':
       const startDate = tasksData.reduce(
         (minDate, task) => (moment(task.createdAt).isBefore(minDate) ? moment(task.createdAt) : minDate),

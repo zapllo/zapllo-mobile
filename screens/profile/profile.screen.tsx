@@ -24,6 +24,8 @@ import ProfileImage from '~/components/profile/ProfileImage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Modal from 'react-native-modal';
 import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
+import { backend_Host } from '~/config';
 
 // Define the type for your navigation
 type RootStackParamList = {
@@ -53,14 +55,29 @@ const ProfileScreen: React.FC = () => {
   const [buttonSpinner, setButtonSpinner] = useState(false);
   const [profileModal, setProfileModal] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setButtonSpinner(true);
-    setTimeout(() => {
-      dispatch(logOut());
-      setButtonSpinner(false);
-      Alert.alert('Logged out sucessfully!');
+
+    try {
+      const response = await axios.get(
+        `${backend_Host}/users/logout`,
+
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      Alert.alert('Success', 'Logged out sucessfully!');
       router.push('/(routes)/login');
-    }, 1000);
+    } catch (err: any) {
+      console.error('API Error:', err.response || err.message);
+      Alert.alert('Failed to log out. Please try again.');
+    } finally {
+      setButtonSpinner(false);
+    }
   };
 
   const pickImage = async () => {
@@ -75,11 +92,10 @@ const ProfileScreen: React.FC = () => {
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
-    }else{
-      setProfileModal(false)
+    } else {
+      setProfileModal(false);
     }
   };
-
 
   return (
     <SafeAreaView className="h-full w-full flex-1 bg-[#05071E]">
@@ -259,13 +275,9 @@ const ProfileScreen: React.FC = () => {
                 <TouchableOpacity
                   onPress={() => router.push('/(routes)/profile/ChangePassword' as any)}
                   className={`mt-6 flex  h-[3.7rem] w-[90%] items-center justify-center rounded-full bg-[#37384B] p-2.5`}>
-                  {buttonSpinner ? (
-                    <ActivityIndicator size="small" color={'white'} />
-                  ) : (
-                    <Text className="text-center  text-white " style={{ fontFamily: 'LatoBold' }}>
-                      Change Password
-                    </Text>
-                  )}
+                  <Text className="text-center  text-white " style={{ fontFamily: 'LatoBold' }}>
+                    Change Password
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -409,7 +421,9 @@ const ProfileScreen: React.FC = () => {
             animationOut="slideOutDown">
             <View className="mb-10 mt-2 flex w-full flex-col items-center justify-center">
               <View className=" mb-2 w-[95%]  items-center rounded-2xl bg-[#14173b] p-4 ">
-                <TouchableOpacity onPress={pickImage} className="w-full items-center rounded-2xl pb-3 ">
+                <TouchableOpacity
+                  onPress={pickImage}
+                  className="w-full items-center rounded-2xl pb-3 ">
                   <Text className="text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
                     Add profile photo
                   </Text>

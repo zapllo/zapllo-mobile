@@ -22,7 +22,7 @@ interface CustomDropdownProps {
 
 const CustomDropdown: React.FC<CustomDropdownProps> = ({
   data,
-  placeholder = "Select an option",
+  placeholder,
   onSelect,
   selectedValue,
 }) => {

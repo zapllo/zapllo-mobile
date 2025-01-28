@@ -69,7 +69,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
   const navigation = useNavigation();
 
   const findIndianDialCode = () => {
-    const indianCode = countryData.find(country => country.dial_code === '+91');
+    const indianCode = countryData.find((country) => country.dial_code === '+91');
     return indianCode || countryData[0]; // Fallback to first country if India not found
   };
   const initializeCountryDropdown = () => {
@@ -84,13 +84,10 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
 
   const handleEmailValidation = (value: string) => {
     setFormData((prev) => ({ ...prev, email: value }));
-  
   };
 
   const handlePasswordValidation = (value: string) => {
-    
     setFormData((prev) => ({ ...prev, password: value }));
-    
   };
 
   const handleConfirmPasswordValidation = (value: string) => {
@@ -105,7 +102,16 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
   };
 
   const handleValidation = (): boolean => {
-    const { firstName, lastName, phone, email, password, confirmPassword,description,companyName } = formData;
+    const {
+      firstName,
+      lastName,
+      phone,
+      email,
+      password,
+      confirmPassword,
+      description,
+      companyName,
+    } = formData;
 
     let valid = true;
 
@@ -153,17 +159,14 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
       setError('');
     }
 
-    if (!confirmPassword){
+    if (!confirmPassword) {
       setConfirmPasswordError('Password is required');
-    } 
-    else if (password !== confirmPassword) {
+    } else if (password !== confirmPassword) {
       setConfirmPasswordError('Passwords do not match');
       valid = false;
     } else {
       setConfirmPasswordError('');
     }
-
-    
 
     return valid;
   };
@@ -197,7 +200,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
             Alert.alert('Success', 'You have signed up successfully!');
             // dispatch(logIn({ token, userData }));
             // router.push('/(routes)/home');
-            router.push('/(routes)/login' as any)
+            router.push('/(routes)/login' as any);
           } else {
             Alert.alert(response.data.message || 'Invalid credentials');
           }
@@ -222,298 +225,311 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
-          
-          <View 
-          className='flex mt-16 relative items-center'
-          style={{ marginVertical: verticalScale(25) }}
-          >
-            {
-              showWorkspace && 
-              <TouchableOpacity 
-              onPress={()=>router.push("/(routes)/signup/pageOne")}
-              className='w-10 ml-4 h-9 absolute left-1 bottom-6 '>
-                <Image resizeMode="contain" className='w-full h-full' source={require("../../assets/sign-in/back.png")}/>
+          <View
+            className="relative mt-16 flex items-center"
+            style={{ marginVertical: verticalScale(25) }}>
+            {showWorkspace && (
+              <TouchableOpacity
+                onPress={() => router.push('/(routes)/signup/pageOne')}
+                className="absolute bottom-6 left-1 ml-4 h-9 w-10 ">
+                <Image
+                  resizeMode="contain"
+                  className="h-full w-full"
+                  source={require('../../assets/sign-in/back.png')}
+                />
               </TouchableOpacity>
-            }
+            )}
 
-          <Image
-            className="h-9"
-            source={require('../../assets/sign-in/logo.png')}
-            resizeMode="contain"
-          />
+            <Image
+              className="h-9"
+              source={require('../../assets/sign-in/logo.png')}
+              resizeMode="contain"
+            />
           </View>
 
           {!showWorkspace && (
             <>
-            <View className="flex h-full w-full items-center pb-14">
-              <View className="mb-4 flex items-center justify-center gap-4 ">
-                <Text className="text-2xl  text-white" style={{fontFamily:"LatoBold"}}>Let’s Get Started</Text>
-                <Text className="font-light text-white" style={{fontFamily:"Lato-Light"}}>
-                  Let's get started by filling out the form below.
-                </Text>
-              </View>
-
-              {/* first name */}
-              <InputContainer
-                label="First Name"
-                value={formData.firstName}
-                onChangeText={(text) => handleChange('firstName', text)}
-                placeholder="First Name"
-                className="flex-1  text-[#787CA5]"
-                passwordError={firstNameError}
-              />
-
-              {firstNameError && (
-                <View className="ml-8 mt-2 flex-row self-start items-center">
-                  <Ionicons name="close-circle" size={16} color="#EE4848" />
-                  <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
-                    {firstNameError}
+              <View className="flex h-full w-full items-center pb-14">
+                <View className="mb-4 flex items-center justify-center gap-4 ">
+                  <Text className="text-2xl  text-white" style={{ fontFamily: 'LatoBold' }}>
+                    Let’s Get Started
+                  </Text>
+                  <Text className="font-light text-white" style={{ fontFamily: 'Lato-Light' }}>
+                    Let's get started by filling out the form below.
                   </Text>
                 </View>
-              )}
 
-              {/* last name */}
-              <InputContainer
-                label="Last Name"
-                value={formData.lastName}
-                onChangeText={(text) => handleChange('lastName', text)}
-                placeholder="Last Name"
-                passwordError={lastNameError}
-                className="flex-1  text-sm text-[#787CA5]"
-              />
-
-              {lastNameError && (
-                <View className="ml-8 mt-2 flex-row self-start items-center">
-                  <Ionicons name="close-circle" size={16} color="#EE4848" />
-                  <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
-                    {lastNameError}
-                  </Text>
-                </View>
-              )}
-
-              <View className="mb-4 flex w-[69%]  flex-row items-center justify-center gap-2">
-                <Dropdown
-                  search
-                  searchPlaceholder='search'
-                  inputSearchStyle={{
-                    borderRadius:20,
-                    borderWidth:0,
-                    color: 'white',
-                  }}
-                  searchPlaceholderTextColor='#787CA5'
-                  style={{
-                    borderWidth: 1,
-                    borderColor: '#37384B',
-                    borderRadius: 29,
-                    backgroundColor: '#05071E',
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
-                    height: 55,
-                    marginTop: 27,
-                    width: 100,
-                  }}
-                  placeholderStyle={{
-                    fontSize: 14,
-                    color: '#787CA5',
-                  }}
-                  selectedTextStyle={{
-                    fontSize: 10,
-                    color: '#787CA5',
-                    marginLeft: 2,
-                  }}
-                  iconStyle={[
-                    {
-                      width: 10,
-                      height: 20,
-                      transform: [{ rotate: isDropdownOpen ? '180deg' : '0deg' }],
-                    },
-                  ]}
-                  containerStyle={{
-                    backgroundColor: '#05071E',
-                    borderColor: '#37384B',
-                    borderRadius: 20,
-                    overflow: 'hidden',
-                  }}
-                  data={countryData}
-                  labelField="dial_code"
-                  valueField="dial_code"
-                  placeholder="Select Code"
-                  value={numberValue}
-                  onFocus={() => setIsDropdownOpen(true)}
-                  onBlur={() => setIsDropdownOpen(false)}
-                  onChange={(item) => setNumberValue(item.dial_code)}
-                  renderLeftIcon={() => {
-                    const selectedItem = countryData.find((item) => item.dial_code === numberValue);
-                    return (
-                      <Text style={{ fontSize: 13 }}>{selectedItem?.flag}</Text>
-                    );
-                  }}
-                  renderItem={(item) => {
-                    const isSelected = item.dial_code === numberValue;
-                    return (
-                      <TouchableOpacity
-                        style={[
-                          {
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            padding: 2,
-                            borderBottomColor: '#4e5278',
-                            backgroundColor: isSelected ? '#4e5278' : 'transparent',
-                            borderBottomWidth: 1,
-                          },
-                        ]}
-                        onPress={() => setNumberValue(item.dial_code)}>
-                        <Text style={{ fontSize: 20, marginRight: 10 }}>{item.flag}</Text>
-                        <Text
-                          style={{
-                            fontSize: 11,
-                            color: isSelected ? '#FFFFFF' : '#787CA5',
-                            fontWeight: isSelected ? 'bold' : 'normal',
-                          }}>
-                          {item.dial_code}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  }}
-                />
-
+                {/* first name */}
                 <InputContainer
-                  label="WhatsApp Number"
-                  value={formData.phone}
-                  onChangeText={(text) => handleChange('phone', text)}
-                  placeholder="7863983914"
-                  keyboardType="numeric"
-                  className="flex-1 p-2 text-sm text-[#787CA5]"
-                  passwordError={phoneError}
-                />
-              </View>
-
-              {phoneError && (
-                <View className="ml-8 mt-2 flex-row self-start items-center">
-                  <Ionicons name="close-circle" size={16} color="#EE4848" />
-                  <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
-                    {phoneError}
-                  </Text>
-                </View>
-              )}
-
-              {/* email input */}
-              <InputContainer
-                label="Email Address"
-                value={formData.email}
-                onChangeText={handleEmailValidation}
-                placeholder="Email Address"
-                className="flex-1  text-[#787CA5]"
-                passwordError={emailError}
-              />
-
-              { emailError && (
-                <View className="ml-8 mt-2 flex-row self-start items-center">
-                  <Ionicons name="close-circle" size={16} color="#EE4848" />
-                  <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
-                    {emailError}
-                  </Text>
-                </View>
-              )}
-
-              {/* password input */}
-              <View className="relative w-full items-center">
-                <InputContainer
-                  label="Password"
-                  value={formData.password}
-                  onChangeText={handlePasswordValidation}
-                  placeholder="**********"
-                  secureTextEntry={!passwordVisible}
+                  label="First Name"
+                  value={formData.firstName}
+                  onChangeText={(text) => handleChange('firstName', text)}
+                  placeholder="First Name"
                   className="flex-1  text-[#787CA5]"
-                  passwordError={error}
+                  passwordError={firstNameError}
                 />
-                <TouchableOpacity
-                  className="absolute right-12 top-12"
-                  onPress={() => setPasswordVisible(!passwordVisible)}>
-                  {passwordVisible ? (
-                    <Ionicons name="eye-off-outline" size={23} color={'#FFFFFF'} />
-                  ) : (
-                    <Ionicons name="eye-outline" size={23} color={'#FFFFFF'} />
-                  )}
-                </TouchableOpacity>
-              </View>
 
-            
-                  {error && (
-                    <View className="ml-8 mt-2 flex-row self-start items-center">
-                      <Ionicons name="close-circle" size={16} color="#EE4848" />
-                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
-                        {error}
-                      </Text>
-                    </View>
-             
-                  )}    
-                      
-            
-              {/* confirm password */}
-              <View className="relative w-full items-center">
+                {firstNameError && (
+                  <View className="ml-8 mt-2 flex-row items-center self-start">
+                    <Ionicons name="close-circle" size={16} color="#EE4848" />
+                    <Text
+                      className="font-pathwayExtreme ml-1 self-start text-sm text-red-500"
+                      style={{ fontFamily: 'Lato-Light' }}>
+                      {firstNameError}
+                    </Text>
+                  </View>
+                )}
+
+                {/* last name */}
                 <InputContainer
-                  label="Confirm Password"
-                  secureTextEntry={!confirmPasswordVisible}
-                  value={formData.confirmPassword}
-                  onChangeText={handleConfirmPasswordValidation}
-                  placeholder="**********"
-                  className="flex-1  text-[#787CA5]"
-                  passwordError={confirmPasswordError}
+                  label="Last Name"
+                  value={formData.lastName}
+                  onChangeText={(text) => handleChange('lastName', text)}
+                  placeholder="Last Name"
+                  passwordError={lastNameError}
+                  className="flex-1  text-sm text-[#787CA5]"
                 />
-                <TouchableOpacity
-                  className="absolute right-12 top-12"
-                  onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}>
-                  {confirmPasswordVisible ? (
-                    <Ionicons name="eye-off-outline" size={23} color={'#FFFFFF'} />
-                  ) : (
-                    <Ionicons name="eye-outline" size={23} color={'#FFFFFF'} />
-                  )}
-                </TouchableOpacity>
-              </View>
 
+                {lastNameError && (
+                  <View className="ml-8 mt-2 flex-row items-center self-start">
+                    <Ionicons name="close-circle" size={16} color="#EE4848" />
+                    <Text
+                      className="font-pathwayExtreme ml-1 self-start text-sm text-red-500"
+                      style={{ fontFamily: 'Lato-Light' }}>
+                      {lastNameError}
+                    </Text>
+                  </View>
+                )}
 
-                  {confirmPasswordError && (
-                    <View className="ml-8 mt-2 flex-row self-start items-center">
-                      <Ionicons name="close-circle" size={16} color="#EE4848" />
-                      <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500" style={{fontFamily:"Lato-Light"}}>
-                        {confirmPasswordError}
+                <View className="mb-4 flex w-[69%]  flex-row items-center justify-center gap-2">
+                  <Dropdown
+                    search
+                    searchPlaceholder="search"
+                    inputSearchStyle={{
+                      borderRadius: 20,
+                      borderWidth: 0,
+                      color: 'white',
+                    }}
+                    searchPlaceholderTextColor="#787CA5"
+                    style={{
+                      borderWidth: 1,
+                      borderColor: '#37384B',
+                      borderRadius: 29,
+                      backgroundColor: '#05071E',
+                      paddingHorizontal: 12,
+                      paddingVertical: 10,
+                      height: 55,
+                      marginTop: 27,
+                      width: 100,
+                    }}
+                    placeholderStyle={{
+                      fontSize: 14,
+                      color: '#787CA5',
+                    }}
+                    selectedTextStyle={{
+                      fontSize: 10,
+                      color: '#787CA5',
+                      marginLeft: 2,
+                    }}
+                    iconStyle={[
+                      {
+                        width: 10,
+                        height: 20,
+                        transform: [{ rotate: isDropdownOpen ? '180deg' : '0deg' }],
+                      },
+                    ]}
+                    containerStyle={{
+                      backgroundColor: '#05071E',
+                      borderColor: '#37384B',
+                      borderRadius: 20,
+                      overflow: 'hidden',
+                    }}
+                    data={countryData}
+                    labelField="dial_code"
+                    valueField="dial_code"
+                    placeholder="Select Code"
+                    value={numberValue}
+                    onFocus={() => setIsDropdownOpen(true)}
+                    onBlur={() => setIsDropdownOpen(false)}
+                    onChange={(item) => setNumberValue(item.dial_code)}
+                    renderLeftIcon={() => {
+                      const selectedItem = countryData.find(
+                        (item) => item.dial_code === numberValue
+                      );
+                      return <Text style={{ fontSize: 13 }}>{selectedItem?.flag}</Text>;
+                    }}
+                    renderItem={(item) => {
+                      const isSelected = item.dial_code === numberValue;
+                      return (
+                        <TouchableOpacity
+                          style={[
+                            {
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              padding: 2,
+                              borderBottomColor: '#4e5278',
+                              backgroundColor: isSelected ? '#4e5278' : 'transparent',
+                              borderBottomWidth: 1,
+                            },
+                          ]}
+                          onPress={() => setNumberValue(item.dial_code)}>
+                          <Text style={{ fontSize: 20, marginRight: 10 }}>{item.flag}</Text>
+                          <Text
+                            style={{
+                              fontSize: 11,
+                              color: isSelected ? '#FFFFFF' : '#787CA5',
+                              fontWeight: isSelected ? 'bold' : 'normal',
+                            }}>
+                            {item.dial_code}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    }}
+                  />
+
+                  <InputContainer
+                    label="WhatsApp Number"
+                    value={formData.phone}
+                    onChangeText={(text) => handleChange('phone', text)}
+                    placeholder="7863983914"
+                    keyboardType="numeric"
+                    className="flex-1 p-2 text-sm text-[#787CA5]"
+                    passwordError={phoneError}
+                  />
+                </View>
+
+                {phoneError && (
+                  <View className="ml-8 mt-2 flex-row items-center self-start">
+                    <Ionicons name="close-circle" size={16} color="#EE4848" />
+                    <Text
+                      className="font-pathwayExtreme ml-1 self-start text-sm text-red-500"
+                      style={{ fontFamily: 'Lato-Light' }}>
+                      {phoneError}
+                    </Text>
+                  </View>
+                )}
+
+                {/* email input */}
+                <InputContainer
+                  label="Email Address"
+                  value={formData.email}
+                  onChangeText={handleEmailValidation}
+                  placeholder="Email Address"
+                  className="flex-1  text-[#787CA5]"
+                  passwordError={emailError}
+                />
+
+                {emailError && (
+                  <View className="ml-8 mt-2 flex-row items-center self-start">
+                    <Ionicons name="close-circle" size={16} color="#EE4848" />
+                    <Text
+                      className="font-pathwayExtreme ml-1 self-start text-sm text-red-500"
+                      style={{ fontFamily: 'Lato-Light' }}>
+                      {emailError}
+                    </Text>
+                  </View>
+                )}
+
+                {/* password input */}
+                <View className="relative w-full items-center">
+                  <InputContainer
+                    label="Password"
+                    value={formData.password}
+                    onChangeText={handlePasswordValidation}
+                    placeholder="**********"
+                    secureTextEntry={!passwordVisible}
+                    className="flex-1  text-[#787CA5]"
+                    passwordError={error}
+                  />
+                  <TouchableOpacity
+                    className="absolute right-12 top-12"
+                    onPress={() => setPasswordVisible(!passwordVisible)}>
+                    {passwordVisible ? (
+                      <Ionicons name="eye-outline" size={23} color={'#FFFFFF'} />
+                    ) : (
+                      <Ionicons name="eye-off-outline" size={23} color={'#FFFFFF'} />
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {error && (
+                  <View className="ml-8 mt-2 flex-row items-center self-start">
+                    <Ionicons name="close-circle" size={16} color="#EE4848" />
+                    <Text
+                      className="font-pathwayExtreme ml-1 self-start text-sm text-red-500"
+                      style={{ fontFamily: 'Lato-Light' }}>
+                      {error}
+                    </Text>
+                  </View>
+                )}
+
+                {/* confirm password */}
+                <View className="relative w-full items-center">
+                  <InputContainer
+                    label="Confirm Password"
+                    secureTextEntry={!confirmPasswordVisible}
+                    value={formData.confirmPassword}
+                    onChangeText={handleConfirmPasswordValidation}
+                    placeholder="**********"
+                    className="flex-1  text-[#787CA5]"
+                    passwordError={confirmPasswordError}
+                  />
+                  <TouchableOpacity
+                    className="absolute right-12 top-12"
+                    onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}>
+                    {confirmPasswordVisible ? (
+                      <Ionicons name="eye-outline" size={23} color={'#FFFFFF'} />
+                    ) : (
+                      <Ionicons name="eye-off-outline" size={23} color={'#FFFFFF'} />
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {confirmPasswordError && (
+                  <View className="ml-8 mt-2 flex-row items-center self-start">
+                    <Ionicons name="close-circle" size={16} color="#EE4848" />
+                    <Text
+                      className="font-pathwayExtreme ml-1 self-start text-sm text-red-500"
+                      style={{ fontFamily: 'Lato-Light' }}>
+                      {confirmPasswordError}
+                    </Text>
+                  </View>
+                )}
+
+                <View className="mt-16 w-full px-4">
+                  <TouchableOpacity
+                    className={`flex h-[3.7rem] items-center justify-center rounded-full ${
+                      showWorkspace ? 'bg-[#815BF5]' : 'bg-[#37384B]'
+                    }`}
+                    onPress={handleNextOrSignUp}>
+                    {buttonSpinner ? (
+                      <ActivityIndicator size="small" color={'white'} />
+                    ) : (
+                      <Text
+                        className="text-center font-semibold text-white"
+                        style={{ fontFamily: 'LatoBold' }}>
+                        {showWorkspace ? 'Sign Up' : 'Create Work Space'}
                       </Text>
+                    )}
+                  </TouchableOpacity>
+                  <View className="flex-row items-center justify-center bg-primary py-5">
+                    <View className="flex-row">
+                      <Text className="text-base  text-white" style={{ fontFamily: 'Lato-Light' }}>
+                        Already a{' '}
+                      </Text>
+                      <GradientText
+                        text="Zapllonian"
+                        textStyle={{ fontSize: 16, fontWeight: '400' }}
+                      />
                     </View>
-                
-                  )}
-         
-           
-            <View className="w-full px-4 mt-16">
-            <TouchableOpacity
-              className={`flex h-[3.7rem] items-center justify-center rounded-full ${
-                showWorkspace ? 'bg-[#815BF5]' : 'bg-[#37384B]'
-              }`}
-              onPress={handleNextOrSignUp}>
-              {buttonSpinner ? (
-                <ActivityIndicator size="small" color={'white'} />
-              ) : (
-                <Text className="text-center font-semibold text-white" style={{fontFamily:"LatoBold"}}>
-                  {showWorkspace ? 'Sign Up' : 'Create Work Space'}
-                </Text>
-              )}
-            </TouchableOpacity>
-            <View className="flex-row items-center justify-center bg-primary py-5">
-              <View className="flex-row">
-                <Text className="text-base  text-white" style={{fontFamily:"Lato-Light"}}>Already a </Text>
-                <GradientText text="Zapllonian" textStyle={{ fontSize: 16, fontWeight: '400' }} />
+                    <TouchableOpacity onPress={() => router.push('/(routes)/login' as any)}>
+                      <Text className="text-base font-extrabold text-white">? Login Here</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
-              <TouchableOpacity onPress={() => router.push('/(routes)/login' as any)}>
-                <Text className="text-base font-extrabold text-white">? Login Here</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          </View>
-          </>
+            </>
           )}
-          
-            
-    
 
           {showWorkspace && (
             <>
@@ -541,16 +557,24 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
                     </Text>
                   )}
                 </TouchableOpacity>
-                <View className="flex-row  items-center justify-center bg-primary py-5 mb-10">
+                <View className="mb-10  flex-row items-center justify-center bg-primary py-5">
                   <View className="flex-row">
-                    <Text className="text-base  text-white font-light" style={{fontFamily:"Lato-Thin"}}>Already a </Text>
+                    <Text
+                      className="text-base  font-light text-white"
+                      style={{ fontFamily: 'Lato-Thin' }}>
+                      Already a{' '}
+                    </Text>
                     <GradientText
                       text="Zapllonian"
                       textStyle={{ fontSize: 16, fontWeight: '400' }}
                     />
                   </View>
                   <TouchableOpacity onPress={() => router.push('/(routes)/login' as any)}>
-                    <Text className="text-base font-extrabold text-white" style={{fontFamily:"LatoBold"}}>? Login Here</Text>
+                    <Text
+                      className="text-base font-extrabold text-white"
+                      style={{ fontFamily: 'LatoBold' }}>
+                      ? Login Here
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>

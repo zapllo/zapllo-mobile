@@ -111,7 +111,7 @@ export default function DashboardScreen() {
 
   // task?.assignedUser?._id === currentUser?._id;
 
-  // console.log('❌❌❌❌❌❌', JSON.stringify(userData?.data?._id,null,2));
+  console.log('❌❌❌❌❌❌', JSON.stringify(customStartDate,null,2));
 
   const [selectedTeamSize, setSelectedTeamSize] = useState('This Week');
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
@@ -164,7 +164,7 @@ export default function DashboardScreen() {
     }
 
     // Get the date range for the selected option (non-custom options)
-    const dateRange = getDateRange(selectedTeamSize, tasksData);
+    const dateRange = getDateRange(selectedTeamSize, tasksData,customStartDate,customEndDate);
 
     if (dateRange.startDate && dateRange.endDate) {
       // Format and set the date range display
@@ -435,7 +435,7 @@ export default function DashboardScreen() {
     const formattedEnd = formatWithSuffix(moment(endDate));
     setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
 
-    // Close the modal
+    setSelectedTeamSize(formattedDateRange)
     setIsCustomDateModalVisible(false);
   };
 
@@ -486,7 +486,7 @@ export default function DashboardScreen() {
                   <TaskStatusCard
                     imageSource={require('../../../../../assets/commonAssets/Progress.png')}
                     status="In Progress"
-                    count={taskCounts?.InProgress}
+                    count={taskCounts?.['In Progress']}
                   />
                   <TaskStatusCard
                     imageSource={require('../../../../../assets/commonAssets/Completed.png')}
@@ -631,7 +631,7 @@ export default function DashboardScreen() {
         isVisible={isCustomDateModalVisible}
         onClose={() => {
           setIsCustomDateModalVisible(false);
-          setSelectedTeamSize('This Week'); // Reset to default if modal is closed
+          setSelectedTeamSize(selectedTeamSize);
         }}
         onApply={handleCustomDateApply}
         initialStartDate={customStartDate || new Date()}

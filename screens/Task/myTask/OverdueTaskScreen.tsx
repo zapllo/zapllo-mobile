@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -21,6 +21,10 @@ import { RouteProp, useRoute } from '@react-navigation/native';
 import { MyTasksStackParamList } from './MyTaskStack';
 import CheckboxTwo from '~/components/CheckBoxTwo';
 import GradientButton from '~/components/GradientButton';
+import { useSelector } from 'react-redux';
+import { RootState } from '~/redux/store';
+import axios from 'axios';
+import { backend_Host } from '~/config';
 
 type Props = StackScreenProps<MyTasksStackParamList, 'OverdueTask'>;
 type OverdueTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'OverdueTask'>;
@@ -38,18 +42,128 @@ const daysData = [
   { label: 'Custom', value: 'Custom' },
 ];
 
+const frequencyOptions = [
+  { label: 'Daily', value: 'Daily' },
+  { label: 'Weekly', value: 'Weekly' },
+  { label: 'Monthly', value: 'Monthly' },
+];
+
+const priorityOptions = [
+  { label: 'High', value: 'High' },
+  { label: 'Medium', value: 'Medium' },
+  { label: 'Low', value: 'Low' },
+];
+
 const OverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<OverdueTaskScreenRouteProp>();
   const { overdueTasks } = route.params;
+  const { token } = useSelector((state: RootState) => state.auth);
 
-  const [selectedTeamSize, setSelectedTeamSize] = useState("This week");
+  const [selectedTeamSize, setSelectedTeamSize] = useState('This week');
   const [search, setSearch] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [taskDescription, setTaskDescription] = useState("");
-   const [isChecked, setIsChecked] = useState(false);
+  const [taskDescription, setTaskDescription] = useState('');
+  const [isChecked, setIsChecked] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
+  const [selectedFrequencies, setSelectedFrequencies] = useState<string[]>([]);
+  const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [filteredTasks, setFilteredTasks] = useState<any[]>(overdueTasks);
+  const [users, setUsers] = useState([]);
+  const [activeFilter, setActiveFilter] = useState('Category');
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${backend_Host}/category/get`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        setCategories(response.data.data);
+      } catch (err: any) {
+        console.error('API Error:', err.response || err.message);
+      }
+    };
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(`${backend_Host}/users/organization`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        setUsers(response?.data?.data);
+      } catch (err: any) {
+        console.error('API Error:', err.response || err.message);
+      }
+    };
+    fetchUsers();
+    fetchCategories();
+  }, [token]);
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
+  };
+
+  const handleCategorySelection = (categoryId: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
+    );
+  };
+
+  const applyFilter = () => {
+    let tasksMatchingFilters = overdueTasks;
+
+    // Filter by Categories
+    if (selectedCategories.length > 0) {
+      tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
+        selectedCategories.includes(task.category?._id)
+      );
+    }
+
+    // Filter by Assigned To
+    if (selectedAssignees.length > 0) {
+      tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
+        selectedAssignees.includes(task.assignedUser?._id)
+      );
+    }
+
+    // Filter by Frequency
+    if (selectedFrequencies.length > 0) {
+      tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
+        selectedFrequencies.includes(task?.repeatType)
+      );
+    }
+
+    // Filter by Priority
+    if (selectedPriorities.length > 0) {
+      tasksMatchingFilters = tasksMatchingFilters.filter((task: any) =>
+        selectedPriorities.includes(task?.priority)
+      );
+    }
+
+    setFilteredTasks(tasksMatchingFilters);
+    toggleModal(); // Close modal
+  };
+
+  // Search filtered tasks using `useMemo`
+  const searchedTasks = useMemo(() => {
+    return filteredTasks.filter((task: any) => {
+      const searchLower = search.toLowerCase();
+      return (
+        task.category?.name.toLowerCase().includes(searchLower) || // Match category name
+        task.assignedUser?.firstName.toLowerCase().includes(searchLower) || // Match assigned user
+        task.assignedUser?.lastName.toLowerCase().includes(searchLower) || // Match assigned user last name
+        task.frequency?.toLowerCase().includes(searchLower) // Match frequency (if applicable)
+      );
+    });
+  }, [search, filteredTasks]);
+
+  const getFilterBackgroundColor = (filter: string) => {
+    return activeFilter === filter ? '#37384B' : '#0A0D28'; // Example colors
   };
 
   return (
@@ -99,8 +213,8 @@ const OverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
             </View>
 
             <ScrollView>
-              {overdueTasks?.length > 0 ? (
-                overdueTasks.map((task:any) => (
+              {searchedTasks?.length > 0 ? (
+                searchedTasks.map((task: any) => (
                   <TaskDetailedComponent
                     key={task._id}
                     title={task.title}
@@ -117,8 +231,8 @@ const OverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
                   />
                 ))
               ) : (
-                <View className='flex justify-center items-center pt-10'>
-                <Text className=' text-white text-lg font-[LatoBold]' >No tasks available!</Text>
+                <View className="flex items-center justify-center pt-10">
+                  <Text className="font-[LatoBold] text-lg text-white">No tasks available!</Text>
                 </View>
               )}
             </ScrollView>
@@ -129,76 +243,136 @@ const OverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
       <Modal
         isVisible={isModalVisible}
         onBackdropPress={toggleModal}
-        style={{ margin: 0, justifyContent: "flex-end" }}
+        style={{ margin: 0, justifyContent: 'flex-end' }}
         animationIn="slideInUp"
         animationOut="slideOutDown">
-        <View className="rounded-t-3xl bg-[#0A0D28] flex items-center flex-col pb-16">
-          <View className="flex px-6 py-5 w-full items-center flex-row justify-between">
-            <Text className="text-2xl font-bold text-white" style={{ fontFamily: "LatoBold" }}>
-              Filters
-            </Text>
-            <Text className="text-lg text-white" style={{ fontFamily: "Lato-Regular" }}>
-              Clear All
-            </Text>
+        <View className="flex flex-col items-center rounded-t-3xl bg-[#0A0D28] pb-16">
+          <View className="flex w-full flex-row items-center justify-between px-6 py-5">
+            <View>
+              <Text className="text-2xl font-bold text-white" style={{ fontFamily: 'LatoBold' }}>
+                Filters
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => {
+                setSelectedCategories([]);
+                setSelectedAssignees([]);
+                setSelectedFrequencies([]);
+                setSelectedPriorities([]);
+              }}>
+              <Text className="text-lg text-white" style={{ fontFamily: 'Lato-Regular' }}>
+                Clear All
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          <View className="flex flex-row w-full border-y-[#37384B] border mb-6">
+          <View className="mb-6 flex w-full flex-row border border-y-[#37384B]">
             <View className="w-[40%] border-r border-r-[#37384B] pb-20">
-              <TouchableOpacity className="bg-[#37384B] items-start w-full h-14">
-                <Text className="text-white px-6 p-4 h-full">Category</Text>
+              <TouchableOpacity
+                onPress={() => setActiveFilter('Category')}
+                className="h-14 w-full items-start"
+                style={{ backgroundColor: getFilterBackgroundColor('Category') }}>
+                <Text className="h-full p-4 px-6 text-white">Category</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="items-start w-full h-14 border-b border-b-[#37384B]">
-                <Text className="text-white px-6 p-4 h-full">Assigned to</Text>
+              <TouchableOpacity
+                className="h-14 w-full items-start border-b border-b-[#37384B]"
+                style={{ backgroundColor: getFilterBackgroundColor('AssignedTo') }}
+                onPress={() => setActiveFilter('AssignedTo')}>
+                <Text className="h-full p-4 px-6 text-white">Assigned to</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="items-start w-full h-14 border-b border-b-[#37384B]">
-                <Text className="text-white px-6 p-4 h-full">Frequency</Text>
+              <TouchableOpacity
+                className="h-14 w-full items-start border-b border-b-[#37384B]"
+                style={{ backgroundColor: getFilterBackgroundColor('Frequency') }}
+                onPress={() => setActiveFilter('Frequency')}>
+                <Text className="h-full p-4 px-6 text-white">Frequency</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="items-start w-full h-14 border-b border-b-[#37384B]">
-                <Text className="text-white px-6 p-4 h-full">Priority</Text>
+              <TouchableOpacity
+                className="h-14 w-full items-start border-b border-b-[#37384B]"
+                style={{ backgroundColor: getFilterBackgroundColor('Priority') }}
+                onPress={() => setActiveFilter('Priority')}>
+                <Text className="h-full p-4 px-6 text-white">Priority</Text>
               </TouchableOpacity>
             </View>
 
-            <View className="w-[60%] p-4 flex flex-col gap-6">
-              <View
-                style={[
-                  styles.input,
-                  { height: 57, borderRadius: 16 },
-                ]}>
-                <Image className="h-4 w-4 mr-2 ml-2" source={require("../../../assets/Tasks/search.png")} />
+            <View className="flex w-[60%] flex-col gap-6 p-4">
+              <View style={[styles.input, { height: 57, borderRadius: 16 }]}>
+                <Image
+                  className="ml-2 mr-2 h-4 w-4"
+                  source={require('../../../assets/Tasks/search.png')}
+                />
                 <TextInput
-                
-                  style={[
-                    styles.inputSome,
-                    { width: '85%' },
-                  ]}
+                  style={[styles.inputSome, { width: '85%' }]}
                   value={taskDescription}
                   onChangeText={(value) => setTaskDescription(value)}
                   placeholder="Search Category"
                   placeholderTextColor="#787CA5"></TextInput>
               </View>
 
-              <View className="flex w-full flex-row gap-3 items-center">
-                <CheckboxTwo isChecked={isChecked} onPress={() => setIsChecked(!isChecked)} />
-                <Text className="text-white text-lg">Customer Support</Text>
-              </View>
+              {activeFilter === 'Category' &&
+                categories.map((category) => (
+                  <View key={category._id} className="flex w-full flex-row items-center gap-3">
+                    <CheckboxTwo
+                      isChecked={selectedCategories.includes(category._id)}
+                      onPress={() => handleCategorySelection(category._id)}
+                    />
+                    <Text className="text-lg text-white">{category.name}</Text>
+                  </View>
+                ))}
 
-              <View className="flex w-full flex-row gap-3 items-center">
-                <CheckboxTwo isChecked={isChecked} onPress={() => setIsChecked(!isChecked)} />
-                <Text className="text-white text-lg">Marketing</Text>
-              </View>
+              {activeFilter === 'AssignedTo' &&
+                users.map((user) => (
+                  <View key={user._id} className="flex w-full flex-row items-center gap-3">
+                    <CheckboxTwo
+                      isChecked={selectedAssignees.includes(user._id)}
+                      onPress={() =>
+                        setSelectedAssignees((prev) =>
+                          prev.includes(user._id)
+                            ? prev.filter((id) => id !== user._id)
+                            : [...prev, user._id]
+                        )
+                      }
+                    />
+                    <Text className="text-lg text-white">{`${user.firstName} ${user.lastName}`}</Text>
+                  </View>
+                ))}
 
-              <View className="flex w-full flex-row gap-3 items-center">
-                <CheckboxTwo isChecked={isChecked} onPress={() => setIsChecked(!isChecked)} />
-                <Text className="text-white text-lg">Marketing</Text>
-              </View>
+              {activeFilter === 'Frequency' &&
+                frequencyOptions.map((freq) => (
+                  <View key={freq.value} className="flex w-full flex-row items-center gap-3">
+                    <CheckboxTwo
+                      isChecked={selectedFrequencies.includes(freq.value)}
+                      onPress={() =>
+                        setSelectedFrequencies((prev) =>
+                          prev.includes(freq.value)
+                            ? prev.filter((f) => f !== freq.value)
+                            : [...prev, freq.value]
+                        )
+                      }
+                    />
+                    <Text className="text-lg text-white">{freq.label}</Text>
+                  </View>
+                ))}
+
+              {activeFilter === 'Priority' &&
+                priorityOptions.map((priority) => (
+                  <View key={priority.value} className="flex w-full flex-row items-center gap-3">
+                    <CheckboxTwo
+                      isChecked={selectedPriorities.includes(priority.value)}
+                      onPress={() =>
+                        setSelectedPriorities((prev) =>
+                          prev.includes(priority.value)
+                            ? prev.filter((p) => p !== priority.value)
+                            : [...prev, priority.value]
+                        )
+                      }
+                    />
+                    <Text className="text-lg text-white">{priority.label}</Text>
+                  </View>
+                ))}
             </View>
           </View>
 
-          <GradientButton
-            title="Apply Filter"
-            onPress={() => console.log('Button pressed')}
-            imageSource={""}
-          />
+          <GradientButton title="Apply Filter" onPress={applyFilter} imageSource={''} />
         </View>
       </Modal>
     </SafeAreaView>
@@ -206,23 +380,21 @@ const OverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 export default OverdueTaskScreen;
+
 const styles = StyleSheet.create({
   input: {
     borderColor: '#37384B',
     borderWidth: 1,
     borderRadius: 30,
     padding: 10,
- 
-    display:"flex",
-    flexDirection:"row",
-    alignItems:"center",
-    justifyContent:"center",
-    gap:5,
-
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
   },
   inputSome: {
     color: 'white',
     fontFamily: 'Lato-Regular',
-
   },
 });

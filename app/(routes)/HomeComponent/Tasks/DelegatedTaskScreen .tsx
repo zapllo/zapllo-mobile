@@ -109,7 +109,7 @@ export default function DelegatedTaskScreen() {
   };
 
   useEffect(() => {
-    const dateRange = getDateRange(selectedTeamSize);
+    const dateRange = getDateRange(selectedTeamSize,tasksData);
 
     if (dateRange.startDate && dateRange.endDate) {
       if (selectedTeamSize === 'Today' || selectedTeamSize === 'Yesterday') {

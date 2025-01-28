@@ -52,23 +52,13 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   const handleMoveToProgress = () => {
     setTaskStatus('In Progress');
     setShowMainModal(false);
-
-    const timeoutId = setTimeout(() => {
-      setShowProgressModal(true);
-    }, 1000);
-
-    return () => clearTimeout(timeoutId);
+    setShowProgressModal(true);
   };
 
   const handleMoveToCompleted = () => {
     setTaskStatus('Completed');
     setShowMainModal(false);
-
-    const timeoutId = setTimeout(() => {
-      setShowProgressModal(true);
-    }, 1000);
-
-    return () => clearTimeout(timeoutId);
+    setShowProgressModal(true);
   };
 
   const handleFileSelect = async (index: number) => {
@@ -108,15 +98,30 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   const updateTask = async () => {
     setTaskStatusLoading(true);
     try {
-      // Simulate API call
-      setTimeout(() => {
-        Alert.alert('Success', 'Task updated successfully!');
-        setShowProgressModal(false);
-        setTaskStatusLoading(false);
-      }, 1000);
+      const payload = {
+        id: task?._id,
+        status: taskStatus,
+        comment: description,
+        userName: assignedTo,
+        fileUrl: attachments,
+      };
+      console.log('payyyy', payload);
+      const response = await axios.patch(`${backend_Host}/tasks/update`, payload, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('Task updated successfully:', response.data);
+      setShowProgressModal(false);
+      Alert.alert('Success', 'Task updated successfully!');
     } catch (error) {
+      console.error('Error updating task:', error);
       Alert.alert('Error', 'Failed to update the task.');
+    } finally {
       setTaskStatusLoading(false);
+      setDescription('');
+      setAttachments([]);
     }
   };
 
@@ -553,3 +558,4 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 };
 
 export default TaskDetailedComponent;
+

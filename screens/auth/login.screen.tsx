@@ -66,7 +66,7 @@ export default function Loginscreen() {
       });
       return;
     }
-
+console.log("payloadd",userInfo)
     setButtonSpinner(true);
     try {
       const response = await axios.post(`${backend_Host}/users/login`, {
@@ -162,9 +162,9 @@ export default function Loginscreen() {
                 className="absolute right-12 top-12"
                 onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
                 {isPasswordVisible ? (
-                  <Ionicons name="eye-off-outline" size={23} color={'#FFFFFF'} />
-                ) : (
                   <Ionicons name="eye-outline" size={23} color={'#FFFFFF'} />
+                ) : (
+                  <Ionicons name="eye-off-outline" size={23} color={'#FFFFFF'} />
                 )}
               </TouchableOpacity>
             </View>

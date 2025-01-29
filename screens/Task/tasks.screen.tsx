@@ -71,7 +71,7 @@ export default function TasksScreen() {
           >
             <View className='flex flex-col items-center h-9'>
             <Image source={icon} style={styles.icon} />
-            <Text  className='text-white w-full text-[11px]' style={{ fontFamily: 'LatoRegular' }}>{zName}</Text>
+            <Text  className='text-white w-full text-[8px]' style={{ fontFamily: 'LatoRegular' }}>{zName}</Text>
             </View>
           </View>
             );

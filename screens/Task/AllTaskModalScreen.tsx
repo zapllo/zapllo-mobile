@@ -1,8 +1,10 @@
 import { router, useNavigation } from "expo-router";
 import React from "react";
-import { Image, TouchableOpacity } from "react-native";
+import { Alert, Image, TouchableOpacity } from "react-native";
 import { View, Text } from "react-native";
 import Modal from "react-native-modal";
+import { useSelector } from "react-redux";
+import { RootState } from "~/redux/store";
 
 interface AllTaskModalProps {
   isVisible: boolean;
@@ -11,8 +13,15 @@ interface AllTaskModalProps {
 
 const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose }) => {
   const navigation = useNavigation();
+  const { userData } = useSelector((state: RootState) => state.auth);
 
-  const handleNavigation = (route: string) => {
+  const isAdmin = userData?.data?.role === "orgAdmin" || userData?.user?.role === "orgAdmin";
+
+  const handleNavigation = (route: string, isAdminOnly: boolean = false) => {
+    if (isAdminOnly && !isAdmin) {
+      Alert.alert("Access Denied", "Only admins can access this section.");
+      return;
+    }
     onClose();
     router.push(route);
   };
@@ -41,10 +50,10 @@ const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose })
 
         <View className="flex items-center flex-row justify-around mb-20 mt-2">
           <View className="flex flex-col items-center gap-2">
-            <TouchableOpacity onPress={() => handleNavigation("/(routes)/all-tasks")}>
+            <TouchableOpacity onPress={() =>  handleNavigation("/(routes)/all-task", true)}>
               <Image className="w-16 h-16" source={require("../../assets/More/AllTAsk.png")} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleNavigation("/(routes)/all-tasks")}>
+            <TouchableOpacity onPress={() =>  handleNavigation("/(routes)/all-task", true)}>
               <Text className="text-white" style={{ fontFamily: "LatoBold" }}>All Tasks</Text>
             </TouchableOpacity>
           </View>
@@ -68,10 +77,10 @@ const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose })
           </View>
 
           <View className="flex flex-col items-center gap-2">
-            <TouchableOpacity onPress={() => handleNavigation("/(routes)/settings")}>
+            <TouchableOpacity onPress={() => handleNavigation("/(routes)/settings", true)}>
               <Image className="w-16 h-16" source={require("../../assets/More/settings.png")} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleNavigation("/(routes)/settings")}>
+            <TouchableOpacity onPress={() => handleNavigation("/(routes)/settings", true)}>
               <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Settings</Text>
             </TouchableOpacity>
           </View>

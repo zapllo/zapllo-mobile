@@ -10,6 +10,7 @@ import {
   TextInput,
   Image,
   StyleSheet,
+  FlatList,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import ProfileButton from '~/components/profile/ProfileButton';
@@ -294,7 +295,7 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-            <View className="flex w-[60%] flex-col gap-6 p-4">
+            <View className="flex w-[60%] flex-col gap-6 p-4 h-96">
               <View style={[styles.input, { height: 57, borderRadius: 16 }]}>
                 <Image
                   className="ml-2 mr-2 h-4 w-4"
@@ -309,32 +310,42 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
               </View>
 
               {activeFilter === 'Category' &&
-                categories.map((category) => (
-                  <View key={category._id} className="flex w-full flex-row items-center gap-3">
-                    <CheckboxTwo
-                      isChecked={selectedCategories.includes(category._id)}
-                      onPress={() => handleCategorySelection(category._id)}
-                    />
-                    <Text className="text-lg text-white">{category.name}</Text>
-                  </View>
-                ))}
+                     <FlatList
+                  
+                     data={categories}
+                     keyExtractor={(item) => item._id}
+                     renderItem={({ item }) => (
+                       <View className="flex w-full flex-row items-center gap-3 mb-5">
+                         <CheckboxTwo
+                           isChecked={selectedCategories.includes(item._id)}
+                           onPress={() => handleCategorySelection(item._id)}
+                         />
+                         <Text className="text-lg text-white">{item.name}</Text>
+                       </View>
+                     )}
+                   />}
 
-              {activeFilter === 'AssignedTo' &&
-                users.map((user) => (
-                  <View key={user._id} className="flex w-full flex-row items-center gap-3">
-                    <CheckboxTwo
-                      isChecked={selectedAssignees.includes(user._id)}
-                      onPress={() =>
-                        setSelectedAssignees((prev) =>
-                          prev.includes(user._id)
-                            ? prev.filter((id) => id !== user._id)
-                            : [...prev, user._id]
-                        )
-                      }
-                    />
-                    <Text className="text-lg text-white">{`${user.firstName} ${user.lastName}`}</Text>
-                  </View>
-                ))}
+                  {activeFilter === 'AssignedTo' && (
+                        <FlatList
+                          data={users}
+                          keyExtractor={(user) => user._id}
+                          renderItem={({ item: user }) => (
+                            <View className="flex w-full flex-row items-center gap-3">
+                              <CheckboxTwo
+                                isChecked={selectedAssignees.includes(user._id)}
+                                onPress={() =>
+                                  setSelectedAssignees((prev) =>
+                                    prev.includes(user._id)
+                                      ? prev.filter((id) => id !== user._id)
+                                      : [...prev, user._id]
+                                  )
+                                }
+                              />
+                              <Text className="text-lg text-white">{`${user.firstName} ${user.lastName}`}</Text>
+                            </View>
+                          )}
+                        />
+                      )}      
 
               {activeFilter === 'Frequency' &&
                 frequencyOptions.map((freq) => (

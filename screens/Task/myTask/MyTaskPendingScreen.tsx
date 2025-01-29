@@ -10,6 +10,7 @@ import {
   TextInput,
   Image,
   StyleSheet,
+  FlatList,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import ProfileButton from '~/components/profile/ProfileButton';
@@ -27,6 +28,7 @@ import axios from 'axios';
 import { backend_Host } from '~/config';
 import { getDateRange } from '~/utils/GetDateRange';
 import moment from 'moment';
+import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
 
 type Props = StackScreenProps<MyTasksStackParamList, 'PendingTask'>;
 type PendingTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'PendingTask'>;
@@ -76,6 +78,14 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
   const [activeFilter, setActiveFilter] = useState('Category');
   const [formattedDateRange, setFormattedDateRange] = useState('');
   const [tasks, setTasks] = useState([]);
+  const [isCustomDateModalVisible, setIsCustomDateModalVisible] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
+  const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredPriorities, setFilteredPriorities] = useState([]);
+  const [filteredFrequencies, setFilteredFrequencies] = useState([]);
 
   const formatWithSuffix = (date: any) => {
     // return moment(date).format('Do MMM, YYYY');
@@ -92,6 +102,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
           },
         });
         setCategories(response.data.data);
+        setFilteredCategories(response.data.data);
       } catch (err: any) {
         console.error('API Error:', err.response || err.message);
       }
@@ -106,6 +117,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
         });
         console.log('uuuuuuuuuuu', response?.data?.data);
         setUsers(response?.data?.data);
+        setFilteredUsers(response?.data?.data);
         // const formattedData = processUserData(response.data.data);
         // setUsers(formattedData);
       } catch (err: any) {
@@ -118,7 +130,12 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
 
   useEffect(() => {
     // Update tasks based on selected date range
-    const dateRange = getDateRange(selectedTeamSize, pendingTasks);
+    if (selectedTeamSize === 'Custom') {
+      // If custom is selected, open the modal and exit early
+      setIsCustomDateModalVisible(true);
+      return;
+    }
+    const dateRange = getDateRange(selectedTeamSize, pendingTasks, customStartDate, customEndDate);
 
     if (dateRange.startDate && dateRange.endDate) {
       const formattedStart = formatWithSuffix(dateRange.startDate);
@@ -137,6 +154,35 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
     const filteredByDate = filterTasksByDate(pendingTasks, dateRange);
     setFilteredTasks(filteredByDate);
   }, [selectedTeamSize]);
+
+  const filteredCategoryList = useMemo(() => {
+    return filteredCategories.filter((category) =>
+      category.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, filteredCategories]);
+
+  // Filtering assigned users based on searchQuery
+  const filteredUsersList = useMemo(() => {
+    return users.filter(
+      (user) =>
+        user?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user?.lastName?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, users]);
+
+  // Filtering priorities based on searchQuery
+  const filteredPrioritiesList = useMemo(() => {
+    return priorityOptions.filter((priority) =>
+      priority.label.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, priorityOptions]);
+
+  // Filtering frequencies based on searchQuery
+  const filteredFrequenciesList = useMemo(() => {
+    return frequencyOptions?.filter((frequency) =>
+      frequency.label.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, frequencyOptions]);
 
   const filterTasksByDate = (tasks: any[], dateRange: { startDate: string; endDate: string }) => {
     const { startDate, endDate } = dateRange;
@@ -199,7 +245,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
     return filteredTasks.filter((task: any) => {
       const searchLower = search.toLowerCase();
       return (
-        task.category?.name.toLowerCase().includes(searchLower) || // Match category name
+        task.category?.name.toLowerCase().includes(searchLower) ||
         task.assignedUser?.firstName.toLowerCase().includes(searchLower) || // Match assigned user
         task.assignedUser?.lastName.toLowerCase().includes(searchLower) || // Match assigned user last name
         task.frequency?.toLowerCase().includes(searchLower) // Match frequency (if applicable)
@@ -209,6 +255,31 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
 
   const getFilterBackgroundColor = (filter: string) => {
     return activeFilter === filter ? '#37384B' : '#0A0D28'; // Example colors
+  };
+
+  const handleCustomDateApply = (startDate: Date, endDate: Date) => {
+    // Set custom date range state
+    setCustomStartDate(startDate);
+    setCustomEndDate(endDate);
+
+    // Create a custom date range for filtering
+    const customDateRange = {
+      startDate: moment(startDate).startOf('day').toDate(),
+      endDate: moment(endDate).endOf('day').toDate(),
+    };
+
+    // Filter tasks based on the custom date range
+    // const customFilteredTasks = filterTasksByDate(pendingTasks, customDateRange);
+    // setTasks(customFilteredTasks);
+    // setTaskCounts(countStatuses(customFilteredTasks));
+
+    // Format the custom date range for display
+    const formattedStart = formatWithSuffix(moment(startDate));
+    const formattedEnd = formatWithSuffix(moment(endDate));
+    setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
+
+    setSelectedTeamSize(formattedDateRange);
+    setIsCustomDateModalVisible(false);
   };
 
   return (
@@ -234,7 +305,14 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
                 data={daysData}
                 placeholder="This Week"
                 selectedValue={selectedTeamSize}
-                onSelect={(value) => setSelectedTeamSize(value)}
+                onSelect={(value) => {
+                  setSelectedTeamSize(value);
+                  if (value === 'Custom') {
+                    setIsCustomDateModalVisible(true); // Open custom date modal
+                  } else {
+                    setIsCustomDateModalVisible(false); // Close modal for predefined filters
+                  }
+                }}
               />
             </View>
 
@@ -304,6 +382,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
                 setSelectedAssignees([]);
                 setSelectedFrequencies([]);
                 setSelectedPriorities([]);
+                setIsModalVisible(false);
               }}>
               <Text className="text-lg text-white" style={{ fontFamily: 'Lato-Regular' }}>
                 Clear All
@@ -339,7 +418,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-            <View className="flex w-[60%] flex-col gap-6 p-4">
+            <View className="flex h-96 w-[60%] flex-col gap-6 p-4">
               <View style={[styles.input, { height: 57, borderRadius: 16 }]}>
                 <Image
                   className="ml-2 mr-2 h-4 w-4"
@@ -347,42 +426,53 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
                 />
                 <TextInput
                   style={[styles.inputSome, { width: '85%' }]}
-                  value={taskDescription}
-                  onChangeText={(value) => setTaskDescription(value)}
-                  placeholder="Search Category"
-                  placeholderTextColor="#787CA5"></TextInput>
+                  value={searchQuery}
+                  onChangeText={(value) => setSearchQuery(value)}
+                  placeholder="Search..."
+                  placeholderTextColor="#787CA5"
+                />
               </View>
 
-              {activeFilter === 'Category' &&
-                categories.map((category) => (
-                  <View key={category._id} className="flex w-full flex-row items-center gap-3">
-                    <CheckboxTwo
-                      isChecked={selectedCategories.includes(category._id)}
-                      onPress={() => handleCategorySelection(category._id)}
-                    />
-                    <Text className="text-lg text-white">{category.name}</Text>
-                  </View>
-                ))}
+              {activeFilter === 'Category' && (
+                <FlatList
+                  data={filteredCategoryList}
+                  keyExtractor={(item) => item._id}
+                  renderItem={({ item }) => (
+                    <View className="mb-5 flex w-full flex-row items-center gap-3">
+                      <CheckboxTwo
+                        isChecked={selectedCategories.includes(item._id)}
+                        onPress={() => handleCategorySelection(item._id)}
+                      />
+                      <Text className="text-lg text-white">{item.name}</Text>
+                    </View>
+                  )}
+                />
+              )}
 
-              {activeFilter === 'AssignedTo' &&
-                users.map((user) => (
-                  <View key={user._id} className="flex w-full flex-row items-center gap-3">
-                    <CheckboxTwo
-                      isChecked={selectedAssignees.includes(user._id)}
-                      onPress={() =>
-                        setSelectedAssignees((prev) =>
-                          prev.includes(user._id)
-                            ? prev.filter((id) => id !== user._id)
-                            : [...prev, user._id]
-                        )
-                      }
-                    />
-                    <Text className="text-lg text-white">{`${user.firstName} ${user.lastName}`}</Text>
-                  </View>
-                ))}
+              {activeFilter === 'AssignedTo' && (
+                <FlatList
+                  data={filteredUsersList}
+                  keyExtractor={(user) => user._id}
+                  renderItem={({ item: user }) => (
+                    <View className="flex w-full flex-row items-center gap-3">
+                      <CheckboxTwo
+                        isChecked={selectedAssignees.includes(user._id)}
+                        onPress={() =>
+                          setSelectedAssignees((prev) =>
+                            prev.includes(user._id)
+                              ? prev.filter((id) => id !== user._id)
+                              : [...prev, user._id]
+                          )
+                        }
+                      />
+                      <Text className="text-lg text-white">{`${user.firstName} ${user.lastName}`}</Text>
+                    </View>
+                  )}
+                />
+              )}
 
               {activeFilter === 'Frequency' &&
-                frequencyOptions.map((freq) => (
+                filteredFrequenciesList.map((freq) => (
                   <View key={freq.value} className="flex w-full flex-row items-center gap-3">
                     <CheckboxTwo
                       isChecked={selectedFrequencies.includes(freq.value)}
@@ -399,7 +489,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
                 ))}
 
               {activeFilter === 'Priority' &&
-                priorityOptions.map((priority) => (
+                filteredPrioritiesList.map((priority) => (
                   <View key={priority.value} className="flex w-full flex-row items-center gap-3">
                     <CheckboxTwo
                       isChecked={selectedPriorities.includes(priority.value)}
@@ -420,6 +510,16 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
           <GradientButton title="Apply Filter" onPress={applyFilter} imageSource={''} />
         </View>
       </Modal>
+      <CustomDateRangeModal
+        isVisible={isCustomDateModalVisible}
+        onClose={() => {
+          setIsCustomDateModalVisible(false);
+          setSelectedTeamSize(selectedTeamSize);
+        }}
+        onApply={handleCustomDateApply}
+        initialStartDate={customStartDate || new Date()}
+        initialEndDate={customEndDate || new Date()}
+      />
     </SafeAreaView>
   );
 };

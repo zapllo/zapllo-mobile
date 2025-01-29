@@ -318,7 +318,7 @@ const DelegatedInTimeTask: React.FC<Props> = ({ navigation }) => {
                           data={users}
                           keyExtractor={(user) => user._id}
                           renderItem={({ item: user }) => (
-                            <View className="flex w-full flex-row items-center gap-3">
+                            <View className="flex w-full flex-row items-center gap-3 mb-5">
                               <CheckboxTwo
                                 isChecked={selectedAssignees.includes(user._id)}
                                 onPress={() =>
@@ -338,7 +338,7 @@ const DelegatedInTimeTask: React.FC<Props> = ({ navigation }) => {
 
               {activeFilter === 'Frequency' &&
                 frequencyOptions.map((freq) => (
-                  <View key={freq.value} className="flex w-full flex-row items-center gap-3">
+                  <View key={freq.value} className="flex w-full flex-row items-center gap-3 ">
                     <CheckboxTwo
                       isChecked={selectedFrequencies.includes(freq.value)}
                       onPress={() =>

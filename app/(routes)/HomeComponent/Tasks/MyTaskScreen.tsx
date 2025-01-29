@@ -395,7 +395,7 @@ export default function MyTaskScreen() {
                   <Text className="text-white " style={{ fontFamily: 'LatoBold' }}>Completed Tasks</Text>
                   <Text className="text-xs text-white">{formattedDateRange}</Text>
                 </View>
-                <Text className=" mt-4  text-white text-5xl " style={{ fontFamily: 'LatoBold' }}>
+                <Text className="mt-2  text-5xl text-white " style={{ fontFamily: 'LatoBold' }}>
                   {taskCounts.Completed}
                 </Text>
 
@@ -407,9 +407,9 @@ export default function MyTaskScreen() {
                       .filter((task) => task.status === 'Completed') // Filter by status
                       .slice(0, 2) // Show only the first two users
                       .map((task, index) => (
-                        <View key={task._id} className="relative flex flex-row">
+                        <View key={task._id} className="relative flex flex-row rounded-full">
                           <View
-                            className="-m-1 flex h-11 w-11 items-center justify-center rounded-full border-2"
+                            className="-m-2 flex h-11 w-11 items-center justify-center rounded-full border-2"
                             style={{
                               borderColor: '#007B5B',
                               backgroundColor: colors[index % colors.length], // Set background color
@@ -421,9 +421,9 @@ export default function MyTaskScreen() {
                         </View>
                       ))}
                     {tasks.filter((task) => task.status === 'Completed').length > 2 && (
-                      <View className="relative -mt-1 flex flex-row">
+                      <View className="relative rounded-full flex flex-row">
                         <View
-                          className="h-8 w-8 items-center justify-center rounded-full "
+                          className="-m-2 h-11 w-11 border-2 border-[#007B5B] items-center justify-center rounded-full "
                           style={{
                             backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
                           }}>

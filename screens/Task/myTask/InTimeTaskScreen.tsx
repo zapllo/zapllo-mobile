@@ -60,7 +60,7 @@ const InTimeTaskScreen: React.FC<Props> = ({ navigation }) => {
   const { inTimeTasks } = route.params;
   const { token } = useSelector((state: RootState) => state.auth);
 
-  const [selectedTeamSize, setSelectedTeamSize] = useState('This week');
+  const [selectedTeamSize, setSelectedTeamSize] = useState('This Week');
   const [search, setSearch] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [taskDescription, setTaskDescription] = useState('');

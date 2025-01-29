@@ -314,7 +314,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                       </View>
                     ))
                   ) : (
-                    <Text className='text-sm text-white text-center'>No file attached!</Text>
+                    <Text className="text-center text-sm text-white">No file attached!</Text>
                     // <View className="flex h-24 w-24 items-center justify-center rounded-lg border border-[#37384B]">
                     //   {/* <Image
                     //     source={require('~/assets/commonAssets/fileUploadContainer.png')}
@@ -351,40 +351,44 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   />
                   <Text className="text-xs text-[#787CA5]">Task Updates</Text>
                 </View> */}
+                {task?.comments.map((com, index) => (
 
                 <View className="flex w-full flex-row items-center justify-between">
                   <View className=" items-center-start flex flex-row gap-2">
                     <View className="h-10 w-10 rounded-full bg-white"></View>
-                    <View>
-                      <Text className="text-lg text-white">{assignedBy}</Text>
-                      <Text className="text-xs text-[#787CA5]">a moment ago</Text>
-                    </View>
+                    
+                      <View>
+                        <Text className="text-lg text-white">{com?.comment}</Text>
+                        <Text className="text-xs text-[#787CA5]">{com?.userName}</Text>
+                      </View>
+                   
                   </View>
 
                   <TouchableOpacity className="mb-4 flex items-center rounded-xl bg-[#815BF5] p-2 pl-3 pr-3">
                     <Text className="text-[11px] text-white" style={{ fontFamily: 'LatoBold' }}>
-                      In Progress
+                     {com?.tag}
                     </Text>
                   </TouchableOpacity>
                 </View>
+              ))}
                 {/* line */}
-                <View className="mb-3 mt-3 h-0.5 w-full bg-[#37384B]"></View>
+                {/* <View className="mb-3 mt-3 h-0.5 w-full bg-[#37384B]"></View> */}
 
-                <View className="flex w-full flex-row items-center justify-between">
+                {/* <View className="flex w-full flex-row items-center justify-between">
                   <View className=" items-center-start flex flex-row gap-2">
                     <View className="h-10 w-10 rounded-full bg-white"></View>
                     <View>
                       <Text className="text-lg text-white">{assignedBy}</Text>
                       <Text className="text-xs text-[#787CA5]">a moment ago</Text>
                     </View>
-                  </View>
+                  </View> */}
 
-                  <TouchableOpacity className="mb-4 flex items-center rounded-xl bg-[#007B5B] p-2 pl-3 pr-3">
+                  {/* <TouchableOpacity className="mb-4 flex items-center rounded-xl bg-[#007B5B] p-2 pl-3 pr-3">
                     <Text className="text-[11px] text-white" style={{ fontFamily: 'LatoBold' }}>
                       Completed
                     </Text>
-                  </TouchableOpacity>
-                </View>
+                  </TouchableOpacity> */}
+                {/* </View> */}
 
                 {/* line */}
                 <View className="mb-3 mt-3 h-0.5 w-full bg-[#37384B]"></View>
@@ -574,4 +578,3 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 };
 
 export default TaskDetailedComponent;
-

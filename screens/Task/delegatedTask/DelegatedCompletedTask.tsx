@@ -318,7 +318,7 @@ const DelegatedCompletedTask: React.FC<Props> = ({ navigation }) => {
                           data={users}
                           keyExtractor={(user) => user._id}
                           renderItem={({ item: user }) => (
-                            <View className="flex w-full flex-row items-center gap-3">
+                            <View className="flex w-full flex-row items-center gap-3 mb-5">
                               <CheckboxTwo
                                 isChecked={selectedAssignees.includes(user._id)}
                                 onPress={() =>

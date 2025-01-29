@@ -320,7 +320,7 @@ const DelegatedDelayedTaskScreen: React.FC<Props> = ({ navigation }) => {
                           data={users}
                           keyExtractor={(user) => user._id}
                           renderItem={({ item: user }) => (
-                            <View className="flex w-full flex-row items-center gap-3">
+                            <View className="flex w-full flex-row items-center gap-3 mb-5">
                               <CheckboxTwo
                                 isChecked={selectedAssignees.includes(user._id)}
                                 onPress={() =>
@@ -340,7 +340,7 @@ const DelegatedDelayedTaskScreen: React.FC<Props> = ({ navigation }) => {
 
               {activeFilter === 'Priority' &&
                 priorityOptions.map((priority) => (
-                  <View key={priority.value} className="flex w-full flex-row items-center gap-3">
+                  <View key={priority.value} className="flex w-full flex-row items-center gap-3 ">
                     <CheckboxTwo
                       isChecked={selectedPriorities.includes(priority.value)}
                       onPress={() =>

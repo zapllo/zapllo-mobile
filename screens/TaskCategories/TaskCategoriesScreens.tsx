@@ -25,12 +25,13 @@ import { backend_Host } from '~/config';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
+import InputContainer from '~/components/InputContainer';
 
 export default function TaskCategories() {
   const navigation = useNavigation<StackNavigationProp<any>>();
   const { token, userData } = useSelector((state: RootState) => state.auth);
   const [taskDescription, setTaskDescription] = useState('');
-  const [isModalVisible, setModalVisible] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -40,18 +41,26 @@ export default function TaskCategories() {
   const [AiModalOpen, SetAiModalOpen] = useState(false);
   const [AiSelectedItems, setAiSelectedItems] = useState<number[]>([]);
   const [aiCategories, setAiCategories] = useState([]);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   useEffect(() => {
     fetchCategories();
     handleSuggestCategories();
   }, [token]);
 
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-  };
-
   const addNewCategory = () => {
-    setCategories([...categories, { name: ``, isEditing: true }]);
+    setAddModalOpen(true);
+  };
+  const handleAddNewCategory = async () => {
+    if (!newCategoryName.trim()) {
+      Alert.alert('Validation Error', 'Please enter a category name');
+      return;
+    }
+
+    await handleAddCategory(newCategoryName);
+    setNewCategoryName('');
+    setAddModalOpen(false);
   };
 
   const toggleAiSelection = (index: number) => {
@@ -394,18 +403,65 @@ export default function TaskCategories() {
             )}
           </View>
         </ScrollView>
-        {(userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin') && (
-
-        <View style={{ position: 'absolute', bottom: 85, width: '100%', alignItems: 'center' }}>
-          <GradientButton
-            title="Add New Category"
-            onPress={addNewCategory}
-            loading={isLoading}
-            imageSource={require('../../assets/Tasks/addIcon.png')}
-          />
-        </View>
-        )}
       </KeyboardAvoidingView>
+      {(userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin') && (
+      <View style={{ position: 'absolute', bottom: 30, width: '100%', alignItems: 'center' }}>
+        <GradientButton
+          title="Add New Category"
+          onPress={addNewCategory}
+          loading={isLoading}
+          imageSource={require('../../assets/Tasks/addIcon.png')}
+        />
+        {/* Add New Category Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={addModalOpen}
+          onRequestClose={() => setAddModalOpen(false)}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1, justifyContent: 'flex-end' }}>
+            <View className="-mb-1 gap-3 rounded-t-3xl bg-[#0A0D28] p-5 pb-14 pt-6">
+              <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
+                <Text className="text-xl text-white" style={{ fontFamily: 'LatoBold' }}>
+                  Add New Category
+                </Text>
+                <TouchableOpacity onPress={() => setAddModalOpen(false)}>
+                  <Image
+                    source={require('../../assets/commonAssets/cross.png')}
+                    className="h-8 w-8"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <View className="pb-4">
+                <InputContainer
+                  placeholder=""
+                  value={newCategoryName}
+                  onChangeText={setNewCategoryName}
+                  label="Enter category name"
+                  placeholderTextColor="#787CA5"
+                  passwordError={''}
+                />
+              </View>
+
+              <TouchableOpacity
+                onPress={handleAddNewCategory}
+                disabled={isLoading}
+                className="w-full items-center rounded-full bg-[rgb(1,122,91)] p-3">
+                {isLoading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text className="text-lg font-bold text-white" style={{ fontFamily: 'LatoBold' }}>
+                    Add Category
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
+      </View>
+      )}
     </SafeAreaView>
   );
 }

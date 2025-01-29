@@ -190,9 +190,9 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   </Text>
                 </View>
 
-                <View className="flex flex-col">
+                <View className="flex flex-col ">
                   <Text className="text-xs text-[#787CA5]">Assigned to</Text>
-                  <Text className="text-lg text-[#D85570]" style={{ fontFamily: 'LatoBold' }}>
+                  <Text className="text-lg text-[#D85570] w-24" style={{ fontFamily: 'LatoBold' }}>
                     {assignedTo}
                   </Text>
                 </View>

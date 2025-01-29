@@ -26,6 +26,7 @@ import {getDateRange} from '~/utils/GetDateRange';
 import TaskStatusCard from '~/components/card/TaskStatusCard';
 import TaskCard from '~/components/TaskComponents/TaskCard';
 import { MyTasksStackParamList } from '~/screens/Task/myTask/MyTaskStack';
+import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
 interface Task {
   _id: string;
   status: string;
@@ -66,6 +67,9 @@ export default function MyTaskScreen() {
   const [tasks, setTasks] = useState<Task[]>([]); // Store tasks fetched from API
   const [tasksData, setTasksData] = useState<Task[]>([]);
   const [formattedDateRange, setFormattedDateRange] = useState('');
+  const [isCustomDateModalVisible, setIsCustomDateModalVisible] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
+  const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
   const [taskCounts, setTaskCounts] = useState<TaskStatusCounts>({
     Overdue: 0,
     Pending: 0,
@@ -92,6 +96,8 @@ export default function MyTaskScreen() {
   const [selectedTeamSize, setSelectedTeamSize] = useState('This Week');
   const navigation = useNavigation<NavigationProp<MyTasksStackParamList>>();
 
+  
+
   const filterTasksByDate = (tasks: Task[], dateRange: any) => {
     const { startDate, endDate } = dateRange;
     if (!Object.keys(startDate).length || !Object.keys(endDate).length) {
@@ -108,7 +114,12 @@ export default function MyTaskScreen() {
   };
 
   useEffect(() => {
-    const dateRange = getDateRange(selectedTeamSize,tasksData);
+    if (selectedTeamSize === 'Custom') {
+      // If custom is selected, open the modal and exit early
+      setIsCustomDateModalVisible(true);
+      return;
+    }
+    const dateRange = getDateRange(selectedTeamSize,tasksData ,customStartDate,customEndDate);
 
     if (dateRange.startDate && dateRange.endDate) {
       if (selectedTeamSize === 'Today' || selectedTeamSize === 'Yesterday') {
@@ -127,6 +138,7 @@ export default function MyTaskScreen() {
     setTasks(myTasksByDate);
     setTaskCounts(countStatuses(myTasksByDate));
   }, [selectedTeamSize]);
+
 
   // const myTasksCounts = countStatuses(myTasks
 
@@ -213,6 +225,7 @@ export default function MyTaskScreen() {
       day: 'numeric', // '25'
     });
   };
+  
 
   const getInitials = (assignedUser: { firstName?: string; lastName?: string }): string => {
     const firstInitial = assignedUser?.firstName ? assignedUser.firstName[0].toUpperCase() : ''; // Check if firstName exists
@@ -231,6 +244,31 @@ export default function MyTaskScreen() {
     );
   };
 
+    const handleCustomDateApply = (startDate: Date, endDate: Date) => {
+      // Set custom date range state
+      setCustomStartDate(startDate);
+      setCustomEndDate(endDate);
+  
+      // Create a custom date range for filtering
+      const customDateRange = {
+        startDate: moment(startDate).startOf('day').toDate(),
+        endDate: moment(endDate).endOf('day').toDate(),
+      };
+  
+      // Filter tasks based on the custom date range
+      const customFilteredTasks = filterTasksByDate(tasksData, customDateRange);
+      setTasks(customFilteredTasks);
+      setTaskCounts(countStatuses(customFilteredTasks));
+  
+      // Format the custom date range for display
+      const formattedStart = formatWithSuffix(moment(startDate));
+      const formattedEnd = formatWithSuffix(moment(endDate));
+      setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
+  
+      setSelectedTeamSize(formattedDateRange)
+      setIsCustomDateModalVisible(false);
+    };
+
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
       <Navbar title="My Tasks" />
@@ -246,7 +284,14 @@ export default function MyTaskScreen() {
                 data={daysData}
                 placeholder="This Week"
                 selectedValue={selectedTeamSize}
-                onSelect={(value) => setSelectedTeamSize(value)}
+                onSelect={(value) => {
+                  setSelectedTeamSize(value);
+                  if (value === 'Custom') {
+                    setIsCustomDateModalVisible(true); // Open custom date modal
+                  } else {
+                    setIsCustomDateModalVisible(false); // Close modal for predefined filters
+                  }
+                }}
               />
             </View>
 
@@ -450,6 +495,16 @@ export default function MyTaskScreen() {
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+      <CustomDateRangeModal
+        isVisible={isCustomDateModalVisible}
+        onClose={() => {
+          setIsCustomDateModalVisible(false);
+          setSelectedTeamSize(selectedTeamSize);
+        }}
+        onApply={handleCustomDateApply}
+        initialStartDate={customStartDate || new Date()}
+        initialEndDate={customEndDate || new Date()}
+      />
     </SafeAreaView>
   );
 }

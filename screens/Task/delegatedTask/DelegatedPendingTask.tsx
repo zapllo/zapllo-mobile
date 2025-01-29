@@ -345,7 +345,7 @@ const DelegatedPendingTask: React.FC<Props> = ({ navigation }) => {
 
               {activeFilter === 'Frequency' &&
                 frequencyOptions.map((freq) => (
-                  <View key={freq.value} className="flex w-full flex-row items-center gap-3">
+                  <View key={freq.value} className="flex w-full flex-row items-center gap-3 mb-5">
                     <CheckboxTwo
                       isChecked={selectedFrequencies.includes(freq.value)}
                       onPress={() =>

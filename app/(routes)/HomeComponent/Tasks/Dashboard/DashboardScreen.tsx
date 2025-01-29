@@ -597,6 +597,7 @@ export default function DashboardScreen() {
                       <DashboardCardTwo
                         title="My Report"
                         count={myReports?.length}
+                        date={formattedDateRange}
                         tasks={tasks}
                         status="Pending"
                         borderColor="#FDB314"
@@ -612,6 +613,7 @@ export default function DashboardScreen() {
                       <DashboardCard
                         title="Delegated"
                         count={delegatedData?.length}
+                        date={formattedDateRange}
                         tasks={delegatedData}
                         status="Pending"
                         borderColor="#A914DD"

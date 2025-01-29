@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, TextInput } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Modal from 'react-native-modal';
+import { useSelector } from 'react-redux';
+import { RootState } from '~/redux/store';
 
 interface CategoryComponentProps {
   title: string;
   isEditing: boolean;
-  onAddPress?:any;
-  onUpdate?:any;
-  onDeletePress?:any;
+  onAddPress?: any;
+  onUpdate?: any;
+  onDeletePress?: any;
 }
 
 const CategoryComponent: React.FC<CategoryComponentProps> = ({
@@ -17,8 +19,9 @@ const CategoryComponent: React.FC<CategoryComponentProps> = ({
   onUpdate,
   onAddPress,
   onDeletePress,
-
 }) => {
+  const { userData } = useSelector((state: RootState) => state.auth);
+  const isAdmin = userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin';
   const [isEditing, setIsEditing] = useState(initialEditingState);
   const [editableTitle, setEditableTitle] = useState(title);
   const [isVisible, setIsVisible] = useState(true);
@@ -50,7 +53,7 @@ const CategoryComponent: React.FC<CategoryComponentProps> = ({
   }
 
   const confirmDelete = () => {
-    onDeletePress()
+    onDeletePress();
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     setIsVisible(false);
     setDeleteModal(false);
@@ -72,51 +75,81 @@ const CategoryComponent: React.FC<CategoryComponentProps> = ({
       {isEditing ? (
         <TextInput
           className="text-white w-[80%]"
-          style={{ fontFamily: "LatoBold", color: 'white' }}
+          style={{ fontFamily: 'LatoBold', color: 'white' }}
           value={editableTitle}
           onChangeText={setEditableTitle}
           autoFocus
         />
       ) : (
-        <Text className="text-white text-lg w-[80%]" style={{ fontFamily: "LatoBold" }}>
+        <Text className="text-white text-lg w-[80%]" style={{ fontFamily: 'LatoBold' }}>
           {editableTitle}
         </Text>
       )}
-      <View className="flex items-center justify-center gap-3 flex-row">
-        {isEditing ? (
-          <TouchableOpacity onPress={handleSavePress}>
-            <Image source={require("../../assets/Tasks/isEditing.png")} className="w-7 h-7" />
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity onPress={handleEditPress}>
-            <Image source={require("../../assets/Tasks/addto.png")} className="w-7 h-7" />
-          </TouchableOpacity>
-        )}
-        {!isEditing && (
-          <TouchableOpacity onPress={handleDelete}>
-            <Image source={require("../../assets/Tasks/deleteTwo.png")} className="w-7 h-7" />
-          </TouchableOpacity>
-        )}
-      </View>
+      {isAdmin && (
+        <View className="flex items-center justify-center gap-3 flex-row">
+          {isEditing ? (
+            <TouchableOpacity onPress={handleSavePress}>
+              <Image source={require('../../assets/Tasks/isEditing.png')} className="w-7 h-7" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={handleEditPress}>
+              <Image source={require('../../assets/Tasks/addto.png')} className="w-7 h-7" />
+            </TouchableOpacity>
+          )}
+          {!isEditing && (
+            <TouchableOpacity onPress={handleDelete}>
+              <Image source={require('../../assets/Tasks/deleteTwo.png')} className="w-7 h-7" />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       <Modal
         isVisible={deleteModal}
         onBackdropPress={cancelDelete}
         style={{ justifyContent: 'flex-end', margin: 0 }}
       >
-        <View style={{ backgroundColor: '#0A0D28', padding: 20, borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingBottom: 55, paddingTop: 35 }}>
+        <View
+          style={{
+            backgroundColor: '#0A0D28',
+            padding: 20,
+            borderTopLeftRadius: 30,
+            borderTopRightRadius: 30,
+            paddingBottom: 55,
+            paddingTop: 35,
+          }}
+        >
           <View style={{ alignItems: 'center' }}>
-            <Image style={{ width: 80, height: 80, marginBottom: 20 }} source={require("../../assets/Tickit/delIcon.png")} />
+            <Image
+              style={{ width: 80, height: 80, marginBottom: 20 }}
+              source={require('../../assets/Tickit/delIcon.png')}
+            />
             <Text style={{ color: 'white', fontSize: 24 }}>Are you sure you want to</Text>
             <Text style={{ color: 'white', fontSize: 24, marginBottom: 10 }}>delete this ticket?</Text>
             <Text style={{ color: '#787CA5' }}>You're going to delete the "Demo"</Text>
             <Text style={{ color: '#787CA5', marginBottom: 20 }}>ticket. Are you sure?</Text>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
-              <TouchableOpacity style={{ backgroundColor: '#37384B', padding: 15, borderRadius: 30, flex: 1, marginRight: 10 }} onPress={cancelDelete}>
-                <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'LatoBold' }}>No, Keep It.</Text>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#37384B',
+                  padding: 15,
+                  borderRadius: 30,
+                  flex: 1,
+                  marginRight: 10,
+                }}
+                onPress={cancelDelete}
+              >
+                <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'LatoBold' }}>
+                  No, Keep It.
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={{ backgroundColor: '#EF4444', padding: 15, borderRadius: 30, flex: 1 }} onPress={confirmDelete}>
-                <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'LatoBold' }}>Delete</Text>
+              <TouchableOpacity
+                style={{ backgroundColor: '#EF4444', padding: 15, borderRadius: 30, flex: 1 }}
+                onPress={confirmDelete}
+              >
+                <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'LatoBold' }}>
+                  Delete
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

@@ -47,9 +47,10 @@ export default function Loginscreen() {
   };
 
   const validatePassword = (password: string) => {
-    if (!/(?=.*[0-9])/.test(password)) {
-      return 'Write at least one number';
-    } else if (!/(?=.{6,})/.test(password)) {
+    // if (!/(?=.*[0-9])/.test(password)) {
+    //   return 'Write at least one number';
+    // } else 
+    if (!/(?=.{6,})/.test(password)) {
       return 'Write at least 6 characters';
     }
     return '';

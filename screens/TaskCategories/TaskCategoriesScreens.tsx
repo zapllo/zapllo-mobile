@@ -1,5 +1,18 @@
-import React, { useEffect, useState,useMemo } from 'react';
-import { View, Text, SafeAreaView, Platform, ScrollView, StyleSheet, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Alert, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useMemo } from 'react';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  TextInput,
+  KeyboardAvoidingView,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { useNavigation } from 'expo-router';
 import { StackNavigationProp } from '@react-navigation/stack';
 import NavbarTwo from '~/components/navbarTwo';
@@ -16,22 +29,22 @@ import { RootState } from '~/redux/store';
 export default function TaskCategories() {
   const navigation = useNavigation<StackNavigationProp<any>>();
   const { token, userData } = useSelector((state: RootState) => state.auth);
-  const [taskDescription, setTaskDescription] = useState("");
+  const [taskDescription, setTaskDescription] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);  
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [categories, setCategories] = useState<{ id: string; name: string; isEditing: boolean }[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string; isEditing: boolean }[]>(
+    []
+  );
   const [AiModalOpen, SetAiModalOpen] = useState(false);
   const [AiSelectedItems, setAiSelectedItems] = useState<number[]>([]);
-  const[aiCategories,setAiCategories]=useState([])
-  
+  const [aiCategories, setAiCategories] = useState([]);
 
-useEffect(()=>{
-fetchCategories();
-handleSuggestCategories()
-},[token])
-
+  useEffect(() => {
+    fetchCategories();
+    handleSuggestCategories();
+  }, [token]);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -44,30 +57,27 @@ handleSuggestCategories()
   const toggleAiSelection = (index: number) => {
     setAiSelectedItems((prevSelectedItems) =>
       prevSelectedItems.includes(index)
-        ? prevSelectedItems.filter((item) => item !== index) 
-        : [...prevSelectedItems, index] 
+        ? prevSelectedItems.filter((item) => item !== index)
+        : [...prevSelectedItems, index]
     );
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); 
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
   };
 
   const confirmAndSaveCategories = async () => {
-    
     const selectedCategories = AiSelectedItems.map((index) => aiCategories[index]);
-  
+
     if (selectedCategories.length === 0) {
       Alert.alert('No Selection', 'Please select at least one category.');
       return;
     }
-  
+
     for (const category of selectedCategories) {
-       await handleAddCategory(category);
-       fetchCategories()        
+      await handleAddCategory(category);
+      fetchCategories();
     }
-  
+
     SetAiModalOpen(false);
   };
-  
- 
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -83,7 +93,7 @@ handleSuggestCategories()
         name: category?.name,
         isEditing: false,
       }));
-  
+
       setCategories(formattedCategories);
       // setFilteredCategories(formattedCategories);
     } catch (err: any) {
@@ -103,18 +113,18 @@ handleSuggestCategories()
       )
     );
   };
-  const handleAddCategory = async (cat:string) => {
+  const handleAddCategory = async (cat: string) => {
     console.log('Category created:❌❌❌❌❌❌❌❌❌❌❌❌❌❌111111');
     if (!cat) {
       Alert.alert('Validation Error', 'Enter new category');
       return;
     }
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const response = await axios.post(
         `${backend_Host}/category/create`,
         {
-          name: cat, 
+          name: cat,
         },
         {
           headers: {
@@ -125,24 +135,22 @@ handleSuggestCategories()
       );
 
       const newCategoryy = response.data; // Access the new category details from the response
-      console.log("newww>>>>>>>>",newCategoryy)
+      console.log('newww>>>>>>>>', newCategoryy);
       fetchCategories();
-      
     } catch (error) {
       console.error('Error creating category:', error);
       Alert.alert('Failed to create category. Please try again.');
-    }finally{
-      setIsLoading(false)
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSuggestCategories = async () => {
-
     try {
       const response = await axios.post(
         `${backend_Host}/category/suggest`,
         {
-        "industry": "Technology"
+          industry: 'Technology',
         },
         {
           headers: {
@@ -153,11 +161,11 @@ handleSuggestCategories()
       );
 
       const suggestCategoryy = response?.data?.categories; // Access the new category details from the response
-      setAiCategories(suggestCategoryy)
+      setAiCategories(suggestCategoryy);
     } catch (error) {
       console.error('Error suggeting categories:', error);
       Alert.alert('Failed to suggest category. Please try again.');
-    }finally{
+    } finally {
     }
   };
 
@@ -166,13 +174,11 @@ handleSuggestCategories()
       Alert.alert('Validation Error', 'Category name cannot be empty.');
       return;
     }
-  
+
     try {
       const response = await axios.patch(
         `${backend_Host}/category/edit`,
-        { name: newName,
-          categoryId:id
-        },
+        { name: newName, categoryId: id },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -180,10 +186,9 @@ handleSuggestCategories()
           },
         }
       );
-  
+
       const updatedCategory = response.data.data;
 
-  
       // // Update the local state
       setCategories((prevCategories) =>
         prevCategories.map((category) =>
@@ -192,7 +197,7 @@ handleSuggestCategories()
             : category
         )
       );
-  
+
       Alert.alert('Success', 'Category updated successfully.');
     } catch (err: any) {
       console.error('API Error:', err.response || err.message);
@@ -219,11 +224,9 @@ handleSuggestCategories()
 
   const filteredCategories = useMemo(() => {
     const search = taskDescription.toLowerCase();
-    return categories.filter((category) => 
-      category.name.toLowerCase().includes(search)
-    );
+    return categories.filter((category) => category.name.toLowerCase().includes(search));
   }, [taskDescription, categories]);
-  
+
   return (
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary">
       <KeyboardAvoidingView
@@ -258,38 +261,12 @@ handleSuggestCategories()
                 placeholder="Search Category"
                 placeholderTextColor="#787CA5"></TextInput>
             </View>
-
-            <TouchableOpacity
-              onPress={() => SetAiModalOpen(true)}
-              className="mb-8 flex w-[90%] flex-col gap-4 rounded-3xl border border-[#37384B] px-7 py-5">
-              <View className="flex w-full flex-row items-center justify-between">
-                <View className=" flex flex-row items-center gap-5">
-                  <Image className="h-7 w-7" source={require('../../assets/ZAi/Ai.png')} />
-                  <Image
-                    className="h-[24px] w-[108px]"
-                    source={require('../../assets/ZAi/ZaplloAi.png')}
-                  />
-                </View>
-                <TouchableOpacity className="">
-                  <Image className="h-8 w-8" source={require('../../assets/Tasks/add.png')} />
-                </TouchableOpacity>
-              </View>
-              <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
-                Use our intelligent AI engine to analyze your industry and carefully curate a
-                selection of categories for your workflow.
-              </Text>
-            </TouchableOpacity>
-            <Modal
-              animationType="slide"
-              transparent={true}
-              visible={AiModalOpen}
-              onRequestClose={() => SetAiModalOpen(false)}>
-              <ScrollView
-                contentContainerStyle={{ flexGrow: 1 }}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled">
-                <View className="mt-16 h-full rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
-                  <View className=" mb-7 flex w-full flex-row items-center justify-between">
+            {(userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin') && (
+              <>
+                <TouchableOpacity
+                  onPress={() => SetAiModalOpen(true)}
+                  className="mb-8 flex w-[90%] flex-col gap-4 rounded-3xl border border-[#37384B] px-7 py-5">
+                  <View className="flex w-full flex-row items-center justify-between">
                     <View className=" flex flex-row items-center gap-5">
                       <Image className="h-7 w-7" source={require('../../assets/ZAi/Ai.png')} />
                       <Image
@@ -297,104 +274,129 @@ handleSuggestCategories()
                         source={require('../../assets/ZAi/ZaplloAi.png')}
                       />
                     </View>
-                    <TouchableOpacity onPress={() => SetAiModalOpen(false)}>
-                      <Image
-                        source={require('../../assets/commonAssets/cross.png')}
-                        className="h-8 w-8"
-                      />
+                    <TouchableOpacity className="">
+                      <Image className="h-8 w-8" source={require('../../assets/Tasks/add.png')} />
                     </TouchableOpacity>
                   </View>
-
-                  <Text className="text-xs text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
-                    Our intelligent AI engine has analyzed your industry and carefully curated a
-                    selection of categories. Choose the ones that suit your business, and let’s add
-                    them to your workflow effortlessly!
+                  <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
+                    Use our intelligent AI engine to analyze your industry and carefully curate a
+                    selection of categories for your workflow.
                   </Text>
-
-                  <View className='mt-14 flex flex-col gap-6'>
-                    {aiCategories?.map((category, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        onPress={() => toggleAiSelection(index)}
-                        className="flex w-full flex-row items-center justify-between rounded-2xl border  p-4 "
-                        style={{
-                          borderColor: AiSelectedItems.includes(index) ? '#815BF5' : '#37384B',
-                        }}>
-                        <View>
-                          <Text className="text-xl text-white" style={{ fontFamily: 'LatoBold' }}>
-                            {category}
-                          </Text>
-                          {AiSelectedItems.includes(index) ? (
-                            <Text
-                              className="text-xs text-[#37384B]"
-                              style={{ fontFamily: 'LatoBold' }}>
-                              Tap to unselect
-                            </Text>
-                          ) : (
-                            <Text
-                              className="text-xs text-[#37384B]"
-                              style={{ fontFamily: 'LatoBold' }}>
-                              Tap to select
-                            </Text>
-                          )}
-                        </View>
-                        {AiSelectedItems.includes(index) && (
+                </TouchableOpacity>
+                <Modal
+                  animationType="slide"
+                  transparent={true}
+                  visible={AiModalOpen}
+                  onRequestClose={() => SetAiModalOpen(false)}>
+                  <ScrollView
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled">
+                    <View className="mt-16 h-full rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
+                      <View className=" mb-7 flex w-full flex-row items-center justify-between">
+                        <View className=" flex flex-row items-center gap-5">
+                          <Image className="h-7 w-7" source={require('../../assets/ZAi/Ai.png')} />
                           <Image
-                            className="h-8 w-8"
-                            source={require('../../assets/Tasks/isEditing.png')}
+                            className="h-[24px] w-[108px]"
+                            source={require('../../assets/ZAi/ZaplloAi.png')}
                           />
-                        )}
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+                        </View>
+                        <TouchableOpacity onPress={() => SetAiModalOpen(false)}>
+                          <Image
+                            source={require('../../assets/commonAssets/cross.png')}
+                            className="h-8 w-8"
+                          />
+                        </TouchableOpacity>
+                      </View>
 
-                  <TouchableOpacity
-                    onPress={confirmAndSaveCategories}
-                    className="mt-8 w-full items-center rounded-full bg-[rgb(1,122,91)] p-3">
-                    <Text
-                      className="text-lg font-bold text-white "
-                      style={{ fontFamily: 'LatoBold' }}>
-                      Confirm & Save
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </ScrollView>
-            </Modal>
+                      <Text className="text-xs text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
+                        Our intelligent AI engine has analyzed your industry and carefully curated a
+                        selection of categories. Choose the ones that suit your business, and let’s
+                        add them to your workflow effortlessly!
+                      </Text>
+
+                      <View className="mt-14 flex flex-col gap-6">
+                        {aiCategories?.map((category, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            onPress={() => toggleAiSelection(index)}
+                            className="flex w-full flex-row items-center justify-between rounded-2xl border  p-4 "
+                            style={{
+                              borderColor: AiSelectedItems.includes(index) ? '#815BF5' : '#37384B',
+                            }}>
+                            <View>
+                              <Text
+                                className="text-xl text-white"
+                                style={{ fontFamily: 'LatoBold' }}>
+                                {category}
+                              </Text>
+                              {AiSelectedItems.includes(index) ? (
+                                <Text
+                                  className="text-xs text-[#37384B]"
+                                  style={{ fontFamily: 'LatoBold' }}>
+                                  Tap to unselect
+                                </Text>
+                              ) : (
+                                <Text
+                                  className="text-xs text-[#37384B]"
+                                  style={{ fontFamily: 'LatoBold' }}>
+                                  Tap to select
+                                </Text>
+                              )}
+                            </View>
+                            {AiSelectedItems.includes(index) && (
+                              <Image
+                                className="h-8 w-8"
+                                source={require('../../assets/Tasks/isEditing.png')}
+                              />
+                            )}
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+
+                      <TouchableOpacity
+                        onPress={confirmAndSaveCategories}
+                        className="mt-8 w-full items-center rounded-full bg-[rgb(1,122,91)] p-3">
+                        <Text
+                          className="text-lg font-bold text-white "
+                          style={{ fontFamily: 'LatoBold' }}>
+                          Confirm & Save
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </ScrollView>
+                </Modal>
+              </>
+            )}
 
             <View className="mb-5 w-[90%] items-start">
               <Text className="text-sm text-[#787CA5]">Categories</Text>
             </View>
-            {
-  loading ? (
-   
-    <ActivityIndicator color={'#fff'} size={'large'} />
-  ) : (
-    filteredCategories?.length > 0 ? (
-      filteredCategories
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((category: any) => (
-          <CategoryComponent
-            key={category.id}
-            id={category.id}
-            title={category.name}
-            onAddPress={(cat: string) => handleAddCategory(cat)}
-            isEditing={category.isEditing}
-            onEditToggle={() => toggleEditMode(category.id)}
-            onUpdate={(newName: string) => handleUpdateCategory(category.id, newName)}
-            onDeletePress={() => handelDeleteCategory(category.id)} 
-          />
-        ))
-    ) : (
-      <Text>No categories available</Text> 
-    )
-  )
-}
-
-            
+            {loading ? (
+              <ActivityIndicator color={'#fff'} size={'large'} />
+            ) : filteredCategories?.length > 0 ? (
+              filteredCategories
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((category: any) => (
+                  <CategoryComponent
+                    key={category.id}
+                    id={category.id}
+                    title={category.name}
+                    onAddPress={(cat: string) => handleAddCategory(cat)}
+                    isEditing={category.isEditing}
+                    onEditToggle={() => toggleEditMode(category.id)}
+                    onUpdate={(newName: string) => handleUpdateCategory(category.id, newName)}
+                    onDeletePress={() => handelDeleteCategory(category.id)}
+                  />
+                ))
+            ) : (
+              <Text>No categories available</Text>
+            )}
           </View>
         </ScrollView>
-        <View style={{ position: 'absolute', bottom: 85, width: '100%', alignItems: 'center' }}>
+        {(userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin') && (
 
+        <View style={{ position: 'absolute', bottom: 85, width: '100%', alignItems: 'center' }}>
           <GradientButton
             title="Add New Category"
             onPress={addNewCategory}
@@ -402,7 +404,7 @@ handleSuggestCategories()
             imageSource={require('../../assets/Tasks/addIcon.png')}
           />
         </View>
-
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

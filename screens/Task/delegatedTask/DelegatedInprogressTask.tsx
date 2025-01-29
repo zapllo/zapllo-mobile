@@ -25,6 +25,7 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import { backend_Host } from '~/config';
+import { FlatList } from 'react-native';
 
 type Props = StackScreenProps<DelegatedTaskStackParamList, 'InprogressTask'>;
 type InProgressTaskScreenRouteProp = RouteProp<DelegatedTaskStackParamList, 'InprogressTask'>;
@@ -279,7 +280,7 @@ const DelegatedInprogressTask: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-            <View className="w-[60%] p-4 flex flex-col gap-6">
+            <View className="w-[60%] p-4 flex flex-col gap-6 h-96">
               <View
                 style={[
                   styles.input,
@@ -298,32 +299,43 @@ const DelegatedInprogressTask: React.FC<Props> = ({ navigation }) => {
               </View>
 
               {activeFilter === 'Category' &&
-                categories.map((category) => (
-                  <View key={category._id} className="flex w-full flex-row items-center gap-3">
-                    <CheckboxTwo
-                      isChecked={selectedCategories.includes(category._id)}
-                      onPress={() => handleCategorySelection(category._id)}
-                    />
-                    <Text className="text-lg text-white">{category.name}</Text>
-                  </View>
-                ))}
+                     <FlatList
+                    
+                     data={categories}
+                     keyExtractor={(item) => item._id}
+                     renderItem={({ item }) => (
+                       <View className="flex w-full flex-row items-center gap-3 mb-5">
+                         <CheckboxTwo
+                           isChecked={selectedCategories.includes(item._id)}
+                           onPress={() => handleCategorySelection(item._id)}
+                         />
+                         <Text className="text-lg text-white">{item.name}</Text>
+                       </View>
+                     )}
+                   />}
 
-              {activeFilter === 'AssignedTo' &&
-                users.map((user) => (
-                  <View key={user._id} className="flex w-full flex-row items-center gap-3">
-                    <CheckboxTwo
-                      isChecked={selectedAssignees.includes(user._id)}
-                      onPress={() =>
-                        setSelectedAssignees((prev) =>
-                          prev.includes(user._id)
-                            ? prev.filter((id) => id !== user._id)
-                            : [...prev, user._id]
-                        )
-                      }
-                    />
-                    <Text className="text-lg text-white">{`${user.firstName} ${user.lastName}`}</Text>
-                  </View>
-                ))}
+                {activeFilter === 'AssignedTo' && (
+                        <FlatList
+                          data={users}
+                          keyExtractor={(user) => user._id}
+                          renderItem={({ item: user }) => (
+                            <View className="flex w-full flex-row items-center gap-3">
+                              <CheckboxTwo
+                                isChecked={selectedAssignees.includes(user._id)}
+                                onPress={() =>
+                                  setSelectedAssignees((prev) =>
+                                    prev.includes(user._id)
+                                      ? prev.filter((id) => id !== user._id)
+                                      : [...prev, user._id]
+                                  )
+                                }
+                              />
+                              <Text className="text-lg text-white">{`${user.firstName} ${user.lastName}`}</Text>
+                            </View>
+                          )}
+                        />
+                )}
+
 
               {activeFilter === 'Frequency' &&
                 frequencyOptions.map((freq) => (

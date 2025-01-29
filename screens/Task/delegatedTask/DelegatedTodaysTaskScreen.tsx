@@ -26,6 +26,9 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import { backend_Host } from '~/config';
+import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
+import { getDateRange } from '~/utils/GetDateRange';
+import moment from 'moment';
 
 type Props = StackScreenProps<DelegatedTaskStackParamList, 'ToadysTask'>;
 type TodaysTaskScreenRouteProp = RouteProp<DelegatedTaskStackParamList, 'ToadysTask'>;
@@ -71,8 +74,81 @@ const DelegatedTodaysTaskScreen: React.FC<Props> = ({ navigation }) => {
   const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [users, setUsers] = useState([]);
+  const [filteredTasks, setFilteredTasks] = useState<any[]>(todaysTasks);
   const [activeFilter, setActiveFilter] = useState('Category');
+  const [formattedDateRange, setFormattedDateRange] = useState('');
+  const [isCustomDateModalVisible, setIsCustomDateModalVisible] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
+  const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
+  
+    const formatWithSuffix = (date: any) => {
+        // return moment(date).format('Do MMM, YYYY');
+        return moment(date).format('MMM Do YY');
+      };  
+  
+    useEffect(() => {
+            // Update tasks based on selected date range
+            if (selectedTeamSize === 'Custom') {
+              // If custom is selected, open the modal and exit early
+              setIsCustomDateModalVisible(true);
+              return;
+            }
+            const dateRange = getDateRange(selectedTeamSize,todaysTasks,customStartDate,customEndDate);
+        
+            if (dateRange.startDate && dateRange.endDate) {
+              const formattedStart = formatWithSuffix(dateRange.startDate);
+              const formattedEnd = formatWithSuffix(dateRange.endDate);
+        
+              if (selectedTeamSize === 'Today' || selectedTeamSize === 'Yesterday') {
+                setFormattedDateRange(formattedStart);
+              } else {
+                setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
+              }
+            } else {
+              setFormattedDateRange('Invalid date range');
+            }
+        
+            // Filter tasks by date
+            const filteredByDate = filterTasksByDate(todaysTasks, dateRange);
+            setFilteredTasks(filteredByDate);
+    }, [selectedTeamSize]);
+          
+  
+    const handleCustomDateApply = (startDate: Date, endDate: Date) => {
+        // Set custom date range state
+        setCustomStartDate(startDate);
+        setCustomEndDate(endDate);
+  
+        // Create a custom date range for filtering
+        const customDateRange = {
+            startDate: moment(startDate).startOf('day').toISOString(),
+            endDate: moment(endDate).endOf('day').toISOString(),
+        };
+  
+        // Filter tasks based on the custom date range
+        const customFilteredTasks = filterTasksByDate(todaysTasks, customDateRange);
+        setFilteredTasks(customFilteredTasks);
+  
+        // Format the custom date range for display
+        const formattedStart = formatWithSuffix(moment(startDate));
+        const formattedEnd = formatWithSuffix(moment(endDate));
+        setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
+  
+        setSelectedTeamSize('Custom');
+        setIsCustomDateModalVisible(false);
+    };
+  
+    // Helper function to filter tasks by date
+    const filterTasksByDate = (tasks: any[], dateRange: { startDate: string; endDate: string }) => {
+        const { startDate, endDate } = dateRange;
 
+        return tasks.filter((task) => {
+            const taskDueDate = moment(task?.dueDate);
+            return (
+                taskDueDate.isSameOrAfter(startDate, 'day') && taskDueDate.isSameOrBefore(endDate, 'day')
+            );
+        });
+    };
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -376,6 +452,16 @@ const DelegatedTodaysTaskScreen: React.FC<Props> = ({ navigation }) => {
           <GradientButton title="Apply Filter" onPress={applyFilter} imageSource={''} />
         </View>
       </Modal>
+      <CustomDateRangeModal
+        isVisible={isCustomDateModalVisible}
+        onClose={() => {
+          setIsCustomDateModalVisible(false);
+          setSelectedTeamSize(selectedTeamSize);
+        }}
+        onApply={handleCustomDateApply}
+        initialStartDate={customStartDate || new Date()}
+        initialEndDate={customEndDate || new Date()}
+      />
     </SafeAreaView>
   );
 };

@@ -27,6 +27,8 @@ import { RootState } from '~/redux/store';
 import axios from 'axios';
 import { backend_Host } from '~/config';
 import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
+import moment from 'moment';
+import { getDateRange } from '~/utils/GetDateRange';
 
 type Props = StackScreenProps<MyTasksStackParamList, 'OverdueTask'>;
 type OverdueTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'OverdueTask'>;
@@ -74,11 +76,81 @@ const OverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
   const [filteredTasks, setFilteredTasks] = useState<any[]>(overdueTasks);
   const [users, setUsers] = useState([]);
   const [activeFilter, setActiveFilter] = useState('Category');
-      const [isCustomDateModalVisible, setIsCustomDateModalVisible] = useState(false);
-      const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
-      const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
+  const [formattedDateRange, setFormattedDateRange] = useState('');
+  const [isCustomDateModalVisible, setIsCustomDateModalVisible] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
+  const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
 
-  useEffect(() => {
+    const formatWithSuffix = (date: any) => {
+        // return moment(date).format('Do MMM, YYYY');
+        return moment(date).format('MMM Do YY');
+      };  
+  
+    useEffect(() => {
+            // Update tasks based on selected date range
+            if (selectedTeamSize === 'Custom') {
+              // If custom is selected, open the modal and exit early
+              setIsCustomDateModalVisible(true);
+              return;
+            }
+            const dateRange = getDateRange(selectedTeamSize,overdueTasks,customStartDate,customEndDate);
+        
+            if (dateRange.startDate && dateRange.endDate) {
+              const formattedStart = formatWithSuffix(dateRange.startDate);
+              const formattedEnd = formatWithSuffix(dateRange.endDate);
+        
+              if (selectedTeamSize === 'Today' || selectedTeamSize === 'Yesterday') {
+                setFormattedDateRange(formattedStart);
+              } else {
+                setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
+              }
+            } else {
+              setFormattedDateRange('Invalid date range');
+            }
+        
+            // Filter tasks by date
+            const filteredByDate = filterTasksByDate(overdueTasks, dateRange);
+            setFilteredTasks(filteredByDate);
+    }, [selectedTeamSize]);
+          
+  
+    const handleCustomDateApply = (startDate: Date, endDate: Date) => {
+        // Set custom date range state
+        setCustomStartDate(startDate);
+        setCustomEndDate(endDate);
+  
+        // Create a custom date range for filtering
+        const customDateRange = {
+            startDate: moment(startDate).startOf('day').toISOString(),
+            endDate: moment(endDate).endOf('day').toISOString(),
+        };
+  
+        // Filter tasks based on the custom date range
+        const customFilteredTasks = filterTasksByDate(overdueTasks, customDateRange);
+        setFilteredTasks(customFilteredTasks);
+  
+        // Format the custom date range for display
+        const formattedStart = formatWithSuffix(moment(startDate));
+        const formattedEnd = formatWithSuffix(moment(endDate));
+        setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
+  
+        setSelectedTeamSize('Custom');
+        setIsCustomDateModalVisible(false);
+    };
+  
+    // Helper function to filter tasks by date
+    const filterTasksByDate = (tasks: any[], dateRange: { startDate: string; endDate: string }) => {
+        const { startDate, endDate } = dateRange;
+
+        return tasks.filter((task) => {
+            const taskDueDate = moment(task?.dueDate);
+            return (
+                taskDueDate.isSameOrAfter(startDate, 'day') && taskDueDate.isSameOrBefore(endDate, 'day')
+            );
+        });
+    };  
+
+    useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(`${backend_Host}/category/get`, {
@@ -107,7 +179,7 @@ const OverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
     };
     fetchUsers();
     fetchCategories();
-  }, [token]);
+    }, [token]);
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
@@ -171,30 +243,6 @@ const OverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
     return activeFilter === filter ? '#37384B' : '#0A0D28'; // Example colors
   };
 
-    const handleCustomDateApply = (startDate: Date, endDate: Date) => {
-          // Set custom date range state
-          setCustomStartDate(startDate);
-          setCustomEndDate(endDate);
-      
-          // Create a custom date range for filtering
-          const customDateRange = {
-            startDate: moment(startDate).startOf('day').toDate(),
-            endDate: moment(endDate).endOf('day').toDate(),
-          };
-      
-          // Filter tasks based on the custom date range
-          // const customFilteredTasks = filterTasksByDate(pendingTasks, customDateRange);
-          // setTasks(customFilteredTasks);
-          // setTaskCounts(countStatuses(customFilteredTasks));
-      
-          // Format the custom date range for display
-          const formattedStart = formatWithSuffix(moment(startDate));
-          const formattedEnd = formatWithSuffix(moment(endDate));
-          setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
-      
-          setSelectedTeamSize(formattedDateRange)
-          setIsCustomDateModalVisible(false);
-    };
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">

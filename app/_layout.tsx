@@ -79,6 +79,7 @@ function RootLayoutNav() {
           <Stack.Screen name="(routes)/settings/index" />
           <Stack.Screen name="(routes)/HomeComponent/Tasks/AssignTaskScreen" />
           <Stack.Screen name="(routes)/HomeComponent/Tasks/TaskCategories" />
+          <Stack.Screen name="(routes)/HomeComponent/Tasks/AllTaskScreen" />
         </Stack>
       ) : (
         <Stack screenOptions={{ headerShown: false }}>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Alert,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { useNavigation } from 'expo-router';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -19,13 +20,13 @@ import NavbarTwo from '~/components/navbarTwo';
 import GradientButton from '~/components/GradientButton';
 import CategoryComponent from '../../components/Dashboard/CategoryComponent';
 import Navbar from '~/components/navbar';
-import { Modal } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { backend_Host } from '~/config';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import InputContainer from '~/components/InputContainer';
+import { BlurView } from 'expo-blur';
 
 export default function TaskCategories() {
   const navigation = useNavigation<StackNavigationProp<any>>();
@@ -297,83 +298,85 @@ export default function TaskCategories() {
                   transparent={true}
                   visible={AiModalOpen}
                   onRequestClose={() => SetAiModalOpen(false)}>
-                  <ScrollView
-                    contentContainerStyle={{ flexGrow: 1 }}
-                    showsVerticalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled">
-                    <View className="mt-16 h-full rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
-                      <View className=" mb-7 flex w-full flex-row items-center justify-between">
-                        <View className=" flex flex-row items-center gap-5">
-                          <Image className="h-7 w-7" source={require('../../assets/ZAi/Ai.png')} />
-                          <Image
-                            className="h-[24px] w-[108px]"
-                            source={require('../../assets/ZAi/ZaplloAi.png')}
-                          />
+                  <BlurView intensity={50} style={StyleSheet.absoluteFill}>
+                    <ScrollView
+                      contentContainerStyle={{ flexGrow: 1 }}
+                      showsVerticalScrollIndicator={false}
+                      keyboardShouldPersistTaps="handled">
+                      <View className="mt-16 h-full rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
+                        <View className=" mb-7 flex w-full flex-row items-center justify-between">
+                          <View className=" flex flex-row items-center gap-5">
+                            <Image className="h-7 w-7" source={require('../../assets/ZAi/Ai.png')} />
+                            <Image
+                              className="h-[24px] w-[108px]"
+                              source={require('../../assets/ZAi/ZaplloAi.png')}
+                            />
+                          </View>
+                          <TouchableOpacity onPress={() => SetAiModalOpen(false)}>
+                            <Image
+                              source={require('../../assets/commonAssets/cross.png')}
+                              className="h-8 w-8"
+                            />
+                          </TouchableOpacity>
                         </View>
-                        <TouchableOpacity onPress={() => SetAiModalOpen(false)}>
-                          <Image
-                            source={require('../../assets/commonAssets/cross.png')}
-                            className="h-8 w-8"
-                          />
+
+                        <Text className="text-xs text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
+                          Our intelligent AI engine has analyzed your industry and carefully curated a
+                          selection of categories. Choose the ones that suit your business, and let’s
+                          add them to your workflow effortlessly!
+                        </Text>
+
+                        <View className="mt-14 flex flex-col gap-6">
+                          {aiCategories?.map((category, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              onPress={() => toggleAiSelection(index)}
+                              className="flex w-full flex-row items-center justify-between rounded-2xl border  p-4 "
+                              style={{
+                                borderColor: AiSelectedItems.includes(index) ? '#815BF5' : '#37384B',
+                              }}>
+                              <View>
+                                <Text
+                                  className="text-xl text-white"
+                                  style={{ fontFamily: 'LatoBold' }}>
+                                  {category}
+                                </Text>
+                                {AiSelectedItems.includes(index) ? (
+                                  <Text
+                                    className="text-xs text-[#37384B]"
+                                    style={{ fontFamily: 'LatoBold' }}>
+                                    Tap to unselect
+                                  </Text>
+                                ) : (
+                                  <Text
+                                    className="text-xs text-[#37384B]"
+                                    style={{ fontFamily: 'LatoBold' }}>
+                                    Tap to select
+                                  </Text>
+                                )}
+                              </View>
+                              {AiSelectedItems.includes(index) && (
+                                <Image
+                                  className="h-8 w-8"
+                                  source={require('../../assets/Tasks/isEditing.png')}
+                                />
+                              )}
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+
+                        <TouchableOpacity
+                          onPress={confirmAndSaveCategories}
+                          className="mt-8 w-full items-center rounded-full bg-[rgb(1,122,91)] p-3">
+                          <Text
+                            className="text-lg font-bold text-white "
+                            style={{ fontFamily: 'LatoBold' }}>
+                            Confirm & Save
+                          </Text>
                         </TouchableOpacity>
                       </View>
-
-                      <Text className="text-xs text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
-                        Our intelligent AI engine has analyzed your industry and carefully curated a
-                        selection of categories. Choose the ones that suit your business, and let’s
-                        add them to your workflow effortlessly!
-                      </Text>
-
-                      <View className="mt-14 flex flex-col gap-6">
-                        {aiCategories?.map((category, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            onPress={() => toggleAiSelection(index)}
-                            className="flex w-full flex-row items-center justify-between rounded-2xl border  p-4 "
-                            style={{
-                              borderColor: AiSelectedItems.includes(index) ? '#815BF5' : '#37384B',
-                            }}>
-                            <View>
-                              <Text
-                                className="text-xl text-white"
-                                style={{ fontFamily: 'LatoBold' }}>
-                                {category}
-                              </Text>
-                              {AiSelectedItems.includes(index) ? (
-                                <Text
-                                  className="text-xs text-[#37384B]"
-                                  style={{ fontFamily: 'LatoBold' }}>
-                                  Tap to unselect
-                                </Text>
-                              ) : (
-                                <Text
-                                  className="text-xs text-[#37384B]"
-                                  style={{ fontFamily: 'LatoBold' }}>
-                                  Tap to select
-                                </Text>
-                              )}
-                            </View>
-                            {AiSelectedItems.includes(index) && (
-                              <Image
-                                className="h-8 w-8"
-                                source={require('../../assets/Tasks/isEditing.png')}
-                              />
-                            )}
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-
-                      <TouchableOpacity
-                        onPress={confirmAndSaveCategories}
-                        className="mt-8 w-full items-center rounded-full bg-[rgb(1,122,91)] p-3">
-                        <Text
-                          className="text-lg font-bold text-white "
-                          style={{ fontFamily: 'LatoBold' }}>
-                          Confirm & Save
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </ScrollView>
+                    </ScrollView>
+                  </BlurView>
                 </Modal>
               </>
             )}
@@ -418,47 +421,49 @@ export default function TaskCategories() {
           transparent={true}
           visible={addModalOpen}
           onRequestClose={() => setAddModalOpen(false)}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1, justifyContent: 'flex-end' }}>
-            <View className="-mb-1 gap-3 rounded-t-3xl bg-[#0A0D28] p-5 pb-14 pt-6">
-              <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
-                <Text className="text-xl text-white" style={{ fontFamily: 'LatoBold' }}>
-                  Add New Category
-                </Text>
-                <TouchableOpacity onPress={() => setAddModalOpen(false)}>
-                  <Image
-                    source={require('../../assets/commonAssets/cross.png')}
-                    className="h-8 w-8"
+          <BlurView intensity={50} style={StyleSheet.absoluteFill}>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={{ flex: 1, justifyContent: 'flex-end' }}>
+              <View className="-mb-1 gap-3 rounded-t-3xl bg-[#0A0D28] p-5 pb-14 pt-6">
+                <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
+                  <Text className="text-xl text-white" style={{ fontFamily: 'LatoBold' }}>
+                    Add New Category
+                  </Text>
+                  <TouchableOpacity onPress={() => setAddModalOpen(false)}>
+                    <Image
+                      source={require('../../assets/commonAssets/cross.png')}
+                      className="h-8 w-8"
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                <View className="pb-4">
+                  <InputContainer
+                    placeholder=""
+                    value={newCategoryName}
+                    onChangeText={setNewCategoryName}
+                    label="Enter category name"
+                    placeholderTextColor="#787CA5"
+                    passwordError={''}
                   />
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleAddNewCategory}
+                  disabled={isLoading}
+                  className="w-full items-center rounded-full bg-[rgb(1,122,91)] p-3">
+                  {isLoading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text className="text-lg font-bold text-white" style={{ fontFamily: 'LatoBold' }}>
+                      Add Category
+                    </Text>
+                  )}
                 </TouchableOpacity>
               </View>
-
-              <View className="pb-4">
-                <InputContainer
-                  placeholder=""
-                  value={newCategoryName}
-                  onChangeText={setNewCategoryName}
-                  label="Enter category name"
-                  placeholderTextColor="#787CA5"
-                  passwordError={''}
-                />
-              </View>
-
-              <TouchableOpacity
-                onPress={handleAddNewCategory}
-                disabled={isLoading}
-                className="w-full items-center rounded-full bg-[rgb(1,122,91)] p-3">
-                {isLoading ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <Text className="text-lg font-bold text-white" style={{ fontFamily: 'LatoBold' }}>
-                    Add Category
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+          </BlurView>
         </Modal>
       </View>
       )}

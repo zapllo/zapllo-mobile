@@ -80,6 +80,8 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
   const [isCustomDateModalVisible, setIsCustomDateModalVisible] = useState(false);
   const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
   const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredCategories, setFilteredCategories] = useState([]);
 
     const formatWithSuffix = (date: any) => {
       // return moment(date).format('Do MMM, YYYY');
@@ -244,6 +246,37 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
       });
   };
 
+
+    const filteredCategoryList = useMemo(() => {
+      return filteredCategories.filter((category) =>
+        category.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }, [searchQuery, filteredCategories]);
+  
+    // Filtering assigned users based on searchQuery
+    const filteredUsersList = useMemo(() => {
+      return users.filter(
+        (user) =>
+          user?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user?.lastName?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }, [searchQuery, users]);
+  
+    // Filtering priorities based on searchQuery
+    const filteredPrioritiesList = useMemo(() => {
+      return priorityOptions.filter((priority) =>
+        priority.label.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }, [searchQuery, priorityOptions]);
+  
+    // Filtering frequencies based on searchQuery
+    const filteredFrequenciesList = useMemo(() => {
+      return frequencyOptions?.filter((frequency) =>
+        frequency.label.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }, [searchQuery, frequencyOptions]);
+  
+
   
 
   return (
@@ -391,7 +424,7 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
               {activeFilter === 'Category' &&
                      <FlatList
                   
-                     data={categories}
+                     data={filteredCategoryList}
                      keyExtractor={(item) => item._id}
                      renderItem={({ item }) => (
                        <View className="flex w-full flex-row items-center gap-3 mb-5">
@@ -406,7 +439,7 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
 
                   {activeFilter === 'AssignedTo' && (
                         <FlatList
-                          data={users}
+                          data={filteredUsersList}
                           keyExtractor={(user) => user._id}
                           renderItem={({ item: user }) => (
                             <View className="flex w-full flex-row items-center gap-3 mb-5">
@@ -427,7 +460,7 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
                       )}      
 
               {activeFilter === 'Frequency' &&
-                frequencyOptions.map((freq) => (
+                filteredFrequenciesList.map((freq) => (
                   <View key={freq.value} className="flex w-full flex-row items-center gap-3">
                     <CheckboxTwo
                       isChecked={selectedFrequencies.includes(freq.value)}
@@ -444,7 +477,7 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
                 ))}
 
               {activeFilter === 'Priority' &&
-                priorityOptions.map((priority) => (
+                filteredPrioritiesList.map((priority) => (
                   <View key={priority.value} className="flex w-full flex-row items-center gap-3">
                     <CheckboxTwo
                       isChecked={selectedPriorities.includes(priority.value)}

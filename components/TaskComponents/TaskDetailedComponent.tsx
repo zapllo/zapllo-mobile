@@ -101,7 +101,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
     );
   };
   const handleMoveToReopen = () => {
-    setTaskStatus('In Progress');
+    setTaskStatus('Reopen');
     setShowMainModal(false);
     timerRef.current = setTimeout(() => {
       setShowProgressModal(true);
@@ -119,7 +119,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         {
           text: 'Move to Deleted',
           backgroundColor: '#EF4444',
-          onPress: handleDeleteConfirmation,
+          onPress: ()=>handleDeleteConfirmation(),
         },
       ];
     }

@@ -147,7 +147,9 @@ const HomeScreen: React.FC = () => {
           
 
           {/* Progress Bar with Gradient */}
-          <View className=" my-3 flex h-36 w-full flex-col items-center gap-6 rounded-2xl border border-[#37384B] bg-[#10122d] bg-opacity-50 pl-5  pr-5 pt-5">
+          <TouchableOpacity
+          onPress={()=>router.push("/(routes)/profile/Checklist")}
+          className=" my-3 flex h-36 w-full flex-col items-center gap-6 rounded-2xl border border-[#37384B] bg-[#10122d] bg-opacity-50 pl-5  pr-5 pt-5">
             <View className="flex w-full  flex-row items-center justify-between">
               <Text className="text-lg text-white " style={{fontFamily:"LatoBold"}}>App Usage Progress</Text>
               <TouchableOpacity className='border border-white w-8 h-8 items-center justify-center flex rounded-full'>
@@ -193,7 +195,7 @@ const HomeScreen: React.FC = () => {
                 {loading ? 'Loading...' : `${progressPercentage}% Completed`}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
           {componentsData.map((item) => (
             <TouchableOpacity

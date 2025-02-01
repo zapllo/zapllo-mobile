@@ -172,7 +172,7 @@ export default function TickitScreen() {
                 <TickitCard
                   key={index}
                   status={ticket?.status}
-                  message={ticket?.description}
+                  message={ticket?.subject}
                   date={moment(ticket?.createdAt).format('ddd, MMMM D - h:mm A')}
                   category={ticket?.category}
                   subCategory={ticket?.subcategory}

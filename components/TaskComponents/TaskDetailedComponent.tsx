@@ -19,6 +19,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import dayjs from 'dayjs';
 import { ActivityIndicator } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native';
+import * as FileSystem from 'expo-file-system';
 interface TaskDetailedComponentProps {
   title: string;
   dueDate: string;
@@ -27,6 +28,13 @@ interface TaskDetailedComponentProps {
   category: string;
   task: any;
   taskId: any;
+}
+
+interface SelectedFile {
+  uri: string;
+  name: string;
+  type?: string;
+  base64?: string;
 }
 
 const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
@@ -47,7 +55,8 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [taskStatus, setTaskStatus] = useState('');
   const [taskStatusLoading, setTaskStatusLoading] = useState(false);
- 
+  const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -56,7 +65,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
       }
     };
   }, []);
-  
+
   const handleMoveToProgress = () => {
     setTaskStatus('In Progress');
     setShowMainModal(false);
@@ -79,37 +88,95 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: '*/*',
+        copyToCacheDirectory: false,
       });
 
-      console.log('Document Picker Result: ', result);
+      if (result.canceled || !result.assets.length) return;
 
-      if (result.canceled) {
-        console.log('Document selection cancelled.');
-      } else if (result.assets && result.assets.length > 0) {
-        const { name, uri } = result.assets[0];
+      const pickedFile = result.assets[0];
 
-        // Update URIs in attachments state for the selected index
-        setAttachments((prev) => {
-          const updated = [...prev];
-          updated[index] = uri;
-          console.log('Updated Attachments URIs: ', updated);
-          return updated;
+      // Update attachments and fileNames
+      setAttachments((prev) => {
+        const updated = [...prev];
+        updated[index] = pickedFile.uri;
+        return updated;
+      });
+
+      setFileNames((prev) => {
+        const updated = [...prev];
+        updated[index] = pickedFile.name;
+        return updated;
+      });
+
+      // Prepare file data
+      let fileData: SelectedFile = {
+        uri: pickedFile.uri,
+        name: pickedFile.name,
+        type: pickedFile.mimeType,
+      };
+
+      // Convert images to Base64
+      if (pickedFile.mimeType?.startsWith('image/')) {
+        const base64File = await FileSystem.readAsStringAsync(pickedFile.uri, {
+          encoding: FileSystem.EncodingType.Base64,
         });
+        fileData.base64 = base64File;
+      }
 
-        // Update file names in fileNames state for the selected index
-        setFileNames((prev) => {
-          const updated = [...prev];
-          updated[index] = name;
-          console.log('Updated File Names: ', updated);
-          return updated;
+      setSelectedFile(fileData);
+    } catch (err) {
+      console.error('Error picking document:', err);
+    }
+  };
+
+  const uploadFile = async () => {
+    if (!selectedFile) return;
+
+    try {
+      setLoading(true);
+      let fileUrl: string[] = [];
+      let response;
+
+      if (selectedFile.base64) {
+        // Upload image in Base64 format
+        response = await axios.post(`${backend_Host}/upload`, {
+          files: [`data:${selectedFile.type};base64,${selectedFile.base64}`],
+        });
+      } else {
+        // Upload other files using FormData
+        const formData = new FormData();
+        formData.append('files', {
+          uri: selectedFile.uri,
+          name: selectedFile.name,
+          type: selectedFile.type,
+        } as any); // TypeScript fix
+
+        response = await axios.post('/api/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
         });
       }
-    } catch (err) {
-      console.error('Error picking document: ', err);
+
+      if (response.status === 200) {
+        fileUrl = response.data.fileUrls;
+        console.log('File uploaded successfully:', fileUrl);
+      } else {
+        console.error('Failed to upload file');
+        return;
+      }
+
+      return fileUrl; // Return uploaded file URLs
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const updateTask = async () => {
+    const fileUrl = selectedFile ? await uploadFile() : [];
+    
     setTaskStatusLoading(true);
     try {
       const payload = {
@@ -183,11 +250,11 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
               {/* title */}
               <View className=" mb-7 flex w-full flex-row items-center justify-between">
                 <Text
-                  className="text-xl  w-[90%] font-semibold text-white"
+                  className="w-[90%]  text-xl font-semibold text-white"
                   style={{ fontFamily: 'LatoBold' }}>
                   {title}
                 </Text>
-                <TouchableOpacity className='w-[10%]' onPress={() => setModalVisible(false)}>
+                <TouchableOpacity className="w-[10%]" onPress={() => setModalVisible(false)}>
                   <Image
                     source={require('../../assets/commonAssets/cross.png')}
                     className="h-8 w-8"
@@ -197,16 +264,16 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
               {/* assigned by an assigned to */}
               <View className="mb-6 flex w-full flex-row items-start justify-start gap-20 ">
-                <View className="flex flex-col w-[40%]">
+                <View className="flex w-[40%] flex-col">
                   <Text className="text-xs text-[#787CA5]">Assigned by</Text>
                   <Text className=" text-lg text-[#815BF5]" style={{ fontFamily: 'LatoBold' }}>
                     {assignedBy}
                   </Text>
                 </View>
 
-                <View className="flex flex-col w-[40%]">
+                <View className="flex w-[40%] flex-col">
                   <Text className="text-xs text-[#787CA5]">Assigned to</Text>
-                  <Text className="text-lg text-[#D85570] w-24" style={{ fontFamily: 'LatoBold' }}>
+                  <Text className="w-24 text-lg text-[#D85570]" style={{ fontFamily: 'LatoBold' }}>
                     {assignedTo}
                   </Text>
                 </View>
@@ -231,7 +298,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
               {/* features */}
               <View className="mb-6 flex w-full flex-row items-center justify-start gap-20 ">
-                <View className="flex gap-3 w-[40%]">
+                <View className="flex w-[40%] gap-3">
                   <View className="flex flex-col">
                     <Text className="text-xs text-[#787CA5]">Frequency</Text>
                     <Text className="text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
@@ -352,25 +419,23 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   <Text className="text-xs text-[#787CA5]">Task Updates</Text>
                 </View> */}
                 {task?.comments.map((com, index) => (
+                  <View className="flex w-full flex-row items-center justify-between">
+                    <View className=" items-center-start flex flex-row gap-2">
+                      <View className="h-10 w-10 rounded-full bg-white"></View>
 
-                <View className="flex w-full flex-row items-center justify-between">
-                  <View className=" items-center-start flex flex-row gap-2">
-                    <View className="h-10 w-10 rounded-full bg-white"></View>
-                    
                       <View>
                         <Text className="text-lg text-white">{com?.comment}</Text>
                         <Text className="text-xs text-[#787CA5]">{com?.userName}</Text>
                       </View>
-                   
-                  </View>
+                    </View>
 
-                  <TouchableOpacity className="mb-4 flex items-center rounded-xl bg-[#815BF5] p-2 pl-3 pr-3">
-                    <Text className="text-[11px] text-white" style={{ fontFamily: 'LatoBold' }}>
-                     {com?.tag}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
+                    <TouchableOpacity className="mb-4 flex items-center rounded-xl bg-[#815BF5] p-2 pl-3 pr-3">
+                      <Text className="text-[11px] text-white" style={{ fontFamily: 'LatoBold' }}>
+                        {com?.tag}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
                 {/* line */}
                 {/* <View className="mb-3 mt-3 h-0.5 w-full bg-[#37384B]"></View> */}
 
@@ -383,7 +448,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                     </View>
                   </View> */}
 
-                  {/* <TouchableOpacity className="mb-4 flex items-center rounded-xl bg-[#007B5B] p-2 pl-3 pr-3">
+                {/* <TouchableOpacity className="mb-4 flex items-center rounded-xl bg-[#007B5B] p-2 pl-3 pr-3">
                     <Text className="text-[11px] text-white" style={{ fontFamily: 'LatoBold' }}>
                       Completed
                     </Text>
@@ -531,16 +596,15 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         </Modal>
 
         <View className="flex w-full flex-row items-center justify-between">
-          <Text className="font-semibold text-white w-[95%]" style={{ fontFamily: 'LatoBold' }}>
+          <Text className="w-[95%] font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
             {title}
           </Text>
           <Image source={require('../../assets/commonAssets/threeDot.png')} className="h-6 w-5" />
         </View>
-        
 
         {/* task card */}
         <View className="flex w-full flex-row items-start gap-20">
-          <View className="flex gap-3 w-36">
+          <View className="flex w-36 gap-3">
             <View className="flex flex-col">
               <Text className="text-xs text-[#787CA5]">Due Date</Text>
               <Text className="text-[#EF4444] " style={{ fontFamily: 'LatoBold' }}>
@@ -556,7 +620,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
             </View>
           </View>
 
-          <View className="flex gap-3 w-32">
+          <View className="flex w-32 gap-3">
             <View className="flex flex-col">
               <Text className="text-xs text-[#787CA5]">Assigned by</Text>
               <Text className=" text-[#815BF5]" style={{ fontFamily: 'LatoBold' }}>

@@ -48,14 +48,6 @@ export default function TickitScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tickets, setTickets] = useState([])
-  // const [tickets, setTickets] = useState([
-  //   {
-  //     status: 'Pending',
-  //     message: 'Updated Items are not reflected in Trigger',
-  //     date: 'Wed, December 25 - 12:13 PM',
-  //   },
-  //   { status: 'Pending', message: 'Your ticket is being processed.', date: '2023-10-15' },
-  // ]);
   const [category, setCategory] = useState('');
   const [subCategory, setSubCategory] = useState('');
   const [isDescriptionFocused, setDescriptionFocused] = useState(false);
@@ -95,19 +87,6 @@ export default function TickitScreen() {
         ticket?.subCategory?.toLowerCase().includes(lowerCaseQuery)
     );
   }, [searchTickit, tickets]);
-
-  // const addNewTicket = () => {
-  //   const newTicket = {
-  //     status: 'Pending',
-  //     message: newTicketMessage,
-  //     date: new Date().toLocaleString(),
-  //     category,
-  //   };
-  //   setTickets([...tickets, newTicket]);
-  //   setModalVisible(false);
-  //   setNewTicketMessage('');
-  // };
-  console.log("ooooooooooo>>>>>",userData)
 
   const handelAddNewTicket = async () => {
     if (!newTicketMessage) {
@@ -198,6 +177,7 @@ export default function TickitScreen() {
                   category={ticket?.category}
                   subCategory={ticket?.subcategory}
                   subject={ticket?.subject}
+                  id={ticket?._id}
                 />
               ))
             ) : (

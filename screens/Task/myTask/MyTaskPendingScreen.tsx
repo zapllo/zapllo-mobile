@@ -67,7 +67,6 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [taskDescription, setTaskDescription] = useState('');
-  const [isChecked, setIsChecked] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
   const [selectedFrequencies, setSelectedFrequencies] = useState<string[]>([]);
@@ -184,16 +183,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
     );
   }, [searchQuery, frequencyOptions]);
 
-  const filterTasksByDate = (tasks: any[], dateRange: { startDate: string; endDate: string }) => {
-    const { startDate, endDate } = dateRange;
 
-    return tasks.filter((task) => {
-      const taskDueDate = moment(task?.dueDate);
-      return (
-        taskDueDate.isSameOrAfter(startDate, 'day') && taskDueDate.isSameOrBefore(endDate, 'day')
-      );
-    });
-  };
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
@@ -264,24 +254,32 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
 
     // Create a custom date range for filtering
     const customDateRange = {
-      startDate: moment(startDate).startOf('day').toDate(),
-      endDate: moment(endDate).endOf('day').toDate(),
+        startDate: moment(startDate).startOf('day').toISOString(),
+        endDate: moment(endDate).endOf('day').toISOString(),
     };
 
     // Filter tasks based on the custom date range
-    // const customFilteredTasks = filterTasksByDate(pendingTasks, customDateRange);
-    // setTasks(customFilteredTasks);
-    // setTaskCounts(countStatuses(customFilteredTasks));
+    const customFilteredTasks = filterTasksByDate(pendingTasks, customDateRange);
+    setFilteredTasks(customFilteredTasks);
 
     // Format the custom date range for display
     const formattedStart = formatWithSuffix(moment(startDate));
     const formattedEnd = formatWithSuffix(moment(endDate));
     setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
 
-    setSelectedTeamSize(formattedDateRange);
+    setSelectedTeamSize('Custom');
     setIsCustomDateModalVisible(false);
   };
+  const filterTasksByDate = (tasks: any[], dateRange: { startDate: string; endDate: string }) => {
+  const { startDate, endDate } = dateRange;
 
+  return tasks.filter((task) => {
+      const taskDueDate = moment(task?.dueDate);
+      return (
+          taskDueDate.isSameOrAfter(startDate, 'day') && taskDueDate.isSameOrBefore(endDate, 'day')
+      );
+  });
+};
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
       <View className="flex h-20 w-full flex-row items-center justify-between p-5">

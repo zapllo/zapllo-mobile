@@ -28,7 +28,7 @@ const TickitDetails: React.FC = () => {
   const { token, userData } = useSelector((state: RootState) => state.auth);
   const { status, message, date, category, subCategory, subject, id } = useLocalSearchParams();
   const [comment, setComment] = useState('');
-  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const [keyboardOffset, setKeyboardOffset] = useState(15);
   const [isFocused, setIsFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,7 +40,11 @@ const TickitDetails: React.FC = () => {
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (e) => {
-      setKeyboardOffset(e.endCoordinates.height);
+      if (Platform.OS === 'ios') {
+        setKeyboardOffset(315);
+      } else {
+        setKeyboardOffset(30);
+      }
     });
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardOffset(0);
@@ -146,7 +150,8 @@ const TickitDetails: React.FC = () => {
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary">
       <KeyboardAvoidingView
         className="h-full w-full flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ paddingBottom: keyboardOffset }}>
         <NavbarTwo title="Ticket Details" onBackPress={() => navigation.goBack()} />
 
         <View className="mt-8 flex w-full flex-col items-center gap-2 pb-20">
@@ -239,7 +244,7 @@ const TickitDetails: React.FC = () => {
           className="flex flex-row items-center justify-between bg-[#05071E] px-5"
           style={{
             position: 'absolute',
-            bottom: keyboardOffset ? 325 : 0,
+            bottom: keyboardOffset,
             width: '100%',
             alignItems: 'center',
           }}>
@@ -255,7 +260,7 @@ const TickitDetails: React.FC = () => {
             onChangeText={(value) => setComment(value)}
             placeholder="Type your comment here"
             placeholderTextColor="#787CA5"
-            className="h-16 w-2/3 rounded-full p-5 pt-3 text-sm text-white"
+            className="h-16  w-2/3 rounded-full  pl-6 text-sm text-white"
             style={{
               fontFamily: 'LatoBold',
               borderColor: isFocused || comment ? '#815BF5' : '#37384B',

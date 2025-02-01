@@ -284,7 +284,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView className="h-full flex-1 bg-primary">
       <View className="flex h-20 w-full flex-row items-center justify-between p-5">
         <View className="flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-full bg-[#37384B]">
-          <TouchableOpacity onPress={() => navigation.navigate('DashboardHome')}>
+          <TouchableOpacity >
             <AntDesign name="arrowleft" size={24} color="#ffffff" />
           </TouchableOpacity>
         </View>
@@ -333,7 +333,9 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-            <ScrollView>
+            <ScrollView
+            className='mb-20'
+            >
               {searchedTasks?.length > 0 ? (
                 searchedTasks.map((task: any) => (
                   <TaskDetailedComponent

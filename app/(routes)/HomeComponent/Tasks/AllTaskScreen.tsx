@@ -291,7 +291,7 @@ export default function AllTaskScreen() {
             </View>
 
             {/* Content */}
-            <View className="p-4.2 mb-32 flex h-full w-full flex-col items-center gap-2.5 pt-1">
+            <View className="p-4.2 mb-40 flex h-full w-full flex-col items-center gap-2.5 pt-1">
               <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FC842C] p-5">
                   <TouchableOpacity
@@ -384,13 +384,19 @@ export default function AllTaskScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
-              
-              <View className="my-1 h-[167px] w-[93%] rounded-3xl bg-[#007B5B] p-5 pb-7 pt-7 ">
+
+              {/* completed */}
+              <TouchableOpacity
+                    onPress={() => {
+                      const completedTasks = tasks.filter((task) => task.status === 'Completed');
+                      navigation.navigate('CompletedTask', { completedTasks });
+                    }}              
+               className="mb-2 mt-2 h-[167px] w-[93%] rounded-3xl bg-[#007B5B] p-5 pb-7 pt-7  ">
                 <View className=" flex w-full flex-row items-center justify-between">
                   <Text className="text-white " style={{ fontFamily: 'LatoBold' }}>Completed Tasks</Text>
-                  <Text className="text-xs text-white">{formattedDateRange}</Text>
+                  <Text className="text-xs text-white" style={{ fontFamily: 'LatoBold' }}>{formattedDateRange}</Text>
                 </View>
-                <Text className=" mt-4  text-white text-5xl " style={{ fontFamily: 'LatoBold' }}>
+                <Text className=" mt-2  text-5xl text-white " style={{ fontFamily: 'LatoBold' }}>
                   {taskCounts.Completed}
                 </Text>
 
@@ -400,11 +406,11 @@ export default function AllTaskScreen() {
                   <View className="relative flex flex-row ">
                     {tasks
                       .filter((task) => task.status === 'Completed') // Filter by status
-                      .slice(0, 2) // Show only the first two users
+                      .slice(0, 6) 
                       .map((task, index) => (
-                        <View key={task._id} className="relative flex flex-row">
+                        <View key={task._id} className="relative flex flex-row rounded-full">
                           <View
-                            className="-m-1 flex h-11 w-11 items-center justify-center rounded-full border-2"
+                            className="-m-2 flex h-11 w-11 items-center justify-center rounded-full border-2"
                             style={{
                               borderColor: '#007B5B',
                               backgroundColor: colors[index % colors.length], // Set background color
@@ -416,9 +422,9 @@ export default function AllTaskScreen() {
                         </View>
                       ))}
                     {tasks.filter((task) => task.status === 'Completed').length > 2 && (
-                      <View className="relative -mt-1 flex flex-row">
+                      <View className="relative  flex rounded-full flex-row">
                         <View
-                          className="h-8 w-8 items-center justify-center rounded-full "
+                          className="-m-2 h-11 w-11 border-2 border-[#007B5B] items-center justify-center rounded-full"
                           style={{
                             backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
                           }}>
@@ -439,7 +445,9 @@ export default function AllTaskScreen() {
                     <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                   </TouchableOpacity>
                 </View>
-              </View>
+              </TouchableOpacity>
+
+
               <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#815BF5] p-5">
                   <TouchableOpacity

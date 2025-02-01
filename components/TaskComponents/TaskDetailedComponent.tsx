@@ -18,6 +18,8 @@ import * as DocumentPicker from 'expo-document-picker';
 import dayjs from 'dayjs';
 import { ActivityIndicator } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import { useNavigation } from 'expo-router';
 
 interface TaskDetailedComponentProps {
   title: string;
@@ -29,6 +31,13 @@ interface TaskDetailedComponentProps {
   taskId: any;
 }
 
+interface SelectedFile {
+  uri: string;
+  name: string;
+  type?: string;
+  base64?: string;
+}
+
 const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   title,
   dueDate,
@@ -38,6 +47,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   task,
   taskId,
 }) => {
+  const navigation = useNavigation()
   const [modalVisible, setModalVisible] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [showMainModal, setShowMainModal] = useState(false);
@@ -47,6 +57,8 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [taskStatus, setTaskStatus] = useState('');
   const [taskStatusLoading, setTaskStatusLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -88,6 +100,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
               });
               setShowMainModal(false);
               Alert.alert('Success', 'Task deleted successfully!');
+              navigation.navigate('DashboardHome')
             } catch (error) {
               console.error('Error deleting task:', error);
               Alert.alert('Error', 'Failed to delete the task.');
@@ -157,12 +170,12 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: '*/*',
+        copyToCacheDirectory: false,
       });
 
-      if (result.canceled) {
-        console.log('Document selection cancelled.');
-      } else if (result.assets && result.assets.length > 0) {
-        const { name, uri } = result.assets[0];
+      if (result.canceled || !result.assets.length) return;
+
+      const pickedFile = result.assets[0];
 
         setAttachments((prev) => {
           const updated = [...prev];
@@ -170,18 +183,87 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
           return updated;
         });
 
+      setFileNames((prev) => {
+        const updated = [...prev];
+        updated[index] = pickedFile.name;
+        return updated;
+      });
+
+      // Prepare file data
+      let fileData: SelectedFile = {
+        uri: pickedFile.uri,
+        name: pickedFile.name,
+        type: pickedFile.mimeType,
+      };
+
+      // Convert images to Base64
+      if (pickedFile.mimeType?.startsWith('image/')) {
+        const base64File = await FileSystem.readAsStringAsync(pickedFile.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        fileData.base64 = base64File;
+      }
+
+      setSelectedFile(fileData);
         setFileNames((prev) => {
           const updated = [...prev];
           updated[index] = name;
           return updated;
         });
       }
-    } catch (err) {
-      console.error('Error picking document: ', err);
+     catch (err) {
+      console.error('Error picking document:', err);
+    }
+  };
+
+  const uploadFile = async () => {
+    if (!selectedFile) return;
+
+    try {
+      setLoading(true);
+      let fileUrl: string[] = [];
+      let response;
+
+      if (selectedFile.base64) {
+        // Upload image in Base64 format
+        response = await axios.post(`${backend_Host}/upload`, {
+          files: [`data:${selectedFile.type};base64,${selectedFile.base64}`],
+        });
+      } else {
+        // Upload other files using FormData
+        const formData = new FormData();
+        formData.append('files', {
+          uri: selectedFile.uri,
+          name: selectedFile.name,
+          type: selectedFile.type,
+        } as any); // TypeScript fix
+
+        response = await axios.post('/api/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      }
+
+      if (response.status === 200) {
+        fileUrl = response.data.fileUrls;
+        console.log('File uploaded successfully:', fileUrl);
+      } else {
+        console.error('Failed to upload file');
+        return;
+      }
+
+      return fileUrl; // Return uploaded file URLs
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const updateTask = async () => {
+    const fileUrl = selectedFile ? await uploadFile() : [];
+    
     setTaskStatusLoading(true);
     try {
       const payload = {
@@ -200,6 +282,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
       console.log('Task updated successfully:', response.data);
       setShowProgressModal(false);
       Alert.alert('Success', 'Task updated successfully!',);
+     navigation.navigate('DashboardHome')
     } catch (error) {
       console.error('Error updating task:', error);
       Alert.alert('Error', 'Failed to update the task.');
@@ -293,7 +376,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                   style={{ fontFamily: 'LatoBold' }}>
                   {title}
                 </Text>
-                <TouchableOpacity className='w-[10%]' onPress={() => setModalVisible(false)}>
+                <TouchableOpacity className="w-[10%]" onPress={() => setModalVisible(false)}>
                   <Image
                     source={require('~/assets/commonAssets/cross.png')}
                     className="h-8 w-8"
@@ -594,7 +677,9 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
           </Text>
           <Image source={require('~/assets/commonAssets/threeDot.png')} className="h-6 w-5" />
         </View>
+        
 
+        {/* task card */}
         <View className="flex w-full flex-row items-start gap-20">
           <View className="flex w-36 gap-3">
             <View className="flex flex-col">

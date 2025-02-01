@@ -10,10 +10,11 @@ interface TickitCardProps {
   date: any;
   category:any;
   subCategory:any;
-  subject:any
+  subject:any;
+  id:any
 }
 
-const TickitCard: React.FC<TickitCardProps> = ({ status, message, date,category,subCategory,subject }) => {
+const TickitCard: React.FC<TickitCardProps> = ({ status, message, date,category,subCategory,subject,id }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const router = useRouter();
@@ -38,7 +39,7 @@ const TickitCard: React.FC<TickitCardProps> = ({ status, message, date,category,
   const navigateToDetail = () => {
     router.push({
       pathname: '/(routes)/profile/Tickits/TickitDetails' as any,
-      params: { status, message, date,category,subCategory,subject },
+      params: { status, message, date,category,subCategory,subject,id },
     });
   };
 

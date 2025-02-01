@@ -9,12 +9,16 @@ const TickitDetails: React.FC = () => {
   const navigation = useNavigation<StackNavigationProp<any>>();
   const { status, message, date, category, subCategory, subject } = useLocalSearchParams();
   const [comment, setComment] = useState("");
-  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const [keyboardOffset, setKeyboardOffset] = useState(15);
   const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (e) => {
-      setKeyboardOffset(e.endCoordinates.height);
+      if (Platform.OS === 'ios') {
+        setKeyboardOffset(315);
+      } else {
+        setKeyboardOffset(30);
+      }
     });
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardOffset(0);
@@ -30,7 +34,8 @@ const TickitDetails: React.FC = () => {
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary">
       <KeyboardAvoidingView
         className="w-full flex-1 h-full"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ paddingBottom: keyboardOffset }}>
         <NavbarTwo
           title="Ticket Details"
           onBackPress={() => navigation.goBack()}
@@ -76,7 +81,7 @@ const TickitDetails: React.FC = () => {
           </View>
         </View>
 
-        <View className='flex flex-row px-5 bg-[#05071E] justify-between items-center' style={{ position: 'absolute', bottom: keyboardOffset ? 325 : 0, width: '100%', alignItems: 'center' }}>
+        <View className='flex flex-row px-5 bg-[#05071E] justify-between items-center' style={{ position: 'absolute', bottom: keyboardOffset , width: '100%', alignItems: 'center' }}>
           <TouchableOpacity className=''>
             <Image className='w-14 h-14' source={require("../../../../../assets/Tickit/fileUpload.png")} />
           </TouchableOpacity>
@@ -86,7 +91,7 @@ const TickitDetails: React.FC = () => {
             onChangeText={(value) => setComment(value)}
             placeholder="Type your comment here"
             placeholderTextColor="#787CA5"
-            className='rounded-full p-5 h-16 pt-3 text-sm text-white w-2/3'
+            className='rounded-full  pl-6 h-16  text-sm text-white w-2/3'
             style={{
               fontFamily: "LatoBold",
               borderColor: isFocused || comment ? '#815BF5' : '#37384B',

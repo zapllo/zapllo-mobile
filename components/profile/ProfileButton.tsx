@@ -5,7 +5,14 @@ import { router } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 
-export default function ProfileButton() {
+interface NavbarProps {
+
+  image:any;
+  profile:any;
+}
+
+
+const ProfileButton: React.FC<NavbarProps> = ({ image,profile}) => {
   const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
   const firstName = userData?.user?.firstName || userData?.data?.firstName;
   const lastName = userData?.user?.lastName || userData?.data?.lastName;
@@ -31,10 +38,10 @@ export default function ProfileButton() {
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-        {userData?.data?.profilePic ? (
+        { profile ? (
           <Image
             className="h-12 w-12 rounded-full border-4 border-primary"
-            source={{ uri: userData?.data?.profilePic }}
+            source={{ uri: image ? image :profile}}
           />
         ) : (
           <View className="h-12 w-12 items-center justify-center rounded-full border-4 border-primary bg-[#8a75c8]">
@@ -47,3 +54,4 @@ export default function ProfileButton() {
     </TouchableOpacity>
   );
 }
+export default ProfileButton;

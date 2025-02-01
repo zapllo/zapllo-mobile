@@ -466,7 +466,7 @@ export default function DashboardScreen() {
             </View>
 
             {/* Content */}
-            <View className="p-4.2 mb-32 flex h-full w-full flex-col items-center gap-2.5 pt-1">
+            <View className="p-4.2 mb-40 flex h-full w-full flex-col items-center gap-2.5 pt-1">
               <View className="mb-4 flex w-[90%] flex-col items-center gap-5">
                 {/* 1st row */}
                 <View className="flex flex-row items-center gap-5">

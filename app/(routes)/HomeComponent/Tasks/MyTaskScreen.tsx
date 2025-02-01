@@ -296,7 +296,7 @@ export default function MyTaskScreen() {
             </View>
 
             {/* Content */}
-            <View className="p-4.2 mb-32 flex h-full w-full flex-col items-center gap-2.5 pt-1">
+            <View className="p-4.2 mb-40 flex h-full w-full flex-col items-center gap-2.5 pt-1">
               <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FC842C] p-5">
                   <TouchableOpacity
@@ -390,7 +390,12 @@ export default function MyTaskScreen() {
                 </View>
               </View>
               
-              <View className="my-1 h-[167px] w-[93%] rounded-3xl bg-[#007B5B] p-5 pb-7 pt-7 ">
+              <TouchableOpacity
+                  onPress={() => {
+                    const completedTasks = tasks.filter((task) => task.status === 'Completed');
+                    navigation.navigate('CompletedTask', { completedTasks });
+                  }}              
+              className="my-1 h-[167px] w-[93%] rounded-3xl bg-[#007B5B] p-5 pb-7 pt-7 ">
                 <View className=" flex w-full flex-row items-center justify-between">
                   <Text className="text-white " style={{ fontFamily: 'LatoBold' }}>Completed Tasks</Text>
                   <Text className="text-xs text-white">{formattedDateRange}</Text>
@@ -405,9 +410,9 @@ export default function MyTaskScreen() {
                   <View className="relative flex flex-row ">
                     {tasks
                       .filter((task) => task.status === 'Completed') // Filter by status
-                      .slice(0, 2) // Show only the first two users
+                      .slice(0, 6) // Show only the first two users
                       .map((task, index) => (
-                        <View key={task._id} className="relative flex flex-row rounded-full">
+                        <View key={task._id} className="relative rounded-full flex flex-row ">
                           <View
                             className="-m-2 flex h-11 w-11 items-center justify-center rounded-full border-2"
                             style={{
@@ -444,7 +449,7 @@ export default function MyTaskScreen() {
                     <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
                   </TouchableOpacity>
                 </View>
-              </View>
+              </TouchableOpacity>
               <View className="flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#815BF5] p-5">
                   <TouchableOpacity

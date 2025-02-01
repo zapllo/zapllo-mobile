@@ -19,7 +19,6 @@ import { Dropdown } from 'react-native-element-dropdown';
 import { useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '~/redux/store';
 import { useDispatch } from 'react-redux';
-import { logOut } from '~/redux/slices/authSlice';
 import ProfileImage from '~/components/profile/ProfileImage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Modal from 'react-native-modal';

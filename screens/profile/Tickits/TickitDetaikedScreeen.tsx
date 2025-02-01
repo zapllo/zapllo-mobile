@@ -16,7 +16,7 @@ const TickitDetaikedScreeen:React.FC<DetailScreenProps> = ({ route }) => {
     const { status, message, date,subCategory } = route.params;
 
     return (
-      <View >
+      <View>
         <Text >Ticket Details</Text>
         <Text >Status: {status}</Text>
         <Text >Message: {message}</Text>

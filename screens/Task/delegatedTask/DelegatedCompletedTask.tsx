@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -26,6 +26,9 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import { backend_Host } from '~/config';
+import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
+import moment from 'moment';
+import { getDateRange } from '~/utils/GetDateRange';
 
 type Props = StackScreenProps<DelegatedTaskStackParamList, 'CompletedTask'>;
 type DelegatedCompletedTaskScreenRouteProp = RouteProp<DelegatedTaskStackParamList, 'CompletedTask'>;
@@ -60,7 +63,7 @@ const DelegatedCompletedTask: React.FC<Props> = ({ navigation }) => {
   const { completedTasks } = route.params;
   const { token } = useSelector((state: RootState) => state.auth);
 
-  const [selectedTeamSize, setSelectedTeamSize] = useState("This week");
+  const [selectedTeamSize, setSelectedTeamSize] = useState("This Week");
   const [search, setSearch] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [taskDescription, setTaskDescription] = useState("");
@@ -70,9 +73,82 @@ const DelegatedCompletedTask: React.FC<Props> = ({ navigation }) => {
   const [selectedFrequencies, setSelectedFrequencies] = useState<string[]>([]);
   const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [filteredTasks, setFilteredTasks] = useState<any[]>(completedTasks);
   const [users, setUsers] = useState([]);
   const [activeFilter, setActiveFilter] = useState('Category');
+  const [formattedDateRange, setFormattedDateRange] = useState('');
+  const [isCustomDateModalVisible, setIsCustomDateModalVisible] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
+  const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
 
+    const formatWithSuffix = (date: any) => {
+      // return moment(date).format('Do MMM, YYYY');
+      return moment(date).format('MMM Do YY');
+    };  
+
+      useEffect(() => {
+          // Update tasks based on selected date range
+          if (selectedTeamSize === 'Custom') {
+            // If custom is selected, open the modal and exit early
+            setIsCustomDateModalVisible(true);
+            return;
+          }
+          const dateRange = getDateRange(selectedTeamSize,completedTasks,customStartDate,customEndDate);
+      
+          if (dateRange.startDate && dateRange.endDate) {
+            const formattedStart = formatWithSuffix(dateRange.startDate);
+            const formattedEnd = formatWithSuffix(dateRange.endDate);
+      
+            if (selectedTeamSize === 'Today' || selectedTeamSize === 'Yesterday') {
+              setFormattedDateRange(formattedStart);
+            } else {
+              setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
+            }
+          } else {
+            setFormattedDateRange('Invalid date range');
+          }
+      
+          // Filter tasks by date
+          const filteredByDate = filterTasksByDate(completedTasks, dateRange);
+          setFilteredTasks(filteredByDate);
+      }, [selectedTeamSize]);
+        
+
+    const handleCustomDateApply = (startDate: Date, endDate: Date) => {
+      // Set custom date range state
+      setCustomStartDate(startDate);
+      setCustomEndDate(endDate);
+
+      // Create a custom date range for filtering
+      const customDateRange = {
+          startDate: moment(startDate).startOf('day').toISOString(),
+          endDate: moment(endDate).endOf('day').toISOString(),
+      };
+
+      // Filter tasks based on the custom date range
+      const customFilteredTasks = filterTasksByDate(completedTasks, customDateRange);
+      setFilteredTasks(customFilteredTasks);
+
+      // Format the custom date range for display
+      const formattedStart = formatWithSuffix(moment(startDate));
+      const formattedEnd = formatWithSuffix(moment(endDate));
+      setFormattedDateRange(`${formattedStart} - ${formattedEnd}`);
+
+      setSelectedTeamSize('Custom');
+      setIsCustomDateModalVisible(false);
+    };
+
+    // Helper function to filter tasks by date
+    const filterTasksByDate = (tasks: any[], dateRange: { startDate: string; endDate: string }) => {
+        const { startDate, endDate } = dateRange;
+
+        return tasks.filter((task) => {
+            const taskDueDate = moment(task?.dueDate);
+            return (
+                taskDueDate.isSameOrAfter(startDate, 'day') && taskDueDate.isSameOrBefore(endDate, 'day')
+            );
+        });
+    };  
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -148,6 +224,18 @@ const DelegatedCompletedTask: React.FC<Props> = ({ navigation }) => {
     setFilteredTasks(tasksMatchingFilters);
     toggleModal(); // Close modal
   };
+  // Search filtered tasks using `useMemo`
+  const searchedTasks = useMemo(() => {
+    return filteredTasks.filter((task: any) => {
+      const searchLower = search.toLowerCase();
+      return (
+        task.category?.name.toLowerCase().includes(searchLower) || // Match category name
+        task.assignedUser?.firstName.toLowerCase().includes(searchLower) || // Match assigned user
+        task.assignedUser?.lastName.toLowerCase().includes(searchLower) || // Match assigned user last name
+        task.frequency?.toLowerCase().includes(searchLower) // Match frequency (if applicable)
+      );
+    });
+  }, [search, filteredTasks]);
 
   const getFilterBackgroundColor = (filter: string) => {
     return activeFilter === filter ? '#37384B' : '#0A0D28'; // Example colors
@@ -200,8 +288,8 @@ const DelegatedCompletedTask: React.FC<Props> = ({ navigation }) => {
             </View>
 
             <ScrollView>
-              {completedTasks?.length > 0 ? (
-                completedTasks.map((task: any) => (
+              {searchedTasks?.length > 0 ? (
+                searchedTasks.map((task: any) => (
                   <TaskDetailedComponent
                     key={task._id}
                     title={task.title}
@@ -375,6 +463,16 @@ const DelegatedCompletedTask: React.FC<Props> = ({ navigation }) => {
           <GradientButton title="Apply Filter" onPress={applyFilter} imageSource={''} />
         </View>
       </Modal>
+      <CustomDateRangeModal
+        isVisible={isCustomDateModalVisible}
+        onClose={() => {
+          setIsCustomDateModalVisible(false);
+          setSelectedTeamSize(selectedTeamSize);
+        }}
+        onApply={handleCustomDateApply}
+        initialStartDate={customStartDate || new Date()}
+        initialEndDate={customEndDate || new Date()}
+      />
     </SafeAreaView>
   );
 };

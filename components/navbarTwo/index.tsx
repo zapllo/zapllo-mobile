@@ -8,9 +8,11 @@ import ProfileButton from "~/components/profile/ProfileButton";
 interface NavbarProps {
   title: string;
   onBackPress: () => any;
+  image:any;
+  profile:any;
 }
 
-const NavbarTwo: React.FC<NavbarProps> = ({ title, onBackPress }) => {
+const NavbarTwo: React.FC<NavbarProps> = ({ title, onBackPress ,image,profile}) => {
   return (
     <View className="w-full h-20 flex flex-row justify-between p-5 items-center">
       <View className="flex h-14 w-14 bg-[#37384B] items-center justify-center rounded-full">
@@ -19,7 +21,7 @@ const NavbarTwo: React.FC<NavbarProps> = ({ title, onBackPress }) => {
         </TouchableOpacity>
       </View>
       <Text className="text-2xl font-semibold  h-full text-[#FFFFFF]" style={{fontFamily:"LatoBold"}}>{title}</Text>
-      <ProfileButton />
+      <ProfileButton image={image} profile={profile} />
     </View>
   );
 };

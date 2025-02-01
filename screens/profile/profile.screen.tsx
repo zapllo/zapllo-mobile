@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -26,6 +26,7 @@ import Modal from 'react-native-modal';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { backend_Host } from '~/config';
+import { useFocusEffect } from '@react-navigation/native';
 
 // Define the type for your navigation
 type RootStackParamList = {
@@ -54,6 +55,16 @@ const ProfileScreen: React.FC = () => {
   const [numberValue, setNumberValue] = useState(data[0]?.value || null);
   const [buttonSpinner, setButtonSpinner] = useState(false);
   const [profileModal, setProfileModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState();
+  const [profilePic, setProfilePic] = useState('');
+
+  useFocusEffect(
+    React.useCallback(() => {
+      handleGetProfile();
+    }, [])
+  );
+
 
   const handleLogout = async () => {
     setButtonSpinner(true);
@@ -80,23 +91,106 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
+  const handleGetProfile = async () => {
+    try {
+      const response = await axios.get(
+        `${backend_Host}/users/me`,
+
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      console.log("pljoihbihbuoi",response.data.data.profilePic)
+      setProfilePic(response.data.data.profilePic);
+    } catch (err: any) {
+      console.error('API Error:', err.response || err.message);
+    }
+  };
+
+  const uploadPhoto = async ({ picture }) => {
+   
+    try {
+      const base64Data = picture.base64;
+      const mimeType = picture.mimeType || 'image/jpeg';
+      const dataUri = `data:${mimeType};base64,${base64Data}`;
+
+      // Create a FormData object
+      const formData = new FormData();
+      // Here we append the file as a Blob with the appropriate mime type
+      formData.append(
+        'files',
+        {
+          uri: dataUri, // Base64 data URI
+          type: mimeType, // MIME type (image/jpeg or image/png)
+          name: picture.fileName || 'photo.jpg', // Default file name
+        },
+        '[PROXY]'
+      );
+
+      // Send the formData to the backend using Axios
+      const uploadResponse = await axios.post('https://zapllo.com/api/upload', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      setProfilePhoto(uploadResponse?.data?.fileUrls[0]);
+     
+    } catch (error:any) {
+      console.error('Error uploading image:', error.response || error.message);
+      if (error.response) {
+        console.log('Error Response:', error.response.data);
+        console.log('Error Headers:', error.response.headers);
+      }
+    }
+  };
+
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images', 'videos'],
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
+      base64: true,
     });
 
     console.log(result);
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      setProfileModal(false)
+      uploadPhoto({ picture: result.assets[0] });
+      handleProfileUpdate();
     } else {
       setProfileModal(false);
     }
   };
 
+  const handleProfileUpdate = async () => {
+    setLoading(true)
+    try {
+      const response = await axios.patch(
+        `${backend_Host}/users/profilePic`,
+        { profilePic: profilePhoto },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      setImage(response?.data?.profilePic);
+    } catch (err: any) {
+      console.error('API Error:', err.response || err.message);
+      Alert.alert('Failed to update profile. Please try again.');
+    }finally{
+      setLoading(false)
+    }
+  };
+
+  console.log("ppppppp",profilePic,image)
   return (
     <SafeAreaView className="h-full w-full flex-1 bg-[#05071E]">
       <KeyboardAvoidingView
@@ -107,7 +201,7 @@ const ProfileScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
           {/* Navbar */}
-          <NavbarTwo title="Profile" onBackPress={() => navigation.goBack()} />
+          <NavbarTwo title="Profile" image={image} profile={profilePic} onBackPress={() => navigation.goBack()} />
 
           {/* container */}
           <View className="mb-12 mt-3 flex h-full   w-full items-center">
@@ -123,10 +217,11 @@ const ProfileScreen: React.FC = () => {
                   color="#b5afaf"
                 />
                 <ProfileImage
-                  profilePic={userData?.data?.profilePic || userData?.user?.profilePic}
+                  profilePic={profilePic}
                   firstName={userData?.user?.firstName || userData?.data?.firstName}
                   lastName={userData?.user?.lastName || userData?.data?.lastName}
                   image={image}
+                  loading={loading}
                 />
               </TouchableOpacity>
 

@@ -275,7 +275,9 @@ const DelegatedInTimeTask: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-            <ScrollView>
+            <ScrollView
+            className='mb-20'
+            >
               {inTimeTasks?.length > 0 ? (
                 inTimeTasks.map((task: any) => (
                   <TaskDetailedComponent

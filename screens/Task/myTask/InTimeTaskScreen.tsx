@@ -289,7 +289,9 @@ const InTimeTaskScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-            <ScrollView>
+            <ScrollView
+            className='mb-20'
+            >
               {searchedTasks?.length > 0 ? (
                 searchedTasks.map((task: any) => (
                   <TaskDetailedComponent

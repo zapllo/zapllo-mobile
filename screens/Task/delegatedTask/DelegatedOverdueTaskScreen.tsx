@@ -275,7 +275,9 @@ const DelegatedOverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-            <ScrollView>
+            <ScrollView
+            className='mb-20'
+            >
               {overdueTasks?.length > 0 ? (
                 overdueTasks.map((task: any) => (
                   <TaskDetailedComponent

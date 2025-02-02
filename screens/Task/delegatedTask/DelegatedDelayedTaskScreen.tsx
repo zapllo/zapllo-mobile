@@ -276,7 +276,9 @@ const DelegatedDelayedTaskScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-            <ScrollView>
+            <ScrollView
+            className='mb-20'
+            >
               {delayedTasks?.length > 0 ? (
                 delayedTasks.map((task: any) => (
                   <TaskDetailedComponent

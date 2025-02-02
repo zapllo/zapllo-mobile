@@ -275,7 +275,9 @@ const DelegatedTodaysTaskScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-            <ScrollView>
+            <ScrollView
+            className='mb-20'
+            >
               {todaysTasks?.length > 0 ? (
                 todaysTasks.map((task: any) => (
                   <TaskDetailedComponent

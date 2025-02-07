@@ -31,8 +31,8 @@ const CustomAlert: FC<CustomAlertProps> = ({ visible, message, type = 'success',
       backdropOpacity={1}
       animationIn="fadeIn"
       animationOut="fadeOut"
-      // onBackdropPress={onClose}
-      // onBackButtonPress={onClose}
+       onBackdropPress={onClose}
+       onBackButtonPress={onClose}
     >
       <View style={styles.modalContainer}>
         <View style={styles.alertContainer}>

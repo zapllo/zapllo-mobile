@@ -11,6 +11,8 @@ import { RootState, persistor, store } from '~/redux/store';
 import { useSelector } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { useDispatch } from 'react-redux';
+import { CardStyleInterpolators, createStackNavigator } from '@react-navigation/stack';
+import { Easing } from 'react-native';
 
 // export { ErrorBoundary } from 'expo-router';
 
@@ -46,7 +48,10 @@ export default function RootLayout() {
   if (!loaded) {
     return null;
   }
+  const Stack = createStackNavigator();
 
+
+  
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
@@ -57,13 +62,33 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
+    // Add this transition configuration
+    const globalTransitionConfig = {
+      transitionSpec: {
+        open: {
+          animation: 'timing',
+          config: {
+            duration: 300,
+            easing: Easing.inOut(Easing.ease)
+          }
+        },
+        close: {
+          animation: 'timing',
+          config: {
+            duration: 300,
+            easing: Easing.inOut(Easing.ease)
+          }
+        }
+      },
+      cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS
+    };
   const { token } = useSelector((state: RootState) => state.auth);
   console.log("iiiiiiiisssss",token)
 
   return (
     <>
       {token ? (
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack screenOptions={{ headerShown: false,...globalTransitionConfig }}>
           <Stack.Screen name="(routes)/home/index" />
           <Stack.Screen name="(routes)/HomeComponent/AIAssistant/index" />
           <Stack.Screen name="(routes)/HomeComponent/Attendance/index" />
@@ -82,7 +107,7 @@ function RootLayoutNav() {
           <Stack.Screen name="(routes)/HomeComponent/Tasks/AllTaskScreen" />
         </Stack>
       ) : (
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack screenOptions={{ headerShown: false,...globalTransitionConfig }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="(routes)/login/index" />
           <Stack.Screen name="(routes)/forgot-PassWord/index" />

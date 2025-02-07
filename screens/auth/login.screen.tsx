@@ -21,6 +21,7 @@ import { backend_Host } from '~/config';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '~/redux/store';
 import { logIn } from '~/redux/slices/authSlice';
+import CustomAlert from '~/components/CustomAlert/CustomAlert';
 
 export default function Loginscreen() {
   const dispatch = useDispatch<AppDispatch>();
@@ -36,6 +37,10 @@ export default function Loginscreen() {
     email: '',
   });
   const [isChecked, setIsChecked] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertType, setAlertType] = useState<'success' | 'error'>('success');
+
 
   const validateEmail = (email: string) => {
     if (!email) {
@@ -81,13 +86,16 @@ console.log("payloadd",userInfo)
         const token = response?.data?.token;
         // console.log(">>>>>",response?.token)
         const userData = response?.data;
-        console.log("login token>>>>>>>",token,userData)
-
-        Alert.alert(response.data.message);
+    
+        setAlertMessage(response.data.message);
+        setAlertType('success');
+        setShowAlert(true);
         dispatch(logIn({ token: token, userData: userData }));
         router.push('/(routes)/home');
       } else {
-        setError(response.data.message || 'Invalid credentials');
+        setAlertMessage(response.data.message || 'Invalid credentials');
+        setAlertType('error');
+        setShowAlert(true);
       }
     } catch (err: any) {
       console.error('Login error:', err.response.data.error || err.message);
@@ -220,6 +228,13 @@ console.log("payloadd",userInfo)
             </View>
           </View>
         </ScrollView>
+
+        <CustomAlert
+        visible={showAlert}
+        message={alertMessage}
+        type={alertType}
+        onClose={() => setShowAlert(false)}
+      />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

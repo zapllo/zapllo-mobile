@@ -26,6 +26,7 @@ import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { backend_Host } from '~/config';
 import { useFocusEffect } from '@react-navigation/native';
+import CustomAlert from '~/components/CustomAlert/CustomAlert';
 
 // Define the type for your navigation
 type RootStackParamList = {
@@ -57,6 +58,10 @@ const ProfileScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState();
   const [profilePic, setProfilePic] = useState('');
+  const [customAlertVisible, setCustomAlertVisible] = useState(false);
+  const [customAlertMessage, setCustomAlertMessage] = useState('');
+  const [customAlertType, setCustomAlertType] = useState<'success' | 'error' | 'loading'>('success');
+
 
   useFocusEffect(
     React.useCallback(() => {
@@ -79,12 +84,18 @@ const ProfileScreen: React.FC = () => {
           },
         }
       );
-
-      Alert.alert('Success', 'Logged out sucessfully!');
+      setButtonSpinner(true);
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Logged out successfully!');
+      setCustomAlertType('success');
       router.push('/(routes)/login');
     } catch (err: any) {
       console.error('API Error:', err.response || err.message);
-      Alert.alert('Failed to log out. Please try again.');
+   
+      setButtonSpinner(true);
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Failed to log out. Please try again.');
+      setCustomAlertType('error');
     } finally {
       setButtonSpinner(false);
     }
@@ -183,7 +194,11 @@ const ProfileScreen: React.FC = () => {
       setImage(response?.data?.profilePic);
     } catch (err: any) {
       console.error('API Error:', err.response || err.message);
-      Alert.alert('Failed to update profile. Please try again.');
+      setButtonSpinner(true);
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Failed to update profile. Please try again.');
+      setCustomAlertType('error');
+   
     }finally{
       setLoading(false)
     }
@@ -540,6 +555,12 @@ const ProfileScreen: React.FC = () => {
           </Modal>
         </ScrollView>
       </KeyboardAvoidingView>
+      <CustomAlert
+        visible={customAlertVisible}
+        message={customAlertMessage}
+        type={customAlertType}
+        onClose={() => setCustomAlertVisible(false)}
+      />
     </SafeAreaView>
   );
 };

@@ -9,7 +9,6 @@ import {
   Image,
   Animated,
   Alert,
-  Modal,
   ActivityIndicator,
 } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
@@ -39,6 +38,7 @@ import MonthlyModal from '~/components/TaskComponents/assignNewTaskComponents/Mo
 import SelectDateModal from '~/components/TaskComponents/assignNewTaskComponents/SelectDateModal';
 import { AntDesign } from '@expo/vector-icons';
 import CustomDropdownWithSearchAndAdd from '~/components/customDropDownFour';
+import CustomAlert from '~/components/CustomAlert/CustomAlert';
 
 //delete the data :)
 const daysData = [
@@ -97,6 +97,9 @@ export default function AssignTaskScreen() {
   const [dueDate, setDueDate] = React.useState<Date | null>(null);
   const [newCategory, setNewCategory] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [customAlertVisible, setCustomAlertVisible] = useState(false);
+  const [customAlertMessage, setCustomAlertMessage] = useState('');
+  const [customAlertType, setCustomAlertType] = useState<'success' | 'error' | 'loading'>('success');
 
   const handleFocus = () => setDescriptionFocused(true);
   const handleBlur = () => setDescriptionFocused(false);
@@ -243,32 +246,49 @@ export default function AssignTaskScreen() {
 
   const handleCreateTask = async () => {
     if (!taskTitle.trim()) {
-      Alert.alert('Validation Error', 'Task Title is required.');
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Task Title is required.');
+      setCustomAlertType('error');
+    
       return;
     }
 
     if (!taskDescription.trim()) {
-      Alert.alert('Validation Error', 'Task Description is required.');
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Task Description is required..');
+      setCustomAlertType('error');
       return;
     }
 
     if (!activeButton) {
-      Alert.alert('Validation Error', 'Priority level must be selected.');
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Priority level must be selected.');
+      setCustomAlertType('error');
+   
       return;
     }
 
     if (!selectedUser) {
-      Alert.alert('Validation Error', 'A user must be assigned.');
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('A user must be assigned.');
+      setCustomAlertType('error');
+    
       return;
     }
 
     if (!category.trim()) {
-      Alert.alert('Validation Error', 'Category is required.');
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Category is required.');
+      setCustomAlertType('error');
+     
       return;
     }
 
     if (!dueDate) {
-      Alert.alert('Validation Error', 'A due date must be selected.');
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('A due date must be selected.');
+      setCustomAlertType('error');
+      
       return;
     }
 
@@ -302,10 +322,16 @@ export default function AssignTaskScreen() {
         },
       });
       // console.log('Task Created:', response.data);
-      Alert.alert('Task successfully created!');
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Task successfully created!');
+      setCustomAlertType('success');
+  
     } catch (error) {
       console.error('Error creating task:', error.response?.data || error.message);
-      Alert.alert('Failed to create task. Please try again.');
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Failed to create task. Please try again.');
+      setCustomAlertType('error');
+  
     } finally {
       setTaskLoading(false);
     }
@@ -314,7 +340,10 @@ export default function AssignTaskScreen() {
   const handleCreateCategory = async (cat: string) => {
     console.log('Category created:❌❌❌❌❌❌❌❌❌❌❌❌❌❌111111');
     if (!cat) {
-      Alert.alert('Validation Error', 'Enter new category');
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Enter new category');
+      setCustomAlertType('error');
+   
       return;
     }
     setIsLoading(true);
@@ -342,10 +371,14 @@ export default function AssignTaskScreen() {
       setCategoryData(updatedData);
       console.log('Category created:❌❌❌❌❌❌❌❌❌❌❌❌❌❌', updatedData);
       setCategory(newCategoryy.id);
-      Alert.alert('New Category Addedsssss');
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('New Category Added');
+      setCustomAlertType('success');
     } catch (error) {
       console.error('Error creating category:', error);
-      Alert.alert('Failed to create category. Please try again.');
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Failed to create category. Please try again.');
+      setCustomAlertType('error');
     } finally {
       setIsLoading(false);
     }
@@ -722,6 +755,12 @@ export default function AssignTaskScreen() {
           setMonthDays={setMonthDays}
         />
       </KeyboardAvoidingView>
+      <CustomAlert
+        visible={customAlertVisible}
+        message={customAlertMessage}
+        type={customAlertType}
+        onClose={() => setCustomAlertVisible(false)}
+      />
     </SafeAreaView>
   );
 }

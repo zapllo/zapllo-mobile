@@ -20,17 +20,12 @@ interface CustomDropdownProps {
   selectedValue?: any;
 }
 
-const CustomDropdown: React.FC<CustomDropdownProps> = ({
-  data,
-  placeholder,
-  onSelect,
-  selectedValue,
-}) => {
+const CustomDropdown: React.FC<CustomDropdownProps> = (props) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelect = (value: any) => {
     setIsOpen(false);
-    onSelect(value);
+    props.onSelect(value);
   };
 
   return (
@@ -41,9 +36,9 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
         onPress={() => setIsOpen(!isOpen)}
       >
         <Text style={styles.dropdownButtonText}>
-          {selectedValue
-            ? data.find((item) => item.value === selectedValue)?.label
-            : placeholder}
+          {props.selectedValue
+            ? props.data.find((item) => item.value === props.selectedValue)?.label
+            : props.placeholder}
         </Text>
         {/* Dropdown Icon */}
         <AntDesign
@@ -62,20 +57,25 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
             showsVerticalScrollIndicator={false}
             style={{ maxHeight: 150 }}
           >
-            {data.map((item) => (
+            {props.data.map((item) => (
               <TouchableOpacity
                 key={item.value}
                 style={styles.dropdownItem}
                 onPress={() => handleSelect(item.value)}
               >
                 <Text
-                  style={[
-                    styles.dropdownItemText,
-                    selectedValue === item.value && styles.selectedItemText,
-                  ]}
+                  style={[styles.dropdownItemText, props.selectedValue === item.value && styles.selectedItemText]}
                 >
                   {item.label}
                 </Text>
+                {props.selectedValue === item.value && (
+                  <AntDesign 
+                    name="checkcircle" 
+                    size={16} 
+                    color="#f8f8fb" 
+                    style={{ position: 'absolute', right: 10 }} 
+                  />
+                )}
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -102,17 +102,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderColor: "#37384B",
     backgroundColor: "#05071E",
-    position: 'relative',  // Make sure the button container stays in place
+    position: 'relative',
   },
   dropdownButtonText: {
     color: "#787CA5",
     fontSize: 14,
-    flex: 1,  // This allows the text to take up space
+    flex: 1,
   },
   dropdownIcon: {
-    alignSelf: 'center',  // Ensures the icon is centered
+    alignSelf: 'center',
     marginLeft: 10,
-    marginRight: 5,  // Adjust to prevent overflow
+    marginRight: 5,
   },
   dropdownMenu: {
     backgroundColor: "#05071E",
@@ -126,6 +126,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderBottomColor: "#37384B",
+    position: 'relative',
+    display:"flex",
+    alignItems:"center",
+    flexDirection:"row",
+    justifyContent:"space-between",
   },
   dropdownItemText: {
     color: "#787CA5",
@@ -136,4 +141,3 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
 });
-;

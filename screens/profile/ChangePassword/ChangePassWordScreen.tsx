@@ -7,17 +7,17 @@ import {
   Image,
   Platform,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import React, { useState } from 'react';
 import InputContainer from '~/components/InputContainer';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from 'expo-router';
 import axios from 'axios';
 import { backend_Host } from '~/config';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
+import CustomAlert from '~/components/CustomAlert/CustomAlert';
 
 export default function ChangePassWordScreen() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -27,6 +27,9 @@ export default function ChangePassWordScreen() {
   const { token } = useSelector((state: RootState) => state.auth);
   const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
+  const [customAlertVisible, setCustomAlertVisible] = useState(false);
+  const [customAlertMessage, setCustomAlertMessage] = useState('');
+  const [customAlertType, setCustomAlertType] = useState<'success' | 'error' | 'loading'>('success');  
 
   const handlePasswordValidation = (value: string) => {
     const passwordOneNumber = /(?=.*[0-9])/;
@@ -45,12 +48,16 @@ export default function ChangePassWordScreen() {
 
   const handelChangePassword = async () => {
     if (!currentPassword.trim()) {
-      Alert.alert('Validation Error', 'Current password cannot be empty.');
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Current password cannot be empty.');
+      setCustomAlertType('error');
       return;
     }
 
     if (!newPassword.trim()) {
-      Alert.alert('Validation Error', 'New password cannot be empty.');
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('New password cannot be empty.');
+      setCustomAlertType('error');
       return;
     }
 
@@ -67,11 +74,16 @@ export default function ChangePassWordScreen() {
         }
       );
 
-      Alert.alert('Success', 'Password updated successfully.');
-      navigation.goBack()
+      
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Password updated successfully.');
+      setCustomAlertType('success');
+      navigation.goBack();
     } catch (err: any) {
       console.error('API Error:', err.response || err.message);
-      Alert.alert('Failed to update password. Please try again.');
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Failed to update password. Please try again.');
+      setCustomAlertType('error');
     } finally {
       setLoading(false);
       setCurrentPassword('');
@@ -165,6 +177,12 @@ export default function ChangePassWordScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <CustomAlert
+        visible={customAlertVisible}
+        message={customAlertMessage}
+        type={customAlertType}
+        onClose={() => setCustomAlertVisible(false)}
+      />
     </SafeAreaView>
   );
 }

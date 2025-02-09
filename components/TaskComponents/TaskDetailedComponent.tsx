@@ -19,7 +19,8 @@ import dayjs from 'dayjs';
 import { ActivityIndicator } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native';
 import * as FileSystem from 'expo-file-system';
-import { useNavigation } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
+import CustomAlert from '../CustomAlert/CustomAlert';
 
 interface TaskDetailedComponentProps {
   title: string;
@@ -59,6 +60,10 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   const [taskStatusLoading, setTaskStatusLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertType, setAlertType] = useState<'success' | 'error'>('success');
+
 
   useEffect(() => {
     return () => {
@@ -100,7 +105,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
               });
               setShowMainModal(false);
               Alert.alert('Success', 'Task deleted successfully!');
-              navigation.navigate('DashboardHome')
+              navigation.goBack()
             } catch (error) {
               console.error('Error deleting task:', error);
               Alert.alert('Error', 'Failed to delete the task.');
@@ -281,11 +286,18 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
       });
       console.log('Task updated successfully:', response.data);
       setShowProgressModal(false);
-      Alert.alert('Success', 'Task updated successfully!',);
-     navigation.navigate('DashboardHome')
+      setAlertMessage("Task updated successfully!");
+      setAlertType('success');
+      setShowAlert(true);
+      
+       navigation.goBack();
+     
     } catch (error) {
       console.error('Error updating task:', error);
-      Alert.alert('Error', 'Failed to update the task.');
+      setAlertMessage("Failed to update the task.");
+      setAlertType('error');
+      setShowAlert(true);
+  
     } finally {
       setTaskStatusLoading(false);
       setDescription('');
@@ -355,8 +367,17 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   );
 
   return (
+    <>
+        <CustomAlert
+        visible={showAlert}
+        message={alertMessage}
+        type={alertType}
+        onClose={() => setShowAlert(false)}
+      />
+
     <TouchableOpacity onPress={() => setModalVisible(true)}>
       <View className="mt-5 w-[95%] items-center gap-6 self-center rounded-3xl border border-[#37384B] p-4">
+
         <Modal
           isVisible={modalVisible}
           onBackdropPress={() => setModalVisible(false)}
@@ -715,6 +736,10 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         </View>
       </View>
     </TouchableOpacity>
+
+
+    </>
+
   );
 };
 

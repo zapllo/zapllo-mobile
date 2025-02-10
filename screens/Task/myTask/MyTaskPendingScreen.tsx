@@ -13,8 +13,6 @@ import {
   FlatList,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
-import ProfileButton from '~/components/profile/ProfileButton';
-import { AntDesign } from '@expo/vector-icons';
 import CustomDropdown from '~/components/customDropDown';
 import TaskDetailedComponent from '~/components/TaskComponents/TaskDetailedComponent';
 import Modal from 'react-native-modal';
@@ -450,7 +448,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
                   data={filteredUsersList}
                   keyExtractor={(user) => user._id}
                   renderItem={({ item: user }) => (
-                    <View className="flex w-full flex-row items-center gap-3">
+                    <View className="flex w-full flex-row items-center gap-3 mb-5">
                       <CheckboxTwo
                         isChecked={selectedAssignees.includes(user._id)}
                         onPress={() =>

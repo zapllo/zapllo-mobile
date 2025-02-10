@@ -20,7 +20,7 @@ import { ActivityIndicator } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { router, useNavigation } from 'expo-router';
-import CustomAlert from '../CustomAlert/CustomAlert';
+import AwesomeAlertComponent from '../CustomAlert/AwesomeAlertComponent';
 
 interface TaskDetailedComponentProps {
   title: string;
@@ -368,7 +368,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
   return (
     <>
-        <CustomAlert
+      <AwesomeAlertComponent
         visible={showAlert}
         message={alertMessage}
         type={alertType}

@@ -429,7 +429,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
 
               {activeFilter === 'Category' && (
                 <FlatList
-                  data={filteredCategoryList}
+                  data={categories}
                   keyExtractor={(item) => item._id}
                   renderItem={({ item }) => (
                     <View className="mb-5 flex w-full flex-row items-center gap-3">
@@ -445,7 +445,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
 
               {activeFilter === 'AssignedTo' && (
                 <FlatList
-                  data={filteredUsersList}
+                  data={users}
                   keyExtractor={(user) => user._id}
                   renderItem={({ item: user }) => (
                     <View className="flex w-full flex-row items-center gap-3 mb-5">

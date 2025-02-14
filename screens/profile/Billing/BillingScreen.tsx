@@ -13,6 +13,7 @@ import { RootState } from '~/redux/store';
 import { WebView } from 'react-native-webview';
 import CustomDropdown from "~/components/customDropDown";
 
+
 export default function BillingScreen() {
   const navigation = useNavigation();
   const [selectedOption, setSelectedOption] = useState('teams');
@@ -169,7 +170,7 @@ export default function BillingScreen() {
               <body>
                 <script>
                   var options = {
-                    "key": "rzp_live_qU6hnjXTC0mBPN", 
+                    "key": ${process.env.RAZOR_PAY_LIVE_KEY}, 
                     "amount": "${totalAmount * 100}", // Amount in paise
                     "currency": "INR",
                     "name": "Zapllo",

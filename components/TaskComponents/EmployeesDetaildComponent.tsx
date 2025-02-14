@@ -21,11 +21,13 @@ const EmployeesDetaildComponent: React.FC<EmployeesDetaildComponentProps> = ({
     <View className="w-[90%] h-64 border border-[#37384B] p-5 pl-6 pr-6 rounded-3xl items-center mt-5">
       <View className="flex flex-row justify-between items-center mb-4 ">
         <View className="gap-3 items-center flex flex-row">
+          {/* profile image  */}
+          
           <View className="w-12 h-12 bg-white rounded-full"></View>
           <Text className="text-xl w-[70%] text-white">{name}</Text>
         </View>
 
-        <View className="w-12 h-12 bg-white rounded-full"></View>
+        
       </View>
 
       <View className="w-full flex flex-row justify-start gap-24 items-center">

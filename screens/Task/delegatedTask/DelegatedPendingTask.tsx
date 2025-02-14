@@ -81,6 +81,7 @@ const DelegatedPendingTask: React.FC<Props> = ({ navigation }) => {
   const [isCustomDateModalVisible, setIsCustomDateModalVisible] = useState(false);
   const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
   const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
+  
 
     const formatWithSuffix = (date: any) => {
         // return moment(date).format('Do MMM, YYYY');
@@ -379,7 +380,6 @@ const DelegatedPendingTask: React.FC<Props> = ({ navigation }) => {
 
               {activeFilter === 'Category' &&
                      <FlatList
-                    
                      data={categories}
                      keyExtractor={(item) => item._id}
                      renderItem={({ item }) => (

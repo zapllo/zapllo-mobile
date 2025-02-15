@@ -68,7 +68,6 @@ const DelegatedPendingTask: React.FC<Props> = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [taskDescription, setTaskDescription] = useState('');
-  const [isChecked, setIsChecked] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
   const [selectedFrequencies, setSelectedFrequencies] = useState<string[]>([]);
@@ -455,6 +454,9 @@ const DelegatedPendingTask: React.FC<Props> = ({ navigation }) => {
           <GradientButton title="Apply Filter" onPress={applyFilter} imageSource={''} />
         </View>
       </Modal>
+
+
+      
       <CustomDateRangeModal
         isVisible={isCustomDateModalVisible}
         onClose={() => {

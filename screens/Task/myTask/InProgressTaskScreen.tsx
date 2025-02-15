@@ -13,8 +13,7 @@ import {
   FlatList,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
-import ProfileButton from '~/components/profile/ProfileButton';
-import { AntDesign } from '@expo/vector-icons';
+
 import CustomDropdown from '~/components/customDropDown';
 import TaskDetailedComponent from '~/components/TaskComponents/TaskDetailedComponent';
 import Modal from 'react-native-modal';
@@ -159,6 +158,12 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
       );
     };
 
+    const handleAssigneeSelection = (assigneeId: string) => {
+      setSelectedAssignees((prev) =>
+        prev.includes(assigneeId) ? prev.filter((id) => id !== assigneeId) : [...prev, assigneeId]
+      );
+    };
+
     const applyFilter = () => {
       let tasksMatchingFilters = inProgressTasks;
 
@@ -199,10 +204,8 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
       return filteredTasks.filter((task: any) => {
         const searchLower = search.toLowerCase();
         return (
-          task.category?.name.toLowerCase().includes(searchLower) || // Match category name
-          task.assignedUser?.firstName.toLowerCase().includes(searchLower) || // Match assigned user
-          task.assignedUser?.lastName.toLowerCase().includes(searchLower) || // Match assigned user last name
-          task.frequency?.toLowerCase().includes(searchLower) // Match frequency (if applicable)
+          task.title.toLowerCase().includes(searchLower) || // Assuming task has a title
+          task.description.toLowerCase().includes(searchLower) // Assuming task has a description
         );
       });
     }, [search, filteredTasks]);
@@ -421,7 +424,7 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
               {activeFilter === 'Category' &&
                      <FlatList
                   
-                     data={filteredCategoryList}
+                     data={categories}
                      keyExtractor={(item) => item._id}
                      renderItem={({ item }) => (
                        <View className="flex w-full flex-row items-center gap-3 mb-5">
@@ -442,13 +445,7 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
                             <View className="flex w-full flex-row items-center gap-3 mb-5">
                               <CheckboxTwo
                                 isChecked={selectedAssignees.includes(user._id)}
-                                onPress={() =>
-                                  setSelectedAssignees((prev) =>
-                                    prev.includes(user._id)
-                                      ? prev.filter((id) => id !== user._id)
-                                      : [...prev, user._id]
-                                  )
-                                }
+                                onPress={() => handleAssigneeSelection(user._id)}
                               />
                               <Text className="text-lg text-white">{`${user.firstName} ${user.lastName}`}</Text>
                             </View>

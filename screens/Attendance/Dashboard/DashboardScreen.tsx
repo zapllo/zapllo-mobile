@@ -34,7 +34,7 @@ export default function DashboardScreen() {
   );
   
   const chartProgress = useSharedValue(0);
-  const chartScale = useSharedValue(0.3);
+  const chartScale = useSharedValue(1);
   const legendOpacity = useSharedValue(0);
 
   useEffect(() => {
@@ -84,8 +84,10 @@ export default function DashboardScreen() {
 
   const handleChartPress = (index: number) => {
     if (index >= 0 && index < data.length) {
+      // Haptic feedback
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       
+      // Update focused state
       const updatedData = data.map((item, idx) => ({
         ...item,
         focused: idx === index
@@ -93,6 +95,7 @@ export default function DashboardScreen() {
       setData(updatedData);
       setSelectedSegment(data[index]);
 
+      // Scale animation
       chartScale.value = withSequence(
         withTiming(0.95, { duration: 100 }),
         withTiming(1, { duration: 100 })
@@ -112,36 +115,27 @@ export default function DashboardScreen() {
           >
 
             <View className="items-center w-[95%] mt-5 rounded-3xl justify-center bg-[#121435] flex flex-row p-6">
-              <Animated.View style={chartAnimatedStyle}>
-                {animatedData.some(item => item.value > 0) && (
-                  <PieChart
-                    data={animatedData}
-                    showGradient
-                    sectionAutoFocus
-                    donut
-                    radius={80}
-                    innerRadius={60}
-                    showText
-                    textSize={20}
-                    textColor="#000"
-                    innerCircleColor={"#05071E"}
-                    onPress={handleChartPress}
-                    centerLabelComponent={() => (
-                      <Animated.View style={{
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        opacity: chartProgress
-                      }}>
-                        <Text style={{fontSize: 20, color: 'white', fontWeight: 'bold'}}>
-                          {selectedSegment?.value ?? 0}%
-                        </Text>
-                        <Text style={{fontSize: 14, color: 'white'}}>
-                          {selectedSegment?.label ?? ''}
-                        </Text>
-                      </Animated.View>
-                    )}
-                  />
-                )}
+              <Animated.View style={[chartAnimatedStyle]} className="items-center">
+                <PieChart
+                  data={data}
+                  showGradient
+                  sectionAutoFocus
+                  donut
+                  radius={80}
+                  innerRadius={60}
+                  innerCircleColor="#05071E"
+                  onPress={handleChartPress}
+                  centerLabelComponent={() => (
+                    <View className="items-center justify-center">
+                      <Text className="text-white text-xl font-bold">
+                        {selectedSegment?.value}%
+                      </Text>
+                      <Text className="text-white text-sm">
+                        {selectedSegment?.label}
+                      </Text>
+                    </View>
+                  )}
+                />
               </Animated.View>
 
               <Animated.View 

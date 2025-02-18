@@ -11,6 +11,7 @@ import {
   TextInput,
   Alert,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import { backend_Host } from '~/config';
@@ -742,5 +743,23 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
   );
 };
+
+const styles = StyleSheet.create({
+  shadowButton: {
+    backgroundColor: '#37384B',
+    borderRadius: 10,
+    padding: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000', // iOS
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.5,
+    elevation: 5, // Android
+  },
+});
 
 export default TaskDetailedComponent;

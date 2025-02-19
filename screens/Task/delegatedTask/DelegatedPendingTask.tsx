@@ -29,6 +29,7 @@ import { RootState } from '~/redux/store';
 import moment from 'moment';
 import { getDateRange } from '~/utils/GetDateRange';
 import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
+import NavbarTwo from '~/components/navbarTwo';
 
 type Props = StackScreenProps<DelegatedTaskStackParamList, 'PendingTask'>;
 type PendingTaskScreenRouteProp = RouteProp<DelegatedTaskStackParamList, 'PendingTask'>;
@@ -67,7 +68,6 @@ const DelegatedPendingTask: React.FC<Props> = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [taskDescription, setTaskDescription] = useState('');
-  const [isChecked, setIsChecked] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
   const [selectedFrequencies, setSelectedFrequencies] = useState<string[]>([]);
@@ -80,6 +80,7 @@ const DelegatedPendingTask: React.FC<Props> = ({ navigation }) => {
   const [isCustomDateModalVisible, setIsCustomDateModalVisible] = useState(false);
   const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
   const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
+  
 
     const formatWithSuffix = (date: any) => {
         // return moment(date).format('Do MMM, YYYY');
@@ -240,15 +241,9 @@ const DelegatedPendingTask: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
-      <View className="flex h-20 w-full flex-row items-center justify-between p-5">
-        <View className="flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-full bg-[#37384B]">
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <AntDesign name="arrowleft" size={24} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
-        <Text className="h-full pl-4 text-2xl font-semibold text-[#FFFFFF]">Pending Tasks</Text>
-        <ProfileButton />
-      </View>
+      <NavbarTwo
+        title='Pending Tasks'
+      />
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
@@ -384,7 +379,6 @@ const DelegatedPendingTask: React.FC<Props> = ({ navigation }) => {
 
               {activeFilter === 'Category' &&
                      <FlatList
-                    
                      data={categories}
                      keyExtractor={(item) => item._id}
                      renderItem={({ item }) => (
@@ -403,7 +397,7 @@ const DelegatedPendingTask: React.FC<Props> = ({ navigation }) => {
                           data={users}
                           keyExtractor={(user) => user._id}
                           renderItem={({ item: user }) => (
-                            <View className="flex w-full flex-row items-center gap-3">
+                            <View className="flex w-full flex-row items-center gap-3 mb-5">
                               <CheckboxTwo
                                 isChecked={selectedAssignees.includes(user._id)}
                                 onPress={() =>
@@ -460,6 +454,9 @@ const DelegatedPendingTask: React.FC<Props> = ({ navigation }) => {
           <GradientButton title="Apply Filter" onPress={applyFilter} imageSource={''} />
         </View>
       </Modal>
+
+
+      
       <CustomDateRangeModal
         isVisible={isCustomDateModalVisible}
         onClose={() => {

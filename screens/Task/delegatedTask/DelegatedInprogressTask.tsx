@@ -29,6 +29,7 @@ import { FlatList } from 'react-native';
 import moment from 'moment';
 import { getDateRange } from '~/utils/GetDateRange';
 import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
+import NavbarTwo from '~/components/navbarTwo';
 
 type Props = StackScreenProps<DelegatedTaskStackParamList, 'InprogressTask'>;
 type InProgressTaskScreenRouteProp = RouteProp<DelegatedTaskStackParamList, 'InprogressTask'>;
@@ -245,15 +246,9 @@ const DelegatedInprogressTask: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
-      <View className="flex h-20 w-full flex-row items-center justify-between p-5">
-        <View className="flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-full bg-[#37384B]">
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <AntDesign name="arrowleft" size={24} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
-        <Text className="h-full pl-4 text-2xl font-semibold text-[#FFFFFF]">In Progress Tasks</Text>
-        <ProfileButton />
-      </View>
+      <NavbarTwo
+        title='In Progress Tasks'
+      />  
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView

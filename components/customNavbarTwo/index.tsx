@@ -1,12 +1,12 @@
-import { AntDesign } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, Image, TextInput, TouchableOpacity, FlatList } from 'react-native';
+import { AntDesign } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 interface DropdownItem {
   label: string;
   value: any;
-  image?: string;
+  image?: any;
 }
 
 interface CustomDropdownProps {
@@ -28,6 +28,7 @@ const CustomDropdownComponentTwo: React.FC<CustomDropdownProps> = ({
   const filteredData = data.filter((item) =>
     item.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  
 
   const handleSelect = (value: any) => {
     setIsOpen(false);
@@ -75,10 +76,16 @@ const CustomDropdownComponentTwo: React.FC<CustomDropdownProps> = ({
                 onPress={() => handleSelect(item.value)}
               >
                 <View style={styles.itemContent}>
-                  <View className='bg-white w-8 h-8 p-1 rounded-lg mr-3 '>
-                  {item.image && (
-                    <Image source={{ uri: item.image }} style={styles.itemImage} />
-                  )}
+                  <View style={styles.imageContainer}>
+                    {item.image ? (
+                      <Image source={{ uri: item.image }} style={styles.itemImage} />
+                    ) : (
+                      <View style={styles.initialsContainer}>
+                        <Text style={styles.initialsText}>
+                          {item.label.charAt(0).toUpperCase() }
+                        </Text>
+                      </View>
+                    )}
                   </View>
                   <Text
                     style={[
@@ -161,10 +168,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  imageContainer: {
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
   itemImage: {
     width: 30,
     height: 30,
-    marginRight: 10,
+    borderRadius: 5,
+  },
+  initialsContainer: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#4e5278',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  initialsText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   dropdownItemText: {
     color: '#787CA5',

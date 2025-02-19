@@ -14,13 +14,13 @@ import {
 import NavbarTwo from '~/components/navbarTwo';
 import { router, useNavigation } from 'expo-router';
 import { StackNavigationProp } from '@react-navigation/stack';
-import InputContainer from '~/components/InputContainer';
+import Infocontainer from '~/components/profile/InfoInpu';
 import { Dropdown } from 'react-native-element-dropdown';
 import { useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '~/redux/store';
 import { useDispatch } from 'react-redux';
 import ProfileImage from '~/components/profile/ProfileImage';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { AntDesign, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Modal from 'react-native-modal';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
@@ -51,7 +51,6 @@ const ProfileScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
   const [image, setImage] = useState<string | null>(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [numberValue, setNumberValue] = useState(data[0]?.value || null);
   const [buttonSpinner, setButtonSpinner] = useState(false);
   const [profileModal, setProfileModal] = useState(false);
@@ -62,13 +61,11 @@ const ProfileScreen: React.FC = () => {
   const [customAlertMessage, setCustomAlertMessage] = useState('');
   const [customAlertType, setCustomAlertType] = useState<'success' | 'error' | 'loading'>('success');
 
-
   useFocusEffect(
     React.useCallback(() => {
       handleGetProfile();
     }, [])
   );
-
 
   const handleLogout = async () => {
     setButtonSpinner(true);
@@ -265,118 +262,50 @@ const ProfileScreen: React.FC = () => {
                 Account Information
               </Text>
 
-              <View className="flex w-full items-center">
-                {/* mail */}
-                <InputContainer
-                  label="Email"
+              <View className="flex w-full items-center ">
+                {/* Email */}
+                <View className='w-full flex items-center relative'>
+                <Infocontainer
                   placeholder=""
-                  className="flex-1 text-sm text-[#787CA5]"
                   value={userData?.user?.email || userData?.data?.email}
                   passwordError={''}
                   onChangeText={() => {
                     ('');
                   }}
                 />
-
-                {/* numbers */}
-                <View className="mt-1 flex w-[69%]  flex-row items-center justify-center gap-3">
-                  <Dropdown
-                    style={{
-                      borderWidth: 1,
-                      borderColor: '#37384B',
-                      borderRadius: 29,
-                      backgroundColor: '#05071E',
-                      paddingHorizontal: 12,
-                      paddingVertical: 10,
-                      height: 55,
-                      marginTop: 27,
-                      width: 100,
-                    }}
-                    placeholderStyle={{
-                      fontSize: 14,
-                      color: '#787CA5',
-                    }}
-                    selectedTextStyle={{
-                      fontSize: 10,
-                      color: '#787CA5',
-                      marginLeft: 2,
-                    }}
-                    iconStyle={[
-                      {
-                        width: 20,
-                        height: 20,
-                        transform: [{ rotate: isDropdownOpen ? '180deg' : '0deg' }],
-                      },
-                    ]}
-                    containerStyle={{
-                      backgroundColor: '#05071E',
-                      borderColor: '#37384B',
-                      borderRadius: 20,
-                      overflow: 'hidden',
-                    }}
-                    data={data}
-                    labelField="label"
-                    valueField="value"
-                    placeholder="Select Code"
-                    value={numberValue}
-                    onFocus={() => setIsDropdownOpen(true)} // Handle open state
-                    onBlur={() => setIsDropdownOpen(false)} // Handle close state
-                    onChange={(item) => setNumberValue(item.value)} // Handle selection
-                    renderLeftIcon={() => {
-                      const selectedItem = data.find((item) => item.value === numberValue);
-                      return (
-                        <Image
-                          source={selectedItem?.icon}
-                          style={{ width: 15, height: 20, marginRight: 5 }}
-                          resizeMode="contain"
-                        />
-                      );
-                    }}
-                    renderItem={(item) => {
-                      const isSelected = item.value === numberValue;
-                      return (
-                        <TouchableOpacity
-                          style={[
-                            {
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              padding: 10,
-                              borderBottomColor: '#4e5278',
-                              backgroundColor: isSelected ? '#4e5278' : 'transparent',
-                              borderBottomWidth: 1,
-                            },
-                          ]}
-                          onPress={() => setNumberValue(item.value)}>
-                          <Image
-                            source={item.icon}
-                            style={{ width: 15, height: 20, marginRight: 10 }}
-                            resizeMode="contain"
-                          />
-                          <Text
-                            style={{
-                              fontSize: 14,
-                              color: isSelected ? '#FFFFFF' : '#787CA5',
-                              fontWeight: isSelected ? 'bold' : 'normal',
-                            }}>
-                            {item.label}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    }}
+                <View className=' flex items-center justify-center h-8 w-16 rounded-full border border-[#384387] bg-transparent  pl-4 '
+                style={{position:"absolute",left:"75%",top:5}}
+                >
+                  <AntDesign
+                  name='mail'
+                  color={"#384387"}
+                  size={20}
                   />
+                </View>
 
-                  {/* numbers */}
-                  <InputContainer
-                    label="WhatsApp Number"
+                </View>
+
+
+                {/* Phone Number */}
+                <View className="mt-1 flex w-[70%] flex-row items-center justify-center gap-3">
+                  
+                  <View className='w-20 border-4 rounded-full h-16 bg-[#11142a]  border-[#384387] items-center flex justify-center mt-7'>
+                  <Ionicons
+                  name='call-outline'
+                  color={"#384387"}
+                  size={30}
+                  />
+                  </View>
+                  <Infocontainer
                     placeholder="7863983914"
                     keyboardType="numeric"
                     value={userData?.user?.whatsappNo || userData?.data?.whatsappNo}
-                    className="flex-1 p-2 text-sm text-[#787CA5]"
                     passwordError={''}
                     onChangeText={() => {
                       ('');
                     }}
                   />
+                  
                 </View>
 
                 {/* change pasword buttons */}

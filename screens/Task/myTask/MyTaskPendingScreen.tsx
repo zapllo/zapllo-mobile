@@ -13,8 +13,6 @@ import {
   FlatList,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
-import ProfileButton from '~/components/profile/ProfileButton';
-import { AntDesign } from '@expo/vector-icons';
 import CustomDropdown from '~/components/customDropDown';
 import TaskDetailedComponent from '~/components/TaskComponents/TaskDetailedComponent';
 import Modal from 'react-native-modal';
@@ -29,6 +27,7 @@ import { backend_Host } from '~/config';
 import { getDateRange } from '~/utils/GetDateRange';
 import moment from 'moment';
 import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
+import NavbarTwo from '~/components/navbarTwo';
 
 type Props = StackScreenProps<MyTasksStackParamList, 'PendingTask'>;
 type PendingTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'PendingTask'>;
@@ -282,15 +281,10 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
 };
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
-      <View className="flex h-20 w-full flex-row items-center justify-between p-5">
-        <View className="flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-full bg-[#37384B]">
-          <TouchableOpacity >
-            <AntDesign name="arrowleft" size={24} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
-        <Text className="h-full pl-4 text-2xl font-semibold text-[#FFFFFF]">Pending Tasks</Text>
-        <ProfileButton />
-      </View>
+      <NavbarTwo 
+        title='Pending Tasks'
+      />
+
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
@@ -435,7 +429,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
 
               {activeFilter === 'Category' && (
                 <FlatList
-                  data={filteredCategoryList}
+                  data={categories}
                   keyExtractor={(item) => item._id}
                   renderItem={({ item }) => (
                     <View className="mb-5 flex w-full flex-row items-center gap-3">
@@ -451,10 +445,10 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
 
               {activeFilter === 'AssignedTo' && (
                 <FlatList
-                  data={filteredUsersList}
+                  data={users}
                   keyExtractor={(user) => user._id}
                   renderItem={({ item: user }) => (
-                    <View className="flex w-full flex-row items-center gap-3">
+                    <View className="flex w-full flex-row items-center gap-3 mb-5">
                       <CheckboxTwo
                         isChecked={selectedAssignees.includes(user._id)}
                         onPress={() =>

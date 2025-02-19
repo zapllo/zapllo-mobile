@@ -13,8 +13,7 @@ import {
   FlatList,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
-import ProfileButton from '~/components/profile/ProfileButton';
-import { AntDesign } from '@expo/vector-icons';
+
 import CustomDropdown from '~/components/customDropDown';
 import TaskDetailedComponent from '~/components/TaskComponents/TaskDetailedComponent';
 import Modal from 'react-native-modal';
@@ -29,6 +28,7 @@ import { backend_Host } from '~/config';
 import moment from 'moment';
 import { getDateRange } from '~/utils/GetDateRange';
 import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
+import NavbarTwo from '~/components/navbarTwo';
 
 type Props = StackScreenProps<MyTasksStackParamList, 'InprogressTask'>;
 type inProgressTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'InprogressTask'>;
@@ -158,6 +158,12 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
       );
     };
 
+    const handleAssigneeSelection = (assigneeId: string) => {
+      setSelectedAssignees((prev) =>
+        prev.includes(assigneeId) ? prev.filter((id) => id !== assigneeId) : [...prev, assigneeId]
+      );
+    };
+
     const applyFilter = () => {
       let tasksMatchingFilters = inProgressTasks;
 
@@ -198,10 +204,8 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
       return filteredTasks.filter((task: any) => {
         const searchLower = search.toLowerCase();
         return (
-          task.category?.name.toLowerCase().includes(searchLower) || // Match category name
-          task.assignedUser?.firstName.toLowerCase().includes(searchLower) || // Match assigned user
-          task.assignedUser?.lastName.toLowerCase().includes(searchLower) || // Match assigned user last name
-          task.frequency?.toLowerCase().includes(searchLower) // Match frequency (if applicable)
+          task.title.toLowerCase().includes(searchLower) || // Assuming task has a title
+          task.description.toLowerCase().includes(searchLower) // Assuming task has a description
         );
       });
     }, [search, filteredTasks]);
@@ -281,15 +285,9 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
-      <View className="flex h-20 w-full flex-row items-center justify-between p-5">
-        <View className="flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-full bg-[#37384B]">
-          <TouchableOpacity onPress={() => navigation.navigate('DashboardHome')}>
-            <AntDesign name="arrowleft" size={24} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
-        <Text className="h-full pl-4 text-2xl font-semibold text-[#FFFFFF]">In Progress Tasks</Text>
-        <ProfileButton />
-      </View>
+      <NavbarTwo
+        title='In Progress Tasks'
+      />      
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
@@ -426,7 +424,7 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
               {activeFilter === 'Category' &&
                      <FlatList
                   
-                     data={filteredCategoryList}
+                     data={categories}
                      keyExtractor={(item) => item._id}
                      renderItem={({ item }) => (
                        <View className="flex w-full flex-row items-center gap-3 mb-5">
@@ -447,13 +445,7 @@ const InProgressTaskScreen: React.FC<Props> = ({ navigation }) => {
                             <View className="flex w-full flex-row items-center gap-3 mb-5">
                               <CheckboxTwo
                                 isChecked={selectedAssignees.includes(user._id)}
-                                onPress={() =>
-                                  setSelectedAssignees((prev) =>
-                                    prev.includes(user._id)
-                                      ? prev.filter((id) => id !== user._id)
-                                      : [...prev, user._id]
-                                  )
-                                }
+                                onPress={() => handleAssigneeSelection(user._id)}
                               />
                               <Text className="text-lg text-white">{`${user.firstName} ${user.lastName}`}</Text>
                             </View>

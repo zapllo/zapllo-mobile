@@ -514,8 +514,16 @@ export default function DashboardScreen() {
               userData?.user?.role === 'orgAdmin' ? (
                 <>
                   <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
-                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FC842C] p-5">
-                      <TouchableOpacity className="h-full w-full">
+                    
+                    <TouchableOpacity className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FC842C] p-5">
+                      <TouchableOpacity 
+                      className="h-full w-full"
+                      onPress={() => {
+                        navigation.navigate('EmployeeWise', {
+                          employeeWiseData: detailPageData,
+                        });
+                      }}
+                      >
                         <DashboardThree
                           title="Employee Wise"
                           count={assignedUsers.length}
@@ -529,10 +537,16 @@ export default function DashboardScreen() {
                           }}
                         />
                       </TouchableOpacity>
-                    </View>
+                    </TouchableOpacity>
 
-                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#D85570] p-5">
-                      <TouchableOpacity className="h-full w-full">
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.navigate('CategoryWise', {
+                          employeeWiseData: groupedCategory,
+                        });
+                      }}                    
+                    className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#D85570] p-5">
+                      <View className="h-full w-full">
                         {/* Overdue Tasks */}
                         <DashboardCardTwo
                           title="Category Wise"
@@ -548,13 +562,18 @@ export default function DashboardScreen() {
                             });
                           }}
                         />
-                      </TouchableOpacity>
-                    </View>
+                      </View>
+                    </TouchableOpacity>
                   </View>
 
                   <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
-                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5">
-                      <TouchableOpacity className="h-full w-full">
+                    <TouchableOpacity 
+                    className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5"
+                    onPress={() => {
+                      navigation.navigate('MyReports', { employeeWiseData: myReports });
+                    }}                    
+                    >
+                      <View className="h-full w-full">
                         <DashboardCardTwo
                           title="My Report"
                           count={myReports?.length}
@@ -567,9 +586,13 @@ export default function DashboardScreen() {
                             navigation.navigate('MyReports', { employeeWiseData: myReports });
                           }}
                         />
-                      </TouchableOpacity>
-                    </View>
-                    <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
+                      </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate('Delegated', { employeeWiseData: delegatedData });
+                        }}                    
+                    className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#A914DD] p-5">
                       <TouchableOpacity
                         onPress={() => {
                           navigation.navigate('Delegated', { employeeWiseData: delegatedData });
@@ -587,7 +610,7 @@ export default function DashboardScreen() {
                           }}
                         />
                       </TouchableOpacity>
-                    </View>
+                    </TouchableOpacity>
                   </View>
                 </>
               ) : (

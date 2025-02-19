@@ -11,6 +11,7 @@ import {
   TextInput,
   Alert,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import { backend_Host } from '~/config';
@@ -20,7 +21,7 @@ import { ActivityIndicator } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { router, useNavigation } from 'expo-router';
-import CustomAlert from '../CustomAlert/CustomAlert';
+import AwesomeAlertComponent from '../CustomAlert/AwesomeAlertComponent';
 
 interface TaskDetailedComponentProps {
   title: string;
@@ -178,15 +179,19 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         copyToCacheDirectory: false,
       });
 
-      if (result.canceled || !result.assets.length) return;
+      if (result.canceled || !result.assets || !result.assets.length) return;
 
       const pickedFile = result.assets[0];
 
-        setAttachments((prev) => {
-          const updated = [...prev];
-          updated[index] = uri;
-          return updated;
-        });
+      if (!pickedFile.uri || !pickedFile.name) {
+        throw new Error('Invalid file selected');
+      }
+
+      setAttachments((prev) => {
+        const updated = [...prev];
+        updated[index] = pickedFile.uri;
+        return updated;
+      });
 
       setFileNames((prev) => {
         const updated = [...prev];
@@ -194,14 +199,12 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         return updated;
       });
 
-      // Prepare file data
       let fileData: SelectedFile = {
         uri: pickedFile.uri,
         name: pickedFile.name,
         type: pickedFile.mimeType,
       };
 
-      // Convert images to Base64
       if (pickedFile.mimeType?.startsWith('image/')) {
         const base64File = await FileSystem.readAsStringAsync(pickedFile.uri, {
           encoding: FileSystem.EncodingType.Base64,
@@ -210,14 +213,9 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
       }
 
       setSelectedFile(fileData);
-        setFileNames((prev) => {
-          const updated = [...prev];
-          updated[index] = name;
-          return updated;
-        });
-      }
-     catch (err) {
+    } catch (err) {
       console.error('Error picking document:', err);
+      Alert.alert('Error', 'An error occurred while selecting the file.');
     }
   };
 
@@ -230,18 +228,16 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
       let response;
 
       if (selectedFile.base64) {
-        // Upload image in Base64 format
         response = await axios.post(`${backend_Host}/upload`, {
           files: [`data:${selectedFile.type};base64,${selectedFile.base64}`],
         });
       } else {
-        // Upload other files using FormData
         const formData = new FormData();
         formData.append('files', {
           uri: selectedFile.uri,
           name: selectedFile.name,
           type: selectedFile.type,
-        } as any); // TypeScript fix
+        } as any);
 
         response = await axios.post('/api/upload', formData, {
           headers: {
@@ -258,7 +254,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         return;
       }
 
-      return fileUrl; // Return uploaded file URLs
+      return fileUrl;
     } catch (error) {
       console.error('Error uploading file:', error);
     } finally {
@@ -368,7 +364,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
   return (
     <>
-        <CustomAlert
+      <AwesomeAlertComponent
         visible={showAlert}
         message={alertMessage}
         type={alertType}
@@ -656,17 +652,22 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                           <TouchableOpacity
                             key={index}
                             onPress={() => handleFileSelect(Number(index))}
-                            className="flex h-24 w-24 items-center justify-center rounded-lg border border-[#37384B]">
+                            className="flex h-24 w-24 items-center justify-center rounded-lg border ">
                             {attachments[Number(index)] ? (
+                              <View className='w-full h-full items-center flex justify-center rounded-xl bg-[#37384B] relative z-10'> 
                               <Image
                                 source={{ uri: attachments[Number(index)] }}
-                                className="h-24 w-24 rounded-lg"
-                              />
+                                className="h-24 w-24 rounded-lg z-10"
+                              />     
+                              <Text className=' absolute text-[#787999] text-sm font-extrabold z-20' style={{fontFamily:"LatoBold"}}>Attached!</Text>                         
+                              </View>
                             ) : (
+                              <View className='w-full h-full items-center z-10 flex justify-center rounded-xl bg-[#37384B]'> 
                               <Image
                                 source={require('~/assets/commonAssets/fileUploadContainer.png')}
-                                className="h-24 w-24"
+                                className="h-24 w-24 z-10"
                               />
+                              </View>
                             )}
                           </TouchableOpacity>
                         ))}
@@ -742,5 +743,23 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
   );
 };
+
+const styles = StyleSheet.create({
+  shadowButton: {
+    backgroundColor: '#37384B',
+    borderRadius: 10,
+    padding: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000', // iOS
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.5,
+    elevation: 5, // Android
+  },
+});
 
 export default TaskDetailedComponent;

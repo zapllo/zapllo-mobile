@@ -29,6 +29,7 @@ import { backend_Host } from '~/config';
 import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
 import { getDateRange } from '~/utils/GetDateRange';
 import moment from 'moment';
+import NavbarTwo from '~/components/navbarTwo';
 
 type Props = StackScreenProps<DelegatedTaskStackParamList, 'ToadysTask'>;
 type TodaysTaskScreenRouteProp = RouteProp<DelegatedTaskStackParamList, 'ToadysTask'>;
@@ -231,15 +232,9 @@ const DelegatedTodaysTaskScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
-      <View className="flex h-20 w-full flex-row items-center justify-between p-5">
-        <View className="flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-full bg-[#37384B]">
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <AntDesign name="arrowleft" size={24} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
-        <Text className="h-full pl-4 text-2xl font-semibold text-[#FFFFFF]">Today's Tasks</Text>
-        <ProfileButton />
-      </View>
+      <NavbarTwo
+        title="Today's Tasks"
+      />
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView

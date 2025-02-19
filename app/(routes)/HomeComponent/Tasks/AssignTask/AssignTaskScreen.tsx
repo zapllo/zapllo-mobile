@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   Image,
   Animated,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
@@ -40,19 +39,7 @@ import { AntDesign } from '@expo/vector-icons';
 import CustomDropdownWithSearchAndAdd from '~/components/customDropDownFour';
 import CustomAlert from '~/components/CustomAlert/CustomAlert';
 
-//delete the data :)
-const daysData = [
-  { label: 'Today', value: 'Today' },
-  { label: 'Yesterday', value: 'Yesterday' },
-  { label: 'This Week', value: 'This Week' },
-  { label: 'Last Week', value: 'Last Week' },
-  { label: 'Next Week', value: 'Next Week' },
-  { label: 'This Month', value: 'This Month' },
-  { label: 'Next Month', value: 'Next Month' },
-  { label: 'This Year', value: 'This Year' },
-  { label: 'All Time', value: 'All Time' },
-  { label: 'Custom', value: 'Custom' },
-];
+
 
 const selectRepetType = [
   { label: 'Daily', value: 'Daily' },
@@ -152,6 +139,7 @@ export default function AssignTaskScreen() {
     return data.map((user) => ({
       value: user._id,
       label: `${user.firstName} ${user.lastName}`,
+      image: user.profilePic || null,
     }));
   };
   const processCategoryData = (data) => {
@@ -215,13 +203,7 @@ export default function AssignTaskScreen() {
     outputRange: [0, 32],
   });
 
-  const handleWeeklyTap = () => {
-    setWeeklyModalVisible(true);
-  };
 
-  const handleMonthlyTap = () => {
-    setMonthlyModalVisible(true);
-  };
 
   const assignTask = async () => {
     await handleCreateTask();

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Zapllo",
-    "slug": "Zapllo",
+    "slug": "zapllpMobile",
     "version": "1.0.0",
     "newArchEnabled": true,
     "scheme": "Zapllo",
@@ -42,7 +42,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "y"
+      "bundleIdentifier": "com.Zapllo.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -52,7 +52,7 @@
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.poojazapllo.zapllpMobile"
+      "package": "com.Zapllo.app"
     },
     "extra": {
       "router": {

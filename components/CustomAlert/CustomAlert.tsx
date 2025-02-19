@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Platform } from 'react-native';
 import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -31,11 +31,20 @@ const CustomAlert: FC<CustomAlertProps> = ({ visible, message, type = 'success',
       backdropOpacity={1}
       animationIn="fadeIn"
       animationOut="fadeOut"
-      // onBackdropPress={onClose}
-      // onBackButtonPress={onClose}
+      onBackdropPress={onClose}
+      onBackButtonPress={onClose}
+      useNativeDriver={true}
+      hideModalContentWhileAnimating={true}
+      statusBarTranslucent={true}
+      deviceHeight={Platform.OS === 'ios' ? undefined : null}
+      style={{ 
+        margin: 0,
+        zIndex: 9999,
+        elevation: 9999
+      }}
     >
       <View style={styles.modalContainer}>
-        <View style={styles.alertContainer}>
+        <View style={[styles.alertContainer, Platform.OS === 'android' && styles.androidShadow]}>
           <View style={styles.iconContainer}>{getIcon()}</View>
          {message && <Text style={styles.messageText}>{message}</Text>}
           <View style={styles.divider} />
@@ -65,6 +74,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '80%',
     maxWidth: 300,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+      },
+    }),
   },
   iconContainer: {
     marginBottom: 12,
@@ -90,6 +110,10 @@ const styles = StyleSheet.create({
     color: '#7164a9',
     fontSize: 16,
     fontFamily: 'Lato-Bold',
+  },
+  androidShadow: {
+    elevation: 5,
+    shadowColor: '#000',
   },
 });
 

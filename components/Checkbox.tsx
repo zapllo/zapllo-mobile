@@ -2,6 +2,7 @@ import { Entypo } from '@expo/vector-icons';
 import React, { useRef } from 'react';
 import { TouchableOpacity, Text, View, StyleSheet, Animated, Linking } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { XStack } from 'tamagui';
 
 interface CheckboxProps {
   onPress: () => void;
@@ -37,7 +38,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
   };
 
   return (
-    <View style={[styles.container, containerStyle]}>
+    <XStack width="90%" alignItems="center" gap={12}>
       <TouchableOpacity
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // Trigger light haptic feedback
@@ -57,7 +58,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
           <Entypo name="check" size={25} style={{ color: '#815BF5' }} />
         </Animated.View>
       </TouchableOpacity>
-      <View>
+      <View className=' '>
         <Text style={styles.checkboxText}>
           By clicking continue, you agree to our{' '}
           <Text style={styles.link} onPress={openTermsOfService}>Terms of Service</Text>
@@ -65,7 +66,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
           <Text style={styles.link} onPress={openPrivacyPolicy}>Privacy Policy</Text>.
         </Text>
       </View>
-    </View>
+    </XStack>
   );
 };
 
@@ -81,16 +82,15 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     height: 25,
     width: 25,
-    fontFamily:"Lato-Regular"
+    fontFamily: "Lato-Regular"
   },
   checkboxSelected: {
     backgroundColor: '#37384B',
   },
   checkboxText: {
-    fontSize: 14,
+    fontSize: 12,
     color: 'white',
     fontWeight: '400',
-    paddingLeft: 5,
   },
   link: {
     color: '#815BF5',

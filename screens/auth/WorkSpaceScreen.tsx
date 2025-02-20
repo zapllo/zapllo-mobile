@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import {
   View,
-  StyleSheet,
   Text,
   TouchableOpacity,
   Platform,
-  TextInput,
-  ScrollView,
   Dimensions,
+  TextInput,
 } from 'react-native';
-import Dropdown from '~/components/Dropdown';
+import { Dropdown } from 'react-native-element-dropdown';
 import InputContainer from '~/components/InputContainer';
 import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
 
 interface WorkSpaceScreenProps {
   handleChange: (field: string, value: string) => void;
@@ -37,82 +36,45 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
   businessIndustry,
   setBusinessIndustry,
 }) => {
-  // Validation state
-  const [errors, setErrors] = useState<{
-    companyName?: string;
-    description?: string;
-    businessIndustry?: string;
-    teamSize?: string;
-    categories?: string;
-  }>({});
-
-  const categories = [
-    'Sales',
-    'Marketing',
-    'HR/Admin',
-    'General',
-    'Operations',
-    'Automation',
-    'Admin',
-    'UI/UX',
-  ];
+  const categories = ['Sales', 'Marketing', 'HR/Admin', 'General', 'Operations', 'Automation', 'Admin', 'UI/UX'];
 
   const businessOptions = [
-    'Retail/E-Commerce',
-    'Technology',
-    'Service Provider',
-    'Healthcare',
-    'Logistics',
-    'Financial Consultants',
-    'Trading',
-    'Education',
-    'Manufacturing',
-    'Real Estate',
-    'Other',
+    { label: 'Retail/E-Commerce', value: 'Retail/E-Commerce' },
+    { label: 'Technology', value: 'Technology' },
+    { label: 'Service Provider', value: 'Service Provider' },
+    { label: 'Healthcare(Doctors/Clinics/Physicians/Hospital)', value: 'Healthcare(Doctors/Clinics/Physicians/Hospital)' },
+    { label: 'Logistics', value: 'Logistics' },
+    { label: 'Financial Consultants', value: 'Financial Consultants' },
+    { label: 'Trading', value: 'Trading' },
+    { label: 'Education', value: 'Education' },
+    { label: 'Manufacturing', value: 'Manufacturing' },
+    { label: 'Real Estate/Construction/Interior/Architects', value: 'Real Estate/Construction/Interior/Architects' },
+    { label: 'Other', value: 'Other' },
   ];
 
-  const teamSizeOptions = ['1-10', '11-20', '21-30', '31-50', '51+'];
-
-  const validateForm = () => {
-    const newErrors: typeof errors = {};
-    if (!formData.companyName.trim()) newErrors.companyName = 'Company Name is required.';
-    if (businessIndustry === 'Business Industry')
-      newErrors.businessIndustry = 'Select a Business Industry.';
-    if (teamSize === 'Team Size') newErrors.teamSize = 'Select a Team Size.';
-    if (!formData.description.trim()) newErrors.description = 'Description is required.';
-    if (selectedCategories.length === 0) newErrors.categories = 'Select at least one category.';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = () => {
-    if (validateForm()) {
-      // Form submission logic
-      console.log({
-        companyName: formData.companyName,
-        businessIndustry,
-        teamSize,
-        description: formData.description,
-        selectedCategories,
-      });
-      alert('Workspace created successfully!');
-    }
-  };
+  const teamSizeOptions = [
+    { label: '1-10', value: '1-10' },
+    { label: '11-20', value: '11-20' },
+    { label: '21-30', value: '21-30' },
+    { label: '31-50', value: '31-50' },
+    { label: '51+', value: '51+' },
+  ];
 
   const toggleCategory = (category: string) => {
     setSelectedCategories((prev) =>
       prev.includes(category) ? prev.filter((item) => item !== category) : [...prev, category]
     );
   };
-  const screenWidth = Dimensions.get('window').width; // Get screen width
-  const itemWidth = screenWidth > 450 ? screenWidth / 4 - 20 : screenWidth / 3-30; // Calculate item width based on screen size
+
+  const screenWidth = Dimensions.get('window').width;
+  const itemWidth = screenWidth > 450 ? screenWidth / 4 - 20 : screenWidth / 3 - 30;
+
   return (
-    <View className="items-center pb-14 ">
-      <Text className="text-center text-2xl  text-white" style={{ fontFamily: 'LatoBold' }}>
+    <View className="items-center pb-14">
+      <Text className="text-center text-2xl text-white" style={{ fontFamily: 'LatoBold' }}>
         Create Your Workspace
       </Text>
-      <Text className="my-2 text-center  text-white" style={{ fontFamily: 'Lato-Light' }}>
+      <Text className="my-2 text-center text-white" style={{ fontFamily: 'Lato-Light' }}>
         Let's get started by filling out the form below.
       </Text>
 
@@ -123,23 +85,139 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
         onChangeText={(text) => handleChange('companyName', text)}
         passwordError={''}
       />
-      {errors.companyName && (
-        <Text className=" mt-2 text-sm text-[#FF6F61]">{errors.companyName}</Text>
-      )}
 
-      <View className="flex-1 items-center justify-center bg-[#05071E]">
-        <Dropdown
-          label="Business Industry"
-          options={businessOptions}
-          onSelect={(value) => setBusinessIndustry(value)}
-        />
-      </View>
-
+      {/* Business Industry Dropdown */}
       <Dropdown
-        label="Select Team Size"
-        options={teamSizeOptions}
-        onSelect={(value) => setTeamSize(value)}
+        data={businessOptions}
+        labelField="label"
+        valueField="value"
+        placeholder="Select Business Industry"
+        value={businessIndustry}
+        onChange={(item) => setBusinessIndustry(item.value)}
+        containerStyle={{
+          backgroundColor: '#121212',
+          borderRadius: 15,
+          borderWidth: 0,
+          borderColor: '#37384B',
+
+        }}
+
+        style={{
+          borderWidth: 1,
+          borderColor: '#37384B',
+          // backgroundColor: '#121212',
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          height: 55,
+          borderRadius: 15,
+          marginTop: 20,
+          width: '90%',
+        }}
+        placeholderStyle={{
+          fontSize: 14,
+          color: '#787CA5',
+        }}
+        selectedTextStyle={{
+          fontSize: 14,
+          color: 'white',
+          marginLeft: 5,
+        }}
+        itemTextStyle={{
+          fontSize: 16,
+          color: '#DDE1EB',
+        }}
+        itemContainerStyle={{
+          backgroundColor: '#121212',
+        }}
+        renderItem={(item) => (
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              // borderRadius:15,
+
+              padding: 12,
+              backgroundColor: businessIndustry === item.value ? '#37384B' : 'transparent', // Highlight selected item
+            }}>
+            <Text style={{ color: 'white', fontSize: 16 }}>{item.label}</Text>
+            {businessIndustry === item.value && (
+              <Ionicons name="checkmark" size={20} color="#815BF5" />
+            )}
+          </View>
+        )}
       />
+
+      {/* Team Size Dropdown */}
+      <Dropdown
+        data={teamSizeOptions}
+        labelField="label"
+        valueField="value"
+        placeholder="Select Team Size"
+        value={teamSize}
+        onChange={(item) => setTeamSize(item.value)}
+        // style={styles.dropdown}
+        // containerStyle={{
+        //   backgroundColor: '#121212', // Ensure the dropdown container is dark
+        //   borderRadius: 15, // Optional, for better design
+        //   borderWidth: 1,
+        //   borderColor: '#37384B',
+        // }}
+        containerStyle={{
+          backgroundColor: '#121212',
+          borderRadius: 15,
+          borderWidth: 0,
+          borderColor: '#37384B',
+
+        }}
+
+        style={{
+          borderWidth: 1,
+          borderColor: '#37384B',
+          // backgroundColor: '#121212',
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          height: 55,
+          borderRadius: 15,
+          marginTop: 20,
+          width: '90%',
+        }}
+        placeholderStyle={{
+          fontSize: 14,
+          color: '#787CA5',
+        }}
+        selectedTextStyle={{
+          fontSize: 14,
+          color: 'white',
+          marginLeft: 5,
+        }}
+        itemTextStyle={{
+          fontSize: 16,
+          color: '#DDE1EB',
+        }}
+        itemContainerStyle={{
+          backgroundColor: '#121212',
+        }}
+        renderItem={(item) => (
+          // containerStyle={styles.dropdownContainer}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              // borderRadius:15,
+
+              padding: 12,
+              backgroundColor: teamSize === item.value ? '#37384B' : 'transparent', // Highlight selected item
+            }}>
+            <Text style={{ color: 'white', fontSize: 16 }}>{item.label}</Text>
+            {teamSize === item.value && (
+              <Ionicons name="checkmark" size={20} color="#815BF5" />
+            )}
+          </View>
+        )}
+      />
+
       <View
         style={[
           styles.input,
@@ -153,90 +231,64 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
           ]}
           value={formData.description}
           onChangeText={(text) => handleChange('description', text)}
-          placeholder="Description"
+          placeholder="Company Description"
           placeholderTextColor="#787CA5"
         />
       </View>
 
-      <View className="mb-4 mt-2.5 flex items-start px-5">
-      <Text
-        className="mb-2  mt-3 pt-2 text-base  text-white"
-        style={{ fontFamily: 'Lato' }}>
-        Select the categories that are relevant to your business
-      </Text>
+      <View className="mb-4 mt-2.5 flex items-center px-5">
+        <Text className="mb-2 mt-3 pt-2 text-center text-white" style={{ fontFamily: 'Lato' }}>
+          Select the categories that are relevant to your business
+        </Text>
       </View>
-
-
 
       <View className="flex-row flex-wrap items-center justify-start px-6">
         {categories.map((category, index) => (
           <TouchableOpacity
             key={index}
             style={{
-              width: itemWidth, // Adjust dynamically based on screen size
+              width: itemWidth,
               marginBottom: 10,
-              backgroundColor: selectedCategories.includes(category) ? '#815BF5' : '#37384B', // Tailwind colors in hex
+              backgroundColor: selectedCategories.includes(category) ? '#815BF5' : '#37384B',
               paddingVertical: Platform.OS === 'ios' ? 9 : 6,
-              borderRadius: 10, 
+              borderRadius: 10,
               alignItems: 'center',
               marginLeft: 10,
             }}
             onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // Trigger light haptic feedback
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               toggleCategory(category);
-            }}>
-            <Text
-              style={{
-                fontSize: 11,
-                fontWeight: '600',
-                color: 'white',
-              }}
-              numberOfLines={1}>
+            }}
+          >
+            <Text style={{ fontSize: 11, fontWeight: '600', color: 'white' }} numberOfLines={1}>
               {category}
             </Text>
           </TouchableOpacity>
         ))}
-              
-      </View>
-
-      {errors.categories && (
-        <Text className="mt-2 text-sm text-[#FF6F61]">{errors.categories}</Text>
-      )}
-
-      <View className="mb-4 mt-2.5 flex items-center px-5">
-        <Text className="text-[12px]   text-white" style={{ fontFamily: 'Lato' }}>
-          Don't worry you can add more later in the Settings panel
-        </Text>
       </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  selectedDropdownItemStyle: {
-    backgroundColor: '#4e5278', // Background color for selected item
+const styles = {
+  dropdown: {
+    borderWidth: 1,
+    borderColor: '#37384B',
+    borderRadius: 10,
+    padding: 12,
+    width: '90%',
+    marginTop: 20,
+    backgroundColor: '#121212',
   },
-
   input: {
     borderWidth: 1,
     borderColor: '#37384B',
     padding: 10,
     marginTop: 20,
-    borderRadius: 25,
+    borderRadius: 15,
     width: '90%',
     height: 57,
     position: 'relative',
-  },
-  baseName: {
-    color: '#787CA5',
-    position: 'absolute',
-    top: -9,
-    left: 25,
-    backgroundColor: '#05071E',
-    paddingRight: 5,
-    paddingLeft: 5,
-    fontSize: 10,
-    fontWeight: 200,
   },
   inputSome: {
     flex: 1,
@@ -244,61 +296,23 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
   },
+  placeholderText: {
+    fontSize: 14,
+    color: '#787CA5',
+  },
+  selectedText: {
+    fontSize: 14,
+    color: '#DDE1EB',
+  },
+  dropdownItemText: {
+    fontSize: 14,
+    color: 'white',
+  },
+  dropdownContainer: {
+    backgroundColor: '#121212',
+    borderRadius: 10,
+    paddingVertical: 5,
+  },
+};
 
-  dropdown: {
-    position: 'absolute',
-    width: '100%',
-    height: 50,
-  },
-  itemStyle: {
-    padding: 15,
-    borderBottomColor: '#37384B',
-    borderBottomWidth: 1,
-  },
-  itemTextStyle: {
-    color: '#787CA5',
-  },
-  selectedItemStyle: {
-    backgroundColor: '#4e5278',
-  },
-
-  placeholderStyle: {
-    fontSize: 13,
-    color: '#787CA5',
-    fontWeight: 300,
-    paddingLeft: 22,
-  },
-  selectedTextStyle: {
-    fontSize: 13,
-    color: '#787CA5',
-    fontWeight: 300,
-    paddingLeft: 22,
-  },
-  iconStyle: {
-    width: 20,
-    height: 20,
-  },
-  inputSearchStyle: {
-    height: 40,
-    fontSize: 16,
-    marginRight: 5,
-    borderColor: 'white',
-  },
-  dropdownMenu: {
-    backgroundColor: '#05071E',
-    borderColor: '#37384B',
-    borderWidth: 1,
-    borderBottomEndRadius: 15,
-    borderBottomStartRadius: 15,
-    margin: 8,
-  },
-  dropdownMenuTwo: {
-    backgroundColor: '#05071E',
-    borderColor: '#37384B',
-    borderWidth: 1,
-    borderBottomEndRadius: 15,
-    borderBottomStartRadius: 15,
-    margin: 8,
-  },
-});
 export default WorkSpaceScreen;

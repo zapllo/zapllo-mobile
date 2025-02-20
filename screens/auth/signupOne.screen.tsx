@@ -3,13 +3,16 @@ import {
   View,
   Text,
   Alert,
-  Image,
+
   ScrollView,
   Dimensions,
   Platform,
   TouchableOpacity,
   KeyboardAvoidingView,
   SafeAreaView,
+  TextInput,
+  Modal,
+  FlatList,
 } from 'react-native';
 import WorkSpaceScreen from './WorkSpaceScreen';
 import axios from 'axios';
@@ -24,6 +27,9 @@ import { Ionicons } from '@expo/vector-icons';
 import InputContainer from '~/components/InputContainer';
 import { Dropdown } from 'react-native-element-dropdown';
 import countryData from '../../data/country.json';
+import { Animated } from 'react-native';
+import { Button, Image, YStack } from 'tamagui';
+import CustomAlert from '~/components/CustomAlert/CustomAlert';
 
 const { width, height } = Dimensions.get('window');
 
@@ -56,6 +62,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
     companyName: '',
     description: '',
   });
+  console.log(formData, 'okay?')
   const [showWorkspace, setShowWorkspace] = useState(false);
   const [error, setError] = useState<string>('');
   const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
@@ -67,6 +74,30 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
   const [lastNameError, setLastNameError] = useState<string>('');
   const [phoneError, setPhoneError] = useState<string>('');
   const navigation = useNavigation();
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertType, setAlertType] = useState<'success' | 'error' | 'loading'>('success');
+
+
+  const [selectedCountry, setSelectedCountry] = useState(
+    countryData.find((c) => c.dial_code === '+91') // Default to India
+  );
+
+  // const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownAnimation = useState(new Animated.Value(0))[0];
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+
+  // Function to animate dropdown
+  const toggleDropdown = (open: boolean) => {
+    setIsDropdownOpen(open);
+    Animated.timing(dropdownAnimation, {
+      toValue: open ? 1 : 0,
+      duration: 200, // Smooth animation
+      useNativeDriver: true,
+    }).start();
+  };
 
   const findIndianDialCode = () => {
     const indianCode = countryData.find((country) => country.dial_code === '+91');
@@ -81,6 +112,17 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
   const handleChange = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
+
+  const handleCountrySelect = (country: any) => {
+    setSelectedCountry(country);
+    setModalVisible(false);
+  };
+
+  const filteredCountries = countryData.filter((country) =>
+    country.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    country.dial_code.includes(searchQuery)
+  );
+
 
   const handleEmailValidation = (value: string) => {
     setFormData((prev) => ({ ...prev, email: value }));
@@ -149,9 +191,6 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
     if (!password) {
       setError('Password is required');
       valid = false;
-    } else if (!/(?=.*[0-9])/.test(password)) {
-      setError('Write at least one number');
-      valid = false;
     } else if (!/(?=.{6,})/.test(password)) {
       setError('Write at least 6 characters');
       valid = false;
@@ -175,38 +214,48 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
     if (handleValidation()) {
       if (showWorkspace) {
         const payload = {
-          whatsappNo: formData.phone,
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          companyName: formData.companyName,
-          industry: businessIndustry,
-          teamSize: teamSize,
-          description: formData.description,
-          categories: selectedCategories,
+          whatsappNo: formData?.phone || '',
+          email: formData?.email || '',
+          password: formData?.password || '',
+          firstName: formData?.firstName || '',
+          lastName: formData?.lastName || '',
+          companyName: formData?.companyName || '',
+          industry: businessIndustry || '',
+          teamSize: teamSize || '',
+          description: formData?.description || '',
+          categories: selectedCategories || [],
           country: 'IN',
         };
+
         console.log('okkkk', payload);
         setButtonSpinner(true);
 
         try {
           const response = await axios.post(`${backend_Host}/users/signup`, payload);
-          console.log('okkkkkkkk', response);
+          console.log('RESPONSEEEEEEE!!!!!!', response);
           if (response.data.success) {
             const token = response?.data?.token;
             const userData = response?.data;
-
-            Alert.alert('Success', 'You have signed up successfully!');
+            setAlertVisible(true);
+            setAlertMessage('You have signed up successfully!');
+            setAlertType('success');
             // dispatch(logIn({ token, userData }));
             // router.push('/(routes)/home');
-            router.push('/(routes)/login' as any);
+            setTimeout(() => {
+              setAlertVisible(false);
+              router.push('/(routes)/login' as any);
+            }, 2000); // Auto-close after 2 seconds
+            // router.push('/(routes)/login' as any);
           } else {
-            Alert.alert(response.data.message || 'Invalid credentials');
+            setAlertMessage(response.data.message || 'Invalid credentials');
+            setAlertType('error');
           }
         } catch (error: any) {
-          Alert.alert('Signup Failed', error.response.data.error || 'Something went wrong!');
-          console.log('>>>>>>>>>>>>', error.response.data.error);
+          setAlertVisible(true);
+          setAlertMessage(error.response?.data?.error || 'Something went wrong!');
+          setAlertType('error');
+          console.log(error, 'ERRROR')
+          console.log('>>>>>>>>>>>>', error.response?.data?.error);
         } finally {
           setButtonSpinner(false);
         }
@@ -225,37 +274,34 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
-          <View
-            className="relative mt-16 flex items-center"
-            style={{ marginVertical: verticalScale(25) }}>
+          <YStack
+            alignItems='center'
+          >
             {showWorkspace && (
               <TouchableOpacity
-                onPress={() => router.push('/(routes)/signup/pageOne')}
-                className="absolute bottom-6 left-1 ml-4 h-9 w-10 ">
+                onPress={() => setShowWorkspace(false)}
+                className="absolute bottom-6 left-1 ml-2 h-9 w-10 ">
                 <Image
-                  resizeMode="contain"
-                  className="h-full w-full"
+                  // resizeMode="contain"
+                  scale={0.8}
+                  className="h-9 w-9"
                   source={require('../../assets/sign-in/back.png')}
                 />
               </TouchableOpacity>
             )}
 
-            <Image
-              className="h-9"
-              source={require('../../assets/sign-in/logo.png')}
-              resizeMode="contain"
-            />
-          </View>
+            <Image src={require('~/assets/sign-in/sign_in.png')} scale={0.3} />
+          </YStack>
 
           {!showWorkspace && (
             <>
               <View className="flex h-full w-full items-center pb-14">
                 <View className="mb-4 flex items-center justify-center gap-4 ">
-                  <Text className="text-2xl  text-white" style={{ fontFamily: 'LatoBold' }}>
-                    Let’s Get Started
+                  <Text className="text-3xl  text-white" style={{ fontFamily: 'LatoBold' }}>
+                    Start Premium Trial
                   </Text>
-                  <Text className="font-light text-white" style={{ fontFamily: 'Lato-Light' }}>
-                    Let's get started by filling out the form below.
+                  <Text className="font-light text-white " style={{ fontFamily: 'Lato-Light' }}>
+                    Let's get started by filling out the form below
                   </Text>
                 </View>
 
@@ -300,92 +346,97 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
                     </Text>
                   </View>
                 )}
+                {/* Country Code Dropdown & Phone Input */}
+                <Dropdown
+                  search
+                  searchPlaceholder="Search country..."
+                  inputSearchStyle={{
+                    // borderRadius: 15,
+                    color: 'white',
+                    borderWidth: 0,
+                    // width: '100%',
+                    borderRadius: 15,
+                    height: 48,
+                    backgroundColor: '#121212',
+                  }}
+                  containerStyle={{
+                    backgroundColor: '#121212', // Ensure the dropdown container is dark
+                    borderRadius: 15, // Optional, for better design
+                    borderWidth: 1,
+                    borderColor: '#37384B',
+                  }}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: '#37384B',
+                    // borderRadius: 15,
+                    backgroundColor: '',
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    height: 55,
+                    borderRadius: 15,
+                    marginTop: 20,
+                    width: '90%',
+                  }}
+                  placeholderStyle={{
+                    fontSize: 14,
+                    color: '#787CA5',
+                  }}
+                  selectedTextStyle={{
+                    fontSize: 16,
+                    color: 'white',
+                    marginLeft: 5,
+                  }}
+                  iconStyle={{
+                    width: 18,
+                    height: 18,
+                    tintColor: '#787CA5',
+                  }}
+                  data={countryData}
+                  labelField="name"
+                  valueField="dial_code"
+                  placeholder="Select Country"
+                  value={selectedCountry?.dial_code}
+                  onFocus={() => toggleDropdown(true)}
+                  onBlur={() => toggleDropdown(false)}
+                  onChange={(item) => {
+                    setSelectedCountry(item);
+                    setIsDropdownOpen(false);
+                    setTimeout(() => {
+                      toggleDropdown(false); // Ensures the dropdown closes smoothly
+                    }, 100);
+                  }}
+                  renderLeftIcon={() => (
+                    <Text style={{ fontSize: 18 }}>{selectedCountry?.flag}</Text>
+                  )}
+                  renderItem={(item) => {
+                    return (
+                      <TouchableOpacity
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
 
-                <View className="mb-4 flex w-[69%]  flex-row items-center justify-center gap-2">
-                  <Dropdown
-                    search
-                    searchPlaceholder="search"
-                    inputSearchStyle={{
-                      borderRadius: 20,
-                      borderWidth: 0,
-                      color: 'white',
-                    }}
-                    searchPlaceholderTextColor="#787CA5"
-                    style={{
-                      borderWidth: 1,
-                      borderColor: '#37384B',
-                      borderRadius: 29,
-                      backgroundColor: '#05071E',
-                      paddingHorizontal: 12,
-                      paddingVertical: 10,
-                      height: 55,
-                      marginTop: 27,
-                      width: 100,
-                    }}
-                    placeholderStyle={{
-                      fontSize: 14,
-                      color: '#787CA5',
-                    }}
-                    selectedTextStyle={{
-                      fontSize: 10,
-                      color: '#787CA5',
-                      marginLeft: 2,
-                    }}
-                    iconStyle={[
-                      {
-                        width: 10,
-                        height: 20,
-                        transform: [{ rotate: isDropdownOpen ? '180deg' : '0deg' }],
-                      },
-                    ]}
-                    containerStyle={{
-                      backgroundColor: '#05071E',
-                      borderColor: '#37384B',
-                      borderRadius: 20,
-                      overflow: 'hidden',
-                    }}
-                    data={countryData}
-                    labelField="dial_code"
-                    valueField="dial_code"
-                    placeholder="Select Code"
-                    value={numberValue}
-                    onFocus={() => setIsDropdownOpen(true)}
-                    onBlur={() => setIsDropdownOpen(false)}
-                    onChange={(item) => setNumberValue(item.dial_code)}
-                    renderLeftIcon={() => {
-                      const selectedItem = countryData.find(
-                        (item) => item.dial_code === numberValue
-                      );
-                      return <Text style={{ fontSize: 13 }}>{selectedItem?.flag}</Text>;
-                    }}
-                    renderItem={(item) => {
-                      const isSelected = item.dial_code === numberValue;
-                      return (
-                        <TouchableOpacity
-                          style={[
-                            {
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              padding: 2,
-                              borderBottomColor: '#4e5278',
-                              backgroundColor: isSelected ? '#4e5278' : 'transparent',
-                              borderBottomWidth: 1,
-                            },
-                          ]}
-                          onPress={() => setNumberValue(item.dial_code)}>
-                          <Text style={{ fontSize: 20, marginRight: 10 }}>{item.flag}</Text>
-                          <Text
-                            style={{
-                              fontSize: 11,
-                              color: isSelected ? '#FFFFFF' : '#787CA5',
-                              fontWeight: isSelected ? 'bold' : 'normal',
-                            }}>
-                            {item.dial_code}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    }}
-                  />
+                          paddingVertical: 16,
+                          paddingHorizontal: 12,
+                          // borderRadius: 15,
+                          borderBottomWidth: 1,
+                          // borderBottomColor: '#37384B',
+                          backgroundColor: selectedCountry?.dial_code === item.dial_code ? '#4e5278' : '#121212',
+                        }}
+                        onPress={() => {
+                          setSelectedCountry(item);
+                          toggleDropdown(false); // Close dropdown after selection
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        <Text style={{ fontSize: 18, marginRight: 10 }}>{item.flag}</Text>
+                        <Text style={{ color: 'white', flex: 1 }}>
+                          {item.name} ({item.dial_code})
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+                <View className="mb-4 flex w-[100%]  flex-row items-center justify-center gap-2">
 
                   <InputContainer
                     label="WhatsApp Number"
@@ -496,23 +547,28 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
                   </View>
                 )}
 
-                <View className="mt-16 w-full px-4">
-                  <TouchableOpacity
-                    className={`flex h-[3.7rem] items-center justify-center rounded-full ${
-                      showWorkspace ? 'bg-[#815BF5]' : 'bg-[#37384B]'
-                    }`}
-                    onPress={handleNextOrSignUp}>
+                <View className="mt-8 w-full px-4">
+                  <Button
+                    width="100%"
+                    height={50}
+                    marginBottom={20}
+                    size={16}
+                    backgroundColor={showWorkspace ? '$primary' : '$border'}
+                    pressStyle={{ opacity: 0.8 }}
+                    onPress={handleNextOrSignUp}
+                    borderRadius="$lg"
+                  >
                     {buttonSpinner ? (
                       <ActivityIndicator size="small" color={'white'} />
                     ) : (
                       <Text
-                        className="text-center font-semibold text-white"
-                        style={{ fontFamily: 'LatoBold' }}>
-                        {showWorkspace ? 'Sign Up' : 'Create Work Space'}
+                        className="text-center font-semibold text-xl text-white"
+                        style={{ fontFamily: 'LatoBold' }} >
+                        {showWorkspace ? 'Sign Up' : 'Next'}
                       </Text>
                     )}
-                  </TouchableOpacity>
-                  <View className="flex-row items-center justify-center bg-primary py-5">
+                  </Button>
+                  <View className="flex-row items-center justify-center bg-primary py-2">
                     <View className="flex-row">
                       <Text className="text-base  text-white" style={{ fontFamily: 'Lato-Light' }}>
                         Already a{' '}
@@ -530,7 +586,12 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
               </View>
             </>
           )}
-
+          <CustomAlert
+            visible={alertVisible}
+            message={alertMessage}
+            type={alertType}
+            onClose={() => setAlertVisible(false)}
+          />
           {showWorkspace && (
             <>
               <WorkSpaceScreen
@@ -544,19 +605,26 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
                 setBusinessIndustry={setBusinessIndustry}
               />
               <View className="w-full px-4">
-                <TouchableOpacity
-                  className={`flex h-[3.6rem] items-center justify-center rounded-full ${
-                    showWorkspace ? 'bg-[#815BF5]' : 'bg-[#37384B]'
-                  }`}
-                  onPress={handleNextOrSignUp}>
+                <Button
+                  width="100%"
+                  height={50}
+                  marginBottom={4}
+                  size={16}
+                  backgroundColor={showWorkspace ? '$primary' : '$border'}
+                  pressStyle={{ opacity: 0.8 }}
+                  onPress={handleNextOrSignUp}
+                  borderRadius="$lg"
+                >
                   {buttonSpinner ? (
                     <ActivityIndicator size="small" color={'white'} />
                   ) : (
-                    <Text className="text-center font-semibold text-white">
-                      {showWorkspace ? 'Sign Up' : 'Create Work Space'}
+                    <Text
+                      className="text-center font-semibold text-xl text-white"
+                      style={{ fontFamily: 'LatoBold' }} >
+                      {showWorkspace ? 'Sign Up' : 'Next'}
                     </Text>
                   )}
-                </TouchableOpacity>
+                </Button>
                 <View className="mb-10  flex-row items-center justify-center bg-primary py-5">
                   <View className="flex-row">
                     <Text

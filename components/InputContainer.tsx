@@ -59,9 +59,9 @@ const styles = StyleSheet.create({
     width: '90%',
     height: 57,
     position: 'relative',
-    borderRadius: 35,
-    borderBottomLeftRadius: 35,
-    borderBottomRightRadius: 35,
+    borderRadius: 15,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
   },
   baseName: {
     color: '#787CA5',
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '500',
-    borderRadius: 35,
+    borderRadius: 15,
     paddingBottom: 8,
   },
   iconWrapper: {

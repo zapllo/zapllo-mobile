@@ -1,241 +1,190 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { Ionicons } from '@expo/vector-icons'
+import axios from 'axios'
+import { useRouter } from 'expo-router'
+import { ActivityIndicator, Platform, TouchableOpacity, View } from 'react-native'
+
 import {
-  SafeAreaView,
-  KeyboardAvoidingView,
+  YStack,
+  XStack,
+  Button,
+  Paragraph,
   ScrollView,
-  View,
+  useTheme,
   Image,
-  TouchableOpacity,
+  Separator,
   Text,
-  Alert,
-  ActivityIndicator,
-  Platform,
-} from 'react-native';
-import InputContainer from '~/components/InputContainer';
-import { Ionicons } from '@expo/vector-icons';
-import { Link, router } from 'expo-router';
-import { GradientText } from '~/components/GradientText';
-import Checkbox from '~/components/Checkbox';
-import axios from 'axios';
-import { backend_Host } from '~/config';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '~/redux/store';
-import { logIn } from '~/redux/slices/authSlice';
-import CustomAlert from '~/components/CustomAlert/CustomAlert';
+} from 'tamagui'
+
+import { logIn } from '~/redux/slices/authSlice'
+import { backend_Host } from '~/config'
+import Checkbox from '~/components/Checkbox'
+import CustomAlert from '~/components/CustomAlert/CustomAlert'
+import InputContainer from '~/components/InputContainer' // ✅ Import your custom input
+import { GradientText } from '~/components/GradientText'
 
 export default function Loginscreen() {
-  const dispatch = useDispatch<AppDispatch>();
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [buttonSpinner, setButtonSpinner] = useState(false);
-  const [responseError, setResponseError] = useState('');
-  const [userInfo, setUserInfo] = useState({
-    email: '',
-    password: '',
-  });
-  const [error, setError] = useState({
-    password: '',
-    email: '',
-  });
-  const [isChecked, setIsChecked] = useState(false);
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [alertType, setAlertType] = useState<'success' | 'error'>('success');
+  const dispatch = useDispatch()
+  const router = useRouter()
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
+  const [buttonSpinner, setButtonSpinner] = useState(false)
+  const [userInfo, setUserInfo] = useState({ email: '', password: '' })
+  const [error, setError] = useState({ password: '', email: '' })
+  const [isChecked, setIsChecked] = useState(false)
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertType, setAlertType] = useState<'success' | 'error'>('success')
 
-
-  const validateEmail = (email: string) => {
-    if (!email) {
-      return 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return 'Invalid email address';
-    }
-    return '';
-  };
-
-  const validatePassword = (password: string) => {
-    // if (!/(?=.*[0-9])/.test(password)) {
-    //   return 'Write at least one number';
-    // } else 
-    if (!/(?=.{6,})/.test(password)) {
-      return 'Write at least 6 characters';
-    }
-    return '';
-  };
+  const theme = useTheme()
 
   const handleLogin = async () => {
-    const emailError = validateEmail(userInfo.email);
-    const passwordError = validatePassword(userInfo.password);
-
-    if (emailError || passwordError || !isChecked) {
-      setError({
-        email: emailError,
-        password: passwordError,
-      });
-      return;
-    }
-console.log("payloadd",userInfo)
-    setButtonSpinner(true);
+    if (!userInfo.email || !userInfo.password || !isChecked) return
+    setButtonSpinner(true)
     try {
-      const response = await axios.post(`${backend_Host}/users/login`, {
-        email: userInfo.email,
-        password: userInfo.password,
-      });
-
-      console.log("iiiiiii",response)
+      const response = await axios.post(`${backend_Host}/users/login`, userInfo)
 
       if (response.data.success) {
-        const token = response?.data?.token;
-        // console.log(">>>>>",response?.token)
-        const userData = response?.data;
-    
-        setAlertMessage(response.data.message);
-        setAlertType('success');
-        setShowAlert(true);
-        dispatch(logIn({ token: token, userData: userData }));
-        router.push('/(routes)/home');
+        dispatch(logIn({ token: response.data.token, userData: response.data }))
+        router.push('/(routes)/home')
       } else {
-        setAlertMessage(response.data.message || 'Invalid credentials');
-        setAlertType('error');
-        setShowAlert(true);
+        setAlertMessage(response.data.message || 'Invalid credentials')
+        setAlertType('error')
+        setShowAlert(true)
       }
-    } catch (err: any) {
-      console.error('Login error:', err.response.data.error || err.message);
-      setResponseError(err.response.data.error);
+    } catch (err) {
+      setAlertMessage('An error occurred, please try again.')
+      setAlertType('error')
+      setShowAlert(true)
     } finally {
-      setButtonSpinner(false);
+      setButtonSpinner(false)
     }
-  };
-
-  const isFormValid = () => {
-    return (
-      !validateEmail(userInfo.email) &&
-      !validatePassword(userInfo.password) &&
-      isChecked
-    );
-  };
+  }
 
   return (
-    <SafeAreaView className="h-full w-full flex-1 items-center bg-primary ">
-      <KeyboardAvoidingView
-        className=" w-full"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <ScrollView
-          className="h-full w-full flex-grow"
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}>
-          <View className="h-full w-full items-center">
-            <Image
-              className="h-22 mb-[5.3rem] mt-[4.6rem] w-1/2"
-              source={require('~/assets/sign-in/sign_in.png')}
-              resizeMode="contain"
+    <YStack flex={1} backgroundColor="$bg">
+
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <YStack alignItems="center" justifyContent='center'>
+          <Image
+            source={require('~/assets/sign-in/sign_in.png')}
+            scale={0.4}
+          // marginTop={12}
+          />
+        </YStack>
+
+        <YStack alignItems="center"  >
+
+          <Image src={require('~/assets/sign-in/logo.png')} scale={0.4} />
+
+        </YStack>
+
+
+
+        <Separator width="80%" />
+
+        {/* Email Input (Using InputContainer) */}
+        <InputContainer
+          label="Email Address"
+          value={userInfo.email}
+          onChangeText={(value) => setUserInfo({ ...userInfo, email: value })}
+          placeholder="Enter your email"
+          passwordError={error.email}
+          keyboardType="email-address"
+        />
+        {error.email && (
+          <XStack alignItems="center" marginTop="$2">
+            <Ionicons name="alert-circle-outline" size={18} color="red" />
+            <Paragraph color="$destructive" size="$3" marginLeft="$2">
+              {error.email}
+            </Paragraph>
+          </XStack>
+        )}
+
+        {/* Password Input (Using InputContainer) */}
+        <InputContainer
+          label="Password"
+          value={userInfo.password}
+          onChangeText={(value) => setUserInfo({ ...userInfo, password: value })}
+          placeholder="Enter your password"
+          passwordError={error.password}
+          secureTextEntry={!isPasswordVisible}
+          rightIcon={
+            <Ionicons
+              name={isPasswordVisible ? 'eye-outline' : 'eye-off-outline'}
+              size={22}
+              color="#FFFFFF"
+              onPress={() => setIsPasswordVisible(!isPasswordVisible)}
             />
+          }
+        />
+        {error.password && (
+          <XStack alignItems="center" marginTop="$2">
+            <Ionicons name="alert-circle-outline" size={18} color="red" />
+            <Paragraph color="$destructive" size="$3" marginLeft="$2">
+              {error.password}
+            </Paragraph>
+          </XStack>
+        )}
 
-            <View className="mb-5 flex flex-row items-center gap-2 ">
-              <Image
-                className="h-9"
-                source={require('~/assets/sign-in/logo.png')}
-                resizeMode="contain"
-              />
-            </View>
 
-            <InputContainer
-              label="Email Address"
-              value={userInfo.email.toLowerCase()}
-              onChangeText={(value) => setUserInfo({ ...userInfo, email: value })}
-              placeholder="Email Address"
-              className="flex-1  text-sm text-[#787CA5]"
-              passwordError={error?.email}
+        {/* Checkbox */}
+        <XStack width="90%" alignItems="center" marginTop={24} marginBottom={12}>
+          <Checkbox isChecked={isChecked} onPress={() => setIsChecked(!isChecked)} />
+        </XStack>
+
+        {/* Login Button */}
+        <Button
+          width="90%"
+          height={50}
+          marginBottom={4}
+          marginTop={12}
+          size={20}
+          backgroundColor={isChecked ? '$primary' : '$border'}
+          pressStyle={{ opacity: 0.8 }}
+          onPress={handleLogin}
+          borderRadius="$lg"
+        >
+          {buttonSpinner ? <ActivityIndicator size="small" color="white" /> : 'Login'}
+        </Button>
+        {/* Forgot Password */}
+        <Button chromeless onPress={() => router.push('/(routes)/forgot-PassWord')} marginTop={12} marginBottom={12}>
+          <Paragraph size="$3" color="white">
+            Forgot your password?
+          </Paragraph>
+        </Button>
+
+        {/* Register Section */}
+        <View className="flex-row items-center justify-center bg-primary py-2">
+          <View className="flex-row">
+            <Text className="text-base  text-white" style={{ fontFamily: 'Lato-Light' }}>
+              Not a{' '}
+            </Text>
+            <GradientText
+              text="Zapllonian"
+              textStyle={{ fontSize: 16, fontWeight: '400' }}
             />
-
-            {error.email ? (
-              <View className="ml-8 mt-2 flex-row self-start items-center">
-                <Ionicons name="close-circle" size={16} color="#EE4848" />
-                <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500">
-                  {error.email}
-                </Text>
-              </View>
-            ) : <></>
-          }
-
-            <View className="relative w-full items-center">
-              <InputContainer
-                label="Password"
-                value={userInfo.password}
-                onChangeText={(value) => setUserInfo({ ...userInfo, password: value })}
-                placeholder="**********"
-                secureTextEntry={!isPasswordVisible}
-                className="flex-1  text-sm text-[#787CA5]"
-                passwordError={error?.password}
-              />
-
-              <TouchableOpacity
-                className="absolute right-12 top-12"
-                onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-                {isPasswordVisible ? (
-                  <Ionicons name="eye-outline" size={23} color={'#FFFFFF'} />
-                ) : (
-                  <Ionicons name="eye-off-outline" size={23} color={'#FFFFFF'} />
-                )}
-              </TouchableOpacity>
-            </View>
-
-            {error.password ? (
-              <View className="ml-8 mt-2 flex-row self-start items-center">
-                <Ionicons name="close-circle" size={16} color="#EE4848" />
-                <Text className="font-pathwayExtreme ml-1 self-start text-sm text-red-500">
-                  {error.password}
-                </Text>
-              </View>
-            ):<></>
-          }
-
-            <TouchableOpacity
-              className="mr-9 mt-16 self-end"
-              onPress={() => router.push('/(routes)/forgot-PassWord' as any)}>
-              <Text className="text-sm  text-white" style={{ fontFamily: 'Lato-Light' }}>
-                Forgot password?
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className={`mb-10 mt-3 flex h-[3.6rem] w-[89%] items-center justify-center rounded-full p-2.5 ${
-                isFormValid() ? 'bg-[#815BF5]' : 'bg-[#37384B]'
-              }`}
-              onPress={handleLogin}>
-              {buttonSpinner ? (
-                <ActivityIndicator size="small" color={'white'} />
-              ) : (
-                <Text className="text-center  font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
-                  Login
-                </Text>
-              )}
-            </TouchableOpacity>
-
-            <View className="mb-14 mr-7 w-[80%]">
-              <Checkbox isChecked={isChecked} onPress={() => setIsChecked(!isChecked)} />
-            </View>
-            <View className="flex-row items-center justify-center bg-primary py-5">
-              <View className="flex-row">
-                <Text className="text-base  text-white" style={{ fontFamily: 'Lato-Light' }}>
-                  Not a{' '}
-                </Text>
-                <GradientText text="Zapllonian" textStyle={{ fontSize: 16, fontWeight: '400' }} />
-              </View>
-              <Link href="/(routes)/signup/pageOne">
-                <Text className="text-base font-extrabold text-white" style={{ fontFamily: 'LatoBold' }}>
-                  ? Register Here
-                </Text>
-              </Link>
-            </View>
           </View>
-        </ScrollView>
-
+          <TouchableOpacity onPress={() => router.push('/(routes)/login' as any)}>
+            <Text className="text-base font-extrabold text-white">? Register Here</Text>
+          </TouchableOpacity>
+        </View>
+        {/* Custom Alert */}
         <CustomAlert
-        visible={showAlert}
-        message={alertMessage}
-        type={alertType}
-        onClose={() => setShowAlert(false)}
-      />
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
+          visible={showAlert}
+          message={alertMessage}
+          type={alertType}
+          onClose={() => setShowAlert(false)}
+        />
+      </ScrollView>
+    </YStack >
+  )
 }

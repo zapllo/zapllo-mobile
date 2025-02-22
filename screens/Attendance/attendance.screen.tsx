@@ -9,6 +9,7 @@ import DashboardStack from '~/app/(routes)/HomeComponent/Attendance/Dashboard/Da
 import MyAttendanceStack from '~/app/(routes)/HomeComponent/Attendance/MyAttendance/MyAttendanceStack';
 import HomeStack from '~/app/(routes)/HomeComponent/Attendance/Home/HomeStack';
 import MyLeavesStack from '~/app/(routes)/HomeComponent/Attendance/MyLeaves/MyLeavesStack';
+import AllAttendenceScreen from './AllTask/AllAttendenceScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -25,7 +26,7 @@ export default function AttendanceScreen (){
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#05071E', // Tab bar background
+          backgroundColor: '#05071E',
           borderWidth: 1,
           borderColor: '#815BF5',
           height: 52,
@@ -92,6 +93,10 @@ export default function AttendanceScreen (){
 
         
     </Tab.Navigator>
+    <AllAttendenceScreen
+        isVisible={isModalVisible}
+        onClose={() => setModalVisible(false)}
+      />
 
 
     </View>

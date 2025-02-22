@@ -78,11 +78,13 @@
     "react-native-sound": "^0.11.2",
     "react-native-svg": "^15.11.1",
     "react-native-vector-icons": "^10.2.0",
+    "react-native-vision-camera": "^4.6.4",
     "react-native-web": "~0.19.10",
     "react-native-webview": "^13.13.2",
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",
-    "stacktrace-parser": "^0.1.10"
+    "stacktrace-parser": "^0.1.10",
+    "expo-camera": "~16.0.17"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

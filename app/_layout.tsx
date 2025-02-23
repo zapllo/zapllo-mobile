@@ -104,6 +104,7 @@ function RootLayoutNav() {
             <Stack.Screen name="(routes)/HomeComponent/Leaves/index" />
             <Stack.Screen name="(routes)/HomeComponent/Tasks/index" />
             <Stack.Screen name="(routes)/HomeComponent/Tutorials/index" />
+            <Stack.Screen name="(routes)/HomeComponent/TutorialDetail/index" />
             <Stack.Screen name="(routes)/HomeComponent/WABA/index" />
             <Stack.Screen name="(routes)/HomeComponent/Workflows/index" />
             <Stack.Screen name="(routes)/profile/index" />

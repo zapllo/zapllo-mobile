@@ -32,7 +32,7 @@ const MonthlyModal: React.FC<MonthlyModalProps> = ({ isVisible, onClose,setMonth
       isVisible={isVisible}
       animationIn="slideInUp"
       animationOut="slideOutDown"
-      style={{ margin: 0, justifyContent: "center" }}
+      style={{ margin: 0, justifyContent: "center",alignContent:'center', alignSelf:'center', width:'95%' }}
     >
       <View className="rounded-xl bg-[#0A0D28] p-5 pb-8">
         <View className="mb-4 flex w-full flex-row items-center justify-between">

@@ -21,7 +21,8 @@ import { ActivityIndicator } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { router, useNavigation } from 'expo-router';
-import AwesomeAlertComponent from '../CustomAlert/AwesomeAlertComponent';
+import AwesomeAlertComponent from '../CustomAlert/CustomAlert';
+import { XStack, YStack } from 'tamagui';
 
 interface TaskDetailedComponentProps {
   title: string;
@@ -138,14 +139,14 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         {
           text: 'Move to Deleted',
           backgroundColor: '#EF4444',
-          onPress: ()=>handleDeleteConfirmation(),
+          onPress: () => handleDeleteConfirmation(),
         },
       ];
     }
     return [
       {
         text: 'Move to Progress',
-        backgroundColor: '#A914DD',
+        backgroundColor: '#815BF5',
         onPress: () => handleMoveToProgress(),
       },
       {
@@ -172,134 +173,150 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
     }, 500);
   };
 
-  const handleFileSelect = async (index: number) => {
+  const handleFileSelect = async () => { // ✅ Add 'async' here
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: '*/*',
-        copyToCacheDirectory: false,
+        multiple: true, // ✅ Allow multiple file selection
+        copyToCacheDirectory: true,
       });
 
       if (result.canceled || !result.assets || !result.assets.length) return;
 
-      const pickedFile = result.assets[0];
+      // Convert selected files into correct format
+      const pickedFiles: SelectedFile[] = [];
 
-      if (!pickedFile.uri || !pickedFile.name) {
-        throw new Error('Invalid file selected');
-      }
+      for (const file of result.assets) {
+        let fileUri = file.uri;
 
-      setAttachments((prev) => {
-        const updated = [...prev];
-        updated[index] = pickedFile.uri;
-        return updated;
-      });
+        // ✅ Convert content:// URI to file:// for Android compatibility
+        if (Platform.OS === 'android' && fileUri.startsWith('content://')) {
+          const fileInfo = await FileSystem.getInfoAsync(fileUri); // ✅ Works now
+          if (!fileInfo.exists) {
+            throw new Error('File does not exist');
+          }
+          fileUri = fileInfo.uri; // ✅ Convert content:// to file://
+        }
 
-      setFileNames((prev) => {
-        const updated = [...prev];
-        updated[index] = pickedFile.name;
-        return updated;
-      });
-
-      let fileData: SelectedFile = {
-        uri: pickedFile.uri,
-        name: pickedFile.name,
-        type: pickedFile.mimeType,
-      };
-
-      if (pickedFile.mimeType?.startsWith('image/')) {
-        const base64File = await FileSystem.readAsStringAsync(pickedFile.uri, {
-          encoding: FileSystem.EncodingType.Base64,
+        pickedFiles.push({
+          uri: fileUri,
+          name: file.name,
+          type: file.mimeType || 'application/octet-stream',
         });
-        fileData.base64 = base64File;
       }
 
-      setSelectedFile(fileData);
+      console.log('Selected files:', pickedFiles);
+
+      // Upload files and get URLs
+      const uploadedUrls = await uploadFiles(pickedFiles);
+
+      if (uploadedUrls) {
+        setAttachments((prev) => [...prev, ...uploadedUrls]);
+        setFileNames((prev) => [...prev, ...pickedFiles.map((f) => f.name)]);
+      }
     } catch (err) {
-      console.error('Error picking document:', err);
+      console.error('Error picking documents:', err);
       Alert.alert('Error', 'An error occurred while selecting the file.');
     }
   };
 
-  const uploadFile = async () => {
-    if (!selectedFile) return;
 
+
+
+  const uploadFiles = async (files: SelectedFile[]) => {
     try {
       setLoading(true);
-      let fileUrl: string[] = [];
-      let response;
+      const uploadEndpoint = `${backend_Host}/upload`;
+      console.log("Uploading files to:", uploadEndpoint);
 
-      if (selectedFile.base64) {
-        response = await axios.post(`${backend_Host}/upload`, {
-          files: [`data:${selectedFile.type};base64,${selectedFile.base64}`],
-        });
-      } else {
-        const formData = new FormData();
-        formData.append('files', {
-          uri: selectedFile.uri,
-          name: selectedFile.name,
-          type: selectedFile.type,
+      const formData = new FormData();
+
+      // ✅ Use `for...of` loop instead of `forEach`
+      for (const file of files) {
+        let fileUri = file.uri;
+
+        // ✅ Convert content:// URI to file:// for Android compatibility
+        if (Platform.OS === 'android' && fileUri.startsWith('content://')) {
+          const fileInfo = await FileSystem.getInfoAsync(fileUri);
+          if (!fileInfo.exists) {
+            throw new Error('File does not exist');
+          }
+          fileUri = fileInfo.uri;
+        }
+
+        formData.append(`files`, {
+          uri: fileUri,
+          name: file.name,
+          type: file.type || 'application/octet-stream',
         } as any);
-
-        response = await axios.post('/api/upload', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
       }
+
+      console.log("FormData content:", [...formData]);
+
+      const response = await axios.post(uploadEndpoint, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log("Upload response:", response.status, response.data);
 
       if (response.status === 200) {
-        fileUrl = response.data.fileUrls;
-        console.log('File uploaded successfully:', fileUrl);
+        return response.data.fileUrls; // ✅ Returns array of uploaded file URLs
       } else {
-        console.error('Failed to upload file');
-        return;
+        console.error("Upload failed:", response.status, response.data);
+        return null;
       }
-
-      return fileUrl;
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error("Error uploading files:", error.response?.data || error.message);
+      return null;
     } finally {
       setLoading(false);
     }
   };
 
+
+
   const updateTask = async () => {
-    const fileUrl = selectedFile ? await uploadFile() : [];
-    
     setTaskStatusLoading(true);
+
     try {
       const payload = {
         id: task?._id,
         status: taskStatus,
         comment: description,
         userName: assignedTo,
-        fileUrl: attachments,
+        fileUrl: attachments, // Use uploaded file URLs
       };
 
       const response = await axios.patch(`${backend_Host}/tasks/update`, payload, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       });
+
       console.log('Task updated successfully:', response.data);
       setShowProgressModal(false);
       setAlertMessage("Task updated successfully!");
       setAlertType('success');
-      setShowAlert(true);
-      
-       navigation.goBack();
-     
+      // setShowAlert(true);
+      navigation.goBack();
+
     } catch (error) {
       console.error('Error updating task:', error);
       setAlertMessage("Failed to update the task.");
       setAlertType('error');
       setShowAlert(true);
-  
     } finally {
       setTaskStatusLoading(false);
       setDescription('');
-      setAttachments([]);
+      setAttachments([]); // Clear uploaded files after updating
     }
   };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+    setFileNames((prev) => prev.filter((_, i) => i !== index));
+  };
+
 
   const formatReminder = (dueDate: any, reminder: any) => {
     if (!dueDate || !reminder) return null;
@@ -333,10 +350,11 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
       onBackdropPress={() => setShowMainModal(false)}
       style={{ margin: 0, justifyContent: 'flex-end' }}
       animationIn="slideInUp"
+      className='flex items-center w-full'
       animationOut="slideOutDown">
-      <View className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
+      <View className="rounded-t-3xl bg-[#0A0D28] p-4 w-full pb-20">
         <View className="mb-14 mt-2 flex w-full flex-row items-center justify-between">
-          <Text className="text-xl font-semibold text-white">Task Progress</Text>
+          <Text className="text-xl font-semibold text-white">Update Status</Text>
           <TouchableOpacity onPress={() => setShowMainModal(false)}>
             <Image
               source={require('~/assets/commonAssets/cross.png')}
@@ -351,7 +369,7 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
               key={index}
               onPress={option.onPress}
               style={{ backgroundColor: option.backgroundColor }}
-              className="items-center rounded-full p-4">
+              className="items-center rounded-full p-4 w-full">
               <Text className="text-base font-medium text-white">
                 {option.text}
               </Text>
@@ -371,372 +389,392 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
         onClose={() => setShowAlert(false)}
       />
 
-    <TouchableOpacity onPress={() => setModalVisible(true)}>
-      <View className="mt-5 w-[95%] items-center gap-6 self-center rounded-3xl border border-[#37384B] p-4">
+      <TouchableOpacity onPress={() => setModalVisible(true)}>
+        <View className="mt-5 w-[95%] items-center gap-6 self-center rounded-3xl border border-[#37384B] p-4">
 
-        <Modal
-          isVisible={modalVisible}
-          onBackdropPress={() => setModalVisible(false)}
-          style={{ margin: 0, justifyContent: 'flex-end', marginTop: 10 }}
-          animationIn="slideInUp"
-          animationOut="slideOutDown"
-          useNativeDriver={false}>
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1 }}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled">
-            <View className="mt-16 rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
-              {/* Task Details Header */}
-              <View className="mb-7 flex w-full flex-row items-center justify-between">
-                <Text
-                  className="w-[90%] text-xl font-semibold text-white"
-                  style={{ fontFamily: 'LatoBold' }}>
-                  {title}
-                </Text>
-                <TouchableOpacity className="w-[10%]" onPress={() => setModalVisible(false)}>
-                  <Image
-                    source={require('~/assets/commonAssets/cross.png')}
-                    className="h-8 w-8"
-                  />
-                </TouchableOpacity>
-              </View>
-
-              {/* Assignment Details */}
-              <View className="mb-6 flex w-full flex-row items-start justify-start gap-20">
-                <View className="flex w-[40%] flex-col">
-                  <Text className="text-xs text-[#787CA5]">Assigned by</Text>
-                  <Text className="text-lg text-[#815BF5]" style={{ fontFamily: 'LatoBold' }}>
-                    {assignedBy}
+          <Modal
+            isVisible={modalVisible}
+            onBackdropPress={() => setModalVisible(false)}
+            style={{ margin: 0, justifyContent: 'flex-end', marginTop: 10 }}
+            animationIn="slideInUp"
+            animationOut="slideOutDown"
+            useNativeDriver={false}>
+            <ScrollView
+              contentContainerStyle={{ flexGrow: 1 }}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled">
+              <View className="mt-16 rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
+                {/* Task Details Header */}
+                <View className="mb-7 flex w-full flex-row items-center justify-between">
+                  <Text
+                    className="w-[90%] text-xl font-semibold text-white"
+                    style={{ fontFamily: 'LatoBold' }}>
+                    {title}
                   </Text>
+                  <TouchableOpacity className="w-[10%]" onPress={() => setModalVisible(false)}>
+                    <Image
+                      source={require('~/assets/commonAssets/cross.png')}
+                      className="h-8 w-8"
+                    />
+                  </TouchableOpacity>
                 </View>
 
-                <View className="flex w-[60%] flex-col">
-                  <Text className="text-xs text-[#787CA5]">Assigned to</Text>
-                  <Text className="w-[90%] text-lg text-[#D85570]" style={{ fontFamily: 'LatoBold' }}>
-                    {assignedTo}
-                  </Text>
-                </View>
-              </View>
+                {/* Assignment Details */}
+                <View className="mb-6 flex w-full flex-row  gap-4 items-start justify-between ">
+                  <View className="flex w-[50%]  flex-col">
+                    <Text className="text-xs text-[#787CA5]">Assigned by</Text>
+                    <Text className="text-  text-[#815BF5]" style={{ fontFamily: 'LatoBold' }}>
+                      {assignedBy}
+                    </Text>
+                  </View>
 
-              {/* Dates */}
-              <View className="mb-6 flex w-full items-start gap-5">
-                <View className="flex flex-col">
-                  <Text className="text-xs text-[#787CA5]">Created date</Text>
-                  <Text className="text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
-                    {moment(task?.createdAt).format('ddd, MMMM D - hh:mm A')}
-                  </Text>
+                  <View className="flex w-[50%] flex-col">
+                    <Text className="text-xs text-[#787CA5]">Assigned to</Text>
+                    <Text className="  text-[#D85570]" style={{ fontFamily: 'LatoBold' }}>
+                      {assignedTo}
+                    </Text>
+                  </View>
                 </View>
 
-                <View className="flex flex-col">
-                  <Text className="text-xs text-[#787CA5]">Due date</Text>
-                  <Text className="text-lg text-[#EF4444]" style={{ fontFamily: 'LatoBold' }}>
-                    {moment(task?.dueDate).format('ddd, MMMM D - hh:mm A')}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Task Metadata */}
-              <View className="mb-6 flex w-full flex-row items-center justify-start gap-20">
-                <View className="flex w-[40%] gap-3">
+                {/* Dates */}
+                <View className="mb-6 flex w-full items-start gap-5 ">
                   <View className="flex flex-col">
-                    <Text className="text-xs text-[#787CA5]">Frequency</Text>
-                    <Text className="text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
-                      {task?.repeat ? task?.repeatType : 'Once'}
+                    <Text className="text-xs text-[#787CA5]">Created date</Text>
+                    <Text className=" text-white" style={{ fontFamily: 'LatoBold' }}>
+                      {moment(task?.createdAt).format('ddd, MMMM D - hh:mm A')}
                     </Text>
                   </View>
 
                   <View className="flex flex-col">
-                    <Text className="text-xs text-[#787CA5]">Category</Text>
-                    <Text className="text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
-                      {category}
+                    <Text className="text-xs text-[#787CA5]">Due date</Text>
+                    <Text className="text- text-[#EF4444]" style={{ fontFamily: 'LatoBold' }}>
+                      {moment(task?.dueDate).format('ddd, MMMM D - hh:mm A')}
                     </Text>
                   </View>
                 </View>
 
-                <View className="flex gap-3">
-                  <View className="flex flex-col">
-                    <Text className="text-xs text-[#787CA5]">Status</Text>
-                    <Text
-                      className="mt-1 text-lg text-[#815BF5]"
-                      style={{ fontFamily: 'LatoBold' }}>
-                      {task?.status}
-                    </Text>
-                  </View>
-
-                  <View className="mt-1 flex flex-col">
-                    <Text className="text-xs text-[#787CA5]">Priority</Text>
-                    <Text className="text-lg text-[#EF4444]" style={{ fontFamily: 'LatoBold' }}>
-                      {task?.priority}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* Description */}
-              <View className="mb-6 flex w-full flex-col gap-1">
-                <Text className="text-xs text-[#787CA5]">Description</Text>
-                <Text className="text-base text-white">{task?.description}</Text>
-              </View>
-
-              <View className="mb-8 mt-2 h-0.5 w-full bg-[#37384B]"></View>
-
-              {/* Links */}
-              <View className="mb-6 flex flex-col gap-2">
-                <View className="flex flex-row items-center justify-start gap-2">
-                  <Image
-                    source={require('~/assets/commonAssets/links.png')}
-                    className="h-5 w-5"
-                  />
-                  <Text className="text-xs text-[#787CA5]">Links</Text>
-                </View>
-
-                <View className="ml-6 gap-2">
-                  {task?.links?.map((link, index) => (
-                    <TouchableOpacity key={index} onPress={() => Linking.openURL(link)}>
-                      <Text style={{ color: '#815BF5' }}>{link}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              {/* Files */}
-              <View className="mb-6 flex w-full flex-col">
-                <View className="flex w-full flex-row items-center gap-2">
-                  <Image
-                    source={require('~/assets/commonAssets/fileLogo.png')}
-                    className="h-6 w-5"
-                  />
-                  <Text className="text-xs text-[#787CA5]">Files</Text>
-                </View>
-
-                <View className="flex w-full flex-row items-center gap-3 pl-5 pt-1">
-                  {task?.attachment?.length ? (
-                    task.attachment.map((att, index) => (
-                      <View
-                        key={index}
-                        className="flex h-24 w-24 items-center justify-center rounded-lg border border-[#37384B]">
-                        <Image source={{ uri: att }} className="h-24 w-24 rounded-lg" />
-                      </View>
-                    ))
-                  ) : (
-                    <Text className="text-center text-sm text-white">No file attached!</Text>
-                  )}
-                </View>
-              </View>
-
-              {/* Reminders */}
-              <View className="mb-6 w-full flex-col gap-2">
-                <View className="flex w-full flex-row items-center gap-2">
-                  <Image
-                    source={require('~/assets/commonAssets/reminders.png')}
-                    className="h-6 w-5"
-                  />
-                  <Text className="text-xs text-[#787CA5]">Reminders</Text>
-                </View>
-                <Text className="text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
-                  {reminderText || 'No Reminder Set'}
-                </Text>
-              </View>
-
-              <View className="mb-8 mt-2 h-0.5 w-full bg-[#37384B]"></View>
-
-              {/* Comments */}
-              <View className="mb-6 w-full flex-col gap-2">
-                <View className='flex flex-row gap-2 items-center mb-3'>
-                    <Image className='h-5 w-5' source={require("../../assets/Tasks/taskUpdate.png")}/>
-                    <Text className='text-xs text-[#787CA5]' style={{ fontFamily: 'LatoBold' }}>Task Updates</Text>
-                        
-                </View>
-                {task?.comments?.map((com, index) => (
-
-                  <View className='flex flex-col items-center w-full'>
-
-                    <View key={index} className="flex w-full flex-row items-center justify-between">
-                    <View className="flex flex-row items-center gap-2">
-                      <View className="h-10 w-10 rounded-full bg-white"></View>
-                      <View className='w-[60%]'>
-                        <Text className="text-lg text-white">{com?.comment}</Text>
-                        <Text className="text-xs text-[#787CA5]">{com?.userName}</Text>
-                      </View>
+                {/* Task Metadata */}
+                <View className="mb-6 flex w-full flex-row items-center justify-start gap-20">
+                  <View className="flex w-[50%] gap-3">
+                    <View className="flex flex-col">
+                      <Text className="text-xs text-[#787CA5]">Frequency</Text>
+                      <Text className="text text-white" style={{ fontFamily: 'LatoBold' }}>
+                        {task?.repeat ? task?.repeatType : 'Once'}
+                      </Text>
                     </View>
 
-                    <TouchableOpacity 
-                        className={` mb-4 w-[30%] flex items-center rounded-xl p-2 pl-3 pr-3 ${
-                          com?.tag === 'Completed' 
-                            ? 'bg-[#007B5B]' 
-                            : com?.tag === 'Reopen' 
-                            ? 'bg-[#FDB314]' 
-                            : 'bg-[#815BF5]'
-                        }`}
-                      >
-                      <Text className="text-[11px] text-white" style={{ fontFamily: 'LatoBold' }}>
-                        {com?.tag}
+                    <View className="flex flex-col">
+                      <Text className="text-xs text-[#787CA5]">Category</Text>
+                      <Text className="text- text-white" style={{ fontFamily: 'LatoBold' }}>
+                        {category}
                       </Text>
-                    </TouchableOpacity>
-                    
+                    </View>
                   </View>
-                  <View className="mb-3 mt-3 h-0.5 w-full bg-[#37384B]"></View>
+
+                  <View className="flex gap-3">
+                    <View className="flex flex-col">
+                      <Text className="text-xs text-[#787CA5]">Status</Text>
+                      <Text
+                        className="mt-1 text- text-[#815BF5]"
+                        style={{ fontFamily: 'LatoBold' }}>
+                        {task?.status}
+                      </Text>
+                    </View>
+
+                    <View className="mt-1 flex flex-col">
+                      <Text className="text-xs text-[#787CA5]">Priority</Text>
+                      <Text className="text- text-[#EF4444]" style={{ fontFamily: 'LatoBold' }}>
+                        {task?.priority}
+                      </Text>
+                    </View>
                   </View>
-                  
-                ))}
-                
+                </View>
 
-                {/* Update Status Button */}
-                <TouchableOpacity
-                  onPress={() => setShowMainModal(true)}
-                  className="mt-3 w-full self-center rounded-3xl bg-gray-700 p-3 py-5">
-                  <Text className="text-center font-medium text-white">Update task status</Text>
-                </TouchableOpacity>
-              </View>
+                {/* Description */}
+                <View className="mb-6 flex w-full flex-col gap-1">
+                  <Text className="text-xs text-[#787CA5]">Description</Text>
+                  <Text className="text- text-white">{task?.description}</Text>
+                </View>
 
-              {renderStatusModal()}
+                <View className="mb-8 mt-2 h-0.5 w-full bg-[#37384B]"></View>
 
-              {/* Progress Modal */}
-              <Modal
-                isVisible={showProgressModal}
-                onBackdropPress={() => setShowProgressModal(false)}
-                style={{ margin: 0, justifyContent: 'flex-end' }}
-                animationIn="slideInUp"
-                animationOut="slideOutDown"
-                useNativeDriver={false}>
-                <KeyboardAvoidingView
-                  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                  style={{ flex: 1, justifyContent: 'flex-end' }}>
-                  <View className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
-                    <View className="mb-6 mt-2 flex w-full flex-row items-center justify-between">
-                      <Text className="text-xl font-semibold text-white">{taskStatus}</Text>
-                      <TouchableOpacity onPress={() => setShowProgressModal(false)}>
-                        <Image
-                          source={require('~/assets/commonAssets/cross.png')}
-                          className="h-8 w-8"
+                {/* Links */}
+                <View className="mb-6 flex flex-col gap-2">
+                  <View className="flex flex-row items-center justify-start gap-2">
+                    <Image
+                      source={require('~/assets/commonAssets/links.png')}
+                      className="h-5 w-5"
+                    />
+                    <Text className="text-xs text-[#787CA5]">Links</Text>
+                  </View>
+
+                  <View className="ml-6 gap-2">
+                    {task?.links?.map((link, index) => (
+                      <TouchableOpacity key={index} onPress={() => Linking.openURL(link)}>
+                        <Text style={{ color: '#815BF5' }}>{link}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Files */}
+                <View className="mb-6 flex w-full flex-col">
+                  <View className="flex w-full flex-row items-center gap-2">
+                    <Image
+                      source={require('~/assets/commonAssets/fileLogo.png')}
+                      className="h-6 w-5"
+                    />
+                    <Text className="text-xs text-[#787CA5]">Files</Text>
+                  </View>
+
+                  <View className="flex w-full flex-row items-center gap-3 pl-5 pt-1">
+                    {task?.attachment?.length ? (
+                      task.attachment.map((att, index) => (
+                        <View
+                          key={index}
+                          className="flex h-24 w-24 items-center justify-center rounded-lg border border-[#37384B]">
+                          <Image source={{ uri: att }} className="h-24 w-24 rounded-lg" />
+                        </View>
+                      ))
+                    ) : (
+                      <Text className="text-center flex text-xs p-2 text-gray-400 text-">No file attached!</Text>
+                    )}
+                  </View>
+                </View>
+
+                {/* Reminders */}
+                <View className="mb-6 w-full flex-col gap-2">
+                  <View className="flex w-full flex-row items-center gap-2">
+                    <Image
+                      source={require('~/assets/commonAssets/reminders.png')}
+                      className="h-6 w-5"
+                    />
+                    <Text className="text-xs text-[#787CA5]">Reminders</Text>
+                  </View>
+                  <Text className="text- px-5 text-white" style={{ fontFamily: 'LatoBold' }}>
+                    {reminderText || 'No Reminder Set'}
+                  </Text>
+                </View>
+
+                <View className="mb-8 mt-2 h-0.5 w-full bg-[#37384B]"></View>
+
+                {/* Comments */}
+                <View className="mb-6 w-full flex-col gap-2">
+                  <View className='flex flex-row gap-2 items-center mb-3'>
+                    <Image className='h-5 w-5' source={require("../../assets/Tasks/taskUpdate.png")} />
+                    <Text className='text-xs text-[#787CA5]' style={{ fontFamily: 'LatoBold' }}>Task Updates</Text>
+
+                  </View>
+                  {task?.comments?.map((com, index) => (
+
+                    <View className='flex flex-col items-center w-full'>
+
+                      <View key={index} className="flex w-full flex-row items-center justify-between">
+                        <View className="flex flex-row items-center gap-2">
+                          <View className="h-10 w-10 rounded-full bg-white"></View>
+                          <View className='w-[60%]'>
+                            <Text className="text-lg text-white">{com?.comment}</Text>
+                            <Text className="text-xs text-[#787CA5]">{com?.userName}</Text>
+                          </View>
+                        </View>
+
+                        <TouchableOpacity
+                          className={` mb-4  flex items-center  rounded-xl p-2 pl-3 pr-3 ${com?.tag === 'Completed'
+                            ? 'bg-[#007B5B]'
+                            : com?.tag === 'Reopen'
+                              ? 'bg-[#FDB314]'
+                              : 'bg-[#815BF5]'
+                            }`}
+                        >
+                          <Text className="text-xs text-white" style={{ fontFamily: 'LatoBold' }}>
+                            {com?.tag}
+                          </Text>
+                        </TouchableOpacity>
+
+                      </View>
+                      <View className="mb-3 mt-3 h-0.5 w-full bg-[#37384B]"></View>
+                    </View>
+
+                  ))}
+
+
+                  {/* Update Status Button */}
+                  <TouchableOpacity
+                    onPress={() => setShowMainModal(true)}
+                    className="mt-3 w-full self-center rounded-3xl bg-gray-700 p-3 py-5">
+                    <Text className="text-center font-medium text-white">Update task status</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {renderStatusModal()}
+
+                {/* Progress Modal */}
+                <Modal
+                  isVisible={showProgressModal}
+                  onBackdropPress={() => setShowProgressModal(false)}
+                  style={{ margin: 0, justifyContent: 'flex-end' }}
+                  animationIn="slideInUp"
+                  animationOut="slideOutDown"
+                  useNativeDriver={false}>
+                  <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={{ flex: 1, justifyContent: 'flex-end' }}>
+                    <View className="rounded-t-3xl bg-[#0A0D28] p-5 pb-20">
+                      <View className="mb-6 mt-2 flex w-full flex-row items-center justify-between">
+                        <Text className="text-xl font-semibold text-white">Task Update</Text>
+
+                        <TouchableOpacity onPress={() => setShowProgressModal(false)}>
+                          <Image
+                            source={require('~/assets/commonAssets/cross.png')}
+                            className="h-8 w-8"
+                          />
+                        </TouchableOpacity>
+                      </View>
+                      <Text className='text-gray-400 text-xs w-full '>
+                        Please add a note before marking the task as {taskStatus}
+                      </Text>
+                      {/* Description Input */}
+                      <View
+                        className="mb-4 rounded-2xl px-2 mt-2 border border-[#37384B]"
+                        style={{
+                          height: 150,
+                          justifyContent: 'flex-start',
+                          alignItems: 'flex-start',
+                        }}>
+                        <TextInput
+                          multiline
+                          className="text-white"
+                          value={description}
+                          onChangeText={setDescription}
+                          placeholder="Description"
+                          placeholderTextColor="#787CA5"
+                          style={{
+                            textAlignVertical: 'top',
+                            paddingTop: 11,
+                            width: '100%',
+                            paddingBottom: 11,
+                          }}
                         />
+                      </View>
+
+                      {/* File Upload Section */}
+                      <View className="rounded-t-3xl  bg-[#0A0D28] p-5">
+
+
+                        {/* File Upload Button */}
+                        <View className="w-full ">
+                          <TouchableOpacity onPress={handleFileSelect} className="mb-5">
+                            <View className="flex h-32 w-full flex-row items-center justify-center gap-4 rounded-2xl border border-dashed border-[#815BF5]">
+
+                              <Image source={require('~/assets/Tasks/selectImage.png')} className="h-9 w-9" />
+                              <Text className="text-gray-400 text-xs">Attach File (All File Types Accepted)</Text>
+
+                            </View>
+                          </TouchableOpacity>
+
+
+                          <YStack className='flex   flex-col'>
+                            {attachments.length > 0 && (
+                              <Text className="text-xs font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
+                                Attachments
+                              </Text>
+                            )}
+                            {/* File List with Remove Option */}
+                            {attachments.length > 0 && (
+                              <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false} // Hides the scrollbar for a clean UI
+                                contentContainerStyle={{ flexGrow: 1, paddingVertical: 5 }}
+                              >
+
+                                <View className=" flex flex-row  gap-2">
+                                  {attachments.map((uri, index) => {
+                                    const fileName = uri.split('/').pop();
+                                    const fileExtension = fileName?.split('.').pop();
+                                    const trimmedFileName =
+                                      fileName && fileName.length > 10
+                                        ? `${fileName.substring(0, 6)}...${fileExtension}`
+                                        : fileName;
+
+                                    return (
+                                      <View key={index} className="flex flex-row items-center justify-between px-2 py-2 border border-[#37384B] rounded-lg mb-2">
+                                        <Text className="text-lg text-white">{trimmedFileName}</Text>
+                                        <TouchableOpacity onPress={() => removeAttachment(index)}>
+                                          <Text className="text-red-500 text-lg">❌</Text>
+                                        </TouchableOpacity>
+                                      </View>
+                                    );
+                                  })}
+                                </View>
+                              </ScrollView>
+                            )}
+                          </YStack>
+                        </View>
+                      </View>
+
+                      {/* Update Button */}
+                      <TouchableOpacity
+                        disabled={taskStatusLoading}
+                        onPress={updateTask}
+                        className="mt-2 h-16 w-full items-center justify-center rounded-full bg-[#37384B]">
+                        {taskStatusLoading ? (
+                          <ActivityIndicator size={'small'} color={'#fff'} />
+                        ) : (
+                          <Text className="text-xl text-white">Update Task</Text>
+                        )}
                       </TouchableOpacity>
                     </View>
+                  </KeyboardAvoidingView>
+                </Modal>
+              </View>
+            </ScrollView>
+          </Modal>
 
-                    {/* Description Input */}
-                    <View
-                      className="mb-8 rounded-2xl border border-[#37384B] pl-6 pr-6"
-                      style={{
-                        height: 150,
-                        justifyContent: 'flex-start',
-                        alignItems: 'flex-start',
-                      }}>
-                      <TextInput
-                        multiline
-                        className="text-white"
-                        value={description}
-                        onChangeText={setDescription}
-                        placeholder="Description"
-                        placeholderTextColor="#787CA5"
-                        style={{
-                          textAlignVertical: 'top',
-                          paddingTop: 11,
-                          width: '100%',
-                          paddingBottom: 11,
-                        }}
-                      />
-                    </View>
-
-                    {/* File Upload Section */}
-                    <View className="w-full">
-                      <View className="flex w-full flex-row items-center gap-2">
-                        <Image
-                          source={require('~/assets/commonAssets/fileLogo.png')}
-                          className="h-6 w-5"
-                        />
-                        <Text className="text-sm text-[#787CA5]">Files</Text>
-                      </View>
-
-                      <View className="flex w-full flex-row items-center justify-center gap-5 pl-5 pt-1">
-                        {['0', '1', '2'].map((index) => (
-                          <TouchableOpacity
-                            key={index}
-                            onPress={() => handleFileSelect(Number(index))}
-                            className="flex h-24 w-24 items-center justify-center rounded-lg border ">
-                            {attachments[Number(index)] ? (
-                              <View className='w-full h-full items-center flex justify-center rounded-xl bg-[#37384B] relative z-10'> 
-                              <Image
-                                source={{ uri: attachments[Number(index)] }}
-                                className="h-24 w-24 rounded-lg z-10"
-                              />     
-                              <Text className=' absolute text-[#787999] text-sm font-extrabold z-20' style={{fontFamily:"LatoBold"}}>Attached!</Text>                         
-                              </View>
-                            ) : (
-                              <View className='w-full h-full items-center z-10 flex justify-center rounded-xl bg-[#37384B]'> 
-                              <Image
-                                source={require('~/assets/commonAssets/fileUploadContainer.png')}
-                                className="h-24 w-24 z-10"
-                              />
-                              </View>
-                            )}
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    </View>
-
-                    {/* Update Button */}
-                    <TouchableOpacity
-                      disabled={taskStatusLoading}
-                      onPress={updateTask}
-                      className="mt-10 h-16 w-full items-center justify-center rounded-full bg-[#37384B]">
-                      {taskStatusLoading ? (
-                        <ActivityIndicator size={'small'} color={'#fff'} />
-                      ) : (
-                        <Text className="text-xl text-white">Update Task</Text>
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                </KeyboardAvoidingView>
-              </Modal>
-            </View>
-          </ScrollView>
-        </Modal>
-
-        {/* Task Card Preview */}
-        <View className="flex w-full flex-row items-center justify-between">
-          <Text className="w-[95%] font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
-            {title}
-          </Text>
-          <Image source={require('~/assets/commonAssets/threeDot.png')} className="h-6 w-5" />
-        </View>
-        
-
-        {/* task card */}
-        <View className="flex w-full flex-row items-start gap-20">
-          <View className="flex w-36 gap-3">
-            <View className="flex flex-col">
-              <Text className="text-xs text-[#787CA5]">Due Date</Text>
-              <Text className="text-[#EF4444]" style={{ fontFamily: 'LatoBold' }}>
-                {dueDate}
-              </Text>
-            </View>
-
-            <View className="flex flex-col">
-              <Text className="text-xs text-[#787CA5]">Assigned to</Text>
-              <Text className="text-[#D85570]" style={{ fontFamily: 'LatoBold' }}>
-                {assignedTo}
-              </Text>
-            </View>
+          {/* Task Card Preview */}
+          <View className="flex w-full flex-row items-center justify-between">
+            <Text className="w-[95%] font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
+              {title}
+            </Text>
+            <Image source={require('~/assets/commonAssets/threeDot.png')} className="h-6 w-5" />
           </View>
 
-          <View className="flex w-32 gap-3">
-            <View className="flex flex-col">
-              <Text className="text-xs text-[#787CA5]">Assigned by</Text>
-              <Text className="text-[#815BF5]" style={{ fontFamily: 'LatoBold' }}>
-                {assignedBy}
-              </Text>
+
+          {/* task card */}
+          <View className="flex w-full flex-row items-start gap-20">
+            <View className="flex w-36 gap-3">
+              <View className="flex flex-col">
+                <Text className="text-xs text-[#787CA5]">Due Date</Text>
+                <Text className="text-[#EF4444]" style={{ fontFamily: 'LatoBold' }}>
+                  {dueDate}
+                </Text>
+              </View>
+
+              <View className="flex flex-col">
+                <Text className="text-xs text-[#787CA5]">Assigned to</Text>
+                <Text className="text-[#D85570]" style={{ fontFamily: 'LatoBold' }}>
+                  {assignedTo}
+                </Text>
+              </View>
             </View>
 
-            <View className="flex flex-col">
-              <Text className="text-xs text-[#787CA5]">Category</Text>
-              <Text className="text-[#FDB314]" style={{ fontFamily: 'LatoBold' }}>
-                {category}
-              </Text>
+            <View className="flex w-32 gap-3">
+              <View className="flex flex-col">
+                <Text className="text-xs text-[#787CA5]">Assigned by</Text>
+                <Text className="text-[#815BF5]" style={{ fontFamily: 'LatoBold' }}>
+                  {assignedBy}
+                </Text>
+              </View>
+
+              <View className="flex flex-col">
+                <Text className="text-xs text-[#787CA5]">Category</Text>
+                <Text className="text-[#FDB314]" style={{ fontFamily: 'LatoBold' }}>
+                  {category}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity >
 
 
     </>

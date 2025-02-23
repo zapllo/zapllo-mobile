@@ -47,22 +47,11 @@ const SettingEditableForNumberComponent: React.FC<SettingEditableForNumberCompon
           keyboardType="numeric"
         />
       ) : (
-        <Text className="text-white text-lg w-[80%]" style={{ fontFamily: "LatoBold" }}>
+        <Text className="text-white text- w-[80%]" style={{ fontFamily: "LatoBold" }}>
           {editableTitle}
         </Text>
       )}
-      <View className="flex items-center justify-center gap-3 flex-row">
-        {isEditing ? (
-          <TouchableOpacity onPress={handleSavePress}>
-            <Image source={require("../../assets/Tasks/isEditing.png")} className="w-7 h-7" />
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity onPress={handleEditPress}>
-            <Image source={require("../../assets/Tasks/addto.png")} className="w-7 h-7" />
-          </TouchableOpacity>
-        )}
-
-      </View>
+     
     </View>
   );
 };

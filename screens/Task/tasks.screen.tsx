@@ -30,7 +30,7 @@ export default function TasksScreen() {
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: '#05071E', // Tab bar background
+            backgroundColor: '#815bf5', // Tab bar background
             borderWidth: 1,
             borderColor: '#815BF5',
             height: 52,
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     width: 65, // Width of active tab background
     height: 42, // Height of active tab background
     borderRadius: 60, // Rounded background
-    backgroundColor: '#815BF5', // Background color for active tab
+    backgroundColor: '#000000', // Background color for active tab
     alignItems: 'center',
     justifyContent: 'center',
     display: "flex",

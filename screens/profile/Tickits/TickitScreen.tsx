@@ -59,7 +59,7 @@ export default function TickitScreen() {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const response = await axios.get(`${backend_Host}/tickets/all`, {
+        const response = await axios.get(`${backend_Host}/tickets/get`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',

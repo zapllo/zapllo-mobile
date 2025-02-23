@@ -13,6 +13,24 @@ import { RootState } from '~/redux/store';
 import { WebView } from 'react-native-webview';
 import CustomDropdown from "~/components/customDropDown";
 
+const planFeatures = {
+  "Zapllo Tasks": [
+    "Delegate Unlimited Tasks",
+    "Team Performance Reports",
+    "Links Management for Your Team",
+    "Email Notifications",
+    "WhatsApp Notifications",
+  ],
+  "Money Saver Bundle": [
+    "Includes Zapllo Tasks + Payroll",
+    "Automated Salary Processing",
+    "Attendance & Leave Management",
+    "Email Notifications",
+    "WhatsApp Notifications",
+  ],
+};
+
+
 
 export default function BillingScreen() {
   const navigation = useNavigation();
@@ -28,10 +46,42 @@ export default function BillingScreen() {
   const [paymentUrl, setPaymentUrl] = useState('');
   const [currentBalance, setCurrentBalance] = useState(0);
   const [subscribeModalVisible, setSubscribeModalVisible] = useState(false);
+  const [addUsersModalVisible, setAddUsersModalVisible] = useState(false);
   const [paymentDetailedSubscriptionModalVisible, setPaymentDetailedSubscriptionModalVisible] = useState(false);
   const [totalUsers, setTotalUsers] = useState(5);
   const [showBackendView, setShowBackendView] = useState(false);
   const currentUser = useSelector((state: RootState) => state.auth.userData);
+  const [subscribedPlan, setSubscribedPlan] = useState('');
+  const [subscribedUserCount, setSubscribedUserCount] = useState(0);
+  const [renewsOn, setRenewsOn] = useState('');
+  const [additionalUsers, setAdditionalUsers] = useState(5);
+  const [selectedPlanForUsers, setSelectedPlanForUsers] = useState('');
+  const [selectedPlanForSubscription, setSelectedPlanForSubscription] = useState('');
+
+
+  const handleAddUsers = () => {
+    setSelectedPlanForUsers(subscribedPlan); // Keep the existing subscribed plan
+    setAddUsersModalVisible(true);
+  };
+
+
+
+  useEffect(() => {
+    const fetchSubscriptionDetails = async () => {
+      try {
+        const response = await axios.get('https://zapllo.com/api/organization/getById');
+        if (response.data.data) {
+          setSubscribedPlan(response.data.data.subscribedPlan);
+          setSubscribedUserCount(response.data.data.subscribedUserCount);
+          setRenewsOn(response.data.data.subscriptionExpires);
+        }
+      } catch (error) {
+        console.error('Error fetching subscription details:', error);
+      }
+    };
+
+    fetchSubscriptionDetails();
+  }, []);
 
   const totalUsersOptions = Array.from({ length: 20 }, (_, i) => ({
     label: `${(i + 1) * 5}`,
@@ -48,7 +98,7 @@ export default function BillingScreen() {
   const handleOptionPress = (option: string) => {
     setSelectedOption(option);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    
+
     if (option === 'plans') {
       setShowBackendView(true);
     } else {
@@ -70,6 +120,30 @@ export default function BillingScreen() {
       }, 700);
     }
   };
+
+  const handleSubscribe = (planName: string) => {
+    setSelectedPlanForSubscription(planName); // Only store for the subscription modal
+    setSubscribeModalVisible(true);
+  };
+
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Invalid Date";
+
+    const day = date.getDate();
+    const month = date.toLocaleString("en-US", { month: "short" });
+    const year = date.getFullYear();
+
+    const getOrdinalSuffix = (n: number) => {
+      const s = ["th", "st", "nd", "rd"];
+      const v = n % 100;
+      return s[(v - 20) % 10] || s[v] || s[0];
+    };
+
+    return `${day}${getOrdinalSuffix(day)} ${month} ${year}`;
+  };
+
 
   const handleSubscribedNext = () => {
     setSubscribeModalVisible(false);
@@ -123,43 +197,42 @@ export default function BillingScreen() {
     }
   };
 
+
+
   const handlePaymentForSubscription = async () => {
     try {
       setPaymentDetailedSubscriptionModalVisible(false);
 
-      const subscriptionCost = totalUsers * 1999; // Cost for the selected number of users
-      const gst = subscriptionCost * 0.18; // Calculate GST
-      const totalPayable = subscriptionCost + gst; // Total amount including GST
+      const planCost = subscribedPlan === "Zapllo Tasks" ? 1999 : 2999;
+      const subscriptionCost = additionalUsers * planCost;
+      const gst = subscriptionCost * 0.18;
+      const totalPayable = subscriptionCost + gst;
 
       const orderData = {
-        amount: Math.round(totalPayable * 100), // Total amount including GST in paise
-        currency: 'INR',
-        receipt: `order_${Date.now()}`, // Generate unique receipt ID
-        notes: {
-          customer: `${currentUser?.firstName} ${currentUser?.lastName}`,
-          email: currentUser?.email,
-        },
+        amount: Math.round(totalPayable * 100),
+        currency: "INR",
+        subscribedUserCount: subscribedUserCount + additionalUsers, // Update user count
+        planName: subscribedPlan,
       };
 
-      const response = await axios.post('https://zapllo.com/api/create-order', orderData);
-
+      const response = await axios.post("/api/create-order", orderData);
       if (response.data.orderId) {
         const paymentUrl = `https://zapllo.com/payment?orderId=${response.data.orderId}&amount=${orderData.amount}`;
         setPaymentUrl(paymentUrl);
         setShowWebView(true);
       } else {
-        throw new Error('Order ID not found in the response');
+        throw new Error("Order ID not found in the response");
       }
-
     } catch (error) {
-      console.error('Error processing payment:', error);
-      Alert.alert("Error", "There was an issue processing your payment. Please try again.");
+      console.error("Error processing payment:", error);
+      Alert.alert("Error", "There was an issue processing your payment.");
     }
   };
 
+
   return (
     <SafeAreaView className="h-full w-full flex-1 bg-[#05071E] ">
-      {showWebView ? (
+     {showWebView ? (
         <WebView
           source={{ html: `
             <!DOCTYPE html>
@@ -170,18 +243,16 @@ export default function BillingScreen() {
               <body>
                 <script>
                   var options = {
-                    "key": ${process.env.RAZOR_PAY_LIVE_KEY}, 
-                    "amount": "${totalAmount * 100}", // Amount in paise
+                    "key": "${process.env.RAZOR_PAY_LIVE_KEY}", 
+                    "amount": "${totalAmount * 100}", 
                     "currency": "INR",
                     "name": "Zapllo",
                     "description": "Payment for Recharge",
-                    "order_id": "${paymentUrl.split('orderId=')[1].split('&')[0]}", // Extract order ID from URL
+                    "order_id": "${paymentUrl.split('orderId=')[1].split('&')[0]}", 
                     "handler": function (response) {
                       window.ReactNativeWebView.postMessage(JSON.stringify({ status: 'success', response: response }));
                     },
-                    "theme": {
-                      "color": "#04061E"
-                    }
+                    "theme": { "color": "#04061E" }
                   };
                   var rzp1 = new Razorpay(options);
                   rzp1.open();
@@ -202,12 +273,6 @@ export default function BillingScreen() {
               setShowWebView(false);
             }
           }}
-          onNavigationStateChange={(navState) => {
-            if (navState.canGoBack) {
-              setShowWebView(false);
-            }
-          }}
-
         />
       ) : (
         <ScrollView
@@ -274,10 +339,10 @@ export default function BillingScreen() {
                     keyboardType="numeric"
                     passwordError={false}
                   />
-                  <Text className="text-white text-xs ml-5 mb-5" style={{ fontFamily: 'LatoLight' }}>Recharge Amount (minimum ₹5000)</Text>    
+                  <Text className="text-white text-xs ml-5 mb-5" style={{ fontFamily: 'LatoLight' }}>Recharge Amount (minimum ₹5000)</Text>
                   <TouchableOpacity className="w-full items-center bg-[#017A5B] p-4 rounded-full mb-4" onPress={handleNextPress}>
                     <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>Next</Text>
-                  </TouchableOpacity>           
+                  </TouchableOpacity>
                 </View>
               </KeyboardAvoidingView>
             </Modal>
@@ -297,7 +362,7 @@ export default function BillingScreen() {
                   <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
                     <Text className="text-xl font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>Payment Details</Text>
                   </View>
-                  <View className="flex gap-3 mb-3 mt-5"> 
+                  <View className="flex gap-3 mb-3 mt-5">
                     <Text className="text-white text-sm" style={{ fontFamily: 'Lato' }}>Amount (excluding GST) = INR {parseFloat(rechargeAmount).toFixed(2)}</Text>
                     <Text className="text-white text-sm" style={{ fontFamily: 'Lato' }}>GST (18%) = INR {gstAmount.toFixed(2)}</Text>
                     <Text className="text-white text-sm" style={{ fontFamily: 'Lato' }}>Total Amount (including GST) = INR {totalAmount.toFixed(2)}</Text>
@@ -310,13 +375,13 @@ export default function BillingScreen() {
                     passwordError={false}
                   />
                   <View className="flex items-center gap-5 flex-row justify-center mt-8 mb-4">
-                    <TouchableOpacity 
-                      className="bg-[#6b7280] p-4 w-1/3 rounded-md items-center" 
+                    <TouchableOpacity
+                      className="bg-[#6b7280] p-4 w-1/3 rounded-md items-center"
                       onPress={handleBackPress}
                     >
                       <Text className="text-white text-sm" style={{ fontFamily: 'LatoBold' }}>Back</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       className="bg-[#017A5B] p-4 rounded-md items-center w-1/2"
                       onPress={handlePayment}
                     >
@@ -326,10 +391,56 @@ export default function BillingScreen() {
                 </View>
               </KeyboardAvoidingView>
             </Modal>
+            <Modal
+              isVisible={addUsersModalVisible}
+              onBackdropPress={() => setAddUsersModalVisible(false)}
+              animationIn="fadeIn"
+              animationOut="fadeOut"
+              backdropOpacity={0.3}
+              style={{ justifyContent: "flex-start", margin: 0 }}
+            >
+              <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, justifyContent: "flex-end" }}>
+                <View className="rounded-t-3xl bg-[#0A0D28] p-5">
+                  <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
+                    <Text className="text-xl font-semibold text-white">
+                      Add Users to {selectedPlanForUsers}
+                    </Text>
+                    <TouchableOpacity onPress={() => setAddUsersModalVisible(false)}>
+                      <Image source={require('../../../assets/commonAssets/cross.png')} className="h-8 w-8" />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Display correct user count updates */}
+                  <Text className="text-white text-sm mb-4">
+                    You had <Text className="font-bold">{subscribedUserCount}</Text> users, adding
+                    <Text className="font-bold"> {additionalUsers}</Text> more will result in
+                    <Text className="font-bold"> {subscribedUserCount + additionalUsers}</Text>.
+                  </Text>
+                  <Text className="text-white text-sm mb-4">
+                    Payment will be for <Text className="font-bold">{additionalUsers}</Text> new users.
+                  </Text>
+
+                  {/* Dropdown to select additional users */}
+                  <CustomDropdown
+                    data={totalUsersOptions}
+                    placeholder="Select Additional Users"
+                    selectedValue={additionalUsers}
+                    onSelect={(value) => setAdditionalUsers(value)}
+                  />
+
+                  <TouchableOpacity className="w-full items-center bg-[#017A5B] p-4 rounded-full mt-5" onPress={handleSubscribedNext}>
+                    <Text className="text-white">Next</Text>
+                  </TouchableOpacity>
+                </View>
+              </KeyboardAvoidingView>
+            </Modal>
+
+
 
             <Modal
               isVisible={messageVisible}
               animationIn="fadeIn"
+
               animationOut="fadeOut"
               backdropOpacity={0.3}
               style={{ justifyContent: 'flex-start', margin: 0 }}
@@ -384,51 +495,61 @@ export default function BillingScreen() {
                 <View className="w-full bg-[#424882] h-0.5 "></View>
               </View>
             ) : (
-            <View className=" w-[90%] bg-[#0A0D28] p-6 rounded-3xl mt-10 mb-32">
-              <Text className="text-white mb-7"style={{ fontFamily: "LatoBold" }}>Zapllo tasks</Text>
-            <View className="flex flex-row items-end gap-3">
-              <Text className="text-white text-5xl"style={{ fontFamily: "LatoBold" }}>₹1999
-              </Text>
-              <Text className="text-[#676B93] pb-1"style={{ fontFamily: "LatoBold" }}> / per user per year
-              </Text>
-            </View>
-            <Text className="text-white mt-7 "style={{ fontFamily: "LatoBold" }}>Manage your Tasks like a pro
-            </Text>
-            <TouchableOpacity className="w-full my-9 rounded-full py-4 items-center justify-center border border-[#A485FF]" onPress={() => setSubscribeModalVisible(true)}>
-              <Text className="text-white " style={{ fontFamily: "LatoBold" }}>Subscribe</Text>
-            </TouchableOpacity>
+              <View className="w-full items-center mt-2">
+                {["Zapllo Tasks", "Money Saver Bundle"].map((planName) => (
+                  <View
+                    key={planName}
+                    className={`w-[90%] p-6 rounded-3xl mt-10 mb-4 ${subscribedPlan === planName ? "bg-black" : "bg-[#0A0D28]"
+                      }`}
+                  >
+                    <Text className="text-white text-lg font-bold mb-7">{planName}</Text>
+                    <View className="flex flex-row items-end gap-3">
+                      <Text className="text-white text-5xl">
+                        ₹{planName === "Zapllo Tasks" ? "1999" : "2999"}
+                      </Text>
+                      <Text className="text-[#676B93] pb-1"> / per user per year</Text>
+                    </View>
 
-            <View className="w-full bg-[#424882] h-0.5 mb-9"></View>
+                    {/* Feature List */}
+                    <View className="w-full flex flex-col gap-4 mt-4">
+                      {planFeatures[planName].map((feature, index) => (
+                        <View key={index} className="flex flex-row items-center gap-2">
+                          <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")} />
+                          <Text className="text-white">{feature}</Text>
+                        </View>
+                      ))}
+                    </View>
 
-            <View className="w-full flex flex-col gap-8">
-              <Text className="text-white my-2 " style={{ fontFamily: "LatoBold" }}>Task Delegation App</Text>
-              <View className="flex items-center flex-row gap-2">
-                <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")}/>
-                <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Delegate Unlimited Tasks</Text>
+                    {subscribedPlan === planName ? (
+                      <View>
+                        <Text className="text-white mt-4">Subscribed Users: {subscribedUserCount}</Text>
+                        <Text className="text-white mt-2">Renews On: {formatDate(renewsOn)}</Text>
+                        <TouchableOpacity
+                          className="w-full my-9 rounded-full py-4 items-center border border-[#A485FF]"
+                          onPress={handleAddUsers} // Add users to existing subscription
+                        >
+                          <Text className="text-white">Add Users</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : (
+                      <TouchableOpacity
+                        className="w-full my-9 rounded-full py-4 items-center border border-[#A485FF]"
+                        onPress={() => handleSubscribe(planName)} // Subscribe to a new plan
+                      >
+                        <Text className="text-white">Subscribe</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ))}
+
               </View>
-              <View className="flex items-center flex-row gap-2">
-                <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")}/>
-                <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Team Performance Report</Text>
-              </View>
-              <View className="flex items-center flex-row gap-2">
-                <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")}/>
-                <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Links Management for Your Team</Text>
-              </View>
-              <View className="flex items-center flex-row gap-2">
-                <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")}/>
-                <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Email Notification</Text>
-              </View>
-              <View className="flex items-center flex-row gap-2">
-                <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")}/>
-                <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Whats App Notification</Text>
-              </View>
-            </View>
-            </View>
+
+
             )}
           </View>
         </ScrollView>
       )}
-      
+
       <Modal
         isVisible={subscribeModalVisible}
         onBackdropPress={() => setSubscribeModalVisible(false)}
@@ -521,13 +642,13 @@ export default function BillingScreen() {
               passwordError={false}
             />
             <View className="flex items-center gap-5 flex-row justify-center mt-8 mb-4">
-              <TouchableOpacity 
-                className="bg-[#6b7280] p-4 w-1/3 rounded-md items-center" 
+              <TouchableOpacity
+                className="bg-[#6b7280] p-4 w-1/3 rounded-md items-center"
                 onPress={handleBackPressForSubscription}
               >
                 <Text className="text-white text-sm" style={{ fontFamily: 'LatoBold' }}>Back</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 className="bg-[#017A5B] p-4 rounded-md items-center w-1/2"
                 onPress={handlePaymentForSubscription}
               >

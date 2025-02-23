@@ -36,11 +36,17 @@ const daysData = [
 const EmployeeWiseScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<EmployeeWiseScreenRouteProp>();
   const { employeeWiseData } = route.params;
-  // const navigation = useNavigation<PendingTaskScreenRouteProp>();
   const [selectedTeamSize, setSelectedTeamSize] = useState(null);
   const [search, setSearch] = useState('');
 
-  
+  console.log(employeeWiseData, 'data?');
+
+  // Filter employees based on search input
+  const filteredEmployees = employeeWiseData.filter((employee) => {
+    const employeeName = `${employee[0]?.assignedUser?.firstName} ${employee[0]?.assignedUser?.lastName}`;
+    return employeeName.toLowerCase().includes(search.toLowerCase());
+  });
+
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
       <NavbarTwo title="Employee Wise" onBackPress={() => navigation.navigate('DashboardHome')} />
@@ -51,6 +57,7 @@ const EmployeeWiseScreen: React.FC<Props> = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled">
           <View className="mb-20 flex-1 items-center">
+
             {/* Dropdown */}
             <View className="mb-3 mt-4 flex w-full items-center">
               <CustomDropdown
@@ -61,33 +68,43 @@ const EmployeeWiseScreen: React.FC<Props> = ({ navigation }) => {
               />
             </View>
 
-            {/* Search Bar for employee */}
+            {/* Search Bar */}
             <View className="flex w-full flex-row items-center justify-center gap-5">
               <TextInput
                 value={search}
                 onChangeText={(value) => setSearch(value)}
                 placeholder="Search Employee"
-                className="w-[90%] rounded-full border border-[#37384B] p-4 text-[#787CA5]"
+                className="w-[90%] rounded-lg border border-[#37384B] p-4 text-white"
                 placeholderTextColor="#787CA5"
               />
             </View>
 
-            {employeeWiseData.map((employee) => {
-              const pending = employee.filter((e: any) => e?.status === 'Pending');
-              const completed = employee.filter((e: any) => e?.status === 'Completed');
-              const inProgress = employee.filter((e: any) => e?.status === 'InProgress');
-              const overdue = employee.filter((e: any) => e?.status === 'Overdue');
+            {/* Render Filtered Employees */}
+            {filteredEmployees.length > 0 ? (
+              filteredEmployees.map((employee) => {
+                console.log('Employee Data:', employee);
+                console.log('Assigned User:', employee[0]?.assignedUser);
+                console.log('Profile Pic:', employee[0]?.assignedUser?.profilePic);
+                const pending = employee.filter((e: any) => e?.status === 'Pending');
+                const completed = employee.filter((e: any) => e?.status === 'Completed');
+                const inProgress = employee.filter((e: any) => e?.status === 'InProgress');
+                const overdue = employee.filter((e: any) => e?.status === 'Overdue');
 
-              return (
-                <EmployeesDetaildComponent
-                  name={`${employee[0]?.assignedUser?.firstName} ${employee[0]?.assignedUser?.lastName}`}
-                  overdue={overdue?.length}
-                  pending={pending.length}
-                  completed={completed.length}
-                  inProgress={inProgress?.length}
-                />
-              );
-            })}
+                return (
+                  <EmployeesDetaildComponent
+                    key={employee[0]?.assignedUser?.firstName} // Ensure a unique key
+                    name={`${employee[0]?.assignedUser?.firstName} ${employee[0]?.assignedUser?.lastName}`}
+                    profilePic={employee[0]?.assignedUser?.profilePic || ''}
+                    overdue={overdue.length}
+                    pending={pending.length}
+                    completed={completed.length}
+                    inProgress={inProgress.length}
+                  />
+                );
+              })
+            ) : (
+              <Text className="text-white mt-5">No employees found</Text>
+            )}
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>

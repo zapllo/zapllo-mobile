@@ -93,13 +93,15 @@ const TickitCard: React.FC<TickitCardProps> = ({
       onPress={navigateToDetail}>
       <View
         style={{
-          backgroundColor: '#815BF5',
+          backgroundColor: status.toLowerCase() === "pending" ? "#EF4444" : "#815BF5", // Red for pending, purple for others
           padding: 10,
           borderRadius: 10,
           alignItems: 'center',
           width: 80,
         }}>
-        <Text style={{ color: 'white', fontSize: 12, fontFamily: 'LatoBold' }}>{status}</Text>
+        <Text style={{ color: 'white', fontSize: 12, fontFamily: 'LatoBold' }}>
+          {status}
+        </Text>
       </View>
 
       <View
@@ -150,7 +152,7 @@ const TickitCard: React.FC<TickitCardProps> = ({
             <Text style={{ color: 'white', fontSize: 24, marginBottom: 10 }}>
               delete this ticket?
             </Text>
-            <Text style={{ color: '#787CA5' }}>You're going to delete the "Demo"</Text>
+            <Text style={{ color: '#787CA5' }}>You're going to delete the {subject}</Text>
             <Text style={{ color: '#787CA5', marginBottom: 20 }}>ticket. Are you sure?</Text>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
               <TouchableOpacity

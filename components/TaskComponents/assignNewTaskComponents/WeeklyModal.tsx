@@ -43,7 +43,7 @@ const WeeklyModal: React.FC<WeeklyModalProps> = ({ isVisible, onClose ,setWeekDa
       isVisible={isVisible}
       animationIn="slideInUp"
       animationOut="slideOutDown"
-      style={{ margin: 0, justifyContent: 'center' }}>
+      style={{ margin: 0, alignSelf:'center', justifyContent: 'center', width:'90%' }}>
       <View className="rounded-xl bg-[#0A0D28] p-5 pb-8">
         <View className="mb-4 flex w-full flex-row items-center justify-between">
           <Text className="text-lg text-white" style={{ fontFamily: 'Lato-Bold' }}>
@@ -84,8 +84,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   dayBox: {
-    width: 40,
-    height: 40,
+    width: 35,
+    height: 35,
     margin: 5,
     justifyContent: 'center',
     alignItems: 'center',

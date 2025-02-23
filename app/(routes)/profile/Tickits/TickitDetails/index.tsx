@@ -11,6 +11,7 @@ import {
   Keyboard,
   Alert,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -154,133 +155,153 @@ const TickitDetails: React.FC = () => {
         style={{ paddingBottom: keyboardOffset }}>
         <NavbarTwo title="Ticket Details" onBackPress={() => navigation.goBack()} />
 
-        <View className="mt-8 flex w-full flex-col items-center gap-2 pb-20">
-          <View className="w-[90%] rounded-3xl border border-[#37384B] p-5">
-            <View className="mb-2 w-20 items-center rounded-md bg-[#815BF5] p-2">
-              <Text className="text-xs text-white" style={{ fontFamily: 'LatoBold' }}>
-                {status}
-              </Text>
-            </View>
+        {/* Scrollable Content */}
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }} // Extra space at bottom
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="mt-8 flex w-full flex-col items-center gap-2 pb-20">
+            <View className="w-[90%] rounded-3xl border border-[#37384B] p-5">
+              <View style={{
+                backgroundColor: status.toLowerCase() === "pending" ? "#EF4444" : "#815BF5", // Red for pending, purple for others
 
-            <Text
-              className="mb-3 w-full text-lg font-bold text-white"
-              style={{ fontFamily: 'LatoBold' }}>
-              {' '}
-              {ticket?.subject}
-            </Text>
-
-            <View className="flex flex-col gap-1">
-              <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
-                Date:{' '}
-                <Text className="text-sm text-white" style={{ fontFamily: 'LatoBold' }}>
-                  {moment(ticket?.createdAt).format('ddd, MMMM D - h:mm A')}
+              }} className="mb-2 w-20 items-center rounded-md bg-[#815BF5] p-2">
+                <Text className="text-xs text-white" style={{ fontFamily: 'LatoBold' }}>
+                  {status}
                 </Text>
-              </Text>
-              <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
-                Category:{' '}
-                <Text className="text-sm text-white" style={{ fontFamily: 'LatoBold' }}>
-                  {' '}
-                  {ticket?.category}
-                </Text>
-              </Text>
-              <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
-                Subcategory:{' '}
-                <Text className="text-sm text-white" style={{ fontFamily: 'LatoBold' }}>
-                  {ticket?.subcategory}
-                </Text>
-              </Text>
-              <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
-                Description:{' '}
-                <Text className="text-sm text-white" style={{ fontFamily: 'LatoBold' }}>
-                  {ticket?.description}
-                </Text>
-              </Text>
-              <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
-                Subject:{' '}
-                <Text className="text-sm text-[#EF4444]" style={{ fontFamily: 'LatoBold' }}>
-                  {ticket?.subject}
-                </Text>
-              </Text>
-            </View>
-          </View>
-
-          <View className="mt-6 w-[90%]">
-            <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
-              {' '}
-              Ticket Updates
-            </Text>
-          </View>
-          {commentData?.length &&
-            commentData.map((val, index) => (
-              <View
-                key={index}
-                className="flex w-[90%] flex-col rounded-3xl border border-[#37384B] p-6">
-                <View className="flex flex-row items-start gap-2">
-                  <View className="h-12 w-12 rounded-full bg-white"></View>
-
-                  <View className="flex flex-col gap-1">
-                    <Text className="text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
-                      {val?.userId?.firstName} {val?.userId?.lastName}
-                    </Text>
-                    <View className="flex flex-row items-center gap-2">
-                      <Image
-                        className="h-5 w-5"
-                        source={require('../../../../../assets/Tasks/calender.png')}
-                      />
-                      <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
-                        {moment(val?.createdAt).format('ddd, MMMM D - h:mm A')}
-                      </Text>
-                    </View>
-                    <Text className="mt-2 text-white" style={{ fontFamily: 'LatoBold' }}>
-                      {val?.content}
-                    </Text>
-                  </View>
-                </View>
               </View>
-            ))}
-        </View>
 
-        <View
-          className="flex flex-row items-center justify-between bg-[#05071E] px-5"
-          style={{
-            position: 'absolute',
-            bottom: keyboardOffset,
-            width: '100%',
-            alignItems: 'center',
-          }}>
-          <TouchableOpacity onPress={handleFileSelect} className="">
-            <Image
-              className="h-14 w-14"
-              source={require('../../../../../assets/Tickit/fileUpload.png')}
-            />
-          </TouchableOpacity>
+              <Text
+                className="mb-3 w-full text-lg font-bold text-white"
+                style={{ fontFamily: 'LatoBold' }}>
+                {' '}
+                {ticket?.subject}
+              </Text>
 
-          <TextInput
-            value={comment}
-            onChangeText={(value) => setComment(value)}
-            placeholder="Type your comment here"
-            placeholderTextColor="#787CA5"
-            className="h-16  w-2/3 rounded-full  pl-6 text-sm text-white"
+              <View className="flex flex-col gap-1">
+                <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
+                  Date:{' '}
+                  <Text className="text-sm text-white" style={{ fontFamily: 'LatoBold' }}>
+                    {moment(ticket?.createdAt).format('ddd, MMMM D - h:mm A')}
+                  </Text>
+                </Text>
+                <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
+                  Category:{' '}
+                  <Text className="text-sm text-white" style={{ fontFamily: 'LatoBold' }}>
+                    {' '}
+                    {ticket?.category}
+                  </Text>
+                </Text>
+                <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
+                  Subcategory:{' '}
+                  <Text className="text-sm text-white" style={{ fontFamily: 'LatoBold' }}>
+                    {ticket?.subcategory}
+                  </Text>
+                </Text>
+                <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
+                  Description:{' '}
+                  <Text className="text-sm text-white" style={{ fontFamily: 'LatoBold' }}>
+                    {ticket?.description}
+                  </Text>
+                </Text>
+                <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
+                  Subject:{' '}
+                  <Text className="text-sm text-[#EF4444]" style={{ fontFamily: 'LatoBold' }}>
+                    {ticket?.subject}
+                  </Text>
+                </Text>
+              </View>
+            </View>
+
+            <View className="mt-6 w-[90%]">
+              <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
+                {' '}
+                Ticket Updates
+              </Text>
+            </View>
+            {commentData?.length &&
+              commentData.map((val, index) => {
+                const firstName = val?.userId?.firstName || "";
+                const lastName = val?.userId?.lastName || "";
+                const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+
+                return (
+                  <View
+                    key={index}
+                    className="flex w-[90%] flex-col rounded-3xl border border-[#37384B] p-6">
+                    <View className="flex flex-row items-start gap-2">
+                      {/* User Initials Circle */}
+                      <View className="h-12 w-12 rounded-full bg-[#815BF5] flex items-center justify-center">
+                        <Text className="text-white text-lg font-bold">{initials}</Text>
+                      </View>
+
+                      <View className="flex flex-col gap-1">
+                        <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>
+                          {firstName} {lastName}
+                        </Text>
+                        <View className="flex flex-row items-center gap-2">
+                          <Image
+                            className="h-4 w-4"
+                            source={require('../../../../../assets/Tasks/calender.png')}
+                          />
+                          <Text className="text-xs text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
+                            {moment(val?.createdAt).format('ddd, MMMM D - h:mm A')}
+                          </Text>
+                        </View>
+                        <Text className="mt-2 text-sm text-white" style={{ fontFamily: 'LatoBold' }}>
+                          {val?.content}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })}
+
+          </View>
+
+          <View
+            className="flex flex-row items-center justify-between bg-[#05071E] px-5"
             style={{
-              fontFamily: 'LatoBold',
-              borderColor: isFocused || comment ? '#815BF5' : '#37384B',
-              borderWidth: 1,
-            }}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-          />
-
-          <TouchableOpacity disabled={isLoading} onPress={handelAddComment}>
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
+              position: 'absolute',
+              bottom: keyboardOffset,
+              width: '100%',
+              alignItems: 'center',
+            }}>
+            <TouchableOpacity onPress={handleFileSelect} className="">
               <Image
                 className="h-14 w-14"
-                source={require('../../../../../assets/Tickit/send.png')}
+                source={require('../../../../../assets/Tickit/fileUpload.png')}
               />
-            )}
-          </TouchableOpacity>
-        </View>
+            </TouchableOpacity>
+
+            <TextInput
+              value={comment}
+              onChangeText={(value) => setComment(value)}
+              placeholder="Type your comment here"
+              placeholderTextColor="#787CA5"
+              className="h-16  w-2/3 rounded-full  pl-6 text-sm text-white"
+              style={{
+                fontFamily: 'LatoBold',
+                borderColor: isFocused || comment ? '#815BF5' : '#37384B',
+                borderWidth: 1,
+              }}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+            />
+
+            <TouchableOpacity disabled={isLoading} onPress={handelAddComment}>
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Image
+                  className="h-14 w-14"
+                  source={require('../../../../../assets/Tickit/send.png')}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

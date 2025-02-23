@@ -28,7 +28,7 @@ const CustomDropdownComponentTwo: React.FC<CustomDropdownProps> = ({
   const filteredData = data.filter((item) =>
     item.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
+
 
   const handleSelect = (value: any) => {
     setIsOpen(false);
@@ -82,7 +82,7 @@ const CustomDropdownComponentTwo: React.FC<CustomDropdownProps> = ({
                     ) : (
                       <View style={styles.initialsContainer}>
                         <Text style={styles.initialsText}>
-                          {item.label.charAt(0).toUpperCase() }
+                          {item.label.charAt(0).toUpperCase()}
                         </Text>
                       </View>
                     )}
@@ -133,19 +133,21 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   dropdownMenu: {
-    backgroundColor: '#05071E',
-    borderRadius: 15,
+    backgroundColor: '#121212',
+    borderRadius: 10,
     borderColor: '#37384B',
     borderWidth: 1,
     marginTop: 15,
+    width: '105%',
+    alignSelf: 'center',
     zIndex: 100,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
-    backgroundColor: '#05071E',
+    backgroundColor: '#121212',
     borderBottomWidth: 1,
     borderBottomColor: '#37384B',
     zIndex: 100,
@@ -159,9 +161,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   dropdownItem: {
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 15,
-    borderBottomWidth: 1,
+    // borderBottomWidth: 1,
     borderBottomColor: '#37384B',
   },
   itemContent: {

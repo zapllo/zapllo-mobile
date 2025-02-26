@@ -10,10 +10,10 @@ import { BlurView } from 'expo-blur';
 interface AllTaskModalProps {
   isVisible: boolean;
   onClose: () => void;
-  onNavigate: (route: string) => void;
 }
 
-const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose, onNavigate }) => {
+const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose }) => {
+  const navigation = useNavigation();
   const { userData } = useSelector((state: RootState) => state.auth);
 
   const isAdmin = userData?.data?.role === "orgAdmin" || userData?.user?.role === "orgAdmin";
@@ -24,7 +24,7 @@ const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose, o
       return;
     }
     onClose();
-    onNavigate(route);
+    router.push(route);
   };
 
   return (

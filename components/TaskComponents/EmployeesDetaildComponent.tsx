@@ -1,13 +1,13 @@
-import { Image, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import React from 'react';
+import { View, Text, Image, StyleSheet } from 'react-native';
 
-// Define the props interface
 interface EmployeesDetaildComponentProps {
-  overdue: any;
-  pending: any;
-  inProgress: any;
-  completed: any;
-  name:string;
+  overdue: number;
+  pending: number;
+  inProgress: number;
+  completed: number;
+  name: string;
+  profilePic?: string;
 }
 
 const EmployeesDetaildComponent: React.FC<EmployeesDetaildComponentProps> = ({
@@ -15,71 +15,64 @@ const EmployeesDetaildComponent: React.FC<EmployeesDetaildComponentProps> = ({
   pending,
   inProgress,
   completed,
-  name
+  profilePic,
+  name,
 }) => {
-  return (
-    <View className="w-[90%] h-64 border border-[#37384B] p-5 pl-6 pr-6 rounded-3xl items-center mt-5">
-      <View className="flex flex-row justify-between items-center mb-4 ">
-        <View className="gap-3 items-center flex flex-row">
-          {/* profile image  */}
-          
-          <View className="w-12 h-12 bg-white rounded-full"></View>
-          <Text className="text-xl w-[70%] text-white">{name}</Text>
-        </View>
+  // Calculate the completion percentage
+  const totalTasks = overdue + pending + inProgress + completed;
+  const completionPercentage = totalTasks > 0 ? Math.round((completed / totalTasks) * 100) : 0;
 
-        
+  console.log('Profile Pic URL:', profilePic);
+
+  // Encode profile picture URL in case it has spaces
+  const encodedProfilePic = profilePic ? profilePic.replace(/ /g, '%20') : null;
+
+  // Extract initials from name
+  const getInitials = (fullName: string) => {
+    const nameParts = fullName.split(' ');
+    const initials = nameParts
+      .map((part) => part.charAt(0))
+      .join('')
+      .toUpperCase();
+    return initials.length > 2 ? initials.slice(0, 2) : initials;
+  };
+
+  return (
+    <View style={styles.card}>
+      {/* Profile + Name */}
+      <View style={styles.header}>
+        {encodedProfilePic ? (
+          <Image source={{ uri: encodedProfilePic }} style={styles.profileImage} />
+        ) : (
+          <View style={styles.initialsContainer}>
+            <Text style={styles.initialsText}>{getInitials(name)}</Text>
+          </View>
+        )}
+
+        <View>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.progressText}>{completionPercentage}% completed</Text>
+        </View>
       </View>
 
-      <View className="w-full flex flex-row justify-start gap-24 items-center">
-        <View className="flex flex-col gap-3">
-          {/* Overdue */}
-          <View className="flex flex-col">
-            <View className="flex flex-row items-center gap-2">
-              <Image
-                source={require('../../assets/Tasks/overdue.png')}
-                className="w-5 h-5"
-              />
-              <Text className="text-[#787CA5] text-sm">Overdue</Text>
-            </View>
-            <Text className="text-[#EF4444] ml-7 text-lg">{overdue}</Text>
-          </View>
+      {/* Progress Bar */}
+      <View style={styles.progressBarContainer}>
+        <View style={[styles.progressBar, { width: `${completionPercentage}%` }]} />
+      </View>
 
-          {/* In Progress */}
-          <View className="flex flex-col">
-            <View className="flex flex-row items-center gap-2">
-              <Image
-                source={require('../../assets/Tasks/InProgress.png')}
-                className="w-5 h-5"
-              />
-              <Text className="text-[#787CA5] text-sm">In Progress</Text>
-            </View>
-            <Text className="text-[#A914DD] ml-7 text-lg">{inProgress}</Text>
-          </View>
+      {/* Status Labels */}
+      <View style={styles.statusContainer}>
+        <View style={[styles.statusBox, styles.overdue]}>
+          <Text style={styles.statusText}>Overdue {overdue}</Text>
         </View>
-        <View className="flex flex-col gap-3">
-          {/* Pending */}
-          <View className="flex flex-col">
-            <View className="flex flex-row items-center gap-2">
-              <Image
-                source={require('../../assets/Tasks/overdue.png')}
-                className="w-5 h-5"
-              />
-              <Text className="text-[#787CA5] text-sm">Pending</Text>
-            </View>
-            <Text className="text-[#A914DD] ml-7 text-lg">{pending}</Text>
-          </View>
-
-          {/* Completed */}
-          <View className="flex flex-col">
-            <View className="flex flex-row items-center gap-2">
-              <Image
-                source={require('../../assets/Tasks/Completed.png')}
-                className="w-5 h-5"
-              />
-              <Text className="text-[#787CA5] text-sm">Completed</Text>
-            </View>
-            <Text className="text-[#007B5B] ml-7 text-lg">{completed}</Text>
-          </View>
+        <View style={[styles.statusBox, styles.pending]}>
+          <Text style={styles.statusText}>Pending {pending}</Text>
+        </View>
+        <View style={[styles.statusBox, styles.inProgress]}>
+          <Text style={styles.statusText}>In Progress {inProgress}</Text>
+        </View>
+        <View style={[styles.statusBox, styles.completed]}>
+          <Text style={styles.statusText}>Completed {completed}</Text>
         </View>
       </View>
     </View>
@@ -87,3 +80,98 @@ const EmployeesDetaildComponent: React.FC<EmployeesDetaildComponentProps> = ({
 };
 
 export default EmployeesDetaildComponent;
+
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 15,
+    padding: 16,
+    marginVertical: 8,
+    width: '90%',
+    alignSelf: 'center',
+    borderColor: '#37384B',
+    borderWidth: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
+  },
+  initialsContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor:'#2E2E46',
+    backgroundColor: 'transparent', // Blue background
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  initialsText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  name: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  progressText: {
+    color: '#A0A5C3',
+    fontSize: 12,
+  },
+  progressBarContainer: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#2E2E46',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#00C48C',
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  statusBox: {
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  overdue: {
+    borderColor: '#EF4444',
+    borderWidth: 1,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+  },
+  pending: {
+    borderColor: '#FFC107',
+    borderWidth: 1,
+    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+  },
+  inProgress: {
+    borderColor: '#A914DD',
+    borderWidth: 1,
+    backgroundColor: 'rgba(169, 20, 221, 0.1)',
+  },
+  completed: {
+    borderColor: '#00C48C',
+    borderWidth: 1,
+    backgroundColor: 'rgba(0, 196, 140, 0.1)',
+  },
+  statusText: {
+    color: 'white',
+    fontSize: 8,
+    fontWeight: '500',
+  },
+});

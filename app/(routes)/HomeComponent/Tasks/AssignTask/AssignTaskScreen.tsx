@@ -9,6 +9,7 @@ import {
   Image,
   Animated,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView } from 'react-native';
@@ -38,6 +39,7 @@ import SelectDateModal from '~/components/TaskComponents/assignNewTaskComponents
 import { AntDesign } from '@expo/vector-icons';
 import CustomDropdownWithSearchAndAdd from '~/components/customDropDownFour';
 import CustomAlert from '~/components/CustomAlert/CustomAlert';
+import { XStack } from 'tamagui';
 
 
 
@@ -88,6 +90,17 @@ export default function AssignTaskScreen() {
   const [customAlertMessage, setCustomAlertMessage] = useState('');
   const [customAlertType, setCustomAlertType] = useState<'success' | 'error' | 'loading'>('success');
 
+  const selectRepetType = [
+    { label: 'Daily', value: 'Daily' },
+    { label: 'Weekly', value: 'Weekly' },
+    { label: 'Monthly', value: 'Monthly' },
+    { label: 'Yearly', value: 'Yearly' },
+    { label: 'Periodically', value: 'Periodically' },
+  ];
+
+  const [repeatInterval, setRepeatInterval] = useState<number | ''>(''); // Stores Periodically days
+  const [isPeriodicallyModalVisible, setPeriodicallyModalVisible] = useState(false);
+
   const handleFocus = () => setDescriptionFocused(true);
   const handleBlur = () => setDescriptionFocused(false);
 
@@ -125,7 +138,7 @@ export default function AssignTaskScreen() {
       });
       // console.log('>>>>>>>>>>', response?.data?.data, token);
       const formattedData = processCategoryData(response?.data?.data);
-      console.log(">>>>catttt",formattedData)
+      console.log(">>>>catttt", formattedData)
       setCategoryData(formattedData);
     } catch (err: any) {
       setError('Failed to fetch tasks. Please try again.');
@@ -231,7 +244,7 @@ export default function AssignTaskScreen() {
       setCustomAlertVisible(true);
       setCustomAlertMessage('Task Title is required.');
       setCustomAlertType('error');
-    
+
       return;
     }
 
@@ -246,7 +259,7 @@ export default function AssignTaskScreen() {
       setCustomAlertVisible(true);
       setCustomAlertMessage('Priority level must be selected.');
       setCustomAlertType('error');
-   
+
       return;
     }
 
@@ -254,7 +267,7 @@ export default function AssignTaskScreen() {
       setCustomAlertVisible(true);
       setCustomAlertMessage('A user must be assigned.');
       setCustomAlertType('error');
-    
+
       return;
     }
 
@@ -262,7 +275,7 @@ export default function AssignTaskScreen() {
       setCustomAlertVisible(true);
       setCustomAlertMessage('Category is required.');
       setCustomAlertType('error');
-     
+
       return;
     }
 
@@ -270,13 +283,14 @@ export default function AssignTaskScreen() {
       setCustomAlertVisible(true);
       setCustomAlertMessage('A due date must be selected.');
       setCustomAlertType('error');
-      
+
       return;
     }
 
     setTaskLoading(true);
     const payload = {
       title: taskTitle,
+      repeatInterval,
       description: taskDescription,
       priority: activeButton,
       repeat: isChecked,
@@ -307,13 +321,13 @@ export default function AssignTaskScreen() {
       setCustomAlertVisible(true);
       setCustomAlertMessage('Task successfully created!');
       setCustomAlertType('success');
-  
+
     } catch (error) {
       console.error('Error creating task:', error.response?.data || error.message);
       setCustomAlertVisible(true);
       setCustomAlertMessage('Failed to create task. Please try again.');
       setCustomAlertType('error');
-  
+
     } finally {
       setTaskLoading(false);
     }
@@ -325,7 +339,7 @@ export default function AssignTaskScreen() {
       setCustomAlertVisible(true);
       setCustomAlertMessage('Enter new category');
       setCustomAlertType('error');
-   
+
       return;
     }
     setIsLoading(true);
@@ -347,7 +361,7 @@ export default function AssignTaskScreen() {
 
       // Update category data
 
-     
+
       fetchCategories();
       const updatedData = [...categoryData, { label: newCategoryy.name, value: newCategoryy.id }];
       setCategoryData(updatedData);
@@ -455,7 +469,7 @@ export default function AssignTaskScreen() {
             {/* selected users */}
             <View className="mt-2 flex w-full flex-col items-center gap-2">
               <View style={styles.input}>
-                <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Select User</Text>
+                {/* <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Select User</Text> */}
                 <CustomDropdownComponentTwo
                   data={users}
                   selectedValue={selectedUser}
@@ -466,7 +480,7 @@ export default function AssignTaskScreen() {
               </View>
 
               <View style={styles.input}>
-                <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Select Category</Text>
+                {/* <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Select Category</Text> */}
                 <CustomDropdownWithSearchAndAdd
                   data={categoryData}
                   selectedValue={category}
@@ -482,68 +496,42 @@ export default function AssignTaskScreen() {
             </View>
 
             {/* Task priority */}
-            <View className="mt-6 flex w-[90%] flex-col items-start justify-start gap-3">
-              <Text className="text-white " style={{ fontFamily: 'LatoBold' }}>
+            <XStack alignItems="center" maxWidth={'85%'} justifyContent="space-between" marginTop={12} width="100%">
+              {/* Task Priority Label */}
+              <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>
                 Task Priority
               </Text>
-              <View className="flex flex-row ">
+
+              {/* Priority Buttons */}
+              <XStack flex={1} justifyContent="flex-end">
                 <TouchableOpacity
-                  className={
-                    activeButton === 'High'
-                      ? 'rounded-l-xl border border-[#37384B] bg-[#815BF5] '
-                      : 'rounded-l-xl border border-[#37384B] bg-[#05071E]'
-                  }
+                  className={`border border-[#37384B] p-3 ${activeButton === 'High' ? 'bg-[#815BF5] rounded-l-lg' : 'bg-[#05071E] rounded-l-lg'}`}
                   onPress={() => handleButtonPress('High')}>
-                  <Text
-                    className={
-                      activeButton === 'High'
-                        ? 'p-3 text-sm text-white'
-                        : 'p-3 text-sm text-[#787CA5]'
-                    }
-                    style={{ fontFamily: 'Lato-Thin' }}>
+                  <Text className={`text-sm ${activeButton === 'High' ? 'text-white' : 'text-[#787CA5]'}`} style={{ fontFamily: 'Lato-Thin' }}>
                     High
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  className={
-                    activeButton === 'Medium'
-                      ? 'border border-[#37384B] bg-[#815BF5] '
-                      : 'border border-[#37384B] bg-transparent '
-                  }
+                  className={`border border-[#37384B] p-3 ${activeButton === 'Medium' ? 'bg-[#815BF5]' : 'bg-transparent'}`}
                   onPress={() => handleButtonPress('Medium')}>
-                  <Text
-                    className={
-                      activeButton === 'Medium'
-                        ? 'p-3 text-sm text-white'
-                        : 'p-3 text-sm text-[#787CA5]'
-                    }
-                    style={{ fontFamily: 'Lato-Thin' }}>
+                  <Text className={`text-sm ${activeButton === 'Medium' ? 'text-white' : 'text-[#787CA5]'}`} style={{ fontFamily: 'Lato-Thin' }}>
                     Medium
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  className={
-                    activeButton === 'Low'
-                      ? 'rounded-r-xl border border-[#37384B] bg-[#815BF5] '
-                      : 'rounded-r-xl border border-[#37384B]  bg-transparent '
-                  }
+                  className={`border border-[#37384B] p-3 ${activeButton === 'Low' ? 'bg-[#815BF5] rounded-r-lg' : 'bg-transparent rounded-r-lg'}`}
                   onPress={() => handleButtonPress('Low')}>
-                  <Text
-                    className={
-                      activeButton === 'Low'
-                        ? 'p-3 text-sm text-white'
-                        : 'p-3 text-sm text-[#787CA5] '
-                    }
-                    style={{ fontFamily: 'Lato-Thin' }}>
+                  <Text className={`text-sm ${activeButton === 'Low' ? 'text-white' : 'text-[#787CA5]'}`} style={{ fontFamily: 'Lato-Thin' }}>
                     Low
                   </Text>
                 </TouchableOpacity>
-              </View>
-            </View>
+              </XStack>
+            </XStack>
 
-            <View className="mt-6 flex w-[90%] flex-row items-center justify-start gap-4">
+
+            <View className="mt-6 flex w-[85%] flex-row items-center justify-start gap-4">
               <CheckboxTwo isChecked={isChecked} onPress={() => setIsChecked(!isChecked)} />
               <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>
                 Repeat
@@ -557,10 +545,13 @@ export default function AssignTaskScreen() {
                 selectedValue={repeatType}
                 onSelect={(value) => {
                   setRepeatType(value);
+
                   if (value === 'Weekly') {
                     setWeeklyModalVisible(true);
                   } else if (value === 'Monthly') {
                     setMonthlyModalVisible(true);
+                  } else if (value === 'Periodically') {
+                    setPeriodicallyModalVisible(true);
                   }
                 }}
               />
@@ -578,7 +569,7 @@ export default function AssignTaskScreen() {
                 <InputContainer
                   label="Due Date"
                   value={dueDate ? moment(dueDate).format('MMMM Do YYYY, h:mm a') : ''}
-                  onChangeText={() => {}} // No-op since input is not editable
+                  onChangeText={() => { }} // No-op since input is not editable
                   placeholder=""
                   className="flex-1 text-sm text-[#787CA5]"
                   passwordError={''}
@@ -693,6 +684,42 @@ export default function AssignTaskScreen() {
         </ScrollView>
 
         {/* Modals */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isPeriodicallyModalVisible}
+          onRequestClose={() => setPeriodicallyModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Set Periodic Interval</Text>
+              <TextInput
+                keyboardType="numeric"
+                value={repeatInterval.toString()}
+                onChangeText={(text) => setRepeatInterval(text === '' ? '' : Number(text))}
+                placeholder="Enter interval in days"
+                placeholderTextColor="#787CA5"
+                style={styles.input}
+              />
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  onPress={() => setPeriodicallyModalVisible(false)}
+                  style={styles.cancelButton}>
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (repeatInterval) {
+                      setPeriodicallyModalVisible(false);
+                    }
+                  }}
+                  style={styles.saveButton}>
+                  <Text style={styles.saveText}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
         {/* add link Modal */}
         <AddLinkModal
           isLinkModalVisible={isLinkModalVisible}
@@ -748,10 +775,73 @@ export default function AssignTaskScreen() {
 }
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  modalContent: {
+    backgroundColor: '#121212',
+    padding: 20,
+    borderRadius: 12,
+    color: 'white',
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    color: 'white',
+    fontFamily: 'LatoBold',
+    marginBottom: 10,
+  },
+  // input: {
+  //   borderWidth: 1,
+  //   borderColor: '#37384B',
+  //   padding: 10,
+  //   width: '100%',
+  //   borderRadius: 8,
+  //   color: 'white',
+  //   fontSize: 14,
+  //   backgroundColor: '#05071E',
+  //   textAlign: 'center',
+  // },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 15,
+    width: '100%',
+  },
+  cancelButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#37384B',
+    marginRight: 5,
+  },
+  cancelText: {
+    color: 'white',
+    fontSize: 14,
+    fontFamily: 'LatoBold',
+  },
+  saveButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#815BF5',
+    marginLeft: 5,
+  },
+  saveText: {
+    color: 'white',
+    fontSize: 14,
+    fontFamily: 'LatoBold',
+  },
   switchContainer: {
     width: 76,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 15,
     justifyContent: 'center',
   },
 
@@ -760,14 +850,10 @@ const styles = StyleSheet.create({
     padding: 8,
     color: '#fff',
     fontSize: 13,
+    borderRadius: 5,
     fontFamily: 'LatoBold',
   },
-  modalContent: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
+
   selectedDropdownItemStyle: {
     backgroundColor: '#4e5278', // Background color for selected item
   },
@@ -776,8 +862,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#37384B',
     padding: 10,
-    marginTop: 25,
-    borderRadius: 35,
+    marginTop: 15,
+    borderRadius: 15,
+    color: 'white',
     width: '90%',
     height: 57,
     position: 'relative',

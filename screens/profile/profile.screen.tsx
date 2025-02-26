@@ -88,7 +88,7 @@ const ProfileScreen: React.FC = () => {
       router.push('/(routes)/login');
     } catch (err: any) {
       console.error('API Error:', err.response || err.message);
-   
+
       setButtonSpinner(true);
       setCustomAlertVisible(true);
       setCustomAlertMessage('Failed to log out. Please try again.');
@@ -110,7 +110,7 @@ const ProfileScreen: React.FC = () => {
           },
         }
       );
-      console.log("pljoihbihbuoi",response.data.data.profilePic)
+      console.log("pljoihbihbuoi", response.data.data.profilePic)
       setProfilePic(response.data.data.profilePic);
     } catch (err: any) {
       console.error('API Error:', err.response || err.message);
@@ -118,7 +118,7 @@ const ProfileScreen: React.FC = () => {
   };
 
   const uploadPhoto = async ({ picture }) => {
-   
+
     try {
       const base64Data = picture.base64;
       const mimeType = picture.mimeType || 'image/jpeg';
@@ -145,8 +145,8 @@ const ProfileScreen: React.FC = () => {
         },
       });
       setProfilePhoto(uploadResponse?.data?.fileUrls[0]);
-     
-    } catch (error:any) {
+
+    } catch (error: any) {
       console.error('Error uploading image:', error.response || error.message);
       if (error.response) {
         console.log('Error Response:', error.response.data);
@@ -195,13 +195,13 @@ const ProfileScreen: React.FC = () => {
       setCustomAlertVisible(true);
       setCustomAlertMessage('Failed to update profile. Please try again.');
       setCustomAlertType('error');
-   
-    }finally{
+
+    } finally {
       setLoading(false)
     }
   };
 
-  console.log("ppppppp",profilePic,image)
+  console.log("ppppppp", profilePic, image)
   return (
     <SafeAreaView className="h-full w-full flex-1 bg-[#05071E]">
       <KeyboardAvoidingView
@@ -264,38 +264,32 @@ const ProfileScreen: React.FC = () => {
 
               <View className="flex w-full items-center ">
                 {/* Email */}
-                <View className='w-full flex items-center relative'>
-                <Infocontainer
-                  placeholder=""
-                  value={userData?.user?.email || userData?.data?.email}
-                  passwordError={''}
-                  onChangeText={() => {
-                    ('');
-                  }}
-                />
-                <View className=' flex items-center justify-center h-8 w-16 rounded-full border border-[#384387] bg-transparent  pl-4 '
-                style={{position:"absolute",left:"75%",top:5}}
-                >
-                  <AntDesign
-                  name='mail'
-                  color={"#384387"}
-                  size={20}
+                <View className='w-full  flex items-center relative'>
+                  <Infocontainer
+                    placeholder=""
+                    value={userData?.user?.email || userData?.data?.email}
+                    passwordError={''}
+                    onChangeText={() => {
+                      ('');
+                    }}
                   />
-                </View>
+                  <View className=' flex items-center justify-center h-8 w-16 rounded-full border border-[#384387] bg-transparent  pl-4 '
+                    style={{ position: "absolute", left: "75%", top: "50%" }}
+                  >
+                    <AntDesign
+                      name='mail'
+                      color={"#384387"}
+                      size={20}
+                    />
+                  </View>
 
                 </View>
 
 
                 {/* Phone Number */}
-                <View className="mt-1 flex w-[70%] flex-row items-center justify-center gap-3">
-                  
-                  <View className='w-20 border-4 rounded-full h-16 bg-[#11142a]  border-[#384387] items-center flex justify-center mt-7'>
-                  <Ionicons
-                  name='call-outline'
-                  color={"#384387"}
-                  size={30}
-                  />
-                  </View>
+                <View className="mt-1 flex w-[100%] flex-row items-center justify-center gap-3">
+
+
                   <Infocontainer
                     placeholder="7863983914"
                     keyboardType="numeric"
@@ -305,7 +299,16 @@ const ProfileScreen: React.FC = () => {
                       ('');
                     }}
                   />
-                  
+                  <View className=' flex items-center justify-center h-8 w-16 rounded-full border border-[#384387] bg-transparent  pl-4 '
+                    style={{ position: "absolute", left: "75%", top: "50%" }}
+                  >
+                    <Ionicons
+                      name='call-outline'
+                      className=']'
+                      color={"#384387"}
+                      size={20}
+                    />
+                  </View>
                 </View>
 
                 {/* change pasword buttons */}

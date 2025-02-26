@@ -5,7 +5,7 @@ import * as Haptics from 'expo-haptics';
 interface ToggleSwitchProps {
   isOn: boolean;
   onToggle: (newState: boolean) => void;
-  title: String;
+  title: string;
 }
 
 const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ isOn, onToggle, title }) => {
@@ -16,63 +16,54 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ isOn, onToggle, title }) =>
     onToggle(newState);
     Animated.timing(position, {
       toValue: newState ? 1 : 0,
-      duration: 300,
+      duration: 250,
       useNativeDriver: false,
     }).start();
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); // Enhanced haptic feedback
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
   const translateX = position.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 43],
+    outputRange: [0, 22], // Adjusted for smaller size
   });
 
   return (
-    <View style={styles.container}>
+    <View className='flex flex-row justify-between items-center w-[90%] py-3 px-4 bg-[#0A0D28] rounded-xl mt-4'>
       <Text style={styles.label}>{title}</Text>
-      <View
-        style={[
-          styles.switchContainer,
-          { backgroundColor: isOn ? 'white' : '#37384B' },
-        ]}
-      >
-        <TouchableOpacity onPress={toggleSwitch}>
-          <Animated.View style={{ transform: [{ translateX }] }}>
-            <Image
-              style={styles.switchBall}
-              source={require('../assets/Tasks/onOffBall.png')}
-            />
+      <TouchableOpacity onPress={toggleSwitch} activeOpacity={0.7}>
+        <View style={[styles.switchContainer, { backgroundColor: isOn ? 'white' : '#37384B' }]}>
+          <Animated.View style={[styles.switchBall, { transform: [{ translateX }] }]}>
+            <Image source={require('../assets/Tasks/onOffBall.png')} style={styles.switchBallImage} />
           </Animated.View>
-        </TouchableOpacity>
-      </View>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 10,
-    marginTop: 6,
-    width: '90%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+  
   label: {
     color: 'white',
     fontFamily: 'LatoBold',
+    fontSize: 12, // Made it smaller
   },
   switchContainer: {
     position: 'relative',
-    height: 37,
-    width: 80,
+    height: 22, // Smaller height
+    width: 45, // Smaller width
     justifyContent: 'center',
-    borderRadius: 24,
+    borderRadius: 16,
+    paddingHorizontal: 2,
   },
   switchBall: {
-    marginHorizontal: 1,
-    height: 34,
-    width: 34,
+    position: 'absolute',
+    height: 20,
+    width: 20,
+  },
+  switchBallImage: {
+    height: '100%',
+    width: '100%',
   },
 });
 

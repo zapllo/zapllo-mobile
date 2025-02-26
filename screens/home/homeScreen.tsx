@@ -40,50 +40,52 @@ const componentsData: HomeScreenComponents[] = [
   },
   {
     id: '2',
-    title: 'Zapllo Attendance',
+    title: 'Zapllo Attendance (Coming Soon)',
     screen: '(routes)/HomeComponent/Attendance',
     description: 'Track your Team Attendance & Breaks',
     image: require('~/assets/HomeComponents/ZAttendance.png'), 
   },
-  {
-    id: '3',
-    title: 'Zapllo Events',
-    screen: '(routes)/HomeComponent/Events',
-    description: 'Live Q&A Classes and Weekly Business Growth Sessions',
-    image: require('~/assets/HomeComponents/ZEvents.png'), 
-  },
+  // {
+  //   id: '3',
+  //   title: 'Zapllo Events',
+  //   screen: '(routes)/HomeComponent/Events',
+  //   description: 'Live Q&A Classes and Weekly Business Growth Sessions',
+  //   image: require('~/assets/HomeComponents/ZEvents.png'), 
+  // },
   {
     id: '4',
     title: 'Zapllo Intranet',
-    screen: '(routes)/settings',
+    screen: '',
     description: 'Manage all your Important Company Links',
     image: require('~/assets/HomeComponents/ZInternet.png'), 
   },
-  {
-    id: '5',
-    title: 'Zapllo Workflows',
-    screen: '(routes)/HomeComponent/Tasks/Workflows',
-    description: 'Automate, Integrate & Connect anything effortlessly',
-    image: require('~/assets/HomeComponents/ZWorkflow.png'), 
-  },
+  // {
+  //   id: '5',
+  //   title: 'Zapllo Workflows',
+  //   screen: '(routes)/HomeComponent/Tasks/Workflows',
+  //   description: 'Automate, Integrate & Connect anything effortlessly',
+  //   image: require('~/assets/HomeComponents/ZWorkflow.png'), 
+  // },
   {
     id: '6',
-    title: 'Zapllo Leaves',
-    screen: '(routes)/HomeComponent/Leaves',
+    title: 'Zapllo Leaves (Coming Soon)',
+    screen: '',
+    //(routes)/HomeComponent/Leaves
     description: 'Manage your Employee Leaves & Holidays',
     image: require('~/assets/HomeComponents/ZLeave.png'), 
   },
-  {
-    id: '7',
-    title: 'Zapllo CRM',
-    screen: '(routes)/HomeComponent/Tasks/TaskCategories',
-    description: 'rack, Convert & Assign Leads to your Sales Team',
-    image: require('~/assets/HomeComponents/ZCRM.png'), 
-  },
+  // {
+  //   id: '7',
+  //   title: 'Zapllo CRM',
+  //   screen: '(routes)/HomeComponent/Tasks/TaskCategories',
+  //   description: 'rack, Convert & Assign Leads to your Sales Team',
+  //   image: require('~/assets/HomeComponents/ZCRM.png'), 
+  // },
   {
     id: '8',
-    title: 'Zapllo AI Assistant',
-    screen: '(routes)/HomeComponent/AIAssistant',
+    title: 'Zapllo AI Assistant (Coming Soon)',
+    screen: '',
+    //(routes)/HomeComponent/AIAssistant
     description: 'Upgrade your experience by 10X with our proprietory AI Technology',
     image: require('~/assets/HomeComponents/ZAi.png'), 
   },
@@ -138,7 +140,7 @@ const HomeScreen: React.FC = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView className="flex-1 bg-primary">
+      <SafeAreaView className="flex-1 bg-primary pb-14">
       <Navbar title="My Business Apps" />
         <ScrollView
           contentContainerStyle={{ paddingBottom: 20 ,padding:14}}
@@ -149,7 +151,7 @@ const HomeScreen: React.FC = () => {
           {/* Progress Bar with Gradient */}
           <TouchableOpacity
           onPress={()=>router.push("/(routes)/profile/Checklist")}
-          className=" my-3 flex h-36 w-full flex-col items-center gap-6 rounded-2xl border border-[#37384B] bg-[#10122d] bg-opacity-50 pl-5  pr-5 pt-5">
+          className=" my-3 flex h-36 w-full flex-col items-center gap-6 rounded-2xl border border-[#37384B] bg-opacity-50 pl-5  pr-5 pt-5">
             <View className="flex w-full  flex-row items-center justify-between">
               <Text className="text-lg text-white " style={{fontFamily:"LatoBold"}}>App Usage Progress</Text>
               <TouchableOpacity className='border border-white w-8 h-8 items-center justify-center flex rounded-full'>
@@ -200,10 +202,15 @@ const HomeScreen: React.FC = () => {
           {componentsData.map((item) => (
             <TouchableOpacity
               key={item.id}
-              className="my-3 flex h-44 flex-row items-start justify-center rounded-3xl border border-[#37384B] p-4 pl-12 pr-12 pt-5"
+              className="my-2 flex h-auto shadow-md flex-row items-start justify-center rounded-3xl border border-[#37384B] bg-[#0A0D28] p-4 pl-12 pr-12 pt-3"
               onPress={() => {
                 console.log(`Navigating to: ${item.screen}`);
-                router.push(item.screen);
+                {
+                  item.screen ?
+                  router.push(item.screen) :
+                  ""
+                }
+                
               }}>
               <View className="flex w-full items-start gap-3">
                 <Image
@@ -216,7 +223,7 @@ const HomeScreen: React.FC = () => {
                 </View>
               </View>
 
-              <TouchableOpacity className='border mt-1 ml-5 border-white w-8 h-8 items-center justify-center flex rounded-full'>
+              <TouchableOpacity className='border mt-1 ml-5 border-white shadow-md w-8 h-8 items-center justify-center flex rounded-full'>
                 <Image className='w-3 h-3' source={require("../../assets/HomeComponents/goto.png")}/>
               </TouchableOpacity>
             </TouchableOpacity>

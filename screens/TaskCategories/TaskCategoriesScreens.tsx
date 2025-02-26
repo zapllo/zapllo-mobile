@@ -231,37 +231,54 @@ export default function TaskCategories() {
 
   return (
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary">
+
       <KeyboardAvoidingView
         className="w-full"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <Navbar title="Task Categories" />
+
         <ScrollView
-          className="h-full w-full flex-grow "
+          className="h-full mt-6 w-full flex-grow "
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
           <View className="h-full w-full items-center pb-44">
-            <View
-              style={[
-                styles.input,
-                {
-                  height: 57,
-                  justifyContent: 'flex-start',
-                  alignItems: 'flex-start',
-                  width: '90%',
-                  marginBottom: 30,
-                  marginTop: 20,
-                },
-              ]}>
-              <TextInput
-                multiline
+            <View className='flex items-center mb-12 flex-row gap-2'>
+              <View className='relative'>
+                <TouchableOpacity
+                  onPress={() => navigation.goBack()}
+                  className="  top-0 left-1  h-10 w-10 ">
+                  <Image
+                    // resizeMode="contain"
+                    className="h-10 w-10"
+                    source={require('../../assets/sign-in/back.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <View
                 style={[
-                  styles.inputSome,
-                  { textAlignVertical: 'top', paddingTop: 10, width: '100%' },
-                ]}
-                value={taskDescription}
-                onChangeText={setTaskDescription}
-                placeholder="Search Category"
-                placeholderTextColor="#787CA5"></TextInput>
+                  styles.input,
+                  {
+                    height:50,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingHorizontal: 2,
+                    width: '80%',
+          
+
+                  },
+                ]}>
+                <TextInput
+                  multiline
+                  style={[
+                    styles.inputSome,
+                    { textAlignVertical: 'top', paddingTop: 10, width: '100%' },
+                  ]}
+                  value={taskDescription}
+                  onChangeText={setTaskDescription}
+                  placeholder="Search Category"
+                  placeholderTextColor="#787CA5"></TextInput>
+              </View>
             </View>
             {(userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin') && (
               <>
@@ -399,66 +416,70 @@ export default function TaskCategories() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-      {(userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin') && (
-        <View style={{ position: 'absolute', bottom: 30, width: '100%', alignItems: 'center' }}>
-          <GradientButton
-            title="Add New Category"
-            onPress={addNewCategory}
-            loading={isLoading}
-            imageSource={require('../../assets/Tasks/addIcon.png')}
-          />
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={addModalOpen}
-            onRequestClose={() => setAddModalOpen(false)}>
-            <View style={styles.modalOverlay}>
-              <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1, justifyContent: 'flex-end' }}>
-                <View className="-mb-1 gap-3 rounded-t-3xl bg-[#0A0D28] p-5 pb-14 pt-6">
-                  <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
-                    <Text className="text-xl text-white" style={{ fontFamily: 'LatoBold' }}>
-                      Add New Category
-                    </Text>
-                    <TouchableOpacity onPress={() => setAddModalOpen(false)}>
-                      <Image
-                        source={require('../../assets/commonAssets/cross.png')}
-                        className="h-8 w-8"
+      {
+        (userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin') && (
+          <View style={{ position: 'absolute', bottom: 30, width: '100%', alignItems: 'center' }}>
+            <GradientButton
+              title="Add New Category"
+              onPress={addNewCategory}
+              loading={isLoading}
+              imageSource={require('../../assets/Tasks/addIcon.png')}
+            />
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={addModalOpen}
+              onRequestClose={() => setAddModalOpen(false)}>
+              <View style={styles.modalOverlay}>
+                <KeyboardAvoidingView
+                  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                  style={{ flex: 1, justifyContent: 'flex-end' }}>
+                  <View className="-mb-1 gap-3 flex rounded-t-3xl bg-[#0A0D28] p-5 pb-10 pt-6">
+                    <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
+                      <Text className="text-xl text-white" style={{ fontFamily: 'LatoBold' }}>
+                        Add New Category
+                      </Text>
+                      <TouchableOpacity onPress={() => setAddModalOpen(false)}>
+                        <Image
+                          source={require('../../assets/commonAssets/cross.png')}
+                          className="h-8 w-8"
+                        />
+                      </TouchableOpacity>
+                    </View>
+
+                    <View className="pb-4 flex justify-center w-full">
+                      <InputContainer
+                        placeholder=""
+                        value={newCategoryName}
+                        onChangeText={setNewCategoryName}
+                        label="Enter category name"
+                        className='w-full'
+                        placeholderTextColor="#787CA5"
+                        passwordError={''}
                       />
+                    </View>
+
+                    <TouchableOpacity
+                      onPress={handleAddNewCategory}
+                      disabled={isLoading}
+                      className="w-full items-center rounded-full bg-[#815bf5] p-3">
+                      {isLoading ? (
+                        <ActivityIndicator color="white" />
+                      ) : (
+                        <Text className="text-lg font-bold text-white" style={{ fontFamily: 'LatoBold' }}>
+                          Add Category
+                        </Text>
+                      )}
                     </TouchableOpacity>
                   </View>
+                </KeyboardAvoidingView>
+              </View>
+            </Modal>
+          </View>
+        )
+      }
 
-                  <View className="pb-4">
-                    <InputContainer
-                      placeholder=""
-                      value={newCategoryName}
-                      onChangeText={setNewCategoryName}
-                      label="Enter category name"
-                      placeholderTextColor="#787CA5"
-                      passwordError={''}
-                    />
-                  </View>
-
-                  <TouchableOpacity
-                    onPress={handleAddNewCategory}
-                    disabled={isLoading}
-                    className="w-full items-center rounded-full bg-[rgb(1,122,91)] p-3">
-                    {isLoading ? (
-                      <ActivityIndicator color="white" />
-                    ) : (
-                      <Text className="text-lg font-bold text-white" style={{ fontFamily: 'LatoBold' }}>
-                        Add Category
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                </View>
-              </KeyboardAvoidingView>
-            </View>
-          </Modal>
-        </View>
-      )}
-    </SafeAreaView>
+    </SafeAreaView >
   );
 }
 
@@ -466,9 +487,7 @@ const styles = StyleSheet.create({
   input: {
     borderColor: '#37384B',
     borderWidth: 1,
-    borderRadius: 30,
-    paddingLeft:20,
-    padding: 7,
+    borderRadius: 15,
   },
   inputSome: {
     color: '#fff',

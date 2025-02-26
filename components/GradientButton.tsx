@@ -22,7 +22,7 @@ const GradientButton: React.FC<GradientButtonProps> = ({ title, onPress, imageSo
   return (
     <View className="w-[90%]">
       <TouchableOpacity
-        className="flex h-[4rem] items-center justify-center rounded-full"
+        className="flex h-[4rem] items-center  text-center w-full justify-center rounded-full"
         onPress={onPress}
       >
         <LinearGradient
@@ -31,8 +31,8 @@ const GradientButton: React.FC<GradientButtonProps> = ({ title, onPress, imageSo
           colors={["#815BF5", "#FC8929"]}
           style={styles.gradient}
         >
-          <ImageContainer source={imageSource} />
-          <Text className="text-center font-semibold text-white text-lg" style={{ fontFamily: "LatoBold" }}>
+          {/* <ImageContainer source={imageSource} /> */}
+          <Text className="text-center font-semibold justify-center text-white text-lg" style={{ fontFamily: "LatoBold" }}>
             {loading ? <ActivityIndicator size="small" color='#fff'/> :title}
           </Text>
         </LinearGradient>

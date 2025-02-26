@@ -1,6 +1,6 @@
-import { View, Text, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, Image } from "react-native";
-import React from "react";
-
+import { View, Text, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, Image, ActivityIndicator } from "react-native";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { StackNavigationProp } from "@react-navigation/stack";
 import NavbarTwo from "~/components/navbarTwo";
 import { router, useNavigation } from "expo-router";
@@ -9,141 +9,106 @@ import { useSelector } from "react-redux";
 import { RootState } from "~/redux/store";
 import SettingEditableComponent from "~/components/settings/SettingEditableComponent";
 import SettingEditableForNumberComponent from "~/components/settings/SettingEditableForNumberComponent";
+import { backend_Host } from "~/config";
 
-// Define the type for your navigation
 type RootStackParamList = {
-  "(routes)/home/index": undefined; // Define your routes with parameters (if any)
+  "(routes)/home/index": undefined;
 };
 type NavigationProp = StackNavigationProp<RootStackParamList, "(routes)/home/index">;
 
-
 export default function SettingScreen() {
-    const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
-
-    console.log(">>>>>>",userData)
-
+  const { token } = useSelector((state: RootState) => state.auth);
   const navigation = useNavigation<NavigationProp>();
+
+  // State for company details
+  const [company, setCompany] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch company details
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      try {
+        const response = await axios.get(`${backend_Host}/organization/getById`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.data && response.data.data) {
+          setCompany(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching company details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (token) {
+      fetchCompanyDetails();
+    }
+  }, [token]);
+
   return (
     <SafeAreaView className="bg-[#05071E] h-full w-full">
-    <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1"
-    >
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1">
         <ScrollView
-            contentContainerStyle={{ flexGrow: 1 }}
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
         >
-            {/* Navbar */}
-            <NavbarTwo
-                title="Settings"
-                onBackPress={() => navigation.goBack()}
-            />
+          {/* Navbar */}
+          <NavbarTwo title="Settings" onBackPress={() => navigation.goBack()} />
 
-            <View className="flex items-center w-[90%] ml-5 mr-5 mt-3  h-full mb-12 ">
-
-            {/* company name */}
-              <View className="w-full items-start gap-2">
-              <Text className="text-[#787CA5] text-sm mt-2 mb-1">Support</Text>
-              <Text className="text-[#787CA5] ">Company Name</Text>
-              <SettingEditableComponent
-              title="Zapllo Technologies PVT LTD"
-              />
-              
-              
-                {/* line */}
-                <View className="h-0.5 w-full bg-[#37384B] mt-5 mb-8"></View>
-              </View>
-
-
-            {/* Industry */}
-              <View className="w-full items-start gap-2">
-              <Text className="text-[#787CA5] ">Industry</Text>
-              <SettingEditableComponent
-              title="Technology"
-              />
-                {/* line */}
-                <View className="h-0.5 w-full bg-[#37384B] mt-5 mb-8"></View>
-              </View>
-
-
-              {/* Company Description*/}
-              <View className="w-full items-start gap-2">
-                <Text className="text-[#787CA5] ">Company Description</Text>
-                <SettingEditableComponent
-                title="Information & Technology Company"
-                /> 
-                {/* line */}
-                <View className="h-0.5 w-full bg-[#37384B] mt-5 mb-8"></View>
-              </View>
-
-
-              {/* Team Size */}
-              <View className="w-full items-start gap-2">
-                <Text className="text-[#787CA5] ">Team Size</Text>
-                <SettingEditableForNumberComponent
-                title="11-12"
-                />
-                {/* line */}
-                <View className="h-0.5 w-full bg-[#37384B] mt-5 mb-8"></View>
-              </View>
-
-
-              {/* supports */}
-              <View className=" w-full flex flex-col gap-2 items-start">
-                            
-                <Text className="text-[#787CA5] text-xs">Support</Text>
-
-                  {/* WhatsApp Integration */}
-                  <View className="w-full item-start gap-4">
-                  <Text className="text-[#787CA5] mt-3">WhatsApp Integration</Text>
-                      <TouchableOpacity className="flex  pr-2 flex-row items-center justify-between w-full">
-                        <Text className="text-white text-base">Connect your WABA Number</Text>
-                          <Image 
-                          source={require("../../assets/commonAssets/smallGoto.png")}
-                          className="w-3 h-3 mb-1"
-                          />
-                      </TouchableOpacity>
-                      <View className="h-0.5 w-full bg-[#37384B] "></View>
+          <View className="flex items-center w-[90%] self-center mt-3 h-full mb-12">
+            {loading ? (
+              <ActivityIndicator size="large" color="#FFFFFF" className="mt-10" />
+            ) : (
+              <>
+                {/* Settings List */}
+                <View className="w-full rounded-2xl bg-[#0A0D28] p-4 shadow-md">
+                  {/* Company Name */}
+                  <View className="w-full py-3">
+                    <Text className="text-[#787CA5] text-xs">Company Name</Text>
+                    <SettingEditableComponent title={company?.companyName || "N/A"} />
                   </View>
+                  <View className="h-[1px] w-full bg-[#37384B]" />
 
-
-                   {/* Task App Seeting */}
-                  <View className="w-full item-start gap-4">
-                  <Text className="text-[#787CA5] mt-9">Task App Seeting</Text>
-                      <TouchableOpacity 
-                      onPress={() => router.push("/(routes)/settings/notification" as any)}
-                      className="flex  pr-2 flex-row items-center justify-between w-full">
-                        <Text className="text-white text-base">Notifications & Reminders</Text>
-                          <Image 
-                          source={require("../../assets/commonAssets/smallGoto.png")}
-                          className="w-3 h-3 mb-1"
-                          />
-                      </TouchableOpacity>
-                      <View className="h-0.5 w-full bg-[#37384B] "></View>
-
-                      <TouchableOpacity className="flex  pr-2 flex-row items-center justify-between w-full">
-                        <Text className="text-white text-base">Export Tasks (Coming Soon)</Text>
-                          <Image 
-                          source={require("../../assets/commonAssets/smallGoto.png")}
-                          className="w-3 h-3 mb-1"
-                          />
-                      </TouchableOpacity>
-                      <View className="h-0.5 w-full bg-[#37384B] "></View>
+                  {/* Industry */}
+                  <View className="w-full py-3">
+                    <Text className="text-[#787CA5] text-xs">Industry</Text>
+                    <SettingEditableComponent title={company?.industry || "N/A"} />
                   </View>
+                  <View className="h-[1px] w-full bg-[#37384B]" />
 
-  
-              </View>
+                  {/* Description */}
+                  <View className="w-full py-3">
+                    <Text className="text-[#787CA5] text-xs">Company Description</Text>
+                    <SettingEditableComponent title={company?.description || "N/A"} />
+                  </View>
+                  <View className="h-[1px] w-full bg-[#37384B]" />
 
+                  {/* Team Size */}
+                  <View className="w-full py-3">
+                    <Text className="text-[#787CA5] text-xs">Team Size</Text>
+                    <SettingEditableForNumberComponent title={company?.teamSize || "N/A"} />
+                  </View>
+                </View>
 
-              
-              
-            </View>
+                {/* Notifications & Reminders */}
+                <View className="w-full rounded-2xl bg-[#0A0D28] p-4 mt-6 shadow-md">
+                  <Text className="text-[#787CA5] text-xs mb-2">Notifications & Reminders</Text>
+                  <TouchableOpacity
+                    onPress={() => router.push("/(routes)/settings/notification" as any)}
+                    className="flex flex-row items-center justify-between py-3"
+                  >
+                    <Text className="text-white text-base">Notifications & Reminders</Text>
+                    <Image source={require("../../assets/commonAssets/smallGoto.png")} className="w-3 h-3 mb-1" />
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
-      </SafeAreaView>
-
-
-
+    </SafeAreaView>
   );
 }

@@ -1,106 +1,156 @@
-import {
-  View,
-  Text,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  ScrollView,
-  Image,
-  Platform,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
-import React, { useState } from 'react';
-import InputContainer from '~/components/InputContainer';
-import { Feather } from '@expo/vector-icons';
-import { router, useNavigation } from 'expo-router';
-import { NavigationProp } from '@react-navigation/native';
-import axios from 'axios';
-import { backend_Host } from '~/config';
+import React, { useState } from 'react'
+import { ActivityIndicator, Platform } from 'react-native'
+import { Feather } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
+import axios from 'axios'
 
+import {
+  YStack,
+  XStack,
+  Button,
+  Input,
+  Paragraph,
+  Label,
+  ScrollView,
+  useTheme,
+  Image,
+  Separator,
+  Card,
+  Theme,
+} from 'tamagui'
+
+import { backend_Host } from '~/config'
+import CustomAlert from '~/components/CustomAlert/CustomAlert'
 
 export default function ForgotPasswordScreen() {
-  const [mail, setMail] = useState('');
-  const [loading, setLoading] = useState(false);
+  const router = useRouter()
+  const theme = useTheme()
 
-  const isEmailValid = () => {};
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertType, setAlertType] = useState<'success' | 'error'>('success')
 
-  const navigation = useNavigation();
-
-  const handelChangePassword = async () => {
-    if (!mail.trim()) {
-      Alert.alert('Validation Error', 'Email cannot be empty.');
-      return;
+  const handleResetPassword = async () => {
+    if (!email.trim()) {
+      setAlertMessage('Please enter a valid email address.')
+      setAlertType('error')
+      setShowAlert(true)
+      return
     }
-    console.log(">>>>",mail)
-    setLoading(true);
+
+    setLoading(true)
     try {
-      const response = await axios.post(`${backend_Host}/forgetPassword`, { email: mail });
+      const response = await axios.post(`${backend_Host}/forgetPassword`, { email })
 
-      Alert.alert('Success', 'Password reset link sent to your email');
-      navigation.goBack();
+      setAlertMessage('Password reset link has been sent to your email.')
+      setAlertType('success')
+      setShowAlert(true)
     } catch (err: any) {
-      console.error('API Error:', err.response || err.message);
-      Alert.alert('Failed to sending mail. Please try again.');
+      setAlertMessage('Failed to send email. Please try again.')
+      setAlertType('error')
+      setShowAlert(true)
     } finally {
-      setLoading(false);
-      setMail('');
+      setLoading(false)
+      setEmail('')
     }
-  };
+  }
 
   return (
-    <SafeAreaView className="h-full w-full flex-1 items-center bg-primary ">
-      <KeyboardAvoidingView
-        className=" w-full"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <Theme name="dark">
+      <YStack flex={1} backgroundColor="$bg">
         <ScrollView
-          className="h-full w-full flex-grow"
           showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}>
-          <View className="h-full w-full items-center">
-            <Image
-              className="h-22 mb-[5.3rem] mt-[4.6rem] w-1/2"
-              source={require('~/assets/sign-in/sign_in.png')}
-              resizeMode="contain"
-            />
-            <View className="w-[90%] rounded-xl border border-[#37384B] p-5 py-8">
-              <Text className="text-2xl font-bold text-white">Forgot Password</Text>
-              <Text className="text-xs text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
-                Enter your registered Email to receive a password reset email
-              </Text>
-              <InputContainer
-                label="Email Address"
-                value={mail}
-                onChangeText={(value) => setMail(value)}
-                placeholder="Enter your email"
-                className="flex-1  text-sm text-[#787CA5]"
-                passwordError={''}
-              />
-              <TouchableOpacity
-                disabled={loading}
-                onPress={handelChangePassword}
-                className="my-7 w-[70%] items-center rounded-full bg-[#34785D] p-4">
-                {loading ? (
-                  <ActivityIndicator size={'small'} color={'#fff'} />
-                ) : (
-                  <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>
-                    Send Password Link
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </View>
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          {/* Logo Section */}
+          <YStack alignItems="center">
+            <Image src={require('~/assets/sign-in/sign_in.png')} scale={0.4} />
+          </YStack>
 
-            <View className=" mt-44 flex flex-row items-center gap-2">
-              <Feather name="home" size={22} color="#fff" />
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Text className="text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
-                  Back to Login
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          {/* Card Container */}
+          <Card
+            width="90%"
+            borderRadius={12}
+            bordered
+            borderColor={'$accent'}
+            // borderBlockColor={'$accent'}
+            // elevate
+            padding="$4"
+            // alignContent='center'
+            // alignItems='center'
+            backgroundColor="$bg"
+            marginTop="$4"
+          >
+            <YStack gap="$3">
+              {/* Heading */}
+              <Paragraph size="$6" fontWeight="bold" color="$color">
+                Forgot Password
+              </Paragraph>
+              <Paragraph size="$3" color="$mutedForeground">
+                Enter your registered email to receive a password reset link.
+              </Paragraph>
+
+              {/* Email Input */}
+              <YStack width="100%" gap="$2">
+                {/* <Label size="$4" color="$color">
+                  Email Address
+                </Label> */}
+                <Input
+                  placeholder="Enter your email"
+                  height={40}
+                  paddingHorizontal="$2"
+                  value={email}
+                  onChangeText={setEmail}
+                  borderColor="$border"
+                  color="$color"
+                  backgroundColor="$background"
+                  placeholderTextColor={'$mutedForeground'}
+                  borderRadius="$md"
+                />
+              </YStack>
+
+              {/* Send Reset Link Button */}
+              <Button
+                width="100%"
+                height={50}
+                marginBottom={20}
+                marginTop="$4"
+                size={16}
+                backgroundColor={email ? '$primary' : '$border'}
+                pressStyle={{ opacity: 0.8 }}
+                onPress={handleResetPassword}
+                borderRadius="$lg"
+              >
+                {loading ? <ActivityIndicator size="small" color="white" /> : 'Reset Password'}
+              </Button>
+            </YStack>
+          </Card>
+
+          {/* Back to Login */}
+          <XStack alignItems="center" marginTop="$4">
+            <Feather name="home" size={16} color={'white'} />
+            <Button chromeless onPress={() => router.back()} marginLeft="$2">
+              <Paragraph size={16} color="white">
+                Back to Login
+              </Paragraph>
+            </Button>
+          </XStack>
         </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
+
+        {/* Custom Alert */}
+        <CustomAlert
+          visible={showAlert}
+          message={alertMessage}
+          type={alertType}
+          onClose={() => setShowAlert(false)}
+        />
+      </YStack>
+    </Theme>
+  )
 }

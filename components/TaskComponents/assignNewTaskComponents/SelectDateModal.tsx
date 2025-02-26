@@ -85,14 +85,15 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
 
 const styles = StyleSheet.create({
   modalContainer: {
-    backgroundColor: '#0A0D28',
+    backgroundColor: 'black',
     padding: 20,
     borderRadius: 10,
+    color:'white',
     alignItems: 'center',
   },
   modalTitle: {
     fontSize: 18,
-    color: '#FFFFFF',
+    color: 'gray',
     marginBottom: 10,
   },
   actionsContainer: {
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
     gap:6,
   },
   actionButton: {
-    paddingVertical: 10,
+    paddingVertical: 7,
     paddingHorizontal: 20,
     borderRadius: 5,
   },

@@ -313,7 +313,7 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
                 value={search}
                 onChangeText={(value) => setSearch(value)}
                 placeholder="Search"
-                className="w-[72%] rounded-full border border-[#37384B] p-4 text-[#787CA5]"
+                className="w-[72%] rounded-lg border border-[#37384B] p-4 text-[#787CA5]"
                 placeholderTextColor="#787CA5"
               />
 

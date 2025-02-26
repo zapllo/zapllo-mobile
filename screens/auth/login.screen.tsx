@@ -173,7 +173,7 @@ export default function Loginscreen() {
               textStyle={{ fontSize: 16, fontWeight: '400' }}
             />
           </View>
-          <TouchableOpacity onPress={() => router.push('/(routes)/login' as any)}>
+          <TouchableOpacity onPress={() => router.push('/(routes)/signup/pageOne' as any)}>
             <Text className="text-base font-extrabold text-white">? Register Here</Text>
           </TouchableOpacity>
         </View>

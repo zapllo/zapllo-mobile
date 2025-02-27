@@ -63,14 +63,14 @@ export default function ChecklistScreen() {
               </View>
             </View>
 
-            <View className="flex flex-col gap-7 items-center w-[90%] pr-10 mt-8">
+            <View className="flex flex-col bg-[#0A0D28] rounded-xl p-6 shadow-md  gap-7 items-center w-[90%] pr-12 mt-8">
               {checklistTexts.map((text, index) => (
-                <View key={index} className="flex w-full flex-row gap-3 items-start">
+                <View key={index} className="flex w-full flex-row gap-3 items-center">
                   <CheckboxTwo
                     isChecked={checkedItems[index]}
                     onPress={() => handleCheckboxToggle(index)}
                   />
-                  <Text className="text-white" style={{ fontFamily: "LatoBold" }}>{text}</Text>
+                  <Text className="text-white text-sm pr-1" style={{ fontFamily: "LatoBold" }}>{text}</Text>
                 </View>
               ))}
             </View>

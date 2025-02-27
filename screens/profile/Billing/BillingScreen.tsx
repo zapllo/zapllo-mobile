@@ -12,6 +12,25 @@ import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import { WebView } from 'react-native-webview';
 import CustomDropdown from "~/components/customDropDown";
+import { AntDesign } from "@expo/vector-icons";
+
+const planFeatures = {
+  "Zapllo Tasks": [
+    "Delegate Unlimited Tasks",
+    "Team Performance Reports",
+    "Links Management for Your Team",
+    "Email Notifications",
+    "WhatsApp Notifications",
+  ],
+  "Money Saver Bundle": [
+    "Includes Zapllo Tasks + Payroll",
+    "Automated Salary Processing",
+    "Attendance & Leave Management",
+    "Email Notifications",
+    "WhatsApp Notifications",
+  ],
+};
+
 
 const planFeatures = {
   "Zapllo Tasks": [
@@ -48,6 +67,7 @@ export default function BillingScreen() {
   const [subscribeModalVisible, setSubscribeModalVisible] = useState(false);
   const [addUsersModalVisible, setAddUsersModalVisible] = useState(false);
   const [paymentDetailedSubscriptionModalVisible, setPaymentDetailedSubscriptionModalVisible] = useState(false);
+  const [paymentDetailsAddUsersModalVisible, setPaymentDetailsAddUsersModalVisible] = useState(false);
   const [totalUsers, setTotalUsers] = useState(5);
   const [showBackendView, setShowBackendView] = useState(false);
   const currentUser = useSelector((state: RootState) => state.auth.userData);
@@ -57,6 +77,11 @@ export default function BillingScreen() {
   const [additionalUsers, setAdditionalUsers] = useState(5);
   const [selectedPlanForUsers, setSelectedPlanForUsers] = useState('');
   const [selectedPlanForSubscription, setSelectedPlanForSubscription] = useState('');
+<<<<<<< HEAD
+=======
+  const [paymentBack, setpaymentBack] = useState(false);
+  
+>>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
 
 
   const handleAddUsers = () => {
@@ -146,11 +171,19 @@ export default function BillingScreen() {
 
 
   const handleSubscribedNext = () => {
+    
     setSubscribeModalVisible(false);
     setTimeout(() => {
       setPaymentDetailedSubscriptionModalVisible(true);
     }, 700);
   };
+
+  const handleUserModal = ()=>{
+    setAddUsersModalVisible(false);
+    setTimeout(() => {
+      setPaymentDetailsAddUsersModalVisible(true);
+    }, 700);
+  }
 
   const handleBackPress = () => {
     setPaymentDetailsVisible(false);
@@ -163,6 +196,13 @@ export default function BillingScreen() {
     setPaymentDetailedSubscriptionModalVisible(false);
     setTimeout(() => {
       setSubscribeModalVisible(true);
+    }, 700);
+  };
+
+  const handleBackPressAddUsersModalSubscription = () => {
+    setPaymentDetailsAddUsersModalVisible(false);
+    setTimeout(() => {
+      setAddUsersModalVisible(true);
     }, 700);
   };
 
@@ -230,9 +270,57 @@ export default function BillingScreen() {
   };
 
 
+<<<<<<< HEAD
   return (
     <SafeAreaView className="h-full w-full flex-1 bg-[#05071E] ">
      {showWebView ? (
+=======
+  const handlePaymentForAddUserSubscription = async () => {
+    try {
+      setPaymentDetailsAddUsersModalVisible(false);
+
+      const subscriptionCost = additionalUsers * 2999; // Cost for the selected number of users
+      const gst = subscriptionCost * 0.18; // Calculate GST
+      const totalPayable = subscriptionCost + gst; // Total amount including GST
+
+      const orderData = {
+        amount: Math.round(totalPayable * 100), // Total amount including GST in paise
+        currency: 'INR',
+        receipt: `order_${Date.now()}`, // Generate unique receipt ID
+        notes: {
+          customer: `${currentUser?.firstName} ${currentUser?.lastName}`,
+          email: currentUser?.email,
+        },
+      };
+
+      const response = await axios.post('https://zapllo.com/api/create-order', orderData);
+
+      if (response.data.orderId) {
+        const paymentUrl = `https://zapllo.com/payment?orderId=${response.data.orderId}&amount=${orderData.amount}`;
+        setPaymentUrl(paymentUrl);
+        setShowWebView(true);
+      } else {
+        throw new Error('Order ID not found in the response');
+      }
+
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      Alert.alert("Error", "There was an issue processing your payment. Please try again.");
+    }
+  };
+
+
+  return (
+    <SafeAreaView className="h-full w-full flex-1 bg-[#05071E] ">
+     {showWebView ? (
+      <SafeAreaView style={{flex:1}} className=" relative h-full w-full flex-1 bg-[#05071E] ">
+      <View className="flex absolute z-20 left-4 top-1 h-[45px] w-[45px] bg-[#05071E] items-center justify-center rounded-full">
+        <TouchableOpacity onPress={() => setpaymentBack(true)}>
+          <AntDesign name="arrowleft" size={24} color="#ffffff"  />
+        </TouchableOpacity>
+      </View>
+      
+>>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
         <WebView
           source={{ html: `
             <!DOCTYPE html>
@@ -260,12 +348,12 @@ export default function BillingScreen() {
               </body>
             </html>
           ` }}
-          style={{ flex: 1 }}
+         
           onMessage={(event) => {
             const data = JSON.parse(event.nativeEvent.data);
             if (data.status === 'success') {
               Alert.alert("Payment Successful", "Your payment has been processed successfully.", [
-                { text: "OK", onPress: () => navigation.navigate('BillingScreen') },
+                { text: "OK", onPress: () => router.push("/(routes)/profile/billing") },
               ]);
               setShowWebView(false);
             } else {
@@ -273,7 +361,46 @@ export default function BillingScreen() {
               setShowWebView(false);
             }
           }}
+<<<<<<< HEAD
+=======
+          onNavigationStateChange={(navState) => {
+            if (navState.canGoBack) {
+              setShowWebView(false);
+            }
+          }}
+>>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
         />
+
+          <Modal
+            isVisible={paymentBack}
+            onBackdropPress={() => setpaymentBack(false)}
+            style={{ margin: 0, justifyContent: 'flex-end' }}
+            animationIn="slideInUp"
+            animationOut="slideOutDown">
+            <View className="mb-10 mt-2 flex w-full flex-col items-center justify-center">
+              <View className=" mb-2 w-[95%]  items-center rounded-2xl bg-[#14173b] p-4 ">
+                <TouchableOpacity
+                onPress={() => setpaymentBack(false)}
+                  
+                  className="w-full items-center rounded-2xl  ">
+                  <Text className="text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
+                    Stay here
+                  </Text>
+                </TouchableOpacity>
+                
+              </View>
+
+              <TouchableOpacity
+                className=" mt-3 w-[95%] items-center rounded-2xl bg-[#14173b] p-3 "
+                onPress={() => router.back()}>
+                <Text className="text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
+                  Back to Zapllo
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>        
+      </SafeAreaView>
+
       ) : (
         <ScrollView
           className="h-full w-full flex-grow "
@@ -281,7 +408,7 @@ export default function BillingScreen() {
           showsHorizontalScrollIndicator={false}>
           <NavbarTwo
             title="Billing"
-            onBackPress={() => router.back()}
+            
           />
 
           <View className="w-full my-6">
@@ -437,6 +564,10 @@ export default function BillingScreen() {
 
 
 
+
+
+
+
             <Modal
               isVisible={messageVisible}
               animationIn="fadeIn"
@@ -482,11 +613,11 @@ export default function BillingScreen() {
             </View>
 
             {selectedOption === 'plans' ? (
-              <View className="w-[90%] bg-[#0A0D28] p-6 rounded-3xl mt-10 mb-32">
+              <View className="w-[90%] shadow-xl bg-[#0A0D28] p-6 rounded-3xl mt-10 mb-32">
                 <Text className="text-white mb-7" style={{ fontFamily: "LatoBold" }}>Zapllo CRM</Text>
                 <View className="flex flex-row items-end gap-3">
                   <Text className="text-white text-5xl" style={{ fontFamily: "LatoBold" }}>₹2999</Text>
-                  <Text className="text-[#676B93] pb-1" style={{ fontFamily: "LatoBold" }}> / per user per year</Text>
+                  <Text className="text-[#676B93] text-sm pb-1" style={{ fontFamily: "LatoBold" }}>  / per user per year</Text>
                 </View>
                 <Text className="text-white mt-7" style={{ fontFamily: "LatoBold" }}>Manage your Tasks like a pro</Text>
                 <TouchableOpacity className="w-full my-9 rounded-full py-4 items-center justify-center border border-[#A485FF]" >
@@ -507,7 +638,11 @@ export default function BillingScreen() {
                       <Text className="text-white text-5xl">
                         ₹{planName === "Zapllo Tasks" ? "1999" : "2999"}
                       </Text>
+<<<<<<< HEAD
                       <Text className="text-[#676B93] pb-1"> / per user per year</Text>
+=======
+                      <Text className="text-[#676B93] pb-1 text-sm"> / per user per year</Text>
+>>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
                     </View>
 
                     {/* Feature List */}
@@ -550,6 +685,122 @@ export default function BillingScreen() {
         </ScrollView>
       )}
 
+<<<<<<< HEAD
+=======
+      {/* Modal for MONEY SAVER 2999*/}
+      <Modal
+              isVisible={addUsersModalVisible}
+              onBackdropPress={() => setAddUsersModalVisible(false)}
+              animationIn="fadeIn"
+              animationOut="fadeOut"
+              backdropOpacity={0.3}
+              style={{ justifyContent: "flex-start", margin: 0 }}
+            >
+              <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, justifyContent: "flex-end" }}>
+                <View className="rounded-t-3xl bg-[#0A0D28] p-5">
+                  <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
+                    <Text className="text-xl font-semibold text-white">
+                      Add Users to {selectedPlanForUsers}
+                    </Text>
+                    <TouchableOpacity onPress={() => setAddUsersModalVisible(false)}>
+                      <Image source={require('../../../assets/commonAssets/cross.png')} className="h-8 w-8" />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Display correct user count updates */}
+                  <Text className="text-white text-sm mb-4">
+                    You had <Text className="font-bold">{subscribedUserCount}</Text> users, adding
+                    <Text className="font-bold"> {additionalUsers}</Text> more will result in
+                    <Text className="font-bold"> {subscribedUserCount + additionalUsers}</Text>.
+                  </Text>
+                  <Text className="text-white text-sm mb-4">
+                    Payment will be for <Text className="font-bold">{additionalUsers}</Text> new users.
+                  </Text>
+
+                  {/* Dropdown to select additional users */}
+                  <CustomDropdown
+                    data={totalUsersOptions}
+                    placeholder="Select Additional Users"
+                    selectedValue={additionalUsers}
+                    onSelect={(value) => setAdditionalUsers(value)}
+                  />
+
+                  <TouchableOpacity className="w-full items-center bg-[#017A5B] p-4 rounded-full mt-5 mb-5" onPress={handleUserModal}>
+                    <Text className="text-white">Next</Text>
+                  </TouchableOpacity>
+                </View>
+              </KeyboardAvoidingView>
+      </Modal>
+      {/* 2999 subscicpction details */}
+      <Modal
+        isVisible={paymentDetailsAddUsersModalVisible}
+        onBackdropPress={() => setPaymentDetailsAddUsersModalVisible(false)}
+        animationIn="fadeIn"
+        animationOut="fadeOut"
+        backdropOpacity={0.3}
+        style={{ justifyContent: 'flex-start', margin: 0 }}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1, justifyContent: 'flex-end' }}>
+          <View className="rounded-t-3xl bg-[#0A0D28] p-5">
+            <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
+              <Text className="text-xl font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
+                Payment Details
+              </Text>
+              <TouchableOpacity onPress={() => setPaymentDetailsAddUsersModalVisible(false)}>
+                <Image source={require('../../../assets/commonAssets/cross.png')} className="h-8 w-8" />
+              </TouchableOpacity>
+            </View>
+
+            <View className="flex flex-col mt-3">
+              <Text className="text-white mb-4 mt-2 text-sm" style={{ fontFamily: 'LatoBold' }}>
+                Amount (excluding GST) = ₹{(additionalUsers * 2999).toFixed(2)}
+              </Text>
+
+              <Text className="text-white mb-4 mt-2 text-sm" style={{ fontFamily: 'LatoBold' }}>
+                Total Discount Applicable = ₹0
+              </Text>
+
+              <Text className="text-white mb-4 mt-2 text-sm" style={{ fontFamily: 'LatoBold' }}>
+                Payable (excluding GST) = ₹{(additionalUsers * 2999).toFixed(2)}
+              </Text>
+
+              <Text className="text-white mb-4 mt-2 text-sm" style={{ fontFamily: 'LatoBold' }}>
+                GST (18%) = ₹{((additionalUsers * 2999) * 0.18).toFixed(2)}
+              </Text>
+
+              <Text className="text-white mb-4 mt-2 text-sm" style={{ fontFamily: 'LatoBold' }}>
+                Total Payable = ₹{((additionalUsers * 2999) + (additionalUsers * 2999 * 0.18)).toFixed(2)}
+              </Text>
+            </View>
+
+            <InputContainer
+              label="Enter GST Number(Optional):"
+              value={gstNumber}
+              onChangeText={setGstNumber}
+              keyboardType="default"
+              passwordError={false}
+            />
+            <View className="flex items-center gap-5 flex-row justify-center mt-8 mb-4">
+              <TouchableOpacity
+                className="bg-[#6b7280] p-4 w-1/3 rounded-md items-center"
+                onPress={handleBackPressAddUsersModalSubscription}
+              >
+                <Text className="text-white text-sm" style={{ fontFamily: 'LatoBold' }}>Back</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="bg-[#017A5B] p-4 rounded-md items-center w-1/2"
+                onPress={handlePaymentForAddUserSubscription}
+              >
+                <Text className="text-white text-sm" style={{ fontFamily: 'LatoBold' }}>Proceed to Payment</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+      {/* Modal for 1999 subscicpction*/}
+>>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
       <Modal
         isVisible={subscribeModalVisible}
         onBackdropPress={() => setSubscribeModalVisible(false)}
@@ -590,7 +841,7 @@ export default function BillingScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-
+      {/* 1999 subscicpction details */}
       <Modal
         isVisible={paymentDetailedSubscriptionModalVisible}
         onBackdropPress={() => setPaymentDetailedSubscriptionModalVisible(false)}

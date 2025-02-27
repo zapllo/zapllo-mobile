@@ -3,18 +3,20 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import DelegatedTaskScreen from '~/app/(routes)/HomeComponent/Tasks/DelegatedTaskScreen ';
 import AllTaskScreen from '~/app/(routes)/HomeComponent/Tasks/AllTaskScreen';
 import DashboardStack from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
-// import TaskStack from '~/app/(routes)/HomeComponent/Tasks/TaskStack';
 import MyAppsScreen from '~/app/(routes)/HomeComponent/Tasks/MyAppsScreen';
 import DelegatedTaskStack from '~/app/(routes)/HomeComponent/Tasks/DelegatedTaskStack';
 import MyTasksStack from './myTask/MyTaskStack';
 import { useState } from 'react';
 import Modal from "react-native-modal";
-import AllTaskModalScreen from './AllTaskModalScreen';
+import AllTaskModalScreen from '../../app/(routes)/HomeComponent/Tasks/AllTaskModalScreen';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import AssignTaskScreen from '../../app/(routes)/HomeComponent/Tasks/AssignTask/AssignTaskScreen';
 import { router } from 'expo-router';
 import HomeScreen from '../home/homeScreen';
+<<<<<<< HEAD
+=======
+import { LinearGradient } from 'expo-linear-gradient';
+>>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
 
 const Tab = createBottomTabNavigator();
 
@@ -24,16 +26,33 @@ export default function TasksScreen() {
   const navigation = useNavigation<StackNavigationProp<any>>();
 
   return (
+<<<<<<< HEAD
     <View style={{ flex: 1 }}>
+=======
+    <View style={{ flex: 1 }} className='bg-primary'>
+>>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
       <Tab.Navigator
         initialRouteName="Dashboard"
         screenOptions={({ route }) => ({
           headerShown: false,
+<<<<<<< HEAD
           tabBarStyle: {
             backgroundColor: '#815bf5', // Tab bar background
             borderWidth: 1,
             borderColor: '#815BF5',
             height: 52,
+=======
+          tabBarBackground: () => (
+            <LinearGradient
+              colors={['#0A0D28', '#37384B']}
+              style={styles.tabBarBackground}
+            />
+          ),
+          tabBarStyle: {
+            borderWidth: 1,
+            borderColor: '#5367CB',
+            height: 55,
+>>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
             position: 'absolute',
             bottom: 30,
             borderRadius: 30,
@@ -94,15 +113,18 @@ export default function TasksScreen() {
             },
           }}
         />
+      </Tab.Navigator>
 
+<<<<<<< HEAD
 
       </Tab.Navigator>
 
+=======
+>>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
       <AllTaskModalScreen
         isVisible={isModalVisible}
         onClose={() => setModalVisible(false)}
       />
-
 
       {/* add task */}
       <TouchableOpacity
@@ -114,13 +136,19 @@ export default function TasksScreen() {
           className='w-8 h-8'
         />
       </TouchableOpacity>
-
     </View>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
   );
 }
 
 const styles = StyleSheet.create({
+  tabBarBackground: {
+    flex: 1,
+    borderRadius: 30,
+  },
   icon: {
     width: 15, // Width of the icon image
     height: 17, // Height of the icon image
@@ -131,23 +159,34 @@ const styles = StyleSheet.create({
     height: 40, // Default background height
     padding: 10,
     borderRadius: 30, // Make the background circular
-    marginTop: 12,
+    marginTop: 15,
     backgroundColor: 'transparent', // Default (non-focused) background color
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+<<<<<<< HEAD
 
+=======
+>>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
   },
   activeImageContainer: {
-    width: 65, // Width of active tab background
+    width: 62, // Width of active tab background
     height: 42, // Height of active tab background
     borderRadius: 60, // Rounded background
+<<<<<<< HEAD
     backgroundColor: '#000000', // Background color for active tab
     alignItems: 'center',
     justifyContent: 'center',
     display: "flex",
 
 
+=======
+    backgroundColor: '#FC842C', // Background color for active tab
+    alignItems: 'center',
+    justifyContent: 'center',
+    display: "flex",
+    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.55)",
+>>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
   },
   fixedImage: {
     position: 'absolute',

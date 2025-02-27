@@ -16,12 +16,6 @@ import { Easing, useColorScheme } from 'react-native';
 import { TamaguiProvider } from 'tamagui';
 import tamaguiConfig from '~/tamagui.config';
 
-// export { ErrorBoundary } from 'expo-router';
-
-// export const unstable_settings = {
-//   initialRouteName: '(tabs)',
-// };
-
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -37,7 +31,6 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -53,8 +46,6 @@ export default function RootLayout() {
   }
   const Stack = createStackNavigator();
 
-
-
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
@@ -67,7 +58,6 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
-  // Add this transition configuration
   const globalTransitionConfig = {
     transitionSpec: {
       open: {
@@ -112,6 +102,8 @@ function RootLayoutNav() {
             <Stack.Screen name="(routes)/HomeComponent/Tasks/AssignTaskScreen" />
             <Stack.Screen name="(routes)/HomeComponent/Tasks/TaskCategories" />
             <Stack.Screen name="(routes)/HomeComponent/Tasks/AllTaskScreen" />
+            <Stack.Screen name="TutorialDetailScreen" />
+            <Stack.Screen name="TasksScreen" />
           </Stack>
         </TamaguiProvider>
       ) : (

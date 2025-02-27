@@ -55,7 +55,7 @@ const componentsData: HomeScreenComponents[] = [
   {
     id: '4',
     title: 'Zapllo Intranet',
-    screen: '(routes)/settings',
+    screen: '',
     description: 'Manage all your Important Company Links',
     image: require('~/assets/HomeComponents/ZInternet.png'), 
   },
@@ -69,7 +69,8 @@ const componentsData: HomeScreenComponents[] = [
   {
     id: '6',
     title: 'Zapllo Leaves (Coming Soon)',
-    screen: '(routes)/HomeComponent/Leaves',
+    screen: '',
+    //(routes)/HomeComponent/Leaves
     description: 'Manage your Employee Leaves & Holidays',
     image: require('~/assets/HomeComponents/ZLeave.png'), 
   },
@@ -83,7 +84,8 @@ const componentsData: HomeScreenComponents[] = [
   {
     id: '8',
     title: 'Zapllo AI Assistant (Coming Soon)',
-    screen: '(routes)/HomeComponent/AIAssistant',
+    screen: '',
+    //(routes)/HomeComponent/AIAssistant
     description: 'Upgrade your experience by 10X with our proprietory AI Technology',
     image: require('~/assets/HomeComponents/ZAi.png'), 
   },
@@ -138,7 +140,7 @@ const HomeScreen: React.FC = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView className="flex-1 bg-primary">
+      <SafeAreaView className="flex-1 bg-primary pb-14">
       <Navbar title="My Business Apps" />
         <ScrollView
           contentContainerStyle={{ paddingBottom: 20 ,padding:14}}
@@ -200,10 +202,15 @@ const HomeScreen: React.FC = () => {
           {componentsData.map((item) => (
             <TouchableOpacity
               key={item.id}
-              className="my-3 flex h-44 flex-row items-start justify-center rounded-3xl border border-[#37384B] p-4 pl-12 pr-12 pt-5"
+              className="my-2 flex h-auto shadow-md flex-row items-start justify-center rounded-3xl border border-[#37384B] bg-[#0A0D28] p-4 pl-12 pr-12 pt-3"
               onPress={() => {
                 console.log(`Navigating to: ${item.screen}`);
-                router.push(item.screen);
+                {
+                  item.screen ?
+                  router.push(item.screen) :
+                  ""
+                }
+                
               }}>
               <View className="flex w-full items-start gap-3">
                 <Image
@@ -216,7 +223,7 @@ const HomeScreen: React.FC = () => {
                 </View>
               </View>
 
-              <TouchableOpacity className='border mt-1 ml-5 border-white w-8 h-8 items-center justify-center flex rounded-full'>
+              <TouchableOpacity className='border mt-1 ml-5 border-white shadow-md w-8 h-8 items-center justify-center flex rounded-full'>
                 <Image className='w-3 h-3' source={require("../../assets/HomeComponents/goto.png")}/>
               </TouchableOpacity>
             </TouchableOpacity>

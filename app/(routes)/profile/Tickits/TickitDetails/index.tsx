@@ -260,14 +260,16 @@ const TickitDetails: React.FC = () => {
 
           </View>
 
-          <View
-            className="flex flex-row items-center justify-between bg-[#05071E] px-5"
-            style={{
-              position: 'absolute',
-              bottom: keyboardOffset,
-              width: '100%',
-              alignItems: 'center',
-            }}>
+
+        </ScrollView>
+        <View
+          className="flex flex-row items-center justify-between  px-5"
+          style={{
+            position: 'absolute',
+            bottom: keyboardOffset,
+            width: '100%',
+            alignItems: 'center',
+          }}>
             <TouchableOpacity onPress={handleFileSelect} className="">
               <Image
                 className="h-14 w-14"
@@ -280,7 +282,7 @@ const TickitDetails: React.FC = () => {
               onChangeText={(value) => setComment(value)}
               placeholder="Type your comment here"
               placeholderTextColor="#787CA5"
-              className="h-16  w-2/3 rounded-full  pl-6 text-sm text-white"
+              className="h-16  w-2/3 rounded-full  pl-6 text-sm text-white bg-primary"
               style={{
                 fontFamily: 'LatoBold',
                 borderColor: isFocused || comment ? '#815BF5' : '#37384B',
@@ -301,7 +303,6 @@ const TickitDetails: React.FC = () => {
               )}
             </TouchableOpacity>
           </View>
-        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Zapllo",
-    "slug": "zapllpMobile",
+    "slug": "zaplloMobile",
     "version": "1.0.0",
     "newArchEnabled": true,
     "scheme": "Zapllo",
@@ -38,37 +38,37 @@
       "tsconfigPaths": true
     },
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/LOGO.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#05071E"
     },
     "assetBundlePatterns": [
-      "**/*"
+      "/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.Zapllo.app"
+      "bundleIdentifier": "com.zapllo.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#04071e"
       },
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA"
       ],
-      "package": "com.Zapllo.app"
+      "package": "com.zapllo.app"
     },
     "extra": {
       "router": {
         "origin": false
       },
       "eas": {
-        "projectId": "4a8c3ca5-6166-41c6-bf93-6447503600e6"
+        "projectId": "f395a5e5-ccda-415b-901b-0494c3251220"
       }
     }
   }

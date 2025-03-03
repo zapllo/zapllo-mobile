@@ -24,9 +24,11 @@ import { RootState } from '~/redux/store';
 import axios from 'axios';
 import { backend_Host } from '~/config';
 import moment from 'moment';
+import InputContainer from '~/components/InputContainer';
+import CustomDropdown from '~/components/customDropDown';
 
 const categoryData = [
-  { label: 'Report An Erroy', value: 'Report An Erroy' },
+  { label: 'Report An Error', value: 'Report An Error' },
   { label: 'Provide Feedback', value: 'Provide Feedback' },
   { label: 'Payment/Subscription Issue', value: 'Payment/Subscription Issue' },
   { label: 'Delete My Accunt', value: 'Delete My Accunt' },
@@ -48,8 +50,8 @@ export default function TickitScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tickets, setTickets] = useState([])
-  const [category, setCategory] = useState('');
-  const [subCategory, setSubCategory] = useState('');
+  const [category, setCategory] = useState('Report An Error');
+  const [subCategory, setSubCategory] = useState('Task Delegation');
   const [isDescriptionFocused, setDescriptionFocused] = useState(false);
   const [tickitDescription, setTickitDescription] = useState('');
 
@@ -215,44 +217,27 @@ export default function TickitScreen() {
                   </TouchableOpacity>
                 </View>
 
-                <View className="flex flex-col gap-6">
-                  <CustomDropdownComponentThree
+                <View className="flex flex-col  items-center">
+                  <CustomDropdown
                     data={categoryData}
                     selectedValue={category}
                     onSelect={(value) => setCategory(value)}
                   />
 
-                  <CustomDropdownComponentThree
+                  <CustomDropdown
                     data={subCategoryData}
                     selectedValue={subCategory}
                     onSelect={(value) => setSubCategory(value)}
                   />
-                </View>
-
-                <View
-                  style={[
-                    styles.input,
-                    {
-                      justifyContent: 'flex-start',
-                      alignItems: 'flex-start',
-                      borderColor: isDescriptionFocused ? '#815BF5' : '#37384B',
-                    },
-                  ]}>
-                  <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Subject</Text>
-                  <TextInput
-                    multiline
-                    style={[
-                      styles.inputSome,
-                      { textAlignVertical: 'top', paddingTop: 5, width: '100%' },
-                    ]}
+                                    <InputContainer
+                    placeholder="Subject"
                     value={newTicketMessage}
                     onChangeText={(value) => setNewTicketMessage(value)}
-                    placeholder=""
-                    placeholderTextColor="#787CA5"
-                    onFocus={handleFocus}
-                    onBlur={handleBlur}
-                  />
-                </View>
+                    passwordError={''}
+                    keyboardType="default"
+                    label='Subject'
+                    />
+              
 
                 <View
                   style={[
@@ -281,10 +266,14 @@ export default function TickitScreen() {
                 </View>
 
                 <TouchableOpacity
-                  className="my-10 items-center rounded-full bg-[#815BF5] p-4"
+                  className="my-10 w-[90%] mb-5 items-center rounded-full bg-[#815BF5] p-4"
                   onPress={handelAddNewTicket}>
                   <Text style={styles.modalButtonText}>Submit</Text>
                 </TouchableOpacity>
+                </View>
+
+
+
               </ScrollView>
             </KeyboardAvoidingView>
           </Modal>
@@ -302,8 +291,8 @@ const styles = StyleSheet.create({
     borderColor: '#37384B',
     padding: 10,
     marginTop: 25,
-    borderRadius: 35,
-    width: '100%',
+    borderRadius: 20,
+    width: '90%',
     height: 57,
     position: 'relative',
   },

@@ -391,7 +391,7 @@ export default function DelegatedTaskScreen() {
                   <TouchableOpacity
                     className="h-full w-full"
                     onPress={() => {
-                      const inProgressTasks = tasks.filter((task) => task.status === 'InProgress');
+                      const inProgressTasks = tasks.filter((task) => task.status === 'In Progress');
                       navigation.navigate('InprogressTask', { inProgressTasks });
                     }}>
                     <TaskCard

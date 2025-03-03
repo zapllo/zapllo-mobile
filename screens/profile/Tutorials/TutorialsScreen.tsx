@@ -11,11 +11,7 @@ import {
   Dimensions,
 } from "react-native";
 import NavbarTwo from "~/components/navbarTwo";
-<<<<<<< HEAD
-import { useNavigation } from "expo-router";
-=======
 import { router, useNavigation } from "expo-router";
->>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
 import CustomDropdown from "~/components/customDropDown";
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -52,14 +48,10 @@ export default function TutorialsScreen() {
     <TouchableOpacity
       style={styles.tutorialCard}
       onPress={() => {
-<<<<<<< HEAD
-        navigation.navigate("TutorialDetails", { tutorialLink: item.link });
-=======
         router.push({
           pathname: "/(routes)/HomeComponent/TutorialDetail/TutorialDetailScreen",
           params: { tutorialLink: item.link },
         });
->>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
       }}
     >
       <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
@@ -68,38 +60,6 @@ export default function TutorialsScreen() {
   );
 
   return (
-<<<<<<< HEAD
-    <SafeAreaView style={styles.container}>
-      <NavbarTwo title="Tutorials" onBackPress={() => navigation.goBack()} />
-      <View style={styles.content}>
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.input}
-            value={searchTutorials}
-            onChangeText={handleSearch}
-            placeholder="Search Tutorial"
-            placeholderTextColor="#787CA5"
-          />
-        </View>
-        <View style={styles.dropdownContainer}>
-          <CustomDropdown
-            data={[{ label: "All Tutorials", value: "" }]}
-            placeholder="Select Filters"
-            selectedValue={selectTutorials}
-            onSelect={(value) => setSelectTutorials(value)}
-          />
-        </View>
-        <FlatList
-          data={filteredTutorials}
-          renderItem={renderItem}
-          keyExtractor={(item) => item._id}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
-          contentContainerStyle={styles.listContent}
-        />
-      </View>
-    </SafeAreaView>
-=======
     <LinearGradient
       colors={['#05071E', '#1C1F3A']}
       style={styles.gradient}
@@ -135,19 +95,14 @@ export default function TutorialsScreen() {
         </View>
       </SafeAreaView>
     </LinearGradient>
->>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
   );
 }
 
 const styles = StyleSheet.create({
-<<<<<<< HEAD
-  container: { flex: 1, backgroundColor: "#05071E" },
-=======
   gradient: {
     flex: 1,
   },
   container: { flex: 1 },
->>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
   content: { alignItems: "center", paddingBottom: 20 },
   searchContainer: { width: "90%", marginBottom: 17, marginTop: 20 },
   input: {
@@ -161,13 +116,8 @@ const styles = StyleSheet.create({
     height: 57,
   },
   dropdownContainer: { width: "90%", marginBottom: 17 },
-<<<<<<< HEAD
-  listContent: { alignItems: "center" },
-  row: { justifyContent: "space-between", width: "90%" },
-=======
   listContent: { alignItems: "center", paddingBottom: 290 },
   row: { justifyContent: "space-between", width: "94%" },
->>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
   tutorialCard: {
     width: "48%",
     borderRadius: 15,
@@ -176,11 +126,7 @@ const styles = StyleSheet.create({
     borderColor: "#37384B",
     borderWidth: 1,
     alignItems: "center",
-<<<<<<< HEAD
-    padding: 10,
-=======
     padding: 8,
->>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
     marginBottom: 15,
   },
   thumbnail: { width: "100%", height: 100, borderRadius: 10 },

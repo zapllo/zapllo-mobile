@@ -423,7 +423,7 @@ export default function AssignTaskScreen() {
       <KeyboardAvoidingView
         className=" w-full"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <NavbarTwo title="Assign New Task" onBackPress={() => navigation.goBack()} />
+        <NavbarTwo title="Assign New Task"  />
         <ScrollView
           className="h-full w-full flex-grow"
           showsVerticalScrollIndicator={false}
@@ -610,41 +610,42 @@ export default function AssignTaskScreen() {
             </View>
 
             <View className=" mt-6 flex w-[90%] flex-row items-center gap-3">
-              <TouchableOpacity onPress={() => setLinkModalVisible(true)}>
+              <TouchableOpacity  onPress={() => setLinkModalVisible(true)}>
                 <Image
                   className="h-12 w-12"
                   source={require('../../../../../assets/Tasks/link.png')}
                 />
-                <Text className="text-sm text-white">
+                <Text className="text-xs text-white">
                   {links.length > 0 ? `${links.length} Link` : ''}
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setFileModalVisible(true)}>
+              <TouchableOpacity  onPress={() => setFileModalVisible(true)}>
                 <Image
                   className="h-12 w-12"
                   source={require('../../../../../assets/Tasks/file.png')}
                 />
-                <Text className="ml-1.5 text-sm text-white">
+                <Text className="ml-1.5 text-xs text-white">
                   {attachments.length > 0 ? `${attachments.length} File` : ''}
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setReminderModalVisible(true)}>
+              <TouchableOpacity  onPress={() => setReminderModalVisible(true)}>
                 <Image
                   className="h-12 w-12"
                   source={require('../../../../../assets/Tasks/Reminder.png')}
                 />
                 <Text className="mt-1 text-xs text-white" style={{ fontFamily: 'LatoBold' }}>
-                  {links.length > 0 ? `` : ''}
+                  {addedReminder.length > 0 ? `${addedReminder.length} Nod` : ''}
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setAudioModalVisible(true)}>
+              <TouchableOpacity  onPress={() => setAudioModalVisible(true)}>
                 <Image
                   className="h-12 w-12"
                   source={require('../../../../../assets/Tasks/Audio.png')}
                 />
-                <Text className="text-sm text-white">{links.length > 0 ? `` : ''}</Text>
+                <Text className="text-xs text-white">{audioUrl ? `added` : ''}</Text>
               </TouchableOpacity>
             </View>
+     
 
             <View className="mb-10 mt-6 flex w-[90%] flex-row items-center justify-between">
               <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>
@@ -653,7 +654,7 @@ export default function AssignTaskScreen() {
               <View
                 className="relative flex h-10 w-20 justify-center rounded-3xl bg-white"
                 style={[
-                  { backgroundColor: isOn ? 'white' : '#a9b0bd' }, // Use gray color when off
+                  { backgroundColor: isOn ? 'white' : '#37384B' }, // Use gray color when off
                 ]}>
                 <TouchableOpacity onPress={toggleSwitch}>
                   <Animated.View style={{ transform: [{ translateX }] }}>

@@ -18,6 +18,7 @@ import { backend_Host } from '~/config';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import CustomAlert from '~/components/CustomAlert/CustomAlert';
+import { Theme } from 'tamagui';
 
 export default function ChangePassWordScreen() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -92,14 +93,12 @@ export default function ChangePassWordScreen() {
   };
 
   return (
+    <Theme name="dark">
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary ">
       <KeyboardAvoidingView
         className=" w-full"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <ScrollView
-          className="h-full w-full flex-grow"
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}>
+
           <View className="h-full w-full items-center">
             <View className="m-4 w-full ">
               <TouchableOpacity
@@ -113,12 +112,12 @@ export default function ChangePassWordScreen() {
               </TouchableOpacity>
             </View>
             <Image
-              className="h-22 mb-20 mt-5 w-1/2"
+              className="h-22 mb-5 mt-10 w-1/2"
               source={require('~/assets/sign-in/sign_in.png')}
               resizeMode="contain"
             />
-            <View className="w-[90%] rounded-xl border border-[#37384B] p-5 py-8">
-              <Text className="text-2xl font-bold text-white">Change Your Password</Text>
+            <View className="w-[90%] rounded-xl border border-[#37384B] p-5 mt-5">
+              <Text className="text-xl font-bold text-white">Change Your Password</Text>
 
               <InputContainer
                 label="Current Password"
@@ -164,7 +163,7 @@ export default function ChangePassWordScreen() {
               <TouchableOpacity
                 disabled={loading}
                 onPress={handelChangePassword}
-                className="my-7 w-[70%] items-center rounded-full bg-[#34785D] p-4">
+                className={`my-7 w-full items-center rounded-full p-4 ${currentPassword === newPassword && !error && currentPassword !== "" && newPassword !== "" ? 'bg-[#815BF5]' : 'bg-[#2B2F3A]'}`}>
                 {loading ? (
                   <ActivityIndicator size={'small'} color={'#fff'} />
                 ) : (
@@ -175,7 +174,7 @@ export default function ChangePassWordScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        </ScrollView>
+  
       </KeyboardAvoidingView>
       <CustomAlert
         visible={customAlertVisible}
@@ -184,5 +183,7 @@ export default function ChangePassWordScreen() {
         onClose={() => setCustomAlertVisible(false)}
       />
     </SafeAreaView>
+    </Theme>
+
   );
 }

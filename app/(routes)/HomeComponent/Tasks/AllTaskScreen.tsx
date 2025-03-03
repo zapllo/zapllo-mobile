@@ -26,6 +26,7 @@ import {getDateRange} from '~/utils/GetDateRange';
 import TaskCard from '~/components/TaskComponents/TaskCard';
 import { MyTasksStackParamList } from '~/screens/Task/myTask/MyTaskStack';
 import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
+import NavbarTwo from '~/components/navbarTwo';
 interface Task {
   _id: string;
   status: string;
@@ -265,7 +266,7 @@ export default function AllTaskScreen() {
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
-      <Navbar title="All Tasks" />
+      <NavbarTwo title="All Tasks" />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView
@@ -291,52 +292,83 @@ export default function AllTaskScreen() {
 
             {/* Content */}
             <View className="p-4.2 mb-40 flex h-full w-full flex-col items-center gap-2.5 pt-1">
-              <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
-                <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FC842C] p-5">
-                  <TouchableOpacity
-                    className="h-full w-full"
-                    onPress={() => {
-                      const todaysTasks = tasks.filter((task) => task.status === 'Today');
-                      navigation.navigate('ToadysTask', { todaysTasks });
-                    }}>
-                    <TaskCard
-                      title="Today’s Task"
-                      count={taskCounts.Today}
-                      tasks={tasks}
-                      date={formattedDateRange}
-                      status="Today"
-                      borderColor="#FC842C"
-                      onPress={() => {
-                        const todaysTasks = tasks.filter((task) => task.status === 'Today');
-                        navigation.navigate('ToadysTask', { todaysTasks });
-                      }}
-                    />
-                  </TouchableOpacity>
-                </View>
+       
 
-                <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#D85570] p-5">
-                  <TouchableOpacity
-                    className="h-full w-full"
-                    onPress={() => {
-                      const overdueTasks = tasks.filter((task) => task.status === 'Overdue');
-                      navigation.navigate('OverdueTask', { overdueTasks });
-                    }}>
-                    {/* Overdue Tasks */}
-                    <TaskCard
-                      title="Overdue Tasks"
-                      count={taskCounts.Overdue}
-                      tasks={tasks}
-                      date={formattedDateRange}
-                      status="Overdue"
-                      borderColor="#D85570"
-                      onPress={() => {
-                        const overdueTasks = tasks.filter((task) => task.status === 'Overdue');
-                        navigation.navigate('OverdueTask', { overdueTasks });
-                      }}
-                    />
-                  </TouchableOpacity>
-                </View>
+
+              <View className="mb-1 flex h-[12rem]  flex-row items-start justify-center gap-2.5">
+              <TouchableOpacity
+    className="my-1 h-[167px] w-[93%] rounded-3xl bg-[#CE423B] p-5 pb-7 pt-7"
+    onPress={() => {
+      // Get today's date
+      const today = new Date();
+      
+      // Filter overdue tasks dynamically
+      const overdueTasks = tasks.filter(
+        (task) => new Date(task.dueDate) < today && task.status !== 'Completed'
+      );
+      
+      // Navigate to the OverdueTask screen with filtered overdue tasks
+      navigation.navigate('OverdueTask', { overdueTasks });
+    }}>
+    <View className="flex w-full flex-row items-center justify-between">
+      <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>Overdue Tasks</Text>
+      <Text className="text-xs text-white">{formattedDateRange}</Text>
+    </View>
+    
+    <Text className="mt-2 text-5xl text-white" style={{ fontFamily: 'LatoBold' }}>
+      {taskCounts.Overdue}
+    </Text>
+    
+    <View className={`flex w-full flex-row items-center justify-between ${
+      screenHeight > 900 ? 'pt-7' : 'pt-5'
+    }`}>
+      <View className="relative flex flex-row">
+        {tasks
+          .filter((task) => new Date(task.dueDate) < new Date() && task.status !== 'Completed')
+          .slice(0, 6)
+          .map((task, index) => (
+            <View key={task._id} className="relative flex flex-row rounded-full">
+              <View
+                className="-m-2 flex h-11 w-11 items-center justify-center rounded-full border-2"
+                style={{
+                  borderColor: '#CE423B',
+                  backgroundColor: colors[index % colors.length],
+                }}>
+                <Text className="text-center text-sm text-black">
+                  {getInitials(task?.assignedUser)}
+                </Text>
               </View>
+            </View>
+          ))}
+        {tasks.filter((task) => new Date(task.dueDate) < new Date() && task.status !== 'Completed').length > 2 && (
+          <View className="relative flex rounded-full flex-row">
+            <View
+              className="-m-2 h-11 w-11 items-center justify-center rounded-full border-2 border-[#CE423B]"
+              style={{
+                backgroundColor: colors[2 % colors.length],
+              }}>
+              <Text className="text-center font-medium text-black">
+                +{tasks.filter((task) => new Date(task.dueDate) < new Date() && task.status !== 'Completed').length - 2}
+              </Text>
+            </View>
+          </View>
+        )}
+      </View>
+
+      <TouchableOpacity
+        onPress={() => {
+          const overdueTasks = tasks.filter(
+            (task) => new Date(task.dueDate) < new Date() && task.status !== 'Completed'
+          );
+          navigation.navigate('OverdueTask', { overdueTasks });
+        }}
+        className="-mt-4 flex h-11 w-11 items-center justify-center self-end rounded-full border border-white">
+        <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
+      </TouchableOpacity>
+    </View>
+  </TouchableOpacity>
+                </View>
+             
 
               <View className="mb-1 flex h-[14rem] w-[90%] flex-row items-start justify-center gap-2.5">
                 <View className="m-0.5 flex h-full w-1/2 flex-col rounded-3xl bg-[#FDB314] p-5">

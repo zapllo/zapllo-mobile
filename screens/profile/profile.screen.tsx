@@ -212,7 +212,7 @@ const ProfileScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
           {/* Navbar */}
-          <NavbarTwo title="Profile" image={image} profile={profilePic} onBackPress={() => navigation.goBack()} />
+          <NavbarTwo title="Profile"  />
 
           {/* container */}
           <View className="mb-12 mt-3 flex h-full   w-full items-center">
@@ -395,47 +395,11 @@ const ProfileScreen: React.FC = () => {
                 <View className="h-0.5 w-full bg-[#37384B] "></View>
               </View>
 
-              {/* Events */}
-              <View className="mt-4 w-full items-center gap-5">
-                <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{ fontFamily: 'LatoBold' }}>
-                    Events
-                  </Text>
-                  <Image
-                    source={require('../../assets/commonAssets/smallGoto.png')}
-                    className="mb-1 h-3 w-3"
-                  />
-                </TouchableOpacity>
-                <View className="h-0.5 w-full bg-[#37384B] "></View>
-              </View>
+ 
 
-              {/* Time zone */}
-              <View className="mt-4 w-full items-center gap-5">
-                <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{ fontFamily: 'LatoBold' }}>
-                    Time zone
-                  </Text>
-                  <Image
-                    source={require('../../assets/commonAssets/smallGoto.png')}
-                    className="mb-1 h-3 w-3"
-                  />
-                </TouchableOpacity>
-                <View className="h-0.5 w-full bg-[#37384B] "></View>
-              </View>
+    
 
-              {/* Change Language */}
-              <View className="mt-4 w-full items-center gap-5">
-                <TouchableOpacity className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{ fontFamily: 'LatoBold' }}>
-                    Change Language
-                  </Text>
-                  <Image
-                    source={require('../../assets/commonAssets/smallGoto.png')}
-                    className="mb-1 h-3 w-3"
-                  />
-                </TouchableOpacity>
-                <View className="h-0.5 w-full bg-[#37384B] "></View>
-              </View>
+       
             </View>
 
             {/* LOGOUT */}

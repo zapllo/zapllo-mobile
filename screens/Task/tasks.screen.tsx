@@ -13,10 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { router } from 'expo-router';
 import HomeScreen from '../home/homeScreen';
-<<<<<<< HEAD
-=======
 import { LinearGradient } from 'expo-linear-gradient';
->>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
 
 const Tab = createBottomTabNavigator();
 
@@ -26,22 +23,11 @@ export default function TasksScreen() {
   const navigation = useNavigation<StackNavigationProp<any>>();
 
   return (
-<<<<<<< HEAD
-    <View style={{ flex: 1 }}>
-=======
     <View style={{ flex: 1 }} className='bg-primary'>
->>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
       <Tab.Navigator
         initialRouteName="Dashboard"
         screenOptions={({ route }) => ({
           headerShown: false,
-<<<<<<< HEAD
-          tabBarStyle: {
-            backgroundColor: '#815bf5', // Tab bar background
-            borderWidth: 1,
-            borderColor: '#815BF5',
-            height: 52,
-=======
           tabBarBackground: () => (
             <LinearGradient
               colors={['#0A0D28', '#37384B']}
@@ -52,7 +38,6 @@ export default function TasksScreen() {
             borderWidth: 1,
             borderColor: '#5367CB',
             height: 55,
->>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
             position: 'absolute',
             bottom: 30,
             borderRadius: 30,
@@ -115,12 +100,6 @@ export default function TasksScreen() {
         />
       </Tab.Navigator>
 
-<<<<<<< HEAD
-
-      </Tab.Navigator>
-
-=======
->>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
       <AllTaskModalScreen
         isVisible={isModalVisible}
         onClose={() => setModalVisible(false)}
@@ -137,10 +116,6 @@ export default function TasksScreen() {
         />
       </TouchableOpacity>
     </View>
-<<<<<<< HEAD
-
-=======
->>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
   );
 }
 
@@ -164,29 +139,16 @@ const styles = StyleSheet.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-<<<<<<< HEAD
-
-=======
->>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
   },
   activeImageContainer: {
     width: 62, // Width of active tab background
     height: 42, // Height of active tab background
     borderRadius: 60, // Rounded background
-<<<<<<< HEAD
-    backgroundColor: '#000000', // Background color for active tab
-    alignItems: 'center',
-    justifyContent: 'center',
-    display: "flex",
-
-
-=======
     backgroundColor: '#FC842C', // Background color for active tab
     alignItems: 'center',
     justifyContent: 'center',
     display: "flex",
     boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.55)",
->>>>>>> 321b547dd1c81cfb2641642ba0f4e434885ddb5d
   },
   fixedImage: {
     position: 'absolute',

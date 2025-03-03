@@ -269,10 +269,10 @@ export default function TaskCategories() {
                   },
                 ]}>
                 <TextInput
-                  multiline
+                  
                   style={[
                     styles.inputSome,
-                    { textAlignVertical: 'top', paddingTop: 10, width: '100%' },
+                    { textAlignVertical: 'top', width: '100%' },
                   ]}
                   value={taskDescription}
                   onChangeText={setTaskDescription}
@@ -492,6 +492,7 @@ const styles = StyleSheet.create({
   inputSome: {
     color: '#fff',
     fontFamily: 'LatoBold',
+    paddingLeft: 10,
   },
   modalOverlay: {
     flex: 1,

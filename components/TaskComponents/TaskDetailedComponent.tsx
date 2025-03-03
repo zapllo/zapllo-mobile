@@ -23,6 +23,10 @@ import * as FileSystem from 'expo-file-system';
 import { router, useNavigation } from 'expo-router';
 import AwesomeAlertComponent from '../CustomAlert/CustomAlert';
 import { XStack, YStack } from 'tamagui';
+import { Audio } from 'expo-av';
+import Slider from '@react-native-community/slider';
+import { Entypo } from '@expo/vector-icons';
+import UserAvatar from '../profile/UserAvatar';
 
 interface TaskDetailedComponentProps {
   title: string;
@@ -65,7 +69,114 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState<'success' | 'error'>('success');
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentPosition, setCurrentPosition] = useState(0);
+  const positionUpdateInterval = useRef<NodeJS.Timeout | null>(null);
+  const [audioFinished, setAudioFinished] = useState(false);
 
+// Add this to your useEffect cleanup
+useEffect(() => {
+  return () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    if (positionUpdateInterval.current) {
+      clearInterval(positionUpdateInterval.current);
+    }
+    // Unload sound when component unmounts
+    if (sound) {
+      sound.unloadAsync();
+    }
+  };
+}, [sound]);
+
+// Load audio when component mounts or when audioUrl changes
+useEffect(() => {
+  if (task?.audioUrl) {
+    loadAudio(task.audioUrl);
+  }
+}, [task?.audioUrl]);
+
+// Add these functions for audio playback
+const loadAudio = async (audioUrl: string) => {
+  try {
+    // Unload any existing sound
+    if (sound) {
+      await sound.unloadAsync();
+    }
+    
+    const { sound: newSound } = await Audio.Sound.createAsync(
+      { uri: audioUrl },
+      { shouldPlay: false },
+      updatePlaybackStatus
+    );
+    
+    setSound(newSound);
+    const status = await newSound.getStatusAsync();
+    setDuration(status.durationMillis || 0);
+    setCurrentPosition(0);
+    setAudioFinished(false);
+    
+    return newSound;
+  } catch (error) {
+    console.error('Error loading audio:', error);
+    return null;
+  }
+};
+
+const updatePlaybackStatus = (status: any) => {
+  if (status.isLoaded) {
+    setDuration(status.durationMillis || 0);
+    setCurrentPosition(status.positionMillis || 0);
+    
+    if (status.didJustFinish) {
+      setIsPlaying(false);
+      setCurrentPosition(0);
+      setAudioFinished(true);
+      if (sound) {
+        sound.setPositionAsync(0);
+      }
+    }
+  }
+};
+
+const handlePlayPause = async () => {
+  if (!sound && task?.audioUrl) {
+    const newSound = await loadAudio(task.audioUrl);
+    if (newSound) {
+      await newSound.playAsync();
+      setIsPlaying(true);
+      setAudioFinished(false);
+    }
+  } else if (sound) {
+    if (isPlaying) {
+      await sound.pauseAsync();
+      setIsPlaying(false);
+    } else {
+      // If audio has finished and user clicks play again, start from beginning
+      if (audioFinished) {
+        await sound.setPositionAsync(0);
+        setCurrentPosition(0);
+        setAudioFinished(false);
+      }
+      await sound.playAsync();
+      setIsPlaying(true);
+    }
+  }
+};
+
+const handleSliderChange = async (value: number) => {
+  if (sound) {
+    await sound.setPositionAsync(value * 1000);
+    setCurrentPosition(value * 1000);
+    // If user manually changes position, reset the finished state
+    if (value > 0 && value < duration / 1000) {
+      setAudioFinished(false);
+    }
+  }
+};
 
   useEffect(() => {
     return () => {
@@ -498,6 +609,57 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
                 <View className="mb-8 mt-2 h-0.5 w-full bg-[#37384B]"></View>
 
+                {/* voice */}
+                <View className="mb-6 flex flex-col gap-2">
+                  <View className="flex flex-row items-center justify-start gap-2">
+                    <Image
+                      source={require('~/assets/Tasks/voice.png')}
+                      className="h-6 w-6"
+                    />
+                    <Text className="text-xs text-[#787CA5]">Voice</Text>
+                  </View>
+
+                  <View className="flex w-full flex-row items-center gap-3 pl-5 pt-1">
+                    {task?.audioUrl ? (
+                      <View className="flex w-full justify-center rounded-2xl border border-dashed border-[#815BF5] p-4">
+                        <View className="flex flex-row justify-between">
+                          <View className="flex flex-col">
+                            <Text className="text-sm text-white">Voice Note</Text>
+                            <Text className="mb-1 text-sm text-white" style={{ fontFamily: 'Lato-Light' }}>
+                              {Math.floor(currentPosition / 1000)}s / {Math.floor(duration / 1000)}s
+                            </Text>
+                          </View>
+
+                          <View className="flex flex-row items-center gap-3">
+                            <TouchableOpacity
+                              className="h-10 w-10 items-center justify-center rounded-full bg-[#46765f]"
+                              onPress={handlePlayPause}>
+                              <Entypo
+                                name={isPlaying ? 'controller-paus' : 'controller-play'}
+                                size={24}
+                                color="#FFF"
+                              />
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+
+                        <Slider
+                          style={styles.slider}
+                          minimumValue={0}
+                          maximumValue={duration > 0 ? duration / 1000 : 0}
+                          value={currentPosition / 1000}
+                          minimumTrackTintColor="#815BF5"
+                          maximumTrackTintColor="gray"
+                          thumbTintColor="#ffffff"
+                          onValueChange={handleSliderChange}
+                        />
+                      </View>
+                    ) : (
+                      <Text className="text-xs text-gray-400">No voice note attached!</Text>
+                    )}
+                  </View>
+                </View>             
+
                 {/* Links */}
                 <View className="mb-6 flex flex-col gap-2">
                   <View className="flex flex-row items-center justify-start gap-2">
@@ -508,12 +670,17 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
                     <Text className="text-xs text-[#787CA5]">Links</Text>
                   </View>
 
-                  <View className="ml-6 gap-2">
-                    {task?.links?.map((link, index) => (
-                      <TouchableOpacity key={index} onPress={() => Linking.openURL(link)}>
-                        <Text style={{ color: '#815BF5' }}>{link}</Text>
-                      </TouchableOpacity>
-                    ))}
+                  <View className="flex w-full flex-row items-center gap-3 pl-5 pt-1">
+                    {
+                      task?.links?.length ?
+                      task?.links?.map((link, index) => (
+                        <TouchableOpacity key={index} onPress={() => Linking.openURL(link)}>
+                          <Text style={{ color: '#815BF5' }}>{link}</Text>
+                        </TouchableOpacity>
+                      )) :
+                      <Text className="text-xs text-gray-400">No links attached!</Text>
+                    }
+                    
                   </View>
                 </View>
 
@@ -571,9 +738,14 @@ const TaskDetailedComponent: React.FC<TaskDetailedComponentProps> = ({
 
                       <View key={index} className="flex w-full flex-row items-center justify-between">
                         <View className="flex flex-row items-center gap-2">
-                          <View className="h-10 w-10 rounded-full bg-white"></View>
+                        <UserAvatar
+                          imageUrl={com?.userImage} 
+                          name={com?.userName || "User"} 
+                          size={40} 
+                          borderColor="#37384B" 
+                        />
                           <View className='w-[60%]'>
-                            <Text className="text-lg text-white">{com?.comment}</Text>
+                            <Text className="text-sm text-white">{com?.comment}</Text>
                             <Text className="text-xs text-[#787CA5]">{com?.userName}</Text>
                           </View>
                         </View>
@@ -797,6 +969,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.5,
     elevation: 5, // Android
+  },
+  slider: {
+    width: '100%',
+    height: 40,
   },
 });
 

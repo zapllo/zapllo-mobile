@@ -44,8 +44,7 @@ const componentsData: HomeScreenComponents[] = [
   {
     id: '2',
     title: 'Zapllo Attendance (Coming Soon)',
-    screen: '',
-    //(routes)/HomeComponent/Attendance
+    screen: '(routes)/HomeComponent/Attendance',
     description: 'Track your Team Attendance & Breaks',
     image: require('~/assets/HomeComponents/ZAttendance.png'), 
   },

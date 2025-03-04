@@ -1,45 +1,162 @@
-import { Keyboard, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
-import React, { useState } from "react";
-import NavbarTwo from "~/components/navbarTwo";
-import { KeyboardAvoidingView } from "react-native";
-import { Image } from "react-native";
-
+import React, { useState } from 'react';
+import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, Image, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, TextInput, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { LinearGradient } from "expo-linear-gradient";
+import CheckboxTwo from '~/components/CheckBoxTwo';
+import NavbarTwo from '~/components/navbarTwo';
 import Modal from 'react-native-modal';
-import InputContainer from "~/components/InputContainer";
-import ToggleSwitch from "~/components/ToggleSwitch";
+import InputContainer from '~/components/InputContainer';
+import ToggleSwitch from '~/components/ToggleSwitch';
 
+interface LeaveType {
+  title: string;
+  isPaid: boolean;
+  allotted: number;
+  description: string;
+  backdatedLeaveDays: number;
+  advanceLeaveDays: number;
+  isFullDay: boolean;
+  isHalfDay: boolean;
+  isShortLeave: boolean;
+  isHoliday: boolean;
+  isWeekOff: boolean;
+  isReset: boolean;
+}
 
-
-
-type ReportOpctionAdmin = "All" | 'Paid' | 'Unpaid' | 'Absent';
 
 
 export default function LeaveTypeScreen() {
-  const [selectedReportAdmin, setSelectedReportAdmin] = useState<ReportOpctionAdmin>('All');
+  const [alloteds, setalloteds] = useState<'All' | 'Paid' | 'Unpaid'>('All');
   const [isModalVisible, setModalVisible] = useState(false);
-  const [selectedOption, setSelectedOption] = useState('Reset');
+  const [resetOrCarry, setResetOrCarry] = useState('Reset');
+  const [paidOrnonPaid, setpaidOrnonPaid] = useState<'Paid' | 'Unpaid'>('Paid');
   const [leaveTitle, setLeaveTitle] = useState("");
-  const [description,setDescripction] = useState("");
+  const [description, setDescripction] = useState("");
+  const [allotedLeave, setAllotedLeave] = useState("0");
+  const [backdatedLeaveDays, setBackdatedLeaveDays] = useState("0");
+  const [advanceLeaveDays, setAdvanceLeaveDays] = useState("0");
   const [isDescriptionFocused, setDescriptionFocused] = useState(false);
-
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [isFullDay, setIsFullDay] = useState(false);
+  const [isHalfDay, setIsHalfDay] = useState(false);
+  const [isShortLeave, setIsShortLeave] = useState(false);
+  const [isHoliday, setIsHoliday] = useState(false);
+  const [isWeekOff, setIsWeekOff] = useState(false);
+  const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
+  const [editingLeaveType, setEditingLeaveType] = useState<LeaveType | null>(null);
+  const [leaveToDelete, setLeaveToDelete] = useState<LeaveType | null>(null);
 
   const handleFocus = () => setDescriptionFocused(true);
   const handleBlur = () => setDescriptionFocused(false);
 
-  const handleReportOptionPressAdmin = (option: ReportOpctionAdmin) => {
+  const handleReportOptionPressAdmin = (option: 'All' | 'Paid' | 'Unpaid') => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setSelectedReportAdmin(option);
+    setalloteds(option);
   };
 
   const toggleModal = () => {
     setModalVisible(prevState => !prevState);
+    if (isModalVisible) {
+      setEditingLeaveType(null);
+      resetModal();
+    }
   };
 
   const handleOptionPress = (option: string) => {
-    setSelectedOption(option);
+    setResetOrCarry(option);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+  };
+
+  const handlePaidOrNonPaid = (option: 'Paid' | 'Unpaid') => {
+    setpaidOrnonPaid(option);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+  };
+
+  const handleDelete = (leave: LeaveType) => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    setLeaveToDelete(leave);
+    setDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    if (leaveToDelete) {
+      setLeaveTypes(leaveTypes.filter(leave => leave.title !== leaveToDelete.title));
+      setLeaveToDelete(null);
+    }
+    setDeleteModal(false);
+  };
+
+  const cancelDelete = () => {
+    Haptics.selectionAsync();
+    setDeleteModal(false);
+    setLeaveToDelete(null);
+  };
+
+  const addLeaveType = () => {
+    const newLeaveType: LeaveType = {
+      title: leaveTitle,
+      isPaid: paidOrnonPaid === 'Paid',
+      allotted: parseInt(allotedLeave, 10) || 0,
+      description: description,
+      backdatedLeaveDays: parseInt(backdatedLeaveDays, 10) || 0,
+      advanceLeaveDays: parseInt(advanceLeaveDays, 10) || 0,
+      isFullDay: isFullDay,
+      isHalfDay: isHalfDay,
+      isShortLeave: isShortLeave,
+      isHoliday: isHoliday,
+      isWeekOff: isWeekOff,
+      isReset: resetOrCarry === 'Reset',
+    };
+    if (editingLeaveType) {
+      setLeaveTypes(leaveTypes.map(leave => leave.title === editingLeaveType.title ? newLeaveType : leave));
+      setEditingLeaveType(null);
+    } else {
+      setLeaveTypes([...leaveTypes, newLeaveType]);
+    }
+    resetModal();
+  };
+
+  const handleNumericInput = (value: string, setter: React.Dispatch<React.SetStateAction<string>>) => {
+    if (/^\d*$/.test(value)) {
+      setter(value);
+    }
+  };
+
+  const filteredLeaveTypes = leaveTypes.filter(leave => {
+    if (alloteds === 'All') return true;
+    return alloteds === 'Paid' ? leave.isPaid : !leave.isPaid;
+  });
+
+  const openEditModal = (leave: LeaveType) => {
+    setLeaveTitle(leave.title);
+    setpaidOrnonPaid(leave.isPaid ? 'Paid' : 'Unpaid');
+    setAllotedLeave(leave.allotted.toString());
+    setDescripction(leave.description);
+    setBackdatedLeaveDays(leave.backdatedLeaveDays.toString());
+    setAdvanceLeaveDays(leave.advanceLeaveDays.toString());
+    setIsFullDay(leave.isFullDay);
+    setIsHalfDay(leave.isHalfDay);
+    setIsShortLeave(leave.isShortLeave);
+    setIsHoliday(leave.isHoliday);
+    setIsWeekOff(leave.isWeekOff);
+    setResetOrCarry(leave.isReset ? 'Reset' : 'Carry Forward');
+    setEditingLeaveType(leave);
+    setModalVisible(true);
+  };
+
+  const resetModal = () => {
+    setModalVisible(false);
+    setLeaveTitle("");
+    setAllotedLeave("0");
+    setDescripction("");
+    setBackdatedLeaveDays("0");
+    setAdvanceLeaveDays("0");
+    setIsFullDay(false);
+    setIsHalfDay(false);
+    setIsShortLeave(false);
+    setIsHoliday(false);
+    setIsWeekOff(false);
+    setResetOrCarry('Reset');
   };
 
   return (
@@ -53,109 +170,100 @@ export default function LeaveTypeScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <View className="w-[90%] mt-8 flex">
-              <View className="w-full  items-center flex flex-row justify-between">
-
+              <View className="w-full items-center flex flex-row justify-between">
                 <TouchableOpacity className="w-12 h-12" onPress={toggleModal}>
-                  <Image 
-                    className="w-full h-full"
-                    source={require("../../../../assets/Attendence/Add.png")}/>
+                  <Image className="w-full h-full" source={require("../../../../assets/Attendence/Add.png")} />
                 </TouchableOpacity>
                 <LinearGradient
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}                      
-                        colors={['#815BF5', '#FC8929']}
-                        style={styles.gradientBorder}
-                      >
-                <TouchableOpacity className='flex h-[3rem]  px-7 items-center justify-center rounded-full bg-primary'>
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  colors={['#815BF5', '#FC8929']}
+                  style={styles.gradientBorder}
+                >
+                  <TouchableOpacity
+                    onPress={() => handleDelete(leaveToDelete)}
+                    className='flex h-[3rem] px-7 items-center justify-center rounded-full bg-primary'>
                     <Text className='text-white text-xs' style={{ fontFamily: 'LatoBold' }}>Update Leave Balance for 2025</Text>
-                  
-                </TouchableOpacity>
+                  </TouchableOpacity>
                 </LinearGradient>
-
               </View>
+
               <View className="w-full items-end mt-2 flex mb-10 ">
-              <Text className=" text-white  mr-4" style={{ fontFamily: 'LatoBold' }}>Total Leaves Alloted: 45</Text>
+                <Text className="text-white mr-4" style={{ fontFamily: 'LatoBold' }}>Total Leaves Alloted: 45</Text>
               </View>
 
               <View className="flex w-full flex-row justify-start items-center mb-4 ">
-                      <TouchableOpacity 
-                        className="flex items-center justify-center flex-col w-1/5"
-                        onPress={() => handleReportOptionPressAdmin('All')}
-                      >
-                        <View className="flex flex-row gap-1 justify-end mb-4">
-                          <Text 
-                            className={`${selectedReportAdmin === 'All' ? 'text-white' : 'text-[#787CA5]'} text-xs `}
-                          >
-                            All
-                          </Text>
-                          <Text className="text-primary rounded-md bg-white p-0.5 text-xs" style={{ fontFamily: "Lato" }}>10</Text>
-                        </View>
+                <TouchableOpacity
+                  className="flex items-center justify-center flex-col w-1/5"
+                  onPress={() => handleReportOptionPressAdmin('All')}
+                >
+                  <View className="flex flex-row gap-1 justify-end mb-4">
+                    <Text className={`${alloteds === 'All' ? 'text-white' : 'text-[#787CA5]'} text-xs `}>
+                      All
+                    </Text>
+                    <Text className="text-primary rounded-md bg-white p-0.5 text-xs" style={{ fontFamily: "Lato" }}>10</Text>
+                  </View>
 
-                        {selectedReportAdmin === 'All' && (
-                          <View className="h-[2px] bg-white  w-[80%] " />
-                        )}
-                      </TouchableOpacity>
+                  {alloteds === 'All' && (
+                    <View className="h-[2px] bg-white w-[80%] " />
+                  )}
+                </TouchableOpacity>
 
-                      <TouchableOpacity 
-                        className="flex items-center justify-center flex-col w-1/5 mr-4"
-                        onPress={() => handleReportOptionPressAdmin('Paid')}
-                      >
-                        <View className="flex flex-row gap-1 justify-end mb-4">
-                          <Text 
-                            className={`${selectedReportAdmin === 'Paid' ? 'text-white' : 'text-[#787CA5]'} text-xs `}
-                          >
-                            Paid
-                          </Text>
-                          <Text className="text-primary rounded-md bg-[#06D6A0] p-0.5 text-xs" style={{ fontFamily: "Lato" }}>10</Text>
-                        </View>
+                <TouchableOpacity
+                  className="flex items-center justify-center flex-col w-1/5 mr-4"
+                  onPress={() => handleReportOptionPressAdmin('Paid')}
+                >
+                  <View className="flex flex-row gap-1 justify-end mb-4">
+                    <Text className={`${alloteds === 'Paid' ? 'text-white' : 'text-[#787CA5]'} text-xs `}>
+                      Paid
+                    </Text>
+                    <Text className="text-primary rounded-md bg-[#06D6A0] p-0.5 text-xs" style={{ fontFamily: "Lato" }}>10</Text>
+                  </View>
 
-                        {selectedReportAdmin === 'Paid' && (
-                          <View className="h-[2px] bg-white w-full mr-2 " />
-                        )}
-                      </TouchableOpacity>
-                      
-                      <TouchableOpacity 
-                        className="flex items-center justify-center flex-col w-1/5"
-                        onPress={() => handleReportOptionPressAdmin('Unpaid')}
-                      >
-                        <View className="flex flex-row gap-1 justify-end mb-4">
-                        <Text 
-                          className={`${selectedReportAdmin === 'Unpaid' ? 'text-white' : 'text-[#787CA5]'} text-xs `}
-                        >
-                          Unpaid
-                        </Text>
-                        <Text className="text-primary bg-[#FDB314]  rounded-md p-0.5 text-xs" style={{ fontFamily: "Lato" }}>10</Text>
-                        </View>
-                        {selectedReportAdmin === 'Unpaid' && (
-                          <View className="h-[2px] bg-white w-full mr-3 " />
-                        )}
-                      </TouchableOpacity>
-                      
-                    
-              </View> 
+                  {alloteds === 'Paid' && (
+                    <View className="h-[2px] bg-white w-full mr-2 " />
+                  )}
+                </TouchableOpacity>
 
-              <View className=" border border-[#37384B] p-5  rounded-xl ">
-              <View className="flex flex-row items-center justify-between">
-                <View className="flex flex-row gap-4 items-center">
-                <Text className="text-white text-lg ">Casual Leave</Text>
-                <Text className="text-white bg-[#06D6A0] text-xs rounded-md p-1">Paid Leave</Text>
-                </View>
-
-                <View className="flex flex-row items-center gap-4">
-                  <TouchableOpacity className="h-6 w-7">
-                    <Image className="w-full h-full" source={require("../../../../assets/Tasks/addto.png")}/>
-                  </TouchableOpacity>
-                  <TouchableOpacity className="h-6 w-4">
-                    <Image className="h-full w-full" source={require("../../../../assets/Tasks/deleteTwo.png")}/>
-                  </TouchableOpacity>
-                </View>
+                <TouchableOpacity
+                  className="flex items-center justify-center flex-col w-1/5"
+                  onPress={() => handleReportOptionPressAdmin('Unpaid')}
+                >
+                  <View className="flex flex-row gap-1 justify-end mb-4">
+                    <Text className={`${alloteds === 'Unpaid' ? 'text-white' : 'text-[#787CA5]'} text-xs `}>
+                      Unpaid
+                    </Text>
+                    <Text className="text-primary bg-[#FDB314] rounded-md p-0.5 text-xs" style={{ fontFamily: "Lato" }}>10</Text>
+                  </View>
+                  {alloteds === 'Unpaid' && (
+                    <View className="h-[2px] bg-white w-full mr-3 " />
+                  )}
+                </TouchableOpacity>
               </View>
 
-              <Text className="text-white text-sm">Leaves Allotted: 12</Text>
+              {filteredLeaveTypes.map((leave, index) => (
+                <View key={index} className="border border-[#37384B] p-5 rounded-xl mb-4">
+                  <View className="flex flex-row items-center justify-between">
+                    <View className="flex flex-row gap-4 items-center">
+                      <Text className="text-white text-lg">{leave.title}</Text>
+                      <Text className={`text-white ${leave.isPaid ? 'bg-[#06D6A0]' : 'bg-[#FDB314]'} text-xs rounded-md p-1`}>
+                        {leave.isPaid ? 'Paid Leave' : 'Unpaid Leave'}
+                      </Text>
+                    </View>
 
-              </View>
-              
+                    <View className="flex flex-row items-center gap-4">
+                      <TouchableOpacity className="h-6 w-7" onPress={() => openEditModal(leave)}>
+                        <Image className="w-full h-full" source={require("../../../../assets/Tasks/addto.png")} />
+                      </TouchableOpacity>
+                      <TouchableOpacity className="h-6 w-4" onPress={() => handleDelete(leave)}>
+                        <Image className="h-full w-full" source={require("../../../../assets/Tasks/deleteTwo.png")} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
 
+                  <Text className="text-white text-sm">Leaves Allotted: {leave.allotted}</Text>
+                </View>
+              ))}
             </View>
 
             <Modal
@@ -165,10 +273,10 @@ export default function LeaveTypeScreen() {
               animationIn="slideInUp"
               animationOut="slideOutDown"
             >
-              <View className="rounded-t-3xl bg-[#0A0D28] py-5">
+              <ScrollView className="rounded-t-3xl flex-1 bg-[#0A0D28] py-5 mt-20 pb-16">
                 <View className="px-5 mb-10 mt-2 flex w-full flex-row items-center justify-between">
                   <Text className="text-2xl font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
-                  New Leave Type
+                    {editingLeaveType ? "Edit Leave Type" : "New Leave Type"}
                   </Text>
                   <TouchableOpacity onPress={toggleModal}>
                     <Image source={require('../../../../assets/commonAssets/cross.png')} className="h-8 w-8" />
@@ -176,50 +284,47 @@ export default function LeaveTypeScreen() {
                 </View>
 
                 <View className="px-5">
-                  <View className="items-center border border-[#676B93] w-full px-1.5 py-1.5 rounded-full  mb-4">
+                  <View className="items-center border border-[#676B93] w-full px-1.5 py-1.5 rounded-full mb-4">
                     <View className="w-full flex flex-row items-center justify-between">
-                        <TouchableOpacity
-                          className="w-1/2 items-center"
-                          onPress={() => handleOptionPress('Reset')}
+                      <TouchableOpacity
+                        className="w-1/2 items-center"
+                        onPress={() => handleOptionPress('Reset')}
+                      >
+                        <LinearGradient
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          colors={resetOrCarry === 'Reset' ? ["#815BF5", "#FC8929"] : ["#0A0D28", "#0A0D28"]}
+                          style={styles.tablet}
                         >
-                          <LinearGradient
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            colors={selectedOption === 'Reset' ? ["#815BF5", "#FC8929"] : ["#0A0D28", "#0A0D28"]}
-                            style={styles.tablet}
-                          >
-                            <Text className={`text-sm  ${selectedOption === 'Reset' ? 'text-white' : 'text-[#676B93]'}`} style={{ fontFamily: "LatoBold" }}>All Reset</Text>
-                          </LinearGradient>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          className="w-1/2 items-center"
-                          onPress={() => handleOptionPress('Carry Forward')}
+                          <Text className={`text-sm ${resetOrCarry === 'Reset' ? 'text-white' : 'text-[#676B93]'}`} style={{ fontFamily: "LatoBold" }}>All Reset</Text>
+                        </LinearGradient>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        className="w-1/2 items-center"
+                        onPress={() => handleOptionPress('Carry Forward')}
+                      >
+                        <LinearGradient
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          colors={resetOrCarry === 'Carry Forward' ? ["#815BF5", "#FC8929"] : ["#0A0D28", "#0A0D28"]}
+                          style={styles.tablet}
                         >
-                          <LinearGradient
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            colors={selectedOption === 'Carry Forward' ? ["#815BF5", "#FC8929"] : ["#0A0D28", "#0A0D28"]}
-                            style={styles.tablet}
-                          >
-                            <Text className={`text-sm  ${selectedOption === 'Carry Forward' ? 'text-white' : 'text-[#676B93]'}`} style={{ fontFamily: "LatoBold" }}>Carry Forward</Text>
-                          </LinearGradient>
-                        </TouchableOpacity>
+                          <Text className={`text-sm ${resetOrCarry === 'Carry Forward' ? 'text-white' : 'text-[#676B93]'}`} style={{ fontFamily: "LatoBold" }}>Carry Forward</Text>
+                        </LinearGradient>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 </View>
 
-                
-                {/* Leave Title */}
                 <View className="w-[100%] items-center flex flex-col ">
-                <InputContainer
-                  label="Leave Type"
-                  value={leaveTitle}
-                  onChangeText={(value) => setLeaveTitle(value)}
-                  placeholder=""
-                  className="flex-1  text-sm text-[#787CA5]"
-                  passwordError={''}
-                />
-                {/* desc */}
+                  <InputContainer
+                    label="Leave Type"
+                    value={leaveTitle}
+                    onChangeText={(value) => setLeaveTitle(value)}
+                    placeholder=""
+                    className="flex-1 text-sm text-[#787CA5]"
+                    passwordError={''}
+                  />
                   <View
                     style={[
                       styles.input,
@@ -229,8 +334,8 @@ export default function LeaveTypeScreen() {
                         alignItems: 'flex-start',
                         borderColor: isDescriptionFocused ? '#815BF5' : '#37384B',
                       },
-                    ]}>
-                
+                    ]}
+                  >
                     <TextInput
                       multiline
                       style={[
@@ -245,57 +350,155 @@ export default function LeaveTypeScreen() {
                       onBlur={handleBlur}
                     />
                   </View>
-                  
-                  {/* Paid Leave */}
+
                   <InputContainer
-                  label="Alloted Leaves"
-                  value={leaveTitle}
-                  onChangeText={(value) => setLeaveTitle(value)}
-                  placeholder=""
-                  className="flex-1  text-sm text-[#787CA5]"
-                  passwordError={''}
-                />
-                <View className="flex w-full mx-7 mt-3 ">
-                
-                  <ToggleSwitch
-                  title={"           Paid Leave         -----------------"}
+                    label="Alloted Leaves"
+                    value={allotedLeave}
+                    onChangeText={(value) => handleNumericInput(value, setAllotedLeave)}
+                    placeholder=""
+                    className="flex-1 text-sm text-[#787CA5]"
+                    passwordError={''}
+                    keyboardType="numeric"
                   />
+
+                  <View className="px-5 mt-6 w-[90%] mb-6">
+                  <Text className=" text-sm text-[#787CA5] ml-3 mb-2">Type</Text>
+                  <View className="items-center border border-[#676B93] w-full px-1.5 py-1.5 rounded-full mb-4">
+                    <View className="w-full flex flex-row items-center justify-between">
+                      <TouchableOpacity
+                        className="w-1/2 items-center"
+                        onPress={() => handlePaidOrNonPaid('Paid')}
+                      >
+                        <LinearGradient
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          colors={paidOrnonPaid === 'Paid' ? ["#815BF5", "#FC8929"] : ["#0A0D28", "#0A0D28"]}
+                          style={styles.tablet}
+                        >
+                          <Text className={`text-sm ${paidOrnonPaid === 'Paid' ? 'text-white' : 'text-[#676B93]'}`} style={{ fontFamily: "LatoBold" }}>Paid</Text>
+                        </LinearGradient>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        className="w-1/2 items-center"
+                        onPress={() => handlePaidOrNonPaid('Unpaid')}
+                      >
+                        <LinearGradient
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          colors={paidOrnonPaid === 'Unpaid' ? ["#815BF5", "#FC8929"] : ["#0A0D28", "#0A0D28"]}
+                          style={styles.tablet}
+                        >
+                          <Text className={`text-sm ${paidOrnonPaid === 'Unpaid' ? 'text-white' : 'text-[#676B93]'}`} style={{ fontFamily: "LatoBold" }}>Unpaid</Text>
+                        </LinearGradient>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
                 </View>
-                  <View className="flex w-full mx-7  ">
-                  
-                  <ToggleSwitch
-                  title={"           Paid Leave         -----------------"}
+
+                  <View className="bg-primary w-full items-center justify-center pb-12">
+                    <InputContainer
+                      label="Backdated Leave Days"
+                      value={backdatedLeaveDays}
+                      onChangeText={(value) => handleNumericInput(value, setBackdatedLeaveDays)}
+                      placeholder=""
+                      className="flex-1 text-sm text-[#787CA5]"
+                      passwordError={''}
+                      keyboardType="numeric"
+                    />
+
+                    <InputContainer
+                      label="Advance Leave Days"
+                      value={advanceLeaveDays}
+                      onChangeText={(value) => handleNumericInput(value, setAdvanceLeaveDays)}
+                      placeholder=""
+                      className="flex-1 text-sm text-[#787CA5]"
+                      passwordError={''}
+                      keyboardType="numeric"
+                    />
+                  </View>
+                  <ToggleSwitch title={"Include Holidays"} isOn={isHoliday} onToggle={setIsHoliday} />
+                  <ToggleSwitch title={"Include Week Offs"} isOn={isWeekOff} onToggle={setIsWeekOff} />
+                  <Text className="text-[#787CA5] w-[90%] mt-5 mb-4 text-sm">Unit</Text>
+                  <View className="flex flex-row justify-between items-center w-[90%]">
+                    <View className="flex flex-row items-center gap-2">
+                      <CheckboxTwo
+                        isChecked={isFullDay}
+                        onPress={() => setIsFullDay(!isFullDay)}
+                      />
+                      <Text className="text-white text-lg" style={{ fontFamily: "LatoBold" }}>Full Day</Text>
+                    </View>
+                    <View className="flex flex-row items-center gap-2" >
+                      <CheckboxTwo
+                        isChecked={isHalfDay}
+                        onPress={() => setIsHalfDay(!isHalfDay)}
+                      />
+                      <Text className="text-white text-lg" style={{ fontFamily: "LatoBold" }}>Half Day</Text>
+                    </View>
+                    <View className="flex flex-row items-center gap-2">
+                      <CheckboxTwo
+                        isChecked={isShortLeave}
+                        onPress={() => setIsShortLeave(!isShortLeave)}
+                      />
+                      <Text className="text-white text-lg" style={{ fontFamily: "LatoBold" }}>Short Leave</Text>
+                    </View>
+                  </View>
+                  <Text className="text-xs text-[#787CA5] mb-7 mt-3">Deduction (in Days) : Full Day - 1, Half Day - 0.5, Short Leave - 0.25</Text>
+
+                  <TouchableOpacity className="bg-[#37384B] flex items-center p-5 rounded-full mb-10 w-[90%]" onPress={addLeaveType}>
+                    <Text className="text-white" style={{ fontFamily: "LatoBold" }}>{editingLeaveType ? "Update Leave Type" : "Add Leave Type"}</Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </Modal>
+
+            <Modal
+              isVisible={deleteModal}
+              onBackdropPress={cancelDelete}
+              style={{ justifyContent: 'flex-end', margin: 0 }}
+            >
+              <View
+                style={{
+                  backgroundColor: '#0A0D28',
+                  padding: 20,
+                  borderTopLeftRadius: 30,
+                  borderTopRightRadius: 30,
+                  paddingBottom: 55,
+                  paddingTop: 35,
+                }}
+              >
+                <View style={{ alignItems: 'center' }}>
+                  <Image
+                    style={{ width: 80, height: 80, marginBottom: 20 }}
+                    source={require('../../../../assets/Tickit/delIcon.png')}
                   />
+                  <Text style={{ color: 'white', fontSize: 24 }}>Delete Leave Type</Text>
+                  <Text style={{ color: '#787CA5' }} className='mb-10 '>Are you sure you want to delete this leave type? This action cannot be undone.</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: '#37384B',
+                        padding: 15,
+                        borderRadius: 30,
+                        flex: 1,
+                        marginRight: 10,
+                      }}
+                      onPress={cancelDelete}
+                    >
+                      <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'LatoBold' }}>
+                        No, Keep It.
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{ backgroundColor: '#EF4444', padding: 15, borderRadius: 30, flex: 1 }}
+                      onPress={confirmDelete}
+                    >
+                      <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'LatoBold' }}>
+                        Delete
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-
-                <View className="bg-primary w-full items-center justify-center pb-12">
-                  {/* Backdated Leave Days */}
-                  <InputContainer
-                  label="Backdated Leave Days"
-                  value={leaveTitle}
-                  onChangeText={(value) => setLeaveTitle(value)}
-                  placeholder=""
-                  className="flex-1  text-sm text-[#787CA5]"
-                  passwordError={''}
-                />
-
-                  {/* Advance Leave Days */}
-                  <InputContainer
-                  label="Advance Leave Days"
-                  value={leaveTitle}
-                  onChangeText={(value) => setLeaveTitle(value)}
-                  placeholder=""
-                  className="flex-1  text-sm text-[#787CA5]"
-                  passwordError={''}
-                />
-
-                </View>
-
-                
-                </View>
-
-
-                </View>
+              </View>
             </Modal>
           </ScrollView>
         </TouchableWithoutFeedback>
@@ -303,6 +506,7 @@ export default function LeaveTypeScreen() {
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   gradient: {
@@ -333,7 +537,7 @@ const styles = StyleSheet.create({
     borderColor: '#37384B',
     padding: 10,
     marginTop: 25,
-    borderRadius: 35,
+    borderRadius: 25,
     width: '90%',
     height: 57,
     position: 'relative',

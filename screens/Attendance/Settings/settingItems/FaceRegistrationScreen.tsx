@@ -11,6 +11,7 @@ import {
   TextInput,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
 } from 'react-native';
 import NavbarTwo from '~/components/navbarTwo';
 import DateRangeDropdown from '~/components/DateRangeDropdown/DateRangeDropdown';
@@ -20,14 +21,20 @@ import axios from 'axios';
 import { backend_Host } from '~/config';
 import { LinearGradient } from 'expo-linear-gradient';
 import CheckRound from '~/components/CheckRound';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function FaceRegistrationScreen() {
   const [isFilterModalVisible, setFilterModalVisible] = useState(false);
   const [searchUser, setSearchUser] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedEmployeeName, setSelectedEmployeeName] = useState('');
   const [users, setUsers] = useState([]);
-  const [isFaceModalOpen,setIsFaceModalOpen] = useState(false);
-  const [isChecked,setIsChecked] = useState(true)
+  const [isFaceModalOpen, setIsFaceModalOpen] = useState(false);
+  const [isChecked, setIsChecked] = useState(true);
+  const [selectedImages, setSelectedImages] = useState([null, null, null]);
+  const [registeredFaces, setRegisteredFaces] = useState([]);
+  const [registrationStatus, setRegistrationStatus] = useState('Pending'); // 'Pending', 'Approved', 'Rejected'
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -53,21 +60,179 @@ export default function FaceRegistrationScreen() {
     setFilterModalVisible(!isFilterModalVisible);
   };
 
-  const toggleFaceModal = () =>{
+  const toggleFaceModal = () => {
     setIsFaceModalOpen(!isFaceModalOpen);
   };
-  const handelSelect = () =>{
+
+  const handelSelect = () => {
     setIsChecked(!isChecked);
-  }
+  };
 
   const renderDropdownItem = (item) => (
     <TouchableOpacity
       style={styles.itemStyle}
-      onPress={() => setSelectedEmployee(item.value)}
+      onPress={() => {
+        setSelectedEmployee(item.value);
+        setSelectedEmployeeName(item.label);
+      }}
     >
       <Text style={styles.itemTextStyle}>{item.label}</Text>
     </TouchableOpacity>
   );
+
+  const pickImage = async (index) => {
+    try {
+      // Request permission to access the media library
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Please allow access to your photo library to select images.');
+        return;
+      }
+
+      // Launch the image picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        // Create a new array with the selected image at the specified index
+        const newSelectedImages = [...selectedImages];
+        newSelectedImages[index] = result.assets[0].uri;
+        setSelectedImages(newSelectedImages);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to select image. Please try again.');
+    }
+  };
+
+  const handleRegisterFace = async () => {
+    // Check if employee is selected
+    if (!selectedEmployee) {
+      Alert.alert('Error', 'Please select an employee first');
+      return;
+    }
+
+    // Check if all three images are selected
+    if (selectedImages.some(img => img === null)) {
+      Alert.alert('Error', 'Please select all three required images');
+      return;
+    }
+
+    // Here you would implement the API call to register the face
+    try {
+      // Create form data to send images
+      const formData = new FormData();
+      formData.append('userId', selectedEmployee);
+      
+      // Append each selected image to the form data
+      selectedImages.forEach((uri, index) => {
+        if (uri) {
+          const fileNameParts = uri.split('/');
+          const fileName = fileNameParts[fileNameParts.length - 1];
+          
+          formData.append('images', {
+            uri: uri,
+            name: fileName,
+            type: 'image/jpeg',
+          });
+        }
+      });
+
+      // Make API call
+      // Uncomment this when ready to implement
+      // const response = await axios.post(`${backend_Host}/face-recognition/register`, formData, {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data',
+      //   },
+      // });
+
+      // For now, just log success and close modal
+      console.log('Face registration would be sent with:', { selectedEmployee, selectedImages });
+      
+      // Add the registered face to the list
+      setRegisteredFaces([
+        ...registeredFaces,
+        {
+          id: selectedEmployee,
+          name: selectedEmployeeName,
+          images: [...selectedImages],
+          status: 'Approved' // Default status for demo
+        }
+      ]);
+      
+      Alert.alert('Success', 'Face registration submitted successfully');
+      toggleFaceModal();
+      setSelectedImages([null, null, null]);
+      setSelectedEmployee(null);
+      setSelectedEmployeeName('');
+    } catch (error) {
+      console.error('Error registering face:', error);
+      Alert.alert('Error', 'Failed to register face. Please try again.');
+    }
+  };
+
+  const renderRegisteredFaces = () => {
+    if (registeredFaces.length === 0) {
+      return (
+        <View className="p-4 border rounded-2xl flex flex-col border-[#37384B] gap-2">
+          <Text className="text-white text-center">No faces registered yet</Text>
+        </View>
+      );
+    }
+
+    return registeredFaces.map((face, index) => (
+      <View key={index} className="p-4 border rounded-2xl flex flex-col border-[#37384B] gap-2 mb-4">
+        <View className="border rounded-2xl flex flex-row justify-between p-2">
+          <View className="flex flex-row items-center gap-4">
+            <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>
+              {face.name}
+            </Text>
+            <Text
+              className={`text-white text-xs p-2 rounded-lg px-4 ${
+                face.status === 'Approved' 
+                  ? 'bg-[#06D6A0]' 
+                  : face.status === 'Rejected' 
+                  ? 'bg-[#FF5A5A]' 
+                  : 'bg-[#FFC107]'
+              }`}
+              style={{ fontFamily: 'LatoBold' }}
+            >
+              {face.status}
+            </Text>
+          </View>
+          <TouchableOpacity 
+            className="w-5 h-8"
+            onPress={() => {
+              // Remove this face registration
+              const updatedFaces = [...registeredFaces];
+              updatedFaces.splice(index, 1);
+              setRegisteredFaces(updatedFaces);
+            }}
+          >
+            <Image
+              className="w-full h-full"
+              source={require('../../../../assets/Tasks/deleteTwo.png')}
+            />
+          </TouchableOpacity>
+        </View>
+
+        <View className="flex flex-row items-center gap-2">
+          {face.images.map((image, imgIndex) => (
+            <Image 
+              key={imgIndex}
+              source={{ uri: image }} 
+              className="w-8 h-8 rounded-full"
+            />
+          ))}
+        </View>
+      </View>
+    ));
+  };
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
@@ -127,39 +292,95 @@ export default function FaceRegistrationScreen() {
                   ]}
                   value={searchUser}
                   onChangeText={(value) => setSearchUser(value)}
-                  placeholder="Search"
+                  placeholder="Search by employee name"
                   placeholderTextColor="#787CA5"
                 />
               </View>
 
-              <View className="p-4 border rounded-2xl flex flex-col border-[#37384B] gap-2">
-                <View className="border rounded-2xl flex flex-row justify-between">
-                  <View className="flex flex-row items-center gap-4">
-                    <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>
-                      Subhodeep Banerjee
-                    </Text>
-                    <Text
-                      className="text-white text-xs p-2 rounded-lg px-4 bg-[#06D6A0]"
-                      style={{ fontFamily: 'LatoBold' }}
-                    >
-                      Approved
-                    </Text>
-                  </View>
-                  <TouchableOpacity className="w-5 h-8">
+              {renderRegisteredFaces()}
+            </View>
+
+            {/* FACE MODAL */}
+            <Modal
+              isVisible={isFaceModalOpen}
+              onBackdropPress={toggleFaceModal}
+              style={{ margin: 0, justifyContent: 'flex-end' }}
+              animationIn="slideInUp"
+              animationOut="slideOutDown"
+            >
+              <View className="rounded-t-3xl bg-[#0A0D28] p-5 pb-16">
+                <View className="mb-5 mt-2 flex w-full flex-row items-center justify-between">
+                  <Text
+                    className="text-2xl font-semibold text-white"
+                    style={{ fontFamily: 'LatoBold' }}
+                  >
+                    Register Faces
+                  </Text>
+                  <TouchableOpacity onPress={toggleFaceModal}>
                     <Image
-                      className="w-full h-full"
-                      source={require('../../../../assets/Tasks/deleteTwo.png')}
+                      source={require('../../../../assets/commonAssets/cross.png')}
+                      className="h-8 w-8"
                     />
                   </TouchableOpacity>
                 </View>
-
-                <View className="flex flex-row items-center gap-2">
-                  <View className="bg-white w-8 h-8 rounded-full"></View>
-                  <View className="bg-white w-8 h-8 rounded-full"></View>
-                  <View className="bg-white w-8 h-8 rounded-full"></View>
+                <Text className="text-white text-lg" style={{ fontFamily: 'LatoBold' }}>
+                  Register New Employee Faces
+                </Text>
+                <Text className="text-[#787CA5] text-xs mb-7 mt-1" style={{ fontFamily: 'Lato' }}>
+                  Upload only 3 Images of Employee and submit those images
+                </Text>
+                <View style={styles.input}>
+                  <CustomDropdownComponentTwo
+                    data={users}
+                    selectedValue={selectedEmployee}
+                    onSelect={(value) => {
+                      const selectedUser = users.find(user => user.value === value);
+                      setSelectedEmployee(value);
+                      setSelectedEmployeeName(selectedUser ? selectedUser.label : '');
+                    }}
+                    placeholder="Select User"
+                    renderItem={renderDropdownItem}
+                  />
                 </View>
+                {/* image selection buttons */}
+                <View className='flex flex-row items-center justify-between mt-4'>
+                  {[0, 1, 2].map((index) => (
+                    <TouchableOpacity 
+                      key={index}
+                      className='border border-dashed border-[#815BF5] p-8 rounded-xl'
+                      onPress={() => pickImage(index)}
+                    >
+                      {selectedImages[index] ? (
+                        <Image 
+                          source={{ uri: selectedImages[index] }} 
+                          className='h-12 w-12 rounded-md' 
+                          style={{ width: 48, height: 48 }}
+                        />
+                      ) : (
+                        <Image 
+                          className='h-12 w-12' 
+                          source={require("../../../../assets/Attendence/AddImage.png")}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <Text className='text-[#787CA5] text-xs mt-2'>Click to upload your document.</Text>
+                <TouchableOpacity 
+                  className='flex h-[4rem] items-center justify-center rounded-full mt-10'
+                  onPress={handleRegisterFace}
+                >
+                  <LinearGradient
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    colors={["#815BF5", "#FC8929"]}
+                    style={styles.gradient}
+                  >
+                    <Text className='text-white'>Register New Face</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
               </View>
-            </View>
+            </Modal>
 
             {/* FACE MODAL */}
             <Modal
@@ -199,16 +420,28 @@ export default function FaceRegistrationScreen() {
                     renderItem={renderDropdownItem}
                   />
                 </View>
+                {/* image selection buttons */}
                 <View className='flex flex-row items-center justify-between mt-4'>
-                  <TouchableOpacity className='border border-dashed border-[#815BF5] p-8 rounded-xl'>
-                    <Image className='h-12 w-12' source={require("../../../../assets/Attendence/AddImage.png")}/>
-                  </TouchableOpacity>
-                  <TouchableOpacity className='border border-dashed border-[#815BF5] p-8 rounded-xl'>
-                    <Image className='h-12 w-12' source={require("../../../../assets/Attendence/AddImage.png")}/>
-                  </TouchableOpacity>
-                  <TouchableOpacity className='border border-dashed border-[#815BF5] p-8 rounded-xl'>
-                    <Image className='h-12 w-12' source={require("../../../../assets/Attendence/AddImage.png")}/>
-                  </TouchableOpacity>
+                  {[0, 1, 2].map((index) => (
+                    <TouchableOpacity 
+                      key={index}
+                      className='border border-dashed border-[#815BF5] p-8 rounded-xl'
+                      onPress={() => pickImage(index)}
+                    >
+                      {selectedImages[index] ? (
+                        <Image 
+                          source={{ uri: selectedImages[index] }} 
+                          className='h-12 w-12 rounded-md' 
+                          style={{ width: 48, height: 48 }}
+                        />
+                      ) : (
+                        <Image 
+                          className='h-12 w-12' 
+                          source={require("../../../../assets/Attendence/AddImage.png")}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  ))}
                 </View>
                 <Text className='text-[#787CA5] text-xs mt-2'>Click to upload your document.</Text>
                 <TouchableOpacity className='flex h-[4rem] items-center justify-center rounded-full mt-10'>

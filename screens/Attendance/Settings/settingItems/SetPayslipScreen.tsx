@@ -233,7 +233,7 @@ export default function SetPayslipScreen() {
                 </View>
               </View>
 
-              <TouchableOpacity className="bg-[#815BF5] p-4 rounded-full w-[90%] items-center mt-10 ">
+              <TouchableOpacity className="bg-[#815BF5] p-5 shadow-md rounded-full w-[90%] items-center mt-10 ">
                 <Text className="text-white">Save Payslip Details</Text>
               </TouchableOpacity>
             </View>

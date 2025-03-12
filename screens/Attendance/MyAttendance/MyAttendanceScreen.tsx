@@ -26,6 +26,7 @@ export default function MyAttendanceScreen() {
             <GradientButton
             title="Log Out"
             imageSource={""}
+            loading={true}
             />
 
             <View className="flex flex-col items-start  w-[90%] mt-11">

@@ -138,7 +138,9 @@ export default function SettingsScreen() {
                   className="w-3 h-3 \mt-1"
                   />
               </TouchableOpacity>
-              <TouchableOpacity className="w-full border-b border-x border-[#37384B] p-4 rounded-b-xl flex flex-row items-center justify-between">
+              <TouchableOpacity 
+              onPress={()=>router.push("/(routes)/settings/AttendenceSettings/SettingItems/SetOfficeLocation")}               
+              className="w-full border-b border-x border-[#37384B] p-4 rounded-b-xl flex flex-row items-center justify-between">
                 <Text className="text-white"style={{fontFamily:"LatoBold"}}>Office Location
 
                 </Text>

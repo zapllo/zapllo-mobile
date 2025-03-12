@@ -1,14 +1,30 @@
-import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, Image, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, TextInput, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  TextInput,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  StyleSheet,
+  Alert,
+  ActivityIndicator
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Modal from 'react-native-modal';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import CheckboxTwo from '~/components/CheckBoxTwo';
 import NavbarTwo from '~/components/navbarTwo';
-import Modal from 'react-native-modal';
-import InputContainer from '~/components/InputContainer';
-import ToggleSwitch from '~/components/ToggleSwitch';
+import InputContainer from '../../../../components/InputContainer';
+import ToggleSwitch from '../../../../components/ToggleSwitch';
+import CheckboxTwo from '~/components/CheckBoxTwo';
+import axios from 'axios';
 
 interface LeaveType {
+  id?: string;
   title: string;
   isPaid: boolean;
   allotted: number;
@@ -21,9 +37,8 @@ interface LeaveType {
   isHoliday: boolean;
   isWeekOff: boolean;
   isReset: boolean;
+  
 }
-
-
 
 export default function LeaveTypeScreen() {
   const [alloteds, setalloteds] = useState<'All' | 'Paid' | 'Unpaid'>('All');
@@ -45,6 +60,70 @@ export default function LeaveTypeScreen() {
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
   const [editingLeaveType, setEditingLeaveType] = useState<LeaveType | null>(null);
   const [leaveToDelete, setLeaveToDelete] = useState<LeaveType | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [totalLeavesAllotted, setTotalLeavesAllotted] = useState(0);
+  const [paidCount, setPaidCount] = useState(0);
+  const [unpaidCount, setUnpaidCount] = useState(0);
+
+  useEffect(() => {
+    fetchLeaveTypes();
+  }, []);
+
+  useEffect(() => {
+    // Calculate counts whenever leaveTypes changes
+    calculateCounts();
+  }, [leaveTypes]);
+
+  const calculateCounts = () => {
+    let total = 0;
+    let paid = 0;
+    let unpaid = 0;
+
+    leaveTypes.forEach(leave => {
+      total += leave.allotted;
+      if (leave.isPaid) {
+        paid++;
+      } else {
+        unpaid++;
+      }
+    });
+
+    setTotalLeavesAllotted(total);
+    setPaidCount(paid);
+    setUnpaidCount(unpaid);
+  };
+
+// First, let's fix the fetchLeaveTypes function to properly handle the API response format
+const fetchLeaveTypes = async () => {
+  setIsLoading(true);
+  try {
+    const response = await axios.get('https://zapllo.com/api/leaves/leaveType');
+    
+    // Transform API data to match our component's data structure
+    const transformedData = response.data.map((item: any) => ({
+      id: item._id, // Changed from id to _id to match the JSON structure
+      title: item.leaveType,
+      isPaid: item.type === 'Paid',
+      allotted: item.allotedLeaves,
+      description: item.description,
+      backdatedLeaveDays: item.backdatedLeaveDays,
+      advanceLeaveDays: item.advanceLeaveDays,
+      isFullDay: item.unit.includes('Full Day'),
+      isHalfDay: item.unit.includes('Half Day'),
+      isShortLeave: item.unit.includes('Short Leave'),
+      isHoliday: item.includeHolidays,
+      isWeekOff: item.includeWeekOffs,
+      isReset: item.leaveReset === 'Yearly',
+    }));
+    
+    setLeaveTypes(transformedData);
+  } catch (error) {
+    console.error('Error fetching leave types:', error);
+    Alert.alert('Error', 'Failed to load leave types. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleFocus = () => setDescriptionFocused(true);
   const handleBlur = () => setDescriptionFocused(false);
@@ -78,12 +157,25 @@ export default function LeaveTypeScreen() {
     setDeleteModal(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (leaveToDelete) {
-      setLeaveTypes(leaveTypes.filter(leave => leave.title !== leaveToDelete.title));
-      setLeaveToDelete(null);
+      setIsLoading(true);
+      try {
+        // Using axios instead of fetch for consistency
+        await axios.delete(`https://zapllo.com/api/leaves/leaveType/${leaveToDelete.id}`);
+        
+        setLeaveTypes(leaveTypes.filter(leave => leave.id !== leaveToDelete.id));
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Success', 'Leave type deleted successfully');
+      } catch (error) {
+        console.error('Error deleting leave type:', error);
+        Alert.alert('Error', 'Failed to delete leave type. Please try again.');
+      } finally {
+        setIsLoading(false);
+        setLeaveToDelete(null);
+        setDeleteModal(false);
+      }
     }
-    setDeleteModal(false);
   };
 
   const cancelDelete = () => {
@@ -92,30 +184,76 @@ export default function LeaveTypeScreen() {
     setLeaveToDelete(null);
   };
 
-  const addLeaveType = () => {
-    const newLeaveType: LeaveType = {
-      title: leaveTitle,
-      isPaid: paidOrnonPaid === 'Paid',
-      allotted: parseInt(allotedLeave, 10) || 0,
+// Finally, let's fix the addLeaveType function
+  const addLeaveType = async () => {
+    if (!leaveTitle.trim()) {
+      Alert.alert('Error', 'Leave type title is required');
+      return;
+    }
+
+    setIsLoading(true);
+    
+    // Prepare the unit array based on checkbox selections
+    const unit = [];
+    if (isFullDay) unit.push('Full Day');
+    if (isHalfDay) unit.push('Half Day');
+    if (isShortLeave) unit.push('Short Leave');
+    
+    // If no unit is selected, show an error
+    if (unit.length === 0) {
+      setIsLoading(false);
+      Alert.alert('Error', 'Please select at least one unit (Full Day, Half Day, or Short Leave)');
+      return;
+    }
+
+    const payload = { 
+      leaveType: leaveTitle,
       description: description,
+      allotedLeaves: parseInt(allotedLeave, 10) || 0,
+      type: paidOrnonPaid,
       backdatedLeaveDays: parseInt(backdatedLeaveDays, 10) || 0,
       advanceLeaveDays: parseInt(advanceLeaveDays, 10) || 0,
-      isFullDay: isFullDay,
-      isHalfDay: isHalfDay,
-      isShortLeave: isShortLeave,
-      isHoliday: isHoliday,
-      isWeekOff: isWeekOff,
-      isReset: resetOrCarry === 'Reset',
+      includeHolidays: isHoliday,
+      includeWeekOffs: isWeekOff,
+      unit: unit,
+      leaveReset: resetOrCarry === 'Reset' ? 'Yearly' : 'Monthly' // Changed from 'Carry Forward' to 'Monthly' to match API
+       
     };
-    if (editingLeaveType) {
-      setLeaveTypes(leaveTypes.map(leave => leave.title === editingLeaveType.title ? newLeaveType : leave));
-      setEditingLeaveType(null);
-    } else {
-      setLeaveTypes([...leaveTypes, newLeaveType]);
+
+    try {
+      if (editingLeaveType) {
+        // Update existing leave type
+        await axios.put(`https://zapllo.com/api/leaves/leaveType/${editingLeaveType.id}`, payload);
+      } else {
+        // Create new leave type
+        await axios.post('https://zapllo.com/api/leaves/leaveType', payload);
+      }
+
+      // Refresh leave types from server to get updated data
+      await fetchLeaveTypes();
+      
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert('Success', `Leave type ${editingLeaveType ? 'updated' : 'created'} successfully`);
+      toggleModal(); // This will call resetModal() as well
+      
+    } catch (error) {
+      console.error('Error saving leave type:', error);
+      let errorMessage = 'An unknown error occurred';
+      
+      if (axios.isAxiosError(error) && error.response) {
+        // Get the error message from the response if possible
+        errorMessage = error.response.data.message || `Failed to ${editingLeaveType ? 'update' : 'create'} leave type`;
+      }
+      
+      Alert.alert('Error', `Failed to ${editingLeaveType ? 'update' : 'add'} leave type. ${errorMessage}`);
+    } finally {
+      setIsLoading(false);
     }
-    resetModal();
   };
 
+
+
+  
   const handleNumericInput = (value: string, setter: React.Dispatch<React.SetStateAction<string>>) => {
     if (/^\d*$/.test(value)) {
       setter(value);
@@ -145,7 +283,6 @@ export default function LeaveTypeScreen() {
   };
 
   const resetModal = () => {
-    setModalVisible(false);
     setLeaveTitle("");
     setAllotedLeave("0");
     setDescripction("");
@@ -157,114 +294,173 @@ export default function LeaveTypeScreen() {
     setIsHoliday(false);
     setIsWeekOff(false);
     setResetOrCarry('Reset');
+    setpaidOrnonPaid('Paid');
   };
+
+  const updateLeaveBalance = async () => {
+    setIsLoading(true);
+    try {
+      const currentYear = new Date().getFullYear();
+      const nextYear = currentYear + 1;
+  
+      for (const leave of leaveTypes) {
+        const payload = {
+          leaveType: leave.title,
+          description: leave.description,
+          allotedLeaves: leave.allotted,
+          type: leave.isPaid ? "Paid" : "Unpaid",
+          backdatedLeaveDays: leave.backdatedLeaveDays,
+          advanceLeaveDays: leave.advanceLeaveDays,
+          includeHolidays: leave.isHoliday,
+          includeWeekOffs: leave.isWeekOff,
+          leaveReset: "Yearly", // Update as needed (Monthly/None)
+          unit: [
+            leave.isFullDay ? "Full Day" : null,
+            leave.isHalfDay ? "Half Day" : null,
+            leave.isShortLeave ? "Short Leave" : null,
+          ].filter(Boolean), // Filter out null values
+        };
+  
+        await axios.put(
+          `https://zapllo.com/api/leaves/leaveType/${leave.id}`, 
+          payload, 
+          {
+            headers: {
+              Authorization: `Bearer YOUR_AUTH_TOKEN`, // Replace with actual token
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+      }
+  
+      Alert.alert(
+        'Success', 
+        `Leave balances updated for ${nextYear}. If you want to carry forward balances, update leave reset criteria accordingly.`
+      );
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      
+      await fetchLeaveTypes(); // Refresh leave types
+  
+    } catch (error) {
+      console.error('Error updating leave balance:', error);
+      Alert.alert('Error', 'Failed to update leave balances. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
-      <NavbarTwo title="Leave Type" />
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1, alignItems: 'center', paddingBottom: 80 }}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View className="w-[90%] mt-8 flex">
-              <View className="w-full items-center flex flex-row justify-between">
-                <TouchableOpacity className="w-12 h-12" onPress={toggleModal}>
-                  <Image className="w-full h-full" source={require("../../../../assets/Attendence/Add.png")} />
-                </TouchableOpacity>
-                <LinearGradient
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  colors={['#815BF5', '#FC8929']}
-                  style={styles.gradientBorder}
-                >
-                  <TouchableOpacity
-                    onPress={() => handleDelete(leaveToDelete)}
-                    className='flex h-[3rem] px-7 items-center justify-center rounded-full bg-primary'>
-                    <Text className='text-white text-xs' style={{ fontFamily: 'LatoBold' }}>Update Leave Balance for 2025</Text>
-                  </TouchableOpacity>
-                </LinearGradient>
-              </View>
-
-              <View className="w-full items-end mt-2 flex mb-10 ">
-                <Text className="text-white mr-4" style={{ fontFamily: 'LatoBold' }}>Total Leaves Alloted: 45</Text>
-              </View>
-
-              <View className="flex w-full flex-row justify-start items-center mb-4 ">
+    <NavbarTwo title="Leave Type" />
+    {isLoading && (
+      <View style={StyleSheet.absoluteFill} className="bg-black/50 items-center justify-center z-50">
+        <ActivityIndicator size="large" color="#815BF5" />
+      </View>
+    )}
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, alignItems: 'center', paddingBottom: 80 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="w-[90%] mt-8 flex">
+            <View className="w-full items-center flex flex-row justify-between">
+              <TouchableOpacity className="w-12 h-12" onPress={toggleModal}>
+                <Image className="w-full h-full" source={require("../../../../assets/Attendence/Add.png")} />
+              </TouchableOpacity>
+              <LinearGradient
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                colors={['#815BF5', '#FC8929']}
+                style={styles.gradientBorder}
+              >
                 <TouchableOpacity
-                  className="flex items-center justify-center flex-col w-1/5"
-                  onPress={() => handleReportOptionPressAdmin('All')}
-                >
-                  <View className="flex flex-row gap-1 justify-end mb-4">
-                    <Text className={`${alloteds === 'All' ? 'text-white' : 'text-[#787CA5]'} text-xs `}>
-                      All
-                    </Text>
-                    <Text className="text-primary rounded-md bg-white p-0.5 text-xs" style={{ fontFamily: "Lato" }}>10</Text>
-                  </View>
-
-                  {alloteds === 'All' && (
-                    <View className="h-[2px] bg-white w-[80%] " />
-                  )}
+                  onPress={updateLeaveBalance}
+                  className='flex h-[3rem] px-7 items-center justify-center rounded-full bg-primary'>
+                  <Text className='text-white text-xs' style={{ fontFamily: 'LatoBold' }}>Update Leave Balance for 2025</Text>
                 </TouchableOpacity>
-
-                <TouchableOpacity
-                  className="flex items-center justify-center flex-col w-1/5 mr-4"
-                  onPress={() => handleReportOptionPressAdmin('Paid')}
-                >
-                  <View className="flex flex-row gap-1 justify-end mb-4">
-                    <Text className={`${alloteds === 'Paid' ? 'text-white' : 'text-[#787CA5]'} text-xs `}>
-                      Paid
-                    </Text>
-                    <Text className="text-primary rounded-md bg-[#06D6A0] p-0.5 text-xs" style={{ fontFamily: "Lato" }}>10</Text>
-                  </View>
-
-                  {alloteds === 'Paid' && (
-                    <View className="h-[2px] bg-white w-full mr-2 " />
-                  )}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  className="flex items-center justify-center flex-col w-1/5"
-                  onPress={() => handleReportOptionPressAdmin('Unpaid')}
-                >
-                  <View className="flex flex-row gap-1 justify-end mb-4">
-                    <Text className={`${alloteds === 'Unpaid' ? 'text-white' : 'text-[#787CA5]'} text-xs `}>
-                      Unpaid
-                    </Text>
-                    <Text className="text-primary bg-[#FDB314] rounded-md p-0.5 text-xs" style={{ fontFamily: "Lato" }}>10</Text>
-                  </View>
-                  {alloteds === 'Unpaid' && (
-                    <View className="h-[2px] bg-white w-full mr-3 " />
-                  )}
-                </TouchableOpacity>
-              </View>
-
-              {filteredLeaveTypes.map((leave, index) => (
-                <View key={index} className="border border-[#37384B] p-5 rounded-xl mb-4">
-                  <View className="flex flex-row items-center justify-between">
-                    <View className="flex flex-row gap-4 items-center">
-                      <Text className="text-white text-lg">{leave.title}</Text>
-                      <Text className={`text-white ${leave.isPaid ? 'bg-[#06D6A0]' : 'bg-[#FDB314]'} text-xs rounded-md p-1`}>
-                        {leave.isPaid ? 'Paid Leave' : 'Unpaid Leave'}
-                      </Text>
-                    </View>
-
-                    <View className="flex flex-row items-center gap-4">
-                      <TouchableOpacity className="h-6 w-7" onPress={() => openEditModal(leave)}>
-                        <Image className="w-full h-full" source={require("../../../../assets/Tasks/addto.png")} />
-                      </TouchableOpacity>
-                      <TouchableOpacity className="h-6 w-4" onPress={() => handleDelete(leave)}>
-                        <Image className="h-full w-full" source={require("../../../../assets/Tasks/deleteTwo.png")} />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  <Text className="text-white text-sm">Leaves Allotted: {leave.allotted}</Text>
-                </View>
-              ))}
+              </LinearGradient>
             </View>
+
+            <View className="w-full items-end mt-2 flex mb-10 ">
+              <Text className="text-white mr-4" style={{ fontFamily: 'LatoBold' }}>Total Leaves Alloted: {totalLeavesAllotted}</Text>
+            </View>
+
+            <View className="flex w-full flex-row justify-start items-center mb-4 ">
+              <TouchableOpacity
+                className="flex items-center justify-center flex-col w-1/5"
+                onPress={() => handleReportOptionPressAdmin('All')}
+              >
+                <View className="flex flex-row gap-1 justify-end mb-4">
+                  <Text className={`${alloteds === 'All' ? 'text-white' : 'text-[#787CA5]'} text-xs `}>
+                    All
+                  </Text>
+                  <Text className="text-primary rounded-md bg-white p-0.5 text-xs" style={{ fontFamily: "Lato" }}>{leaveTypes.length}</Text>
+                </View>
+
+                {alloteds === 'All' && (
+                  <View className="h-[2px] bg-white w-[80%] " />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="flex items-center justify-center flex-col w-1/5 mr-4"
+                onPress={() => handleReportOptionPressAdmin('Paid')}
+              >
+                <View className="flex flex-row gap-1 justify-end mb-4">
+                  <Text className={`${alloteds === 'Paid' ? 'text-white' : 'text-[#787CA5]'} text-xs `}>
+                    Paid
+                  </Text>
+                  <Text className="text-primary rounded-md bg-[#06D6A0] p-0.5 text-xs" style={{ fontFamily: "Lato" }}>{paidCount}</Text>
+                </View>
+
+                {alloteds === 'Paid' && (
+                  <View className="h-[2px] bg-white w-full mr-2 " />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="flex items-center justify-center flex-col w-1/5"
+                onPress={() => handleReportOptionPressAdmin('Unpaid')}
+              >
+                <View className="flex flex-row gap-1 justify-end mb-4">
+                  <Text className={`${alloteds === 'Unpaid' ? 'text-white' : 'text-[#787CA5]'} text-xs `}>
+                    Unpaid
+                  </Text>
+                  <Text className="text-primary bg-[#FDB314] rounded-md p-0.5 text-xs" style={{ fontFamily: "Lato" }}>{unpaidCount}</Text>
+                </View>
+                {alloteds === 'Unpaid' && (
+                  <View className="h-[2px] bg-white w-full mr-3 " />
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {filteredLeaveTypes.map((leave, index) => (
+              <View key={index} className="border border-[#37384B] p-5 rounded-xl mb-4">
+                <View className="flex flex-row items-center justify-between">
+                  <View className="flex flex-row gap-4 items-center ">
+                    <Text className="text-white text-lg ">{leave.title}</Text>
+                    <Text className={`text-white text-xs ${leave.isPaid ? 'bg-[#06D6A0]' : 'bg-[#FDB314]'} text-xs rounded-md p-1`}>
+                      {leave.isPaid ? 'Paid Leave' : 'Unpaid Leave'}
+                    </Text>
+                  </View>
+
+                  <View className="flex flex-row items-center gap-4 w-[20%]">
+                    <TouchableOpacity className="h-6 w-7" onPress={() => openEditModal(leave)}>
+                      <Image className="w-full h-full" source={require("../../../../assets/Tasks/addto.png")} />
+                    </TouchableOpacity>
+                    <TouchableOpacity className="h-6 w-4" onPress={() => handleDelete(leave)}>
+                      <Image className="h-full w-full" source={require("../../../../assets/Tasks/deleteTwo.png")} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <Text className="text-white text-sm">Leaves Allotted: {leave.allotted}</Text>
+              </View>
+            ))}
+          </View>
 
             <Modal
               isVisible={isModalVisible}

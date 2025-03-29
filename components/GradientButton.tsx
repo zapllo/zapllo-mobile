@@ -22,13 +22,13 @@ const GradientButton: React.FC<GradientButtonProps> = ({ title, onPress, imageSo
   return (
     <View className="w-[90%]">
       <TouchableOpacity
-        className="flex h-[4rem] items-center  text-center w-full justify-center rounded-full"
+        className="flex h-[3rem] items-center  text-center w-full justify-center rounded-full"
         onPress={onPress}
       >
         <LinearGradient
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          colors={["#815BF5", "#FC8929"]}
+          colors={['#6f40f0','#8963f2']}
           style={styles.gradient}
         >
           {/* <ImageContainer source={imageSource} /> */}

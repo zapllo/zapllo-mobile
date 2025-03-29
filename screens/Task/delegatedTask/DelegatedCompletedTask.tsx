@@ -30,6 +30,7 @@ import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
 import moment from 'moment';
 import { getDateRange } from '~/utils/GetDateRange';
 import NavbarTwo from '~/components/navbarTwo';
+import LottieView from 'lottie-react-native';
 
 type Props = StackScreenProps<DelegatedTaskStackParamList, 'CompletedTask'>;
 type DelegatedCompletedTaskScreenRouteProp = RouteProp<DelegatedTaskStackParamList, 'CompletedTask'>;
@@ -304,6 +305,12 @@ const DelegatedCompletedTask: React.FC<Props> = ({ navigation }) => {
                 ))
               ) : (
                 <View className='flex justify-center items-center pt-10'>
+                  <LottieView
+                  source={require('../../../assets/Animation/no-data.json')}
+                  autoPlay
+                  loop
+                  style={{ width: 200, height: 200 }}
+                />
                   <Text className=' text-white text-lg font-[LatoBold]' >No tasks available!</Text>
                 </View>
               )}

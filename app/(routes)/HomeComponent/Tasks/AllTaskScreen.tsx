@@ -63,7 +63,7 @@ const daysData = [
 
 export default function AllTaskScreen() {
   const screenHeight = Dimensions.get('window').height;
-  const { isLoggedIn, token, userData } = useSelector((state: RootState) => state.auth);
+  const { token, userData } = useSelector((state: RootState) => state.auth);
   const [tasks, setTasks] = useState<Task[]>([]); // Store tasks fetched from API
   const [tasksData, setTasksData] = useState<Task[]>([]);
   const [formattedDateRange, setFormattedDateRange] = useState('');

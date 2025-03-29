@@ -30,6 +30,7 @@ import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
 import moment from 'moment';
 import { getDateRange } from '~/utils/GetDateRange';
 import NavbarTwo from '~/components/navbarTwo';
+import LottieView from 'lottie-react-native';
 
 type Props = StackScreenProps<MyTasksStackParamList, 'DelayedTask'>;
 type DelayedTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'DelayedTask'>;
@@ -306,6 +307,12 @@ const DelayedTaskScreen: React.FC<Props> = ({ navigation }) => {
                 ))
               ) : (
                 <View className="flex items-center justify-center pt-10">
+                  <LottieView
+                  source={require('../../../assets/Animation/no-data.json')}
+                  autoPlay
+                  loop
+                  style={{ width: 200, height: 200 }}
+                />
                   <Text className="font-[LatoBold] text-lg text-white">No tasks available!</Text>
                 </View>
               )}

@@ -10,6 +10,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Clipboard,
+  StyleSheet,
+  Animated,
 } from 'react-native';
 import NavbarTwo from '~/components/navbarTwo';
 import { router, useNavigation } from 'expo-router';
@@ -20,13 +23,18 @@ import { useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '~/redux/store';
 import { useDispatch } from 'react-redux';
 import ProfileImage from '~/components/profile/ProfileImage';
-import { AntDesign, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { AntDesign, Entypo, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import Modal from 'react-native-modal';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { backend_Host } from '~/config';
 import { useFocusEffect } from '@react-navigation/native';
 import CustomAlert from '~/components/CustomAlert/CustomAlert';
+import { rgba } from '@tamagui/core';
+import { Share } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 
 // Define the type for your navigation
 type RootStackParamList = {
@@ -60,6 +68,32 @@ const ProfileScreen: React.FC = () => {
   const [customAlertVisible, setCustomAlertVisible] = useState(false);
   const [customAlertMessage, setCustomAlertMessage] = useState('');
   const [customAlertType, setCustomAlertType] = useState<'success' | 'error' | 'loading'>('success');
+  const [isShareModalVisible, setIsShareModalVisible] = useState(false);
+  const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
+  const appLink = "https://zapllo.com/download"; 
+
+  const toggleShareModal = () => {
+    setIsShareModalVisible(!isShareModalVisible);
+  };
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `Check out Zapllo: ${appLink}`,
+        url: appLink, // iOS only
+        title: 'Zapllo App', // Android only
+      });
+      setIsShareModalVisible(false);
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong while sharing');
+    }
+  };
+
+  const handleCopyLink = () => {
+    Clipboard.setString(appLink);
+    Alert.alert('Success', 'Link copied to clipboard');
+    setIsShareModalVisible(false);
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -67,13 +101,21 @@ const ProfileScreen: React.FC = () => {
     }, [])
   );
 
+  const handleLogoutClick = () => {
+    setIsLogoutModalVisible(true);
+  };
+
+  const cancelLogout = () => {
+    setIsLogoutModalVisible(false);
+  };
+
   const handleLogout = async () => {
     setButtonSpinner(true);
+    setIsLogoutModalVisible(false);
 
     try {
       const response = await axios.get(
         `${backend_Host}/users/logout`,
-
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -88,7 +130,6 @@ const ProfileScreen: React.FC = () => {
       router.push('/(routes)/login');
     } catch (err: any) {
       console.error('API Error:', err.response || err.message);
-
       setButtonSpinner(true);
       setCustomAlertVisible(true);
       setCustomAlertMessage('Failed to log out. Please try again.');
@@ -242,8 +283,8 @@ const ProfileScreen: React.FC = () => {
                   {userData?.user?.lastName || userData?.data?.lastName}
                 </Text>
                 <Text
-                  className=" w-16 rounded-lg bg-[#815BF5] p-1 text-center text-[11px] font-light text-white"
-                  style={{ fontFamily: 'Lato-thin' }}>
+                  className=" w-16 rounded-full border border-[#865ffa] p-1 text-center text-[10px] font-light text-white"
+                  style={{ fontFamily: 'Lato-thin' ,backgroundColor:"rgba(127, 71, 192, 0.3)"}}>
                   {userData?.user?.role || userData?.data?.role === 'orgAdmin' ? 'Admin' : 'User'}
                 </Text>
               </View>
@@ -251,171 +292,182 @@ const ProfileScreen: React.FC = () => {
 
             <View className="flex w-[90%] flex-row items-center justify-start gap-4">
               {/* line */}
-              <View className="mb-9 mt-9 h-0.5 w-full bg-[#37384B]"></View>
+              <View className="mb-9 mt-9 rounded-full h-0.5 w-full bg-[#453f56]"></View>
             </View>
+
 
             {/* Account Information */}
-            <View className="w-full">
+            <View className="w-full px-5 mt-6">
               <Text
-                className="ml-7 text-start text-sm text-[#787CA5] "
+                className="text-[#787CA5] text-sm mb-4 font-medium"
                 style={{ fontFamily: 'LatoBold' }}>
-                Account Information
+                ACCOUNT INFORMATION
               </Text>
 
-              <View className="flex w-full items-center ">
+              <View className="flex w-full items-center">
                 {/* Email */}
-                <View className='w-full  flex items-center relative'>
-                  <Infocontainer
-                    placeholder=""
-                    value={userData?.user?.email || userData?.data?.email}
-                    passwordError={''}
-                    onChangeText={() => {
-                      ('');
-                    }}
-                  />
-                  <View className=' flex items-center justify-center h-8 w-16 rounded-full border border-[#384387] bg-transparent  pl-4 '
-                    style={{ position: "absolute", left: "75%", top: "50%" }}
-                  >
-                    <AntDesign
-                      name='mail'
-                      color={"#384387"}
-                      size={20}
-                    />
+                <View className="w-full mb-3">
+                  <View className="bg-[#0A0D28] rounded-xl shadow-md shadow-[#000]/20 overflow-hidden">
+                    <View className="flex-row items-center px-4 py-3.5">
+                      <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
+                        <AntDesign name="mail" color="#815BF5" size={18} />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-[#787CA5] text-xs mb-0.5" style={{ fontFamily: 'Lato-Regular' }}>
+                          Email Address
+                        </Text>
+                        <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+                          {userData?.user?.email || userData?.data?.email}
+                        </Text>
+                      </View>
+                    </View>
                   </View>
-
                 </View>
-
 
                 {/* Phone Number */}
-                <View className="mt-1 flex w-[100%] flex-row items-center justify-center gap-3">
-
-
-                  <Infocontainer
-                    placeholder="7863983914"
-                    keyboardType="numeric"
-                    value={userData?.user?.whatsappNo || userData?.data?.whatsappNo}
-                    passwordError={''}
-                    onChangeText={() => {
-                      ('');
-                    }}
-                  />
-                  <View className=' flex items-center justify-center h-8 w-16 rounded-full border border-[#384387] bg-transparent  pl-4 '
-                    style={{ position: "absolute", left: "75%", top: "50%" }}
-                  >
-                    <Ionicons
-                      name='call-outline'
-                      className=']'
-                      color={"#384387"}
-                      size={20}
-                    />
+                <View className="w-full mb-3">
+                  <View className="bg-[#0A0D28] rounded-xl shadow-md shadow-[#000]/20 overflow-hidden">
+                    <View className="flex-row items-center px-4 py-3.5">
+                      <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
+                        <Ionicons name="call-outline" color="#815BF5" size={18} />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-[#787CA5] text-xs mb-0.5" style={{ fontFamily: 'Lato-Regular' }}>
+                          Phone Number
+                        </Text>
+                        <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+                          {userData?.user?.whatsappNo || userData?.data?.whatsappNo || "Add phone number"}
+                        </Text>
+                      </View>
+                    </View>
                   </View>
                 </View>
 
-                {/* change pasword buttons */}
-
+                {/* Change Password Button */}
                 <TouchableOpacity
                   onPress={() => router.push('/(routes)/profile/ChangePassword' as any)}
-                  className={`mt-6 flex  h-[3.7rem] w-[90%] items-center justify-center rounded-full bg-[#37384B] p-2.5`}>
-                  <Text className="text-center  text-white " style={{ fontFamily: 'LatoBold' }}>
-                    Change Password
-                  </Text>
+                  className="mt-4 w-full bg-[#1E2142] rounded-xl overflow-hidden shadow-md shadow-[#000]/20">
+                  <View className="flex-row items-center px-4 py-3.5">
+                    <View className="h-9 w-9 rounded-full bg-[#0A0D28] items-center justify-center mr-3">
+                      <AntDesign name="lock" color="#815BF5" size={18} />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+                        Change Password
+                      </Text>
+                    </View>
+                    <AntDesign name="right" color="#787CA5" size={16} />
+                  </View>
                 </TouchableOpacity>
               </View>
             </View>
 
-            {/* supports */}
-            <View className=" flex w-[90%] flex-col items-start gap-2">
-              {/* line */}
-              <View className="mb-9 mt-9 h-0.5 w-full bg-[#37384B]"></View>
-              <Text className="text-xs text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
-                Support
+            {/* Support Section */}
+            <View className="w-full px-5 mt-8">
+              <Text
+                className="text-[#787CA5] text-sm mb-4 font-medium"
+                style={{ fontFamily: 'LatoBold' }}>
+                SUPPORT & SETTINGS
               </Text>
 
-              {/* Tutorials */}
-              <View className="w-full items-center gap-5">
+              <View className="bg-[#0A0D28] rounded-xl shadow-md shadow-[#000]/20 overflow-hidden mb-4">
+                {/* Tutorials */}
                 <TouchableOpacity
                   onPress={() => router.push('/(routes)/profile/tutorials' as any)}
-                  className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{ fontFamily: 'LatoBold' }}>
-                    Tutorials
-                  </Text>
-                  <Image
-                    source={require('../../assets/commonAssets/smallGoto.png')}
-                    className="mb-1 h-3 w-3"
-                  />
+                  className="flex-row items-center px-4 py-3.5 border-b border-[#1E2142]">
+                  <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
+                    <AntDesign name="videocamera" color="#815BF5" size={18} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+                      Tutorials
+                    </Text>
+                  </View>
+                  <AntDesign name="right" color="#787CA5" size={16} />
                 </TouchableOpacity>
-                <View className="h-0.5 w-full bg-[#37384B] "></View>
-              </View>
 
-              {/* My Tickets */}
-              <View className="mt-4 w-full items-center gap-5">
+                {/* Tickets */}
                 <TouchableOpacity
                   onPress={() => router.push('/(routes)/profile/Tickits' as any)}
-                  className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{ fontFamily: 'LatoBold' }}>
-                    Tickets
-                  </Text>
-                  <Image
-                    source={require('../../assets/commonAssets/smallGoto.png')}
-                    className="mb-1 h-3 w-3"
-                  />
+                  className="flex-row items-center px-4 py-3.5 border-b border-[#1E2142]">
+                  <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
+                    <AntDesign name="tagso" color="#815BF5" size={18} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+                      Tickets
+                    </Text>
+                  </View>
+                  <AntDesign name="right" color="#787CA5" size={16} />
                 </TouchableOpacity>
-                <View className="h-0.5 w-full bg-[#37384B] "></View>
-              </View>
 
-              {/* Billing */}
-              <View className="mt-4 w-full items-center gap-5">
+                {/* Billing */}
                 <TouchableOpacity
                   onPress={() => router.push('/(routes)/profile/billing' as any)}
-                  className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{ fontFamily: 'LatoBold' }}>
-                    Billing
-                  </Text>
-                  <Image
-                    source={require('../../assets/commonAssets/smallGoto.png')}
-                    className="mb-1 h-3 w-3"
-                  />
+                  className="flex-row items-center px-4 py-3.5 border-b border-[#1E2142]">
+                  <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
+                    <AntDesign name="creditcard" color="#815BF5" size={18} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+                      Billing
+                    </Text>
+                  </View>
+                  <AntDesign name="right" color="#787CA5" size={16} />
                 </TouchableOpacity>
-                <View className="h-0.5 w-full bg-[#37384B] "></View>
-              </View>
 
-              {/* Checklist */}
-              <View className="mt-4 w-full items-center gap-5">
+                {/* Checklist */}
                 <TouchableOpacity
                   onPress={() => router.push('/(routes)/profile/Checklist' as any)}
-                  className="flex  w-full flex-row items-center justify-between pr-2">
-                  <Text className="text-base text-white" style={{ fontFamily: 'LatoBold' }}>
-                    Checklist
-                  </Text>
-                  <Image
-                    source={require('../../assets/commonAssets/smallGoto.png')}
-                    className="mb-1 h-3 w-3"
-                  />
+                  className="flex-row items-center px-4 py-3.5 border-b border-[#1E2142]">
+                  <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
+                    <AntDesign name="checkcircleo" color="#815BF5" size={18} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+                      Checklist
+                    </Text>
+                  </View>
+                  <AntDesign name="right" color="#787CA5" size={16} />
                 </TouchableOpacity>
-                <View className="h-0.5 w-full bg-[#37384B] "></View>
+
+                {/* Share the App */}
+                <TouchableOpacity
+        onPress={toggleShareModal}
+        className="flex-row items-center px-4 py-3.5">
+        <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
+          <Entypo name="share" color="#815BF5" size={18} />
+        </View>
+        <View className="flex-1">
+          <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+            Share the app
+          </Text>
+        </View>
+        <AntDesign name="right" color="#787CA5" size={16} />
+      </TouchableOpacity>
               </View>
-
- 
-
-    
-
-       
             </View>
 
             {/* LOGOUT */}
-            <TouchableOpacity
-              onPress={handleLogout}
-              className={`mt-8 flex  h-[3.7rem] w-[90%] items-center justify-center rounded-full bg-[#EF4444] p-2.5`}>
-              {buttonSpinner ? (
-                <ActivityIndicator size="small" color={'white'} />
-              ) : (
-                <Text
-                  className="text-center text-lg  font-semibold text-white "
-                  style={{ fontFamily: 'LatoBold' }}>
-                  Log Out
-                </Text>
-              )}
-            </TouchableOpacity>
+            <View className="w-full px-5 mt-8 mb-10">
+              <TouchableOpacity
+                onPress={handleLogoutClick}
+                className="bg-[#1E2142] rounded-xl overflow-hidden shadow-md shadow-[#000]/20">
+                <View className="flex-row items-center px-4 py-3.5">
+                  <View className="h-9 w-9 rounded-full bg-[#2A0A0A] items-center justify-center mr-3">
+                    <AntDesign name="logout" color="#EF4444" size={18} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-[#EF4444] text-base font-medium" style={{ fontFamily: 'LatoBold' }}>
+                      Log Out
+                    </Text>
+                  </View>
+                  {buttonSpinner && (
+                    <ActivityIndicator size="small" color="#EF4444" />
+                  )}
+                </View>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <Modal
@@ -449,6 +501,133 @@ const ProfileScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
           </Modal>
+
+
+          {/* share modal */}
+          <Modal
+        isVisible={isShareModalVisible}
+        onBackdropPress={toggleShareModal}
+        onBackButtonPress={toggleShareModal}
+        swipeDirection="down"
+        onSwipeComplete={toggleShareModal}
+        style={{ margin: 0, justifyContent: 'flex-end' }}
+        backdropOpacity={0.5}
+        animationIn="slideInUp"
+        animationOut="slideOutDown">
+        <View className="bg-[#1E2142] rounded-t-3xl p-5 ">
+          <View className=" flex flex-row w-12 h-1 bg-gray-500 rounded-full self-center mb-5 opacity-50" />
+          
+       <View className=' flex flex-row items-start'>
+       <TouchableOpacity 
+            onPress={handleShare}
+            className="flex-col items-center mb-5 px-2 gap-1 py-3 justify-center">
+            <View className="h-14 w-14 rounded-full bg-[#2A2E54] items-center justify-center mr-4">
+              <Ionicons name="share-social" color="#815BF5" size={20} />
+            </View>
+            <Text className="text-white text-xs" style={{ fontFamily: 'LatoRegular' }}>
+              Share to...
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            onPress={handleCopyLink}
+            className="flex-col items-center px-2 py-3 gap-1 justify-center">
+            <View className="h-14 w-14 rounded-full bg-[#2A2E54] items-center justify-center mr-4">
+              <Ionicons name="copy-outline" color="#815BF5" size={20} />
+            </View>
+            <Text className="text-white text-xs" style={{ fontFamily: 'LatoRegular' }}>
+              Copy link
+            </Text>
+          </TouchableOpacity>
+       </View>
+
+          
+     
+        </View>
+      </Modal>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        isVisible={isLogoutModalVisible}
+        onBackdropPress={cancelLogout}
+        backdropOpacity={0.6}
+        animationIn="fadeIn"
+        animationOut="fadeOut"
+        animationInTiming={300}
+        animationOutTiming={300}
+        backdropTransitionInTiming={300}
+        backdropTransitionOutTiming={300}
+        style={{ margin: 20, justifyContent: 'center' }}
+        customBackdrop={
+          <BlurView intensity={Platform.OS === 'ios' ? 40 : 80} tint="dark" style={StyleSheet.absoluteFill} />
+        }
+      >
+        <Animated.View className="bg-[#1F2235] rounded-2xl overflow-hidden">
+          <LinearGradient
+            colors={['#1F2235', '#141625']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="p-6"
+          >
+            <View className="items-center mb-4 mt-5">
+              <LinearGradient
+                colors={['rgba(255, 71, 87, 0.2)', 'rgba(255, 71, 87, 0.1)']}
+                style={{ width: 50, height: 50,borderRadius:50,display:'flex',alignItems:'center',justifyContent:'center' }}
+              
+              >
+                <Image
+                  style={{ width: 30, height: 30 }}
+                  source={require('../../assets/Tickit/delIcon.png')}
+                />
+              </LinearGradient>
+            </View>
+            
+            <Text className="text-white text-xl font-bold text-center mb-2" style={{ fontFamily: 'LatoBold' }}>
+              Logout Confirmation
+            </Text>
+            <Text className="text-[#787CA5] text-base text-center mb-6" style={{ fontFamily: 'LatoRegular' }}>
+              Are you sure you want to log out of your account?
+            </Text>
+            
+            <View className="flex-row justify-between space-x-4">
+              <TouchableOpacity
+                onPress={cancelLogout}
+                className="flex-1"
+              >
+                <BlurView intensity={20} tint="dark" className="rounded-xl overflow-hidden">
+                  <View className="px-4 py-3 items-center">
+                    <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>Cancel</Text>
+                  </View>
+                </BlurView>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={handleLogout}
+                className="flex-1"
+                disabled={buttonSpinner}
+              >
+                <LinearGradient
+                  colors={['#FF6B6B', '#FF4757']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  className="rounded-xl"
+                >
+                  <View className="px-4 py-3 items-center flex-row justify-center">
+                    {buttonSpinner ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <>
+                        <MaterialIcons name="logout" size={18} color="#fff" className="mr-2" />
+                        <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>Logout</Text>
+                      </>
+                    )}
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </LinearGradient>
+        </Animated.View>
+      </Modal>
         </ScrollView>
       </KeyboardAvoidingView>
       <CustomAlert
@@ -460,5 +639,15 @@ const ProfileScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  absoluteFill: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+});
 
 export default ProfileScreen;

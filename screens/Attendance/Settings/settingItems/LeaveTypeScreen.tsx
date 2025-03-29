@@ -37,7 +37,6 @@ interface LeaveType {
   isHoliday: boolean;
   isWeekOff: boolean;
   isReset: boolean;
-  
 }
 
 export default function LeaveTypeScreen() {
@@ -93,37 +92,42 @@ export default function LeaveTypeScreen() {
     setUnpaidCount(unpaid);
   };
 
-// First, let's fix the fetchLeaveTypes function to properly handle the API response format
-const fetchLeaveTypes = async () => {
-  setIsLoading(true);
-  try {
-    const response = await axios.get('https://zapllo.com/api/leaves/leaveType');
-    
-    // Transform API data to match our component's data structure
-    const transformedData = response.data.map((item: any) => ({
-      id: item._id, // Changed from id to _id to match the JSON structure
-      title: item.leaveType,
-      isPaid: item.type === 'Paid',
-      allotted: item.allotedLeaves,
-      description: item.description,
-      backdatedLeaveDays: item.backdatedLeaveDays,
-      advanceLeaveDays: item.advanceLeaveDays,
-      isFullDay: item.unit.includes('Full Day'),
-      isHalfDay: item.unit.includes('Half Day'),
-      isShortLeave: item.unit.includes('Short Leave'),
-      isHoliday: item.includeHolidays,
-      isWeekOff: item.includeWeekOffs,
-      isReset: item.leaveReset === 'Yearly',
-    }));
-    
-    setLeaveTypes(transformedData);
-  } catch (error) {
-    console.error('Error fetching leave types:', error);
-    Alert.alert('Error', 'Failed to load leave types. Please try again.');
-  } finally {
-    setIsLoading(false);
-  }
-};
+  // Updated fetchLeaveTypes function to match the actual API response format
+  const fetchLeaveTypes = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get('https://zapllo.com/api/leaves/leaveType');
+      
+      if (Array.isArray(response.data)) {
+        // Transform API data to match our component's data structure
+        const transformedData = response.data.map((item: any) => ({
+          id: item._id,
+          title: item.leaveType,
+          isPaid: item.type === 'Paid',
+          allotted: item.allotedLeaves,
+          description: item.description,
+          backdatedLeaveDays: item.backdatedLeaveDays,
+          advanceLeaveDays: item.advanceLeaveDays,
+          isFullDay: item.unit.includes('Full Day'),
+          isHalfDay: item.unit.includes('Half Day'),
+          isShortLeave: item.unit.includes('Short Leave'),
+          isHoliday: item.includeHolidays,
+          isWeekOff: item.includeWeekOffs,
+          isReset: item.leaveReset === 'Reset' || item.leaveReset === 'Yearly',
+        }));
+        
+        setLeaveTypes(transformedData);
+      } else {
+        console.error('Unexpected API response format:', response.data);
+        Alert.alert('Error', 'Received unexpected data format from server');
+      }
+    } catch (error) {
+      console.error('Error fetching leave types:', error);
+      Alert.alert('Error', 'Failed to load leave types. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleFocus = () => setDescriptionFocused(true);
   const handleBlur = () => setDescriptionFocused(false);
@@ -184,10 +188,16 @@ const fetchLeaveTypes = async () => {
     setLeaveToDelete(null);
   };
 
-// Finally, let's fix the addLeaveType function
+  // Updated addLeaveType function to match the API expectations
   const addLeaveType = async () => {
     if (!leaveTitle.trim()) {
       Alert.alert('Error', 'Leave type title is required');
+      return;
+    }
+
+    // Validate at least one unit is selected
+    if (!isFullDay && !isHalfDay && !isShortLeave) {
+      Alert.alert('Error', 'Please select at least one unit (Full Day, Half Day, or Short Leave)');
       return;
     }
 
@@ -199,13 +209,7 @@ const fetchLeaveTypes = async () => {
     if (isHalfDay) unit.push('Half Day');
     if (isShortLeave) unit.push('Short Leave');
     
-    // If no unit is selected, show an error
-    if (unit.length === 0) {
-      setIsLoading(false);
-      Alert.alert('Error', 'Please select at least one unit (Full Day, Half Day, or Short Leave)');
-      return;
-    }
-
+    // Prepare the payload according to the API expectations
     const payload = { 
       leaveType: leaveTitle,
       description: description,
@@ -216,24 +220,24 @@ const fetchLeaveTypes = async () => {
       includeHolidays: isHoliday,
       includeWeekOffs: isWeekOff,
       unit: unit,
-      leaveReset: resetOrCarry === 'Reset' ? 'Yearly' : 'Monthly' // Changed from 'Carry Forward' to 'Monthly' to match API
-       
+      leaveReset: resetOrCarry === 'Reset' ? 'Reset' : 'CarryForward'
     };
 
     try {
       if (editingLeaveType) {
         // Update existing leave type
         await axios.put(`https://zapllo.com/api/leaves/leaveType/${editingLeaveType.id}`, payload);
+        Alert.alert('Success', 'Leave type updated successfully');
       } else {
         // Create new leave type
         await axios.post('https://zapllo.com/api/leaves/leaveType', payload);
+        Alert.alert('Success', 'Leave type created successfully');
       }
 
       // Refresh leave types from server to get updated data
       await fetchLeaveTypes();
       
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Success', `Leave type ${editingLeaveType ? 'updated' : 'created'} successfully`);
       toggleModal(); // This will call resetModal() as well
       
     } catch (error) {
@@ -251,9 +255,6 @@ const fetchLeaveTypes = async () => {
     }
   };
 
-
-
-  
   const handleNumericInput = (value: string, setter: React.Dispatch<React.SetStateAction<string>>) => {
     if (/^\d*$/.test(value)) {
       setter(value);
@@ -304,6 +305,12 @@ const fetchLeaveTypes = async () => {
       const nextYear = currentYear + 1;
   
       for (const leave of leaveTypes) {
+        // Prepare the unit array based on leave type settings
+        const unit = [];
+        if (leave.isFullDay) unit.push('Full Day');
+        if (leave.isHalfDay) unit.push('Half Day');
+        if (leave.isShortLeave) unit.push('Short Leave');
+        
         const payload = {
           leaveType: leave.title,
           description: leave.description,
@@ -313,24 +320,11 @@ const fetchLeaveTypes = async () => {
           advanceLeaveDays: leave.advanceLeaveDays,
           includeHolidays: leave.isHoliday,
           includeWeekOffs: leave.isWeekOff,
-          leaveReset: "Yearly", // Update as needed (Monthly/None)
-          unit: [
-            leave.isFullDay ? "Full Day" : null,
-            leave.isHalfDay ? "Half Day" : null,
-            leave.isShortLeave ? "Short Leave" : null,
-          ].filter(Boolean), // Filter out null values
+          leaveReset: leave.isReset ? "Reset" : "CarryForward",
+          unit: unit
         };
   
-        await axios.put(
-          `https://zapllo.com/api/leaves/leaveType/${leave.id}`, 
-          payload, 
-          {
-            headers: {
-              Authorization: `Bearer YOUR_AUTH_TOKEN`, // Replace with actual token
-              'Content-Type': 'application/json',
-            },
-          }
-        );
+        await axios.put(`https://zapllo.com/api/leaves/leaveType/${leave.id}`, payload);
       }
   
       Alert.alert(
@@ -438,27 +432,109 @@ const fetchLeaveTypes = async () => {
             </View>
 
             {filteredLeaveTypes.map((leave, index) => (
-              <View key={index} className="border border-[#37384B] p-5 rounded-xl mb-4">
-                <View className="flex flex-row items-center justify-between">
-                  <View className="flex flex-row gap-4 items-center ">
-                    <Text className="text-white text-lg ">{leave.title}</Text>
-                    <Text className={`text-white text-xs ${leave.isPaid ? 'bg-[#06D6A0]' : 'bg-[#FDB314]'} text-xs rounded-md p-1`}>
+
+            <View key={index} className="border border-[#37384B] p-5 rounded-xl mb-4 bg-[#10122D]">
+              {/* Header with title and actions */}
+              <View className="flex flex-row items-center justify-between mb-3">
+                <View className="flex flex-row items-center gap-3">
+                  <View className="w-2 h-10 rounded-full" style={{ backgroundColor: leave.isPaid ? '#06D6A0' : '#FDB314' }} />
+                  <View>
+                    <Text className="text-white text-lg font-bold" style={{ fontFamily: 'LatoBold' }}>{leave.title}</Text>
+                    <Text className={`text-xs ${leave.isPaid ? 'text-[#06D6A0]' : 'text-[#FDB314]'}`}>
                       {leave.isPaid ? 'Paid Leave' : 'Unpaid Leave'}
                     </Text>
                   </View>
-
-                  <View className="flex flex-row items-center gap-4 w-[20%]">
-                    <TouchableOpacity className="h-6 w-7" onPress={() => openEditModal(leave)}>
-                      <Image className="w-full h-full" source={require("../../../../assets/Tasks/addto.png")} />
-                    </TouchableOpacity>
-                    <TouchableOpacity className="h-6 w-4" onPress={() => handleDelete(leave)}>
-                      <Image className="h-full w-full" source={require("../../../../assets/Tasks/deleteTwo.png")} />
-                    </TouchableOpacity>
-                  </View>
                 </View>
 
-                <Text className="text-white text-sm">Leaves Allotted: {leave.allotted}</Text>
+                <View className="flex flex-row items-center gap-5">
+                  <TouchableOpacity 
+                    className="h-8 w-8 bg-[#37384B] rounded-full items-center justify-center" 
+                    onPress={() => openEditModal(leave)}
+                  >
+                    <Image 
+                      className="w-4 h-4" 
+                      source={require("../../../../assets/Tasks/addto.png")} 
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    className="h-8 w-8 bg-[#37384B] rounded-full items-center justify-center" 
+                    onPress={() => handleDelete(leave)}
+                  >
+                    <Image 
+                      className="w-4 h-4" 
+                      source={require("../../../../assets/Tasks/deleteTwo.png")} 
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
+
+              {/* Divider */}
+              <View className="h-[1px] bg-[#37384B] w-full my-3" />
+
+              {/* Leave details */}
+              <View className="flex-row flex-wrap">
+                <View className="w-1/2 mb-3">
+                  <Text className="text-[#787CA5] text-xs mb-1">Leaves Allotted</Text>
+                  <Text className="text-white text-base font-semibold">{leave.allotted}</Text>
+                </View>
+                
+                <View className="w-1/2 mb-3">
+                  <Text className="text-[#787CA5] text-xs mb-1">Reset Policy</Text>
+                  <Text className="text-white text-base font-semibold">{leave.isReset ? 'Reset Yearly' : 'Carry Forward'}</Text>
+                </View>
+                
+                <View className="w-1/2 mb-3">
+                  <Text className="text-[#787CA5] text-xs mb-1">Backdated Days</Text>
+                  <Text className="text-white text-base font-semibold">{leave.backdatedLeaveDays}</Text>
+                </View>
+                
+                <View className="w-1/2 mb-3">
+                  <Text className="text-[#787CA5] text-xs mb-1">Advance Days</Text>
+                  <Text className="text-white text-base font-semibold">{leave.advanceLeaveDays}</Text>
+                </View>
+              </View>
+
+              {/* Leave units */}
+              <View className="flex-row mt-1">
+                <Text className="text-[#787CA5] text-xs mr-2">Units:</Text>
+                <View className="flex-row flex-wrap">
+                  {leave.isFullDay && (
+                    <View className="bg-[#37384B] rounded-full px-2 py-1 mr-2 mb-1">
+                      <Text className="text-white text-xs">Full Day</Text>
+                    </View>
+                  )}
+                  {leave.isHalfDay && (
+                    <View className="bg-[#37384B] rounded-full px-2 py-1 mr-2 mb-1">
+                      <Text className="text-white text-xs">Half Day</Text>
+                    </View>
+                  )}
+                  {leave.isShortLeave && (
+                    <View className="bg-[#37384B] rounded-full px-2 py-1 mr-2 mb-1">
+                      <Text className="text-white text-xs">Short Leave</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+
+              {/* Holidays and weekoffs */}
+              {(leave.isHoliday || leave.isWeekOff) && (
+                <View className="flex-row mt-2">
+                  <Text className="text-[#787CA5] text-xs mr-2">Includes:</Text>
+                  <View className="flex-row">
+                    {leave.isHoliday && (
+                      <View className="bg-[#37384B] rounded-full px-2 py-1 mr-2">
+                        <Text className="text-white text-xs">Holidays</Text>
+                      </View>
+                    )}
+                    {leave.isWeekOff && (
+                      <View className="bg-[#37384B] rounded-full px-2 py-1">
+                        <Text className="text-white text-xs">Week Offs</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              )}
+            </View>
             ))}
           </View>
 

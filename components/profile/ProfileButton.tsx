@@ -25,7 +25,7 @@ const ProfileButton: React.FC<NavbarProps> = ({ image,profile}) => {
   };
   return (
     <TouchableOpacity
-      className="h-14 w-14 rounded-full"
+      className="h-14 w-14 rounded-full "
       onPress={() => router.push('(routes)/profile' as any)}>
       <LinearGradient
         colors={['#815BF5', '#FC8929']}

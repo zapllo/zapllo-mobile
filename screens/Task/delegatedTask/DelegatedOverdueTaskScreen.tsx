@@ -30,6 +30,7 @@ import moment from 'moment';
 import { getDateRange } from '~/utils/GetDateRange';
 import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
 import NavbarTwo from '~/components/navbarTwo';
+import LottieView from 'lottie-react-native';
 
 type Props = StackScreenProps<DelegatedTaskStackParamList, 'OverdueTask'>;
 type OverdueTaskScreenRouteProp = RouteProp<DelegatedTaskStackParamList, 'OverdueTask'>;
@@ -292,6 +293,13 @@ const DelegatedOverdueTaskScreen: React.FC<Props> = ({ navigation }) => {
                 ))
               ) : (
                 <View className='flex justify-center items-center pt-10'>
+                  <LottieView
+
+                  source={require('../../../assets/Animation/no-data.json')}
+                  autoPlay
+                  loop
+                  style={{ width: 200, height: 200 }}
+                />                  
                   <Text className=' text-white text-lg font-[LatoBold]' >No tasks available!</Text>
                 </View>
               )}

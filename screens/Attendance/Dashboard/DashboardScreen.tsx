@@ -15,7 +15,7 @@ import Animated, {
 import { LinearGradient } from "expo-linear-gradient";
 import DateRangeDropdown from "~/components/DateRangeDropdown/DateRangeDropdown";
 import Modal from 'react-native-modal';
-import CustomDropdownComponentTwo from "~/components/customNavbarTwo";
+
 import CustomDropdown from "~/components/customDropDown";
 import axios from 'axios';
 import { format, startOfWeek, endOfWeek, subWeeks, subMonths, startOfMonth, endOfMonth, endOfDay } from 'date-fns';
@@ -154,6 +154,24 @@ export default function DashboardScreen() {
   const currentYear = new Date().getFullYear();
   const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
   const [selectedAttendanceDate, setSelectedAttendanceDate] = useState<string>(`${currentYear}-${currentMonth}`);
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
+  const [tempSelectedDate, setTempSelectedDate] = useState(new Date());
+  const openDatePicker = () => {
+    setTempSelectedDate(date);
+    setDatePickerVisible(true);
+  };
+  
+  const cancelIOSDateSelection = () => {
+    setDatePickerVisible(false);
+  };
+  
+  const confirmIOSDateSelection = () => {
+    setDate(tempSelectedDate);
+    setSelectedDate(tempSelectedDate.toISOString().split('T')[0]);
+    setFormattedSelectedDate(format(tempSelectedDate, 'EEEE, MMMM dd'));
+    fetchDailyReport(tempSelectedDate.toISOString().split('T')[0]);
+    setDatePickerVisible(false);
+  };
   
   // Generate month options
   const generateMonthOptions = () => {
@@ -511,7 +529,6 @@ const handleMonthChange = (event: any, selectedDate?: Date) => {
     }
   };
 
-  // Fetch cumulative report
   const fetchCumulativeReport = async () => {
     try {
       setIsLoading(true);
@@ -566,7 +583,19 @@ const handleMonthChange = (event: any, selectedDate?: Date) => {
 
   // Update chart data based on report
   const updateChartDataFromReport = (reportData: UserwiseReport[]) => {
-    if (!reportData || reportData.length === 0) return;
+    if (!reportData || reportData.length === 0) {
+      // Set default chart data when no data is available
+      const defaultChartData: ChartData[] = [
+        { value: 0, color: '#FDB314', label: 'In Office', focused: true },
+        { value: 0, color: '#06D6A0', label: 'Holiday', focused: false },
+        { value: 0, color: '#A914DD', label: 'WFH', focused: false },
+        { value: 0, color: '#EF4444', label: 'On Leave', focused: false },
+      ];
+      
+      setData(defaultChartData);
+      setSelectedSegment(defaultChartData[0]);
+      return;
+    }
     
     // Calculate totals
     const totalPresent = reportData.reduce((sum, entry) => sum + entry.present, 0);
@@ -574,7 +603,19 @@ const handleMonthChange = (event: any, selectedDate?: Date) => {
     const totalAbsent = reportData.reduce((sum, entry) => sum + entry.absent, 0);
     const total = totalPresent + totalLeave + totalAbsent + holidaysCumulative;
     
-    if (total === 0) return;
+    if (total === 0) {
+      // Set default chart data when total is zero
+      const defaultChartData: ChartData[] = [
+        { value: 0, color: '#FDB314', label: 'In Office', focused: true },
+        { value: 0, color: '#06D6A0', label: 'Holiday', focused: false },
+        { value: 0, color: '#A914DD', label: 'WFH', focused: false },
+        { value: 0, color: '#EF4444', label: 'On Leave', focused: false },
+      ];
+      
+      setData(defaultChartData);
+      setSelectedSegment(defaultChartData[0]);
+      return;
+    }
     
     // Calculate percentages
     const presentPercentage = Math.round((totalPresent / total) * 100);
@@ -648,6 +689,11 @@ const handleMonthChange = (event: any, selectedDate?: Date) => {
       fetchCumulativeReport();
     }
   }, [selectReportType]);
+  useEffect(() => {
+    if (selectReportType === 'Cumulative' && period) {
+      fetchCumulativeReport();
+    }
+  }, [period, isManagerSelect, isEmployeeSelect, selectReportType]);
 
   // Filter daily report based on selected status
   const filterDailyReportByStatus = (reports: ReportEntry[], status: ReportOption) => {
@@ -796,34 +842,11 @@ const handleMonthChange = (event: any, selectedDate?: Date) => {
 const renderDailyReportContent = () => {
   return (
     <>
-      <View className="flex justify-between items-center mb-4">
-        <View className="flex flex-row space-x-2 items-center">
-          <View className="w-full rounded-lg px-2 py-1 flex flex-row justify-between">
-            <Text className="text-white text-sm " style={{fontFamily:"LatoBold"}}>Daily Report</Text>
-            <TouchableOpacity className="border border-[#37384B]  justify-center rounded-lg items-center flex p-3 flex-row gap-3" onPress={() => setShowDatePicker(!showDatePicker)}>
-              <Fontisto name="date" size={18} color="#5f6191" />
-              <Text className="text-white text-sm">{formattedSelectedDate}</Text>
-            </TouchableOpacity>
 
-          </View>
-          
-        </View>
-        {showDatePicker && (
-          <View style={styles.pickerContainer}>
-          <DateTimePicker
-            value={date}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={handleDateChange}
-            textColor="white"
-          />
-          </View>
-        )}
-      </View>
       
 
       
-      <View className="flex flex-row flex-wrap justify-center gap-2 mb-4">
+      <View className="flex flex-row flex-wrap justify-center gap-2 mb-7">
         <View className="border border-[#37384B] rounded-lg p-2">
           <Text className="text-white text-xs">All: {dailyTotalCount}</Text>
         </View>
@@ -898,25 +921,9 @@ const renderDailyReportContent = () => {
   const renderMonthlyReportContent = () => {
     return (
       <>
-        <View className="flex justify-between items-center mb-4">
-          <View className="flex flex-row space-x-2 items-center">
-            
-            <View className="rounded-lg px-2 py-1 w-full flex flex-row justify-between">
-            <Text className="text-white text-sm mt-8">Monthly Report</Text>
-            <View className="w-[60%]">
-            <CustomDropdown
-                data={monthOptions.map(month => ({ label: month.display, value: month.value }))}
-                placeholder="Select Month"
-                onSelect={(value) => setSelectedAttendanceDate(value)}
-                selectedValue={selectedAttendanceDate}
-              />
-            </View>
 
-            </View>
-          </View>
-        </View>
         
-        <View className="flex flex-row flex-wrap justify-center gap-2 mb-4">
+        <View className="flex flex-row flex-wrap justify-center gap-2 mb-10">
           <View className="border border-[#37384B] rounded-lg p-2">
             <Text className="text-white text-xs">Total Days: {totalDays}</Text>
           </View>
@@ -973,30 +980,9 @@ const renderDailyReportContent = () => {
   const renderCumulativeReportContent = () => {
     return (
       <>
-        <View className="flex justify-between items-center mb-4">
-          <View className="flex flex-row space-x-2 items-center">
-            
-            <View className=" w-full rounded-lg px-2 py-1 flex flex-row justify-between">
-            <Text className="text-white text-sm mt-8">Cumulative Report</Text>
-              <View className="w-[60%]">
-              <CustomDropdown
-                data={[
-                  { label: 'This Week', value: 'thisWeek' },
-                  { label: 'Last Week', value: 'lastWeek' },
-                  { label: 'This Month', value: 'thisMonth' },
-                  { label: 'Last Month', value: 'lastMonth' }
-                ]}
-                placeholder="Select Period"
-                onSelect={(value) => setPeriod(value)}
-                selectedValue={period}
-              />
-              </View>
 
-            </View>
-          </View>
-        </View>
         
-        <View className="flex flex-row flex-wrap justify-center gap-2 mb-4 ">
+        <View className="flex flex-row flex-wrap justify-center gap-2 mb-10 ">
           <View className="border border-[#37384B] rounded-lg p-2">
             <Text className="text-blue-400 text-xs">Total Days: {totalCumulativeDays}</Text>
           </View>
@@ -1052,17 +1038,7 @@ const renderDailyReportContent = () => {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-          {
-            selectedOption === 'My' &&
-            <View className="w-full ml-10 mt-5">
-            <DateRangeDropdown
-                onRangeChange={handleDateRangeChange}
-                initialValue="This Week"
-                placeholder="Select Date Range"
-                includeNext={true} // Set to false to exclude "Next Week/Month" options
-              />
-            </View>
-          }
+ 
 
           {
             userRole === "User" ?
@@ -1243,7 +1219,7 @@ const renderDailyReportContent = () => {
                       <Text className="text-white mt-4">Loading attendance data...</Text>
                     </View>
                   ) : (
-                    <View className="border border-[#37384B] rounded-xl mb-4">
+                    <View className="border border-[#37384B] mt-5 rounded-xl mb-4">
                       <View className="flex flex-row bg-[#121435] p-3 rounded-t-xl">
                         <Text className="text-[#787CA5] text-xs w-1/4" style={{fontFamily:"Lato"}}>Date</Text>
                         <Text className="text-[#787CA5] text-xs w-1/5" style={{fontFamily:"Lato"}}>Day</Text>
@@ -1290,22 +1266,116 @@ const renderDailyReportContent = () => {
               <View>
               {/* Modify the filter section to only show for users with admin privileges */}
               {hasAdminPrivileges && (
-                <View className="w-full mt-7 flex flex-row justify-center pr-3">
-                  <View className="w-[80%]">
-                  <DateRangeDropdown
-                      onRangeChange={handleDateRangeChange}
-                      initialValue="This Week"
-                      placeholder="Select Date Range"
-                      includeNext={true} // Set to false to exclude "Next Week/Month" options
-                    />
+              <View className="w-full mt-7 flex flex-row justify-center pr-3">
+                <View className="w-[69%]">
+                {selectReportType === 'Daily' && (
+                    <TouchableOpacity 
+                      className="border w-[90%] mt-3  border-[#37384B] justify-center rounded-lg items-center flex py-4 flex-row gap-3" 
+                      onPress={openDatePicker}
+                    >
+                      <Fontisto name="date" size={18} color="#5f6191" />
+                      <Text className="text-white text-sm">{formattedSelectedDate}</Text>
+                    </TouchableOpacity>
+                  )}
+                  {Platform.OS === 'ios' ? (
+              <Modal
+                isVisible={datePickerVisible}
+                onBackdropPress={cancelIOSDateSelection}
+                style={{ justifyContent: 'flex-end', margin: 0 }}
+              >
+                <View style={styles.datePickerContainer}>
+                  <View style={styles.datePickerHeader}>
+                    <TouchableOpacity onPress={cancelIOSDateSelection}>
+                      <Text style={styles.datePickerCancel}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={confirmIOSDateSelection}>
+                      <Text style={styles.datePickerDone}>Done</Text>
+                    </TouchableOpacity>
                   </View>
-                    
-                  {/* filter managaer */}
-                  <TouchableOpacity className="h-14 w-14 rounded-full bg-[#37384B] mt-3" onPress={toggleFilterModal}>
-                    <Image source={require('~/assets/commonAssets/filter.png')} className="h-full w-full" />
+                  <DateTimePicker
+                    value={tempSelectedDate}
+                    mode="date"
+                    display="spinner"
+                    onChange={(event, date) => date && setTempSelectedDate(date)}
+                    style={styles.datePicker}
+                  />
+                </View>
+              </Modal>
+            ) : (
+              <Modal
+                isVisible={datePickerVisible}
+                onBackdropPress={cancelIOSDateSelection}
+                style={{ margin: 20, justifyContent: 'center' }}
+              >
+                <View style={[styles.datePickerContainer, { padding: 20, alignItems: 'center' }]}>
+                  <Text style={{ color: 'white', fontSize: 18, marginBottom: 20 }}>Select Date</Text>
+                  <DateTimePicker
+                    value={tempSelectedDate}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      if (selectedDate) {
+                        setTempSelectedDate(selectedDate);
+                        setDate(selectedDate);
+                        setSelectedDate(selectedDate.toISOString().split('T')[0]);
+                        setFormattedSelectedDate(format(selectedDate, 'EEEE, MMMM dd'));
+                        fetchDailyReport(selectedDate.toISOString().split('T')[0]);
+                        setDatePickerVisible(false);
+                      }
+                    }}
+                    textColor="white"
+                  />
+                  <TouchableOpacity 
+                    onPress={cancelIOSDateSelection}
+                    style={{ marginTop: 20, padding: 10, backgroundColor: '#37384B', borderRadius: 8 }}
+                  >
+                    <Text style={{ color: 'white' }}>Cancel</Text>
                   </TouchableOpacity>
                 </View>
-              )}
+              </Modal>
+            )}
+                  {showDatePicker && (
+                      <View style={styles.pickerContainer}>
+                      <DateTimePicker
+                        value={date}
+                        mode="date"
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        onChange={handleDateChange}
+                        textColor="white"
+                      />
+                      </View>
+                    )}
+                  
+                  {selectReportType === 'Monthly' && (
+                    <CustomDropdown
+                      data={monthOptions.map(month => ({ label: month.display, value: month.value }))}
+                      placeholder="Select Month"
+                      onSelect={(value) => setSelectedAttendanceDate(value)}
+                      selectedValue={selectedAttendanceDate}
+                    />
+                  )}
+                  
+                  {selectReportType === 'Cumulative' && (
+                    <CustomDropdown
+                      data={[
+                        { label: 'This Week', value: 'thisWeek' },
+                        { label: 'Last Week', value: 'lastWeek' },
+                        { label: 'This Month', value: 'thisMonth' },
+                        { label: 'Last Month', value: 'lastMonth' }
+                      ]}
+                      placeholder="Select Period"
+                      onSelect={(value) => setPeriod(value)}
+                      selectedValue={period}
+                    />
+                  )}
+                </View>
+                  
+                {/* filter manager */}
+                <TouchableOpacity className="h-14 w-14 rounded-full bg-[#37384B] mt-3" onPress={toggleFilterModal}>
+                  <Image source={require('~/assets/commonAssets/filter.png')} className="h-full w-full" />
+                </TouchableOpacity>
+              </View>
+            )}
                 <View className="w-[95%] items-center">
                 {/* Show message for users without team access permissions */}
                 {selectedOption === 'Team' && !canAccessTeamDetails && (
@@ -1474,5 +1544,32 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: Platform.OS === 'ios' ? '#1A1D3D' : 'transparent',
     borderRadius: 8,
+  },
+  datePickerContainer: {
+    backgroundColor: '#191B3A',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#37384B',
+  },
+  datePickerCancel: {
+    color: '#787CA5',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  datePickerDone: {
+    color: '#815BF5',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  datePicker: {
+    backgroundColor: '#191B3A',
+    height: 200,
   },
 });

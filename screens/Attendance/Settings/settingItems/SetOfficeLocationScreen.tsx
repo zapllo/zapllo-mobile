@@ -1,4 +1,4 @@
-import { Keyboard, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, Alert } from "react-native";
+import { Keyboard, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, Alert, ActivityIndicator, Image } from "react-native";
 import React, { useState, useEffect } from "react";
 import NavbarTwo from "~/components/navbarTwo";
 import { KeyboardAvoidingView } from "react-native";
@@ -6,8 +6,11 @@ import ToggleSwitch from "~/components/ToggleSwitch";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from 'expo-haptics';
 import GradientButton from "~/components/GradientButton";
-import MapView, { Marker, Region, MapPressEvent } from 'react-native-maps'
+import MapView, { Marker, Region, MapPressEvent } from 'react-native-maps';
 import * as Location from 'expo-location';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { RootState } from '~/redux/store';
 
 export default function SetOfficeLocationScreen() {
   const [selectedUnit, setSelectedUnit] = useState('Kilometers');
@@ -20,29 +23,90 @@ export default function SetOfficeLocationScreen() {
     longitudeDelta: 0.0421,
   });
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [fetchingData, setFetchingData] = useState(true);
+  const [initialLocationSet, setInitialLocationSet] = useState(false);
+  const [locationManuallySet, setLocationManuallySet] = useState(false);
+  
+  // Get auth token from Redux store
+  const { token } = useSelector((state: RootState) => state.auth);
   
   useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        return;
-      }
-
-      try {
-        let location = await Location.getCurrentPositionAsync({});
-        setLocation({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        });
-      } catch (error) {
-        setErrorMsg('Error getting location');
-        console.error(error);
-      }
-    })();
+    // First fetch organization data to get existing settings
+    fetchOrganizationData();
   }, []);
+
+  const fetchOrganizationData = async () => {
+    try {
+      setFetchingData(true);
+      
+      // Fetch organization data
+      const response = await axios.get('https://zapllo.com/api/organization/getById', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.data.data) {
+        const orgData = response.data.data;
+        
+        // Check if organization has geofencing enabled
+        if (orgData.allowGeofencing !== undefined) {
+          setIsGeofencingEnabled(orgData.allowGeofencing);
+        }
+        
+        // Check if organization has geofence radius set
+        if (orgData.geofenceRadius) {
+          setDistance(orgData.geofenceRadius.toString());
+          
+          // Determine unit based on the radius value
+          if (orgData.geofenceRadius >= 1000) {
+            setSelectedUnit('Kilometers');
+          } else {
+            setSelectedUnit('Meters');
+          }
+        }
+        
+        // Now get location permissions and set location
+        await initializeLocation();
+      } else {
+        // If no organization data, just get location permissions and set location
+        await initializeLocation();
+      }
+    } catch (error) {
+      console.error('Error fetching organization data:', error);
+      // If error fetching organization data, just get location permissions and set location
+      await initializeLocation();
+    } finally {
+      setFetchingData(false);
+    }
+  };
+  
+  const initializeLocation = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      setErrorMsg('Permission to access location was denied');
+      setFetchingData(false);
+      return;
+    }
+
+    try {
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
+      setInitialLocationSet(true);
+      setFetchingData(false);
+    } catch (error) {
+      setErrorMsg('Error getting location');
+      console.error(error);
+      setFetchingData(false);
+    }
+  };
 
   const handleUnitPress = (unit: string) => {
     setSelectedUnit(unit);
@@ -53,7 +117,7 @@ export default function SetOfficeLocationScreen() {
     setIsGeofencingEnabled(newState);
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     if (isGeofencingEnabled && !distance) {
       Alert.alert("Error", "Please enter a maximum allowed distance");
       return;
@@ -66,44 +130,104 @@ export default function SetOfficeLocationScreen() {
       return;
     }
 
-    // Prepare data for saving
-    const officeLocationData = {
-      location: {
-        latitude: location.latitude,
-        longitude: location.longitude,
-      },
-      geofencing: isGeofencingEnabled,
-      maxDistance: isGeofencingEnabled ? distanceValue : null,
-      unit: selectedUnit,
-    };
+    try {
+      setLoading(true);
+      
+      // Prepare data for saving according to the API requirements
+      const payload = {
+        location: {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        },
+        allowGeofencing: isGeofencingEnabled,
+        geofenceInput: isGeofencingEnabled ? distanceValue : 0,
+        unit: isGeofencingEnabled ? (selectedUnit === 'Kilometers' ? 'km' : 'm') : 'm', // default unit if geofencing is off
+      };
 
-    console.log('Saving office location data:', officeLocationData);
-    // Here you would typically save this data to your backend or local storage
-    
-    Alert.alert(
-      "Success", 
-      `Office location saved successfully${isGeofencingEnabled ? ` with a ${distanceValue} ${selectedUnit === 'Kilometers' ? 'km' : 'm'} geofence` : ''}`
-    );
+      // Make API call to save location settings
+      const response = await axios.post(
+        'https://zapllo.com/api/organization/location',
+        payload,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.data.success) {
+        Alert.alert(
+          "Success", 
+          `Office location and geofencing settings updated successfully`
+        );
+      } else {
+        Alert.alert("Error", response.data.message || "Failed to update settings");
+      }
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      Alert.alert("Error", "Error updating settings. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-
-const handleMapPress = (e: MapPressEvent) => {
-  try {
-    const { coordinate } = e.nativeEvent;
-    if (coordinate) {
-      setLocation(prevLocation => ({
-        ...prevLocation,
-        latitude: coordinate.latitude,
-        longitude: coordinate.longitude,
-        latitudeDelta: prevLocation.latitudeDelta,
-        longitudeDelta: prevLocation.longitudeDelta,
-      }));
+  const handleMapPress = (e: MapPressEvent) => {
+    try {
+      const { coordinate } = e.nativeEvent;
+      if (coordinate) {
+        setLocation(prevLocation => ({
+          ...prevLocation,
+          latitude: coordinate.latitude,
+          longitude: coordinate.longitude,
+        }));
+        setLocationManuallySet(true);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+    } catch (error) {
+      console.error('Error handling map press:', error);
+      Alert.alert("Error", "Failed to set location. Please try again.");
     }
-  } catch (error) {
-    console.error('Error handling map press:', error);
-    Alert.alert("Error", "Failed to set location. Please try again.");
+  };
+
+  const useCurrentLocation = async () => {
+    try {
+      setLoading(true);
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert("Error", "Permission to access location was denied");
+        setLoading(false);
+        return;
+      }
+
+      let currentLocation = await Location.getCurrentPositionAsync({});
+      setLocation({
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
+      setLocationManuallySet(false);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    } catch (error) {
+      console.error('Error getting current location:', error);
+      Alert.alert("Error", "Failed to get current location. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (fetchingData) {
+    return (
+      <SafeAreaView className="h-full flex-1 bg-primary">
+        <NavbarTwo title="Set Office Location" />
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#815BF5" />
+          <Text className="text-white mt-4">Loading location settings...</Text>
+        </View>
+      </SafeAreaView>
+    );
   }
-};
 
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
@@ -116,10 +240,25 @@ const handleMapPress = (e: MapPressEvent) => {
             keyboardShouldPersistTaps="handled"
           >
             <View className="w-[90%] mt-8 flex items-center">
+              {/* Instructions */}
+              <View className="w-full bg-[#10122d] border border-[#37384B] rounded-xl p-4 mb-4">
+                <Text className="text-white" style={{ fontFamily: "LatoBold" }}>
+                  Office Location
+                </Text>
+                <Text className="text-[#787CA5] mt-1" style={{ fontFamily: "Lato" }}>
+                  Tap on the map to set your office location or use the button below to use your current location.
+                </Text>
+              </View>
+              
               {/* Map View */}
               <View className="w-full bg-white rounded-xl shadow-xl overflow-hidden h-64">
-                {errorMsg ? (
-                  <View className="flex-1 justify-center items-center">
+                {!initialLocationSet ? (
+                  <View className="flex-1 justify-center items-center bg-[#10122d]">
+                    <ActivityIndicator size="large" color="#815BF5" />
+                    <Text className="text-white mt-4">Getting location...</Text>
+                  </View>
+                ) : errorMsg ? (
+                  <View className="flex-1 justify-center items-center bg-[#10122d]">
                     <Text className="text-red-500">{errorMsg}</Text>
                   </View>
                 ) : (
@@ -144,14 +283,33 @@ const handleMapPress = (e: MapPressEvent) => {
                         latitude: e.nativeEvent.coordinate.latitude,
                         longitude: e.nativeEvent.coordinate.longitude,
                       }));
+                      setLocationManuallySet(true);
                     }}
                   />
                 </MapView>
                 )}
               </View>
-              <Text className="text-white text-xs mt-2 self-start" style={{ fontFamily: "Lato" }}>
-                Tap on the map to set your office location
-              </Text>
+              
+              {/* Location status */}
+              <View className="w-full flex-row justify-between items-center mt-2 mb-4">
+                <Text 
+                  className={`text-xs ${locationManuallySet ? 'text-[#FC8929]' : 'text-[#06D6A0]'}`} 
+                  style={{ fontFamily: "Lato" }}
+                >
+                  {locationManuallySet 
+                    ? "Location manually set" 
+                    : "Using current location"}
+                </Text>
+                <TouchableOpacity 
+                  onPress={useCurrentLocation}
+                  className="bg-[#37384B] py-2 px-4 rounded-lg"
+                  disabled={loading}
+                >
+                  <Text className="text-white text-xs" style={{ fontFamily: "LatoBold" }}>
+                    Use Current Location
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
             
             <ToggleSwitch 
@@ -224,9 +382,10 @@ const handleMapPress = (e: MapPressEvent) => {
             
             <View className="w-full items-center my-12">
               <GradientButton
-                title="Save Changes"
+                title={loading ? "Saving..." : "Save Changes"}
                 imageSource={""}
                 onPress={handleSaveChanges}
+                loading={loading}
               />
             </View>
           </ScrollView>

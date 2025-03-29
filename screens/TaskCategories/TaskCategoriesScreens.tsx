@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,18 +13,25 @@ import {
   KeyboardAvoidingView,
   Platform,
   Modal,
+  Animated,
+  Dimensions,
+  Keyboard,
 } from 'react-native';
 import { useNavigation } from 'expo-router';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import Navbar from '~/components/navbar';
 import GradientButton from '~/components/GradientButton';
 import CategoryComponent from '../../components/Dashboard/CategoryComponent';
 import InputContainer from '~/components/InputContainer';
+import CustomSplashScreen from '~/components/CustomSplashScreen';
 import { RootState } from '~/redux/store';
 import { backend_Host } from '~/config';
+
+const { width, height } = Dimensions.get('window');
 
 export default function TaskCategories() {
   const navigation = useNavigation<StackNavigationProp<any>>();
@@ -39,11 +46,90 @@ export default function TaskCategories() {
   const [aiCategories, setAiCategories] = useState([]);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [showFabLabel, setShowFabLabel] = useState(true);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [showSplashScreen, setShowSplashScreen] = useState(false);
+  
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateYAnim = useRef(new Animated.Value(50)).current;
+  const fabAnim = useRef(new Animated.Value(1)).current;
+  const fabLabelAnim = useRef(new Animated.Value(0)).current;
 
+  // Start animations immediately on component mount
   useEffect(() => {
     fetchCategories();
     handleSuggestCategories();
+
+    // Start animations
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateYAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Start FAB pulse animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(fabAnim, {
+          toValue: 1.05,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fabAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    // Animate in the FAB label
+    Animated.timing(fabLabelAnim, {
+      toValue: 1,
+      duration: 500,
+      delay: 1000,
+      useNativeDriver: true,
+    }).start();
+
+    // Hide the FAB label after 3 seconds
+    const timer = setTimeout(() => {
+      Animated.timing(fabLabelAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setShowFabLabel(false));
+    }, 3000);
+
+    return () => clearTimeout(timer);
   }, [token]);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setIsKeyboardVisible(true);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setIsKeyboardVisible(false);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   const addNewCategory = () => {
     setAddModalOpen(true);
@@ -140,6 +226,7 @@ export default function TaskCategories() {
       );
 
       fetchCategories();
+      setShowSplashScreen(true);
     } catch (error) {
       console.error('Error creating category:', error);
       Alert.alert('Failed to create category. Please try again.');
@@ -229,8 +316,48 @@ export default function TaskCategories() {
     return categories.filter((category) => category.name.toLowerCase().includes(search));
   }, [taskDescription, categories]);
 
+  const handleFabPress = () => {
+    // Show the label again if it's hidden
+    if (!showFabLabel) {
+      setShowFabLabel(true);
+      Animated.timing(fabLabelAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+      
+      // Hide it again after 3 seconds
+      setTimeout(() => {
+        Animated.timing(fabLabelAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => setShowFabLabel(false));
+      }, 3000);
+    }
+    
+    setAddModalOpen(true);
+  };
+
+  const handleDonePress = () => {
+    Keyboard.dismiss();
+  };
+
   return (
     <SafeAreaView className="h-full w-full flex-1 items-center bg-primary">
+      <CustomSplashScreen
+        visible={showSplashScreen}
+        lottieSource={require('../../assets/Animation/success.json')}
+        mainText="Category Created Successfully!"
+        subtitle="Your new category has been added to the list"
+        duration={2000}
+        onComplete={() => setShowSplashScreen(false)}
+        onDismiss={() => setShowSplashScreen(false)}
+        condition={{
+          type: 'custom',
+          status: true,
+        }}
+      />
 
       <KeyboardAvoidingView
         className="w-full"
@@ -331,7 +458,7 @@ export default function TaskCategories() {
 
                         <Text className="text-xs text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
                           Our intelligent AI engine has analyzed your industry and carefully curated a
-                          selection of categories. Choose the ones that suit your business, and let’s
+                          selection of categories. Choose the ones that suit your business, and let's
                           add them to your workflow effortlessly!
                         </Text>
 
@@ -418,66 +545,123 @@ export default function TaskCategories() {
       </KeyboardAvoidingView>
       {
         (userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin') && (
-          <View style={{ position: 'absolute', bottom: 30, width: '100%', alignItems: 'center' }}>
-            <GradientButton
-              title="Add New Category"
-              onPress={addNewCategory}
-              loading={isLoading}
-              imageSource={require('../../assets/Tasks/addIcon.png')}
-            />
-            <Modal
-              animationType="slide"
-              transparent={true}
-              visible={addModalOpen}
-              onRequestClose={() => setAddModalOpen(false)}>
-              <View style={styles.modalOverlay}>
-                <KeyboardAvoidingView
-                  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                  style={{ flex: 1, justifyContent: 'flex-end' }}>
-                  <View className="-mb-1 gap-3 flex rounded-t-3xl bg-[#0A0D28] p-5 pb-10 pt-6">
-                    <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
-                      <Text className="text-xl text-white" style={{ fontFamily: 'LatoBold' }}>
-                        Add New Category
-                      </Text>
-                      <TouchableOpacity onPress={() => setAddModalOpen(false)}>
-                        <Image
-                          source={require('../../assets/commonAssets/cross.png')}
-                          className="h-8 w-8"
-                        />
-                      </TouchableOpacity>
-                    </View>
-
-                    <View className="pb-4 flex justify-center w-full">
-                      <InputContainer
-                        placeholder=""
-                        value={newCategoryName}
-                        onChangeText={setNewCategoryName}
-                        label="Enter category name"
-                        className='w-full'
-                        placeholderTextColor="#787CA5"
-                        passwordError={''}
-                      />
-                    </View>
-
-                    <TouchableOpacity
-                      onPress={handleAddNewCategory}
-                      disabled={isLoading}
-                      className="w-full items-center rounded-full bg-[#815bf5] p-3">
-                      {isLoading ? (
-                        <ActivityIndicator color="white" />
-                      ) : (
-                        <Text className="text-lg font-bold text-white" style={{ fontFamily: 'LatoBold' }}>
-                          Add Category
-                        </Text>
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                </KeyboardAvoidingView>
-              </View>
-            </Modal>
+          <View style={styles.fabContainer}>
+            {showFabLabel && (
+              <Animated.View 
+                style={[
+                  styles.fabLabelContainer,
+                  {
+                    opacity: fabLabelAnim,
+                    transform: [
+                      { translateX: fabLabelAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [20, 0]
+                        })
+                      }
+                    ]
+                  }
+                ]}
+              >
+                <LinearGradient
+                  colors={['#ebdba5', '#d7ae48']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.fabLabel}
+                >
+                  <Text style={styles.fabLabelText}>Add Category</Text>
+                </LinearGradient>
+              </Animated.View>
+            )}
+            
+            <Animated.View 
+              style={{
+                transform: [{ scale: fabAnim }]
+              }}
+            >
+              <TouchableOpacity
+                style={styles.fab}
+                onPress={handleFabPress}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={['#017A5B', '#019E76']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.fabGradient}
+                >
+                  <Image
+                    className="h-7 w-7"
+                    source={require('../../assets/Tasks/addIcon.png')}
+                  />
+                </LinearGradient>
+              </TouchableOpacity>
+            </Animated.View>
           </View>
         )
       }
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={addModalOpen}
+        onRequestClose={() => setAddModalOpen(false)}>
+        <View style={styles.modalOverlay}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1, justifyContent: 'flex-end' }}>
+            <View className="-mb-1 gap-3 flex rounded-t-3xl bg-[#0A0D28] p-5 pb-10 pt-6" style={{ position: 'relative', minHeight: 250 }}>
+              <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
+                <Text className="text-xl text-white" style={{ fontFamily: 'LatoBold' }}>
+                  Add New Category
+                </Text>
+                <TouchableOpacity onPress={() => setAddModalOpen(false)}>
+                  <Image
+                    source={require('../../assets/commonAssets/cross.png')}
+                    className="h-8 w-8"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <View className="pb-4 flex justify-center items-center w-full">
+                <InputContainer
+                  placeholder=""
+                  value={newCategoryName}
+                  onChangeText={setNewCategoryName}
+                  label="Enter category name"
+                  className='w-full'
+                  placeholderTextColor="#787CA5"
+                  passwordError={''}
+                />
+              </View>
+
+              {!isKeyboardVisible ? (
+                <TouchableOpacity
+                  onPress={handleAddNewCategory}
+                  disabled={isLoading}
+                  className="w-full items-center rounded-xl bg-[#815bf5] p-2">
+                  {isLoading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text className="text-lg font-bold text-white" style={{ fontFamily: 'LatoBold' }}>
+                      Add Category
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.doneButtonContainer}>
+                  <TouchableOpacity
+                    onPress={handleDonePress}
+                    style={styles.doneButton}>
+                    <Text className="text-base font-bold text-white" style={{ fontFamily: 'LatoBold' }}>
+                      Done
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
 
     </SafeAreaView >
   );
@@ -498,5 +682,71 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Black tinted background
     justifyContent: 'flex-end',
+  },
+  fabContainer: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  fabLabelContainer: {
+    marginRight: 12,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  fabLabel: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  fabLabelText: {
+    color: '#000000',
+    fontSize: 14,
+    fontFamily: 'LatoBold',
+    letterSpacing: 0.3,
+  },
+  fab: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  fabGradient: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  doneButtonContainer: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    zIndex: 1000,
+  },
+  doneButton: {
+    backgroundColor: '#815bf5',
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });

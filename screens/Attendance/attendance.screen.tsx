@@ -1,26 +1,130 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+import { Image, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AllTaskScreen from '~/app/(routes)/HomeComponent/Tasks/AllTaskScreen';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { router } from 'expo-router';
 import DashboardStack from '~/app/(routes)/HomeComponent/Attendance/Dashboard/DashboardStack';
-import MyAttendanceStack from '~/app/(routes)/HomeComponent/Attendance/MyAttendance/MyAttendanceStack';
 import HomeStack from '~/app/(routes)/HomeComponent/Attendance/Home/HomeStack';
 import MyLeavesStack from '~/app/(routes)/HomeComponent/Attendance/MyLeaves/MyLeavesStack';
 import AllAttendenceScreen from './AllTask/AllAttendenceScreen';
 import { LinearGradient } from 'expo-linear-gradient';
+import HolidaysStack from '~/app/(routes)/HomeComponent/Attendance/Holiday/HolidaysStack';
+import ApprovalStack from '~/app/(routes)/HomeComponent/Attendance/Approval/ApprovalStack';
+import { useSelector } from 'react-redux';
+import { RootState } from '~/redux/store';
+import * as Haptics from 'expo-haptics';
 
 const Tab = createBottomTabNavigator();
 
 export default function AttendanceScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { userData } = useSelector((state: RootState) => state.auth);
 
   const navigation = useNavigation<StackNavigationProp<any>>();
+  
+  // Fetch user role from API
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await fetch('https://zapllo.com/api/users/organization');
+        const data = await response.json();
+        
+        if (data.message === "Users fetched successfully") {
+          // Find current user by matching with userData from Redux
+          const currentUserId = userData?.data?._id || userData?.user?._id;
+          
+          if (currentUserId) {
+            const currentUser = data.data.find(user => user._id === currentUserId);
+            
+            if (currentUser) {
+              const adminStatus = currentUser.isAdmin || currentUser.role === 'orgAdmin';
+              console.log('User role from API:', currentUser.role, 'isAdmin:', adminStatus);
+              setIsAdmin(adminStatus);
+            } else {
+              // Fallback to Redux data if user not found in API response
+              const reduxAdminStatus = userData?.data?.role === "orgAdmin" || userData?.user?.role === "orgAdmin";
+              console.log('User role from Redux:', userData?.data?.role || userData?.user?.role, 'isAdmin:', reduxAdminStatus);
+              setIsAdmin(reduxAdminStatus);
+            }
+          } else {
+            console.log('No user ID found in Redux state');
+            setIsAdmin(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user role:', error);
+        // Fallback to Redux data if API fails
+        const reduxAdminStatus = userData?.data?.role === "orgAdmin" || userData?.user?.role === "orgAdmin";
+        console.log('Fallback to Redux - User role:', userData?.data?.role || userData?.user?.role, 'isAdmin:', reduxAdminStatus);
+        setIsAdmin(reduxAdminStatus);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUserRole();
+  }, [userData]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1 }} className="bg-primary flex items-center justify-center">
+        <ActivityIndicator size="large" color="#5367CB" />
+      </View>
+    );
+  }
+
+  // Define tab icons and names based on user role
+  const getTabConfig = (routeName: string, focused: boolean) => {
+    let icon;
+    let zName;
+
+    switch (routeName) {
+      case 'Home':
+        icon = require('~/assets/tabBarImages/dashboard.png');
+        zName = "Home";
+        break;
+      case 'My Attendance':
+        icon = require('~/assets/Attendence/MyAttendence.png');
+        zName = "Holidays";
+        break;
+      case 'Dashboard':
+        icon = require('~/assets/Attendence/Dashboard.png');
+        zName = "Dashboard";
+        break;
+      case 'My Leaves':
+        icon = require('~/assets/Attendence/MyLeaves.png');
+        zName = "My Leaves";
+        break;
+      case 'All Task':
+        if (isAdmin) {
+          icon = require('~/assets/tabBarImages/alltask.png');
+          zName = "More";
+        } else {
+          icon = require('~/assets/Attendence/Approval.png');
+          zName = "Approval";
+        }
+        break;
+      default:
+        icon = require('~/assets/tabBarImages/dashboard.png');
+        zName = "Home";
+    }
+
+    return { icon, zName };
+  };
+
+  // Function to trigger haptic feedback
+  const triggerHapticFeedback = () => {
+    // Using selection feedback type which is suitable for tab navigation
+    Haptics.selectionAsync();
+  };
 
   return (
-    <View style={{ flex: 1 }} className='bg-primary'>
+    <View style={{ flex: 1, zIndex: 50 }} className='bg-primary'>
       <Tab.Navigator
         initialRouteName="Home"
         screenOptions={({ route }) => ({
@@ -44,25 +148,8 @@ export default function AttendanceScreen() {
             justifyContent: 'center',
           },
           tabBarIcon: ({ focused }) => {
-            // Set images for each tab
-            let icon;
-            let zName;
-            if (route.name === 'Home') {
-              icon = require('~/assets/tabBarImages/dashboard.png');
-              zName = "Home";
-            } else if (route.name === 'My Attendance') {
-              icon = require('~/assets/Attendence/MyAttendence.png');
-              zName = "Attendance";
-            } else if (route.name === 'Dashboard') {
-              icon = require('~/assets/Attendence/Dashboard.png');
-              zName = "Dashboard";
-            } else if (route.name === 'My Leaves') {
-              icon = require('~/assets/Attendence/MyLeaves.png');
-              zName = "My Leaves";
-            } else if (route.name === 'All Task') {
-              icon = require('~/assets/tabBarImages/alltask.png');
-              zName = "More";
-            }
+            // Get tab configuration based on route name and user role
+            const { icon, zName } = getTabConfig(route.name, focused);
 
             return (
               <View
@@ -73,36 +160,48 @@ export default function AttendanceScreen() {
               >
                 <View className='flex flex-col items-center h-9'>
                   <Image source={icon} style={styles.icon} />
-                  <Text className='text-white w-full text-[8px]' style={{ fontFamily: 'LatoRegular' }}>{zName}</Text>
+                  <Text className='text-white w-full text-center text-[8px]' style={{ fontFamily: 'LatoRegular' }}>{zName}</Text>
                 </View>
               </View>
             );
           },
           tabBarShowLabel: false,
         })}
+        screenListeners={{
+          tabPress: () => {
+            // Trigger haptic feedback when a tab is pressed
+            triggerHapticFeedback();
+          },
+        }}
       >
         <Tab.Screen name="Home" component={HomeStack} />
-        <Tab.Screen name="My Attendance" component={MyAttendanceStack} />
+        <Tab.Screen name="My Attendance" component={HolidaysStack} />
         <Tab.Screen name="Dashboard" component={DashboardStack} />
         <Tab.Screen name="My Leaves" component={MyLeavesStack} />
         <Tab.Screen
           name="All Task"
-          component={AllTaskScreen}
+          component={isAdmin ? AllTaskScreen : ApprovalStack}
           listeners={{
             tabPress: (e) => {
-              e.preventDefault(); // Prevent default action
-              setModalVisible(true); // Show modal
+              // Trigger haptic feedback
+              triggerHapticFeedback();
+              
+              if (isAdmin) {
+                e.preventDefault(); // Prevent default action for admin
+                setModalVisible(true); // Show modal for admin
+              }
+              // For regular users, let the navigation happen to ApprovalScreen
             },
           }}
         />
       </Tab.Navigator>
 
-      <AllAttendenceScreen
-        isVisible={isModalVisible}
-        onClose={() => setModalVisible(false)}
-      />
-
- 
+      {isModalVisible && (
+        <AllAttendenceScreen
+          isVisible={isModalVisible}
+          onClose={() => setModalVisible(false)}
+        />
+      )}
     </View>
   );
 }

@@ -73,6 +73,7 @@ function RootLayoutNav() {
         ) : (
           <>
             <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="(routes)/onboarding" options={{ headerShown: false }} />
             <Stack.Screen name="(routes)/login" options={{ headerShown: false }} />
             <Stack.Screen name="(routes)/forgot-PassWord" options={{ headerShown: false }} />
             <Stack.Screen name="(routes)/signup/pageOne" options={{ headerShown: false }} />

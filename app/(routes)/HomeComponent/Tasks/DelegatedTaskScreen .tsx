@@ -105,7 +105,7 @@ export default function DelegatedTaskScreen() {
 
   const formatWithSuffix = (date: any) => {
     // return moment(date).format('Do MMM, YYYY');
-    return moment(date).format('MMM Do, YY');
+    return moment(date).format('MMM Do YY');
   };
 
   useEffect(() => {

@@ -40,6 +40,7 @@ import { AntDesign } from '@expo/vector-icons';
 import CustomDropdownWithSearchAndAdd from '~/components/customDropDownFour';
 import CustomAlert from '~/components/CustomAlert/CustomAlert';
 import { XStack } from 'tamagui';
+import CustomSplashScreen from '~/components/CustomSplashScreen';
 
 
 
@@ -89,6 +90,7 @@ export default function AssignTaskScreen() {
   const [customAlertVisible, setCustomAlertVisible] = useState(false);
   const [customAlertMessage, setCustomAlertMessage] = useState('');
   const [customAlertType, setCustomAlertType] = useState<'success' | 'error' | 'loading'>('success');
+  const [showSplashScreen, setShowSplashScreen] = useState(false);
 
   const selectRepetType = [
     { label: 'Daily', value: 'Daily' },
@@ -244,7 +246,6 @@ export default function AssignTaskScreen() {
       setCustomAlertVisible(true);
       setCustomAlertMessage('Task Title is required.');
       setCustomAlertType('error');
-
       return;
     }
 
@@ -317,17 +318,25 @@ export default function AssignTaskScreen() {
           'Content-Type': 'application/json',
         },
       });
-      // console.log('Task Created:', response.data);
-      setCustomAlertVisible(true);
-      setCustomAlertMessage('Task successfully created!');
-      setCustomAlertType('success');
+      
+      // Show splash screen instead of alert
+      setShowSplashScreen(true);
+      
+      // Hide splash screen after 3 seconds and proceed
+      setTimeout(() => {
+        setShowSplashScreen(false);
+        if (!isOn) {
+          navigation.goBack();
+        } else {
+          resetForm();
+        }
+      }, 3000);
 
     } catch (error) {
       console.error('Error creating task:', error.response?.data || error.message);
       setCustomAlertVisible(true);
       setCustomAlertMessage('Failed to create task. Please try again.');
       setCustomAlertType('error');
-
     } finally {
       setTaskLoading(false);
     }
@@ -770,6 +779,26 @@ export default function AssignTaskScreen() {
         message={customAlertMessage}
         type={customAlertType}
         onClose={() => setCustomAlertVisible(false)}
+      />
+      <CustomSplashScreen
+        visible={showSplashScreen}
+        lottieSource={require('../../../../../assets/Animation/success.json')}
+        mainText="Task Created Successfully!"
+        subtitle="Your task has been assigned successfully"
+        onComplete={() => {
+          console.log('Splash animation completed');
+        }}
+        onDismiss={() => {
+          setShowSplashScreen(false);
+        }}
+        duration={3000}
+        gradientColors={["#05071E", "#0A0D28"]}
+        textGradientColors={["#815BF5", "#FC8929"]}
+        condition={{
+          type: 'custom',
+          status: true,
+          successAnimation: require('../../../../../assets/Animation/success.json')
+        }}
       />
     </SafeAreaView>
   );

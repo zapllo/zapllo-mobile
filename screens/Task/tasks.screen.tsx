@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View, Animated } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import DelegatedTaskScreen from '~/app/(routes)/HomeComponent/Tasks/DelegatedTaskScreen ';
 import AllTaskScreen from '~/app/(routes)/HomeComponent/Tasks/AllTaskScreen';
@@ -6,7 +6,7 @@ import DashboardStack from '~/app/(routes)/HomeComponent/Tasks/Dashboard/Dashboa
 import MyAppsScreen from '~/app/(routes)/HomeComponent/Tasks/MyAppsScreen';
 import DelegatedTaskStack from '~/app/(routes)/HomeComponent/Tasks/DelegatedTaskStack';
 import MyTasksStack from './myTask/MyTaskStack';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Modal from "react-native-modal";
 import AllTaskModalScreen from '../../app/(routes)/HomeComponent/Tasks/AllTaskModalScreen';
 import { useNavigation } from '@react-navigation/native';
@@ -14,6 +14,10 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { router } from 'expo-router';
 import HomeScreen from '../home/homeScreen';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
+import { RootState } from '~/redux/store';
+import * as Haptics from 'expo-haptics'; // Import Haptics
 
 const Tab = createBottomTabNavigator();
 
@@ -21,6 +25,82 @@ export default function TasksScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
 
   const navigation = useNavigation<StackNavigationProp<any>>();
+  const fabLabelAnim = useRef(new Animated.Value(0)).current;
+  const fabAnim = useRef(new Animated.Value(1)).current;
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { userData } = useSelector((state: RootState) => state.auth);
+
+  // Fetch user role from API
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await fetch('https://zapllo.com/api/users/organization');
+        const data = await response.json();
+        
+        if (data.message === "Users fetched successfully") {
+          // Find current user by matching with userData from Redux
+          const currentUserId = userData?.data?._id || userData?.user?._id;
+          
+          if (currentUserId) {
+            const currentUser = data.data.find(user => user._id === currentUserId);
+            
+            if (currentUser) {
+              const adminStatus = currentUser.isAdmin || currentUser.role === 'orgAdmin';
+              console.log('User role from API:', currentUser.role, 'isAdmin:', adminStatus);
+              setIsAdmin(adminStatus);
+            } else {
+              // Fallback to Redux data if user not found in API response
+              const reduxAdminStatus = userData?.data?.role === "orgAdmin" || userData?.user?.role === "orgAdmin";
+              console.log('User role from Redux:', userData?.data?.role || userData?.user?.role, 'isAdmin:', reduxAdminStatus);
+              setIsAdmin(reduxAdminStatus);
+            }
+          } else {
+            console.log('No user ID found in Redux state');
+            setIsAdmin(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user role:', error);
+        // Fallback to Redux data if API fails
+        const reduxAdminStatus = userData?.data?.role === "orgAdmin" || userData?.user?.role === "orgAdmin";
+        console.log('Fallback to Redux - User role:', userData?.data?.role || userData?.user?.role, 'isAdmin:', reduxAdminStatus);
+        setIsAdmin(reduxAdminStatus);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUserRole();
+  }, [userData]);
+  
+  const [showFabLabel, setShowFabLabel] = useState(true);
+  
+  useEffect(() => {
+    // Start by showing the label with animation
+    Animated.timing(fabLabelAnim, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  
+    // Hide the FAB label after 3 seconds
+    const timer = setTimeout(() => {
+      Animated.timing(fabLabelAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setShowFabLabel(false));
+    }, 3000);
+  
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Function to trigger haptic feedback
+  const triggerHapticFeedback = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
 
   return (
     <View style={{ flex: 1 }} className='bg-primary'>
@@ -62,7 +142,7 @@ export default function TasksScreen() {
             } else if (route.name === 'Delegated Task') {
               icon = require('~/assets/tabBarImages/Frame.png');
               zName = "Delegated";
-            } else if (route.name === 'All Task') {
+            } else if (route.name === 'All Task' && isAdmin) {
               icon = require('~/assets/tabBarImages/alltask.png');
               zName = "More";
             }
@@ -84,37 +164,114 @@ export default function TasksScreen() {
           tabBarShowLabel: false,
         })}
       >
-        <Tab.Screen name="Dashboard" component={DashboardStack} />
-        <Tab.Screen name="My Task" component={MyTasksStack} />
-        <Tab.Screen name="Home Screen" component={HomeScreen} />
-        <Tab.Screen name="Delegated Task" component={DelegatedTaskStack} />
-        <Tab.Screen
-          name="All Task"
-          component={AllTaskScreen}
+        <Tab.Screen 
+          name="Dashboard" 
+          component={DashboardStack} 
           listeners={{
-            tabPress: (e) => {
-              e.preventDefault(); // Prevent default action
-              setModalVisible(true); // Show modal
+            tabPress: () => {
+              triggerHapticFeedback();
             },
           }}
         />
+        <Tab.Screen 
+          name="My Task" 
+          component={MyTasksStack} 
+          listeners={{
+            tabPress: () => {
+              triggerHapticFeedback();
+            },
+          }}
+        />
+        <Tab.Screen 
+          name="Home Screen" 
+          component={HomeScreen} 
+          listeners={{
+            tabPress: () => {
+              triggerHapticFeedback();
+            },
+          }}
+        />
+        <Tab.Screen 
+          name="Delegated Task" 
+          component={DelegatedTaskStack} 
+          listeners={{
+            tabPress: () => {
+              triggerHapticFeedback();
+            },
+          }}
+        />
+        {isAdmin && (
+          <Tab.Screen
+            name="All Task"
+            component={AllTaskScreen}
+            listeners={{
+              tabPress: (e) => {
+                e.preventDefault(); // Prevent default action
+                triggerHapticFeedback(); // Add haptic feedback
+                setModalVisible(true); // Show modal
+              },
+            }}
+          />
+        )}
       </Tab.Navigator>
 
       <AllTaskModalScreen
         isVisible={isModalVisible}
         onClose={() => setModalVisible(false)}
       />
-
-      {/* add task */}
-      <TouchableOpacity
-        style={styles.fixedImage}
-        onPress={() => router.push('/(routes)/HomeComponent/Tasks/AssignTask/AssignTaskScreen')}
-      >
-        <Image
-          source={require("../../assets/Tasks/addIcon.png")}
-          className='w-8 h-8'
-        />
-      </TouchableOpacity>
+      <View style={styles.fabContainer}>
+        {showFabLabel && (
+          <Animated.View 
+            style={[
+              styles.fabLabelContainer,
+              {
+                opacity: fabLabelAnim,
+                transform: [
+                  { translateX: fabLabelAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [20, 0]
+                    })
+                  }
+                ]
+              }
+            ]}
+          >
+            <LinearGradient
+              colors={['#ebdba5', '#d7ae48']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.fabLabel}
+            >
+              <MaterialIcons name='assignment-add' size={20} color={"000000"}/>
+              <Text style={styles.fabLabelText}>Assign a task</Text>
+            </LinearGradient>
+          </Animated.View>
+        )}
+        
+        <Animated.View 
+          style={{
+            transform: [{ scale: fabAnim }]
+          }}
+        >
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={() => {
+              triggerHapticFeedback(); // Add haptic feedback to FAB
+              router.push('/(routes)/HomeComponent/Tasks/AssignTask/AssignTaskScreen');
+            }}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={['#FC8929', '#f0be95']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.fabGradient}
+            >
+              <MaterialIcons name="add" size={28} color="#FFFFFF" />
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
     </View>
   );
 }
@@ -160,5 +317,55 @@ const styles = StyleSheet.create({
     borderRadius: "50%",
     alignItems: "center",
     justifyContent: "center"
+  },
+  fabContainer: {
+    position: 'absolute',
+    bottom: 100,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  fabLabelContainer: {
+    marginRight: 12,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  fabLabel: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    display:"flex",
+    flexDirection:"row",
+    alignItems:"center",
+    gap:3
+  },
+  fabLabelText: {
+    color: '#000000',
+    fontSize: 14,
+    fontFamily: 'LatoBold',
+    letterSpacing: 0.3,
+  },
+  fab: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  fabGradient: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

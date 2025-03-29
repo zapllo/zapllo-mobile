@@ -1,3 +1,4 @@
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import {
   Alert,
   Image,
@@ -9,23 +10,34 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Animated,
+  Dimensions,
+  ActivityIndicator,
 } from 'react-native';
-import React, { useEffect, useState,useMemo } from 'react';
-import NavbarTwo from '~/components/navbarTwo';
 import { ScrollView } from 'react-native';
-import GradientButton from '~/components/GradientButton';
-import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from 'expo-router';
-import TickitCard from '~/components/profile/TickitCard';
+import { StackNavigationProp } from '@react-navigation/stack';
 import Modal from 'react-native-modal';
-import CustomDropdownComponentThree from '~/components/customDropdownThree';
-import { useSelector } from 'react-redux';
-import { RootState } from '~/redux/store';
 import axios from 'axios';
-import { backend_Host } from '~/config';
 import moment from 'moment';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import { MaterialIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+
+// Components
+import NavbarTwo from '~/components/navbarTwo';
+import TickitCard from '~/components/profile/TickitCard';
 import InputContainer from '~/components/InputContainer';
 import CustomDropdown from '~/components/customDropDown';
+
+// Config & Redux
+import { backend_Host } from '~/config';
+import { useSelector } from 'react-redux';
+import { RootState } from '~/redux/store';
+import LottieView from 'lottie-react-native';
+
+const { width, height } = Dimensions.get('window');
 
 const categoryData = [
   { label: 'Report An Error', value: 'Report An Error' },
@@ -33,6 +45,7 @@ const categoryData = [
   { label: 'Payment/Subscription Issue', value: 'Payment/Subscription Issue' },
   { label: 'Delete My Accunt', value: 'Delete My Accunt' },
 ];
+
 const subCategoryData = [
   { label: 'Task Delegation', value: 'Task Delegation' },
   { label: 'My Team', value: 'My Team' },
@@ -41,6 +54,7 @@ const subCategoryData = [
   { label: 'Attendance', value: 'Attendance' },
   { label: 'Other', value: 'Other' },
 ];
+
 export default function TickitScreen() {
   const navigation = useNavigation<StackNavigationProp<any>>();
   const { token, userData } = useSelector((state: RootState) => state.auth);
@@ -48,15 +62,75 @@ export default function TickitScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [newTicketMessage, setNewTicketMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [tickets, setTickets] = useState([])
+  const [loading, setLoading] = useState(true);
+  const [tickets, setTickets] = useState([]);
   const [category, setCategory] = useState('Report An Error');
   const [subCategory, setSubCategory] = useState('Task Delegation');
   const [isDescriptionFocused, setDescriptionFocused] = useState(false);
   const [tickitDescription, setTickitDescription] = useState('');
+  const [showFabLabel, setShowFabLabel] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateYAnim = useRef(new Animated.Value(50)).current;
+  const fabAnim = useRef(new Animated.Value(1)).current;
+  const fabLabelAnim = useRef(new Animated.Value(0)).current;
 
   const handleFocus = () => setDescriptionFocused(true);
   const handleBlur = () => setDescriptionFocused(false);
+
+  // Start animations immediately on component mount
+  useEffect(() => {
+    // Start animations
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateYAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Start FAB pulse animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(fabAnim, {
+          toValue: 1.05,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fabAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    // Animate in the FAB label
+    Animated.timing(fabLabelAnim, {
+      toValue: 1,
+      duration: 500,
+      delay: 1000,
+      useNativeDriver: true,
+    }).start();
+
+    // Hide the FAB label after 3 seconds
+    const timer = setTimeout(() => {
+      Animated.timing(fabLabelAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setShowFabLabel(false));
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -90,21 +164,27 @@ export default function TickitScreen() {
     );
   }, [searchTickit, tickets]);
 
+
+
+
   const handelAddNewTicket = async () => {
     if (!newTicketMessage) {
       Alert.alert('Validation Error', 'Subject is required!');
       return;
     }
+    
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setIsLoading(true);
+    
     try {
       const response = await axios.post(
         `${backend_Host}/tickets`,
         {
-          user:userData?.data?._id || userData?.data?._id, 
-          subject:newTicketMessage,
-          description:tickitDescription,
-          category:category,
-          subcategory:subCategory
+          user: userData?.data?._id || userData?.data?._id,
+          subject: newTicketMessage,
+          description: tickitDescription,
+          category: category,
+          subcategory: subCategory
         },
         {
           headers: {
@@ -114,240 +194,630 @@ export default function TickitScreen() {
         }
       );
 
-      console.log("??????????",newTicketMessage,tickitDescription)
-
-      const newCategoryy = response.data; 
-
-      console.log("{{{{{{{{{{{{{{{{object}}}}}}}}}}}}}}}}",newCategoryy)
-      Alert.alert('New Ticket Added');
       setTickets([...tickets, response?.data]);
+      Alert.alert('Success', 'Your ticket has been submitted successfully.');
       setModalVisible(false);
     } catch (error) {
-      console.error('Error creating category:', error);
-      Alert.alert('Failed to create category. Please try again.');
+      console.error('Error creating ticket:', error);
+      Alert.alert('Error', 'Failed to create ticket. Please try again.');
     } finally {
       setIsLoading(false);
       setNewTicketMessage('');
-      setTickitDescription('')
+      setTickitDescription('');
     }
   };
 
+  const openTicketModal = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setModalVisible(true);
+  };
+
+  const closeTicketModal = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setModalVisible(false);
+  };
+
+  const handleFabPress = () => {
+    // Show the label again if it's hidden
+    if (!showFabLabel) {
+      setShowFabLabel(true);
+      Animated.timing(fabLabelAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+      
+      // Hide it again after 3 seconds
+      setTimeout(() => {
+        Animated.timing(fabLabelAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => setShowFabLabel(false));
+      }, 3000);
+    }
+    
+    openTicketModal();
+  };
+
   return (
-    <SafeAreaView className="h-full w-full flex-1 items-center bg-primary">
+    <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        className="w-full"
+        style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <NavbarTwo title="Support Tickets" onBackPress={() => navigation.goBack()} />
+        <NavbarTwo title="Support Tickets" />
+        
+        {/* Search Bar */}
+        <Animated.View 
+          style={[
+            styles.searchContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: translateYAnim }]
+            }
+          ]}
+        >
+          <View style={styles.searchIconContainer}>
+            <MaterialIcons name="search" size={22} color="#787CA5" />
+          </View>
+          <TextInput
+            style={styles.searchInput}
+            value={searchTickit}
+            onChangeText={(value) => setSearchTickit(value)}
+            placeholder="Search tickets..."
+            placeholderTextColor="#787CA5"
+          />
+          {searchTickit.length > 0 && (
+            <TouchableOpacity 
+              style={styles.clearButton}
+              onPress={() => setSearchTickit('')}
+            >
+              <MaterialIcons name="close" size={18} color="#787CA5" />
+            </TouchableOpacity>
+          )}
+        </Animated.View>
+
+        {/* Tickets List */}
         <ScrollView
-          className="h-full w-full flex-grow"
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollViewContent}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
-          <View className="h-full w-full items-center pb-36">
-            <View
-              style={[
-                styles.input,
-                {
-                  height: 57,
-                  justifyContent: 'flex-start',
-                  alignItems: 'flex-start',
-                  width: '90%',
-                  marginBottom: 30,
-                  marginTop: 20,
-                },
-              ]}>
-              <TextInput
-                multiline
-                style={[
-                  styles.inputSome,
-                  { textAlignVertical: 'top', paddingTop: 10, width: '100%' },
-                ]}
-                value={searchTickit}
-                onChangeText={(value) => setSearchTickit(value)}
-                placeholder="Search Tickets"
-                placeholderTextColor="#787CA5"
-              />
+          
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#815BF5" />
+              <Text style={styles.loadingText}>Loading tickets...</Text>
             </View>
-            {loading ? (
-              <Text style={{ color: '#fff', marginTop: 20 }}>Loading tickets...</Text>
-            ) : filteredTickets.length > 0 ? (
-              filteredTickets.map((ticket:any, index) => (
+          ) : filteredTickets.length > 0 ? (
+            <>
+              <Text style={styles.sectionTitle}>
+                {searchTickit ? 'Search Results' : isAdmin ? 'All User Tickets' : 'Your Tickets'}
+              </Text>
+              {filteredTickets.map((ticket: any, index) => (
                 <TickitCard
                   key={index}
                   status={ticket?.status}
-                  message={ticket?.subject}
+                  message={ticket?.description}
                   date={moment(ticket?.createdAt).format('ddd, MMMM D - h:mm A')}
                   category={ticket?.category}
                   subCategory={ticket?.subcategory}
                   subject={ticket?.subject}
                   id={ticket?._id}
+                  // Add user name prop for admin view
+                  userName={isAdmin ? ticket?.user?.name || "Unknown User" : undefined}
                 />
-              ))
-            ) : (
-              <Text style={{ color: '#787CA5', marginTop: 20 }}>No tickets found.</Text>
-            )}
-          </View>
-        </ScrollView>
-        <View style={{ position: 'absolute', bottom: 85, width: '100%', alignItems: 'center' }}>
-          <GradientButton
-            title="Raise a Ticket"
-            imageSource={require('../../../assets/Tasks/addIcon.png')}
-            onPress={() => setModalVisible(true)}
-            
-          />
-         <Modal
-            isVisible={modalVisible}
-            onBackdropPress={() => setModalVisible(false)}
-            style={{ margin: 0, justifyContent: 'flex-end' }}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-              <ScrollView
-                className='rounded-t-3xl'
-                style={{ width: '100%', height: '70%', backgroundColor: '#0A0D28', padding: 20, }}
-                contentContainerStyle={{ flexGrow: 1 }}>
-                <View className="mb-10 mt-2 flex w-full flex-row items-center justify-between">
-                  <Text
-                    className="text-2xl font-semibold text-white"
-                    style={{ fontFamily: 'LatoBold' }}>
-                    Raise a Ticket
-                  </Text>
-                  <TouchableOpacity onPress={() => setModalVisible(false)}>
-                    <Image
-                      source={require('../../../assets/commonAssets/cross.png')}
-                      className="h-8 w-8"
-                    />
-                  </TouchableOpacity>
-                </View>
-
-                <View className="flex flex-col  items-center">
-                  <CustomDropdown
-                    data={categoryData}
-                    selectedValue={category}
-                    onSelect={(value) => setCategory(value)}
-                  />
-
-                  <CustomDropdown
-                    data={subCategoryData}
-                    selectedValue={subCategory}
-                    onSelect={(value) => setSubCategory(value)}
-                  />
-                                    <InputContainer
-                    placeholder="Subject"
-                    value={newTicketMessage}
-                    onChangeText={(value) => setNewTicketMessage(value)}
-                    passwordError={''}
-                    keyboardType="default"
-                    label='Subject'
-                    />
-              
-
-                <View
-                  style={[
-                    styles.input,
-                    {
-                      height: 100,
-                      justifyContent: 'flex-start',
-                      alignItems: 'flex-start',
-                      borderColor: isDescriptionFocused ? '#815BF5' : '#37384B',
-                    },
-                  ]}>
-                  <Text style={[styles.baseName, { fontFamily: 'Lato-Bold' }]}>Description</Text>
-                  <TextInput
-                    multiline
-                    style={[
-                      styles.inputSome,
-                      { textAlignVertical: 'top', paddingTop: 5, width: '100%' },
-                    ]}
-                    value={tickitDescription}
-                    onChangeText={(value) => setTickitDescription(value)}
-                    placeholder=""
-                    placeholderTextColor="#787CA5"
-                    onFocus={handleFocus}
-                    onBlur={handleBlur}
-                  />
-                </View>
-
-                <TouchableOpacity
-                  className="my-10 w-[90%] mb-5 items-center rounded-full bg-[#815BF5] p-4"
-                  onPress={handelAddNewTicket}>
-                  <Text style={styles.modalButtonText}>Submit</Text>
+              ))}
+            </>
+          ) : (
+            <View style={styles.emptyStateContainer}>
+                <LottieView
+                  style={{width: 250, height: 250}}
+                  source={require('../../../assets/Animation/no-tickit.json')}
+                  autoPlay
+                  loop={false}
+                  progress={1} // Shows the last frame of the animation
+                />
+              <Text style={styles.emptyStateTitle}>No tickets found</Text>
+              <Text style={styles.emptyStateDescription}>
+                {searchTickit 
+                  ? "We couldn't find any tickets matching your search." 
+                  : "You haven't created any support tickets yet."}
+              </Text>
+              {searchTickit && (
+                <TouchableOpacity 
+                  style={styles.clearSearchButton}
+                  onPress={() => setSearchTickit('')}
+                >
+                  <Text style={styles.clearSearchText}>Clear Search</Text>
                 </TouchableOpacity>
-                </View>
+              )}
+            </View>
+          )}
+          
+          {/* Extra space at bottom for FAB */}
+          <View style={{ height: 100 }} />
+        </ScrollView>
 
-
-
-              </ScrollView>
-            </KeyboardAvoidingView>
-          </Modal>
+        {/* Floating Action Button */}
+        <View style={styles.fabContainer}>
+          {showFabLabel && (
+            <Animated.View 
+              style={[
+                styles.fabLabelContainer,
+                {
+                  opacity: fabLabelAnim,
+                  transform: [
+                    { translateX: fabLabelAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [20, 0]
+                      })
+                    }
+                  ]
+                }
+              ]}
+            >
+              <LinearGradient
+                colors={['#ebdba5', '#d7ae48']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.fabLabel}
+              >
+                <Text style={styles.fabLabelText}>Raise a Ticket</Text>
+              </LinearGradient>
+            </Animated.View>
+          )}
+          
+          <Animated.View 
+            style={{
+              transform: [{ scale: fabAnim }]
+            }}
+          >
+            <TouchableOpacity
+              style={styles.fab}
+              onPress={handleFabPress}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={['#FC8929', '#f7a15a']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.fabGradient}
+              >
+                <MaterialIcons name="add" size={28} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+          </Animated.View>
         </View>
 
+        {/* Create Ticket Modal */}
+        <Modal
+          isVisible={modalVisible}
+          onBackdropPress={closeTicketModal}
+          backdropOpacity={0.5}
+          animationIn="slideInUp"
+          animationOut="slideOutDown"
+          style={styles.modal}
+          backdropTransitionInTiming={300}
+          backdropTransitionOutTiming={300}
+          animationInTiming={400}
+          animationOutTiming={400}
+        >
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.modalKeyboardAvoid}
+          >
+            <View style={styles.modalContent}>
+              <LinearGradient
+                colors={['#1A1C2E', '#0A0D28']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={styles.modalGradient}
+              />
+              
+              <View style={styles.modalHeader}>
+                <View style={styles.modalHeaderContent}>
+                  <View style={styles.modalDragHandle} />
+                  <Text style={styles.modalTitle}>Raise a Ticket</Text>
+                  <Text style={styles.modalSubtitle}>
+                    Tell us how we can help you today
+                  </Text>
+                </View>
+                <TouchableOpacity 
+                  style={styles.modalCloseButton}
+                  onPress={closeTicketModal}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <BlurView intensity={20} tint="dark" style={styles.modalCloseButtonBlur}>
+                    <MaterialIcons name="close" size={22} color="#FFFFFF" />
+                  </BlurView>
+                </TouchableOpacity>
+              </View>
 
+              <ScrollView 
+                style={styles.modalScrollView}
+                contentContainerStyle={styles.modalScrollViewContent}
+                showsVerticalScrollIndicator={false}
+              >
+                <View style={styles.formSection}>
+                  <Text style={styles.formSectionTitle}>Ticket Details</Text>
+                  
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>Category</Text>
+                    <CustomDropdown
+                      data={categoryData}
+                      selectedValue={category}
+                      onSelect={(value) => setCategory(value)}
+                    />
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>Sub-Category</Text>
+                    <CustomDropdown
+                      data={subCategoryData}
+                      selectedValue={subCategory}
+                      onSelect={(value) => setSubCategory(value)}
+                    />
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>Subject</Text>
+                    <InputContainer
+                      placeholder="Enter a brief subject for your ticket"
+                      value={newTicketMessage}
+                      onChangeText={(value) => setNewTicketMessage(value)}
+                      passwordError={''}
+                      keyboardType="default"
+                      label='Subject'
+                    />
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>Description</Text>
+                    <View
+                      style={[
+                        styles.textAreaContainer,
+                        {
+                          borderColor: isDescriptionFocused ? '#815BF5' : '#37384B',
+                        },
+                      ]}>
+                      <TextInput
+                        multiline
+                        style={styles.textArea}
+                        value={tickitDescription}
+                        onChangeText={(value) => setTickitDescription(value)}
+                        placeholder="Provide details about your issue..."
+                        placeholderTextColor="#787CA5"
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        textAlignVertical="top"
+                      />
+                    </View>
+                  </View>
+                </View>
+              </ScrollView>
+
+              <View style={styles.modalFooter}>
+                <TouchableOpacity
+                  style={[styles.cancelButton, { opacity: isLoading ? 0.5 : 1 }]}
+                  onPress={closeTicketModal}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.submitButton, { opacity: isLoading ? 0.8 : 1 }]}
+                  onPress={handelAddNewTicket}
+                  disabled={isLoading}
+                >
+                  <LinearGradient
+                    colors={['#6f40f0','#8963f2', ]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.submitButtonGradient}
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.submitButtonText}>Submit Ticket</Text>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  input: {
+  container: {
+    flex: 1,
+    backgroundColor: '#05071E',
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+    width: '100%',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 8,
+    backgroundColor: '#0A0D28',
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#37384B',
-    padding: 10,
-    marginTop: 25,
-    borderRadius: 20,
-    width: '90%',
-    height: 57,
-    position: 'relative',
+    height: 50,
+    paddingHorizontal: 12,
   },
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+  searchIconContainer: {
+    marginRight: 8,
   },
-  modalInput: {
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    marginBottom: 20,
-    width: '80%',
-    paddingHorizontal: 10,
-  },
-  modalButton: {
-    backgroundColor: '#2196F3',
-    borderRadius: 10,
-    padding: 10,
-    elevation: 2,
-  },
-  modalButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-
-  baseName: {
-    color: '#787CA5',
-    position: 'absolute',
-    top: -9,
-    left: 25,
-    backgroundColor: '#05071E',
-    paddingRight: 5,
-    paddingLeft: 5,
-    fontSize: 13,
-    fontWeight: 400,
-    fontFamily: 'lato',
-  },
-  inputSome: {
+  searchInput: {
     flex: 1,
-    padding: 9,
-    color: '#fff',
-    fontSize: 13,
-    fontFamily: 'lato-Bold',
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontFamily: 'LatoRegular',
+    height: '100%',
+  },
+  clearButton: {
+    padding: 6,
+  },
+  scrollView: {
+    flex: 1,
+    width: '100%',
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    alignItems: 'center',
+    paddingBottom: 100,
+  },
+  sectionTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontFamily: 'LatoBold',
+    alignSelf: 'flex-start',
+    marginLeft: 20,
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 100,
+  },
+  loadingText: {
+    color: '#FFFFFF',
+    marginTop: 16,
+    fontSize: 16,
+    fontFamily: 'LatoRegular',
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+    paddingHorizontal: 40,
+  },
+  emptyStateIcon: {
+    marginBottom: 16,
+    opacity: 0.6,
+  },
+  emptyStateTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontFamily: 'LatoBold',
+    marginBottom: 8,
+  },
+  emptyStateDescription: {
+    color: '#787CA5',
+    fontSize: 16,
+    fontFamily: 'LatoRegular',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  clearSearchButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: 'rgba(129, 91, 245, 0.2)',
+    borderRadius: 12,
+  },
+  clearSearchText: {
+    color: '#815BF5',
+    fontSize: 14,
+    fontFamily: 'LatoBold',
+  },
+  fabContainer: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  fabLabelContainer: {
+    marginRight: 12,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  fabLabel: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  fabLabelText: {
+    color: '#000000',
+    fontSize: 14,
+    fontFamily: 'LatoBold',
+    letterSpacing: 0.3,
+  },
+  fab: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  fabGradient: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modal: {
+    margin: 0,
+    justifyContent: 'flex-end',
+  },
+  modalKeyboardAvoid: {
+    width: '100%',
+  },
+  modalContent: {
+    backgroundColor: '#0A0D28',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: 'hidden',
+    maxHeight: height * 0.85,
+  },
+  modalGradient: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  modalHeaderContent: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  modalDragHandle: {
+    width: 40,
+    height: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 3,
+    marginBottom: 16,
+  },
+  modalTitle: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontFamily: 'LatoBold',
+    marginBottom: 4,
+  },
+  modalSubtitle: {
+    color: '#787CA5',
+    fontSize: 14,
+    fontFamily: 'LatoRegular',
+  },
+  modalCloseButton: {
+    position: 'absolute',
+    top: 16,
+    right: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    overflow: 'hidden',
+  },
+  modalCloseButtonBlur: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  modalScrollView: {
+    maxHeight: height * 0.6,
+  },
+  modalScrollViewContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  formSection: {
+    marginTop: 20,
+  },
+  formSectionTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontFamily: 'LatoBold',
+    marginBottom: 16,
+  },
+  formGroup: {
+    marginBottom: 20,
+  },
+  formLabel: {
+    color: '#787CA5',
+    fontSize: 14,
+    fontFamily: 'LatoBold',
+    marginBottom: 8,
+  },
+  textAreaContainer: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 12,
+    minHeight: 120,
+  },
+  textArea: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontFamily: 'LatoRegular',
+    minHeight: 100,
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  cancelButton: {
+    flex: 1,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    marginRight: 10,
+  },
+  cancelButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'LatoBold',
+  },
+  submitButton: {
+    flex: 2,
+    height: 50,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  submitButtonGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  submitButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'LatoBold',
   },
 });

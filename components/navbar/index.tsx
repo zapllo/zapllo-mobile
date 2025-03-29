@@ -1,20 +1,33 @@
-import React, { useState } from "react";
-import { View, Text, Image } from "react-native";
+
+import React, { useState, useEffect } from "react";
+import { View, Text, Image, Platform, StatusBar, SafeAreaView, TouchableOpacity } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ProfileButton from "../profile/ProfileButton";
 import { useSelector } from "react-redux";
 import { RootState } from "~/redux/store";
 import axios from "axios";
 import { backend_Host } from "~/config";
 import { useFocusEffect } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface NavbarProps {
-  
   title: string;
+  showBackButton?: boolean;
+  onBackPress?: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({  title }) => {
-  const { token} = useSelector((state: RootState) => state.auth);
+const Navbar: React.FC<NavbarProps> = ({ title, showBackButton = false, onBackPress }) => {
+  const { token } = useSelector((state: RootState) => state.auth);
   const [profilePic, setProfilePic] = useState('');
+  const insets = useSafeAreaInsets();
+  
+  // Platform-specific styling
+  const platformStyles = {
+    navbarHeight: Platform.OS === 'ios' ? 44 : 56,
+    shadowProps: Platform.OS === 'ios' 
+      ? { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3 }
+      : { elevation: 4 }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -26,7 +39,6 @@ const Navbar: React.FC<NavbarProps> = ({  title }) => {
     try {
       const response = await axios.get(
         `${backend_Host}/users/me`,
-
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -34,19 +46,61 @@ const Navbar: React.FC<NavbarProps> = ({  title }) => {
           },
         }
       );
-      console.log("pljoihbihbuoi",response.data.data.profilePic)
       setProfilePic(response.data.data.profilePic);
     } catch (err: any) {
-      console.error('API Error:', err.response || err.message);
+      console.error('Profile fetch error:', err.response || err.message);
     }
   };
 
   return (
-    <View className="w-full h-20 flex flex-row justify-between p-5 items-center">
-      <Image className="w-11 h-7 " source={require("~/assets/home/logo.png")}/>
-      <Text className="text-2xl font-semibold pl-4 h-full text-[#FFFFFF]" style={{fontFamily:"LatoBold"}}>{title}</Text>
-      <ProfileButton profile={profilePic} image={''} />
-    </View>
+    <SafeAreaView >
+      <StatusBar 
+        barStyle="dark-content" 
+        backgroundColor="#05071E" 
+        
+      />
+      <View 
+        className="w-full flex flex-row justify-between items-center px-4"
+        style={{
+          height: platformStyles.navbarHeight,
+          paddingTop: Platform.OS === 'android' ? insets.top +5 : 0,
+          ...platformStyles.shadowProps
+        }}
+      >
+        <View className="flex-row items-center">
+          {showBackButton && (
+            <TouchableOpacity 
+              onPress={onBackPress} 
+              className="mr-2 p-2"
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="chevron-back" size={24} color="#333" />
+            </TouchableOpacity>
+          )}
+          <Image 
+            className="w-11 h-7" 
+            source={require("~/assets/home/logo.png")}
+            resizeMode="contain"
+          />
+        </View>
+        
+        <Text 
+          className="text-2xl font-semibold text-white"
+          style={{ 
+            fontFamily: "LatoBold",
+            textAlign: 'center',
+            maxWidth: '60%',
+            // Ensure text doesn't overflow
+            numberOfLines: 1,
+            ellipsizeMode: 'tail'
+          }}
+        >
+          {title}
+        </Text>
+        
+        <ProfileButton profile={profilePic} image={''} />
+      </View>
+    </SafeAreaView>
   );
 };
 

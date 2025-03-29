@@ -4,17 +4,17 @@ import * as Haptics from 'expo-haptics';
 
 interface SettingEditableComponentProps {
   title: string;
-  onAddPress?: () => void;
-  onDeletePress?: () => void;
+  onSave?: (value: string) => void;
+  fieldName: string;
 }
 
 const SettingEditableComponent: React.FC<SettingEditableComponentProps> = ({
-  title
- 
+  title,
+  onSave,
+  fieldName
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editableTitle, setEditableTitle] = useState(title);
-  const [isVisible, setIsVisible] = useState(true);
 
   const handleEditPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -24,33 +24,41 @@ const SettingEditableComponent: React.FC<SettingEditableComponentProps> = ({
   const handleSavePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsEditing(false);
-    // Optionally, you can call a function to save the updated title
+    if (onSave && editableTitle !== title) {
+      onSave(editableTitle);
+    }
   };
 
-
-
-  if (!isVisible) {
-    return null;
-  }
-
   return (
-    <View
-      className="flex w-full flex-row justify-between"
-    >
+    <View className="flex w-full flex-row justify-between items-center">
       {isEditing ? (
-        <TextInput
-          className="text-white w-[90%]"
-          style={{ fontFamily: "LatoBold", color: 'white' }}
-          value={editableTitle}
-          onChangeText={setEditableTitle}
-          autoFocus
-        />
+        <>
+          <TextInput
+            className="text-white w-[80%]"
+            style={{ fontFamily: "LatoBold", color: 'white' }}
+            value={editableTitle}
+            onChangeText={setEditableTitle}
+            autoFocus
+            placeholder={`Enter ${fieldName}`}
+            placeholderTextColor="#787CA5"
+          />
+          <TouchableOpacity onPress={handleSavePress}>
+            <Text className="text-[#4A72FF]">Save</Text>
+          </TouchableOpacity>
+        </>
       ) : (
-        <Text className="text-white text- w-[100%]" style={{ fontFamily: "LatoBold" }}>
-          {editableTitle}
-        </Text>
+        <>
+          <Text className="text-white w-[80%]" style={{ fontFamily: "LatoBold" }}>
+            {editableTitle}
+          </Text>
+          <TouchableOpacity onPress={handleEditPress}>
+            <Image 
+              source={require("../../assets/Tasks/addto.png")} 
+              className="w-4 h-4"
+            />
+          </TouchableOpacity>
+        </>
       )}
-   
     </View>
   );
 };

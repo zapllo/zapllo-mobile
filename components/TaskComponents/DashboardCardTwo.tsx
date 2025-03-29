@@ -50,7 +50,7 @@ const DashboardCardTwo: React.FC<TaskCardProps> = ({ title, count, tasks, border
           style={{  fontFamily: 'LatoBold' }}>
           {count}
         </Text>
-        <Text className="w-[40vw] pt-2 text-xs  text-white " style={{ fontFamily: 'LatoBold' }}>
+        <Text className="w-[40vw] pt-2 text-[10px]  text-white " style={{ fontFamily: 'LatoBold' }}>
           {date}
         </Text>
       </View>

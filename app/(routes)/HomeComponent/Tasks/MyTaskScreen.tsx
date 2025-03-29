@@ -386,8 +386,8 @@ export default function MyTaskScreen() {
                       tasks={tasks}
                       date={formattedDateRange}
                       status="Pending"
-                      borderColor="#FDB314"
-                      colors={['#CCC', '#FFF']}
+                      backgroundColor="#FDB314" // Changed from colors to backgroundColor
+                      borderColor="#FDB31430" // Added transparency to border color
                       onPress={() => {
                         const pendingTasks = tasks.filter((task) => task.status === 'Pending');
                         navigation.navigate('PendingTask', { pendingTasks });

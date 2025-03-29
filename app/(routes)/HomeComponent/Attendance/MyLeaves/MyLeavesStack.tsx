@@ -1,11 +1,10 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
+import MyLeavesScreen from "~/screens/Attendance/MyLeaves/MyLeavesScreen";
 
 export default function MyLeavesStack() {
   return (
-    <View>
-      <Text>MyLeavesStack</Text>
-    </View>
+   <MyLeavesScreen/>
   );
 }
 

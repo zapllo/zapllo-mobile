@@ -28,6 +28,7 @@ import { getDateRange } from '~/utils/GetDateRange';
 import moment from 'moment';
 import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
 import NavbarTwo from '~/components/navbarTwo';
+import LottieView from 'lottie-react-native';
 
 type Props = StackScreenProps<MyTasksStackParamList, 'PendingTask'>;
 type PendingTaskScreenRouteProp = RouteProp<MyTasksStackParamList, 'PendingTask'>;
@@ -349,6 +350,12 @@ const MyTaskPendingScreen: React.FC<Props> = ({ navigation }) => {
                 ))
               ) : (
                 <View className="flex items-center justify-center pt-10">
+                  <LottieView
+                  source={require('../../../assets/Animation/no-data.json')}
+                  autoPlay
+                  loop
+                  style={{ width: 200, height: 200 }}
+                />
                   <Text className="font-[LatoBold] text-lg text-white">No tasks available!</Text>
                 </View>
               )}

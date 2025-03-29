@@ -1,104 +1,120 @@
+
 import React, { useState, useEffect } from "react";
-import { View, Text, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { View, Text, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from "react-native";
 import { useNavigation } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import NavbarTwo from "~/components/navbarTwo";
 import CheckboxTwo from "~/components/CheckBoxTwo";
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSelector } from "react-redux";
 import { RootState } from "~/redux/store";
 
 export default function ChecklistScreen() {
   const navigation = useNavigation();
   const [checklistItems, setChecklistItems] = useState([]);
-  const [checkedItems, setCheckedItems] = useState([]);
+  const [checkedItemIds, setCheckedItemIds] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { userData } = useSelector((state: RootState) => state.auth);
-  const userId = userData?.data?._id || "anonymous";
-  const STORAGE_KEY = `@zapllo_checklist_${userId}`;
+  const [updating, setUpdating] = useState(false);
+  const { userData, token } = useSelector((state: RootState) => state.auth);
+  const userId = userData?.data?._id || "";
 
-  // Load saved checklist state from AsyncStorage
-  const loadSavedChecklistState = async () => {
+  // Fetch user data including checklist progress
+  const fetchUserData = async () => {
     try {
-      const savedState = await AsyncStorage.getItem(STORAGE_KEY);
-      if (savedState) {
-        return JSON.parse(savedState);
+      const response = await axios.get("https://zapllo.com/api/users/me", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.data && response.data.data) {
+        // Get the user's checked items from the response
+        const userCheckedItems = response.data.data.checklistProgress || [];
+        setCheckedItemIds(userCheckedItems);
       }
-      return null;
     } catch (error) {
-      console.error("Error loading saved checklist state:", error);
-      return null;
+      console.error("Error fetching user data:", error);
     }
   };
 
-  // Save checklist state to AsyncStorage
-  const saveChecklistState = async (items, checked) => {
+  // Fetch checklist items
+  const fetchChecklistItems = async () => {
     try {
-      const state = {
-        items,
-        checked,
-        timestamp: new Date().toISOString(),
-      };
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const response = await axios.get("https://zapllo.com/api/checklist/get");
+      if (response.data && response.data.checklistItems) {
+        setChecklistItems(response.data.checklistItems);
+      }
     } catch (error) {
-      console.error("Error saving checklist state:", error);
+      console.error("Error fetching checklist items:", error);
+    }
+  };
+
+  // Update user's checklist progress on the server
+  const updateChecklistProgress = async (itemId, isChecked) => {
+    setUpdating(true);
+    try {
+      const endpoint = isChecked 
+        ? "https://zapllo.com/api/users/checklist/add" 
+        : "https://zapllo.com/api/users/checklist/remove";
+      
+      await axios.post(endpoint, 
+        { checklistItemId: itemId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      // Update local state after successful server update
+      if (isChecked) {
+        setCheckedItemIds(prev => [...prev, itemId]);
+      } else {
+        setCheckedItemIds(prev => prev.filter(id => id !== itemId));
+      }
+    } catch (error) {
+      console.error(`Error ${isChecked ? 'adding' : 'removing'} checklist item:`, error);
+      // Revert the UI change if the server update fails
+      await fetchUserData();
+    } finally {
+      setUpdating(false);
     }
   };
 
   useEffect(() => {
-    const fetchChecklistItems = async () => {
+    const loadData = async () => {
       setLoading(true);
       try {
-        // First try to load saved state
-        const savedState = await loadSavedChecklistState();
-        
-        // Fetch fresh data from API
-        const response = await axios.get("https://zapllo.com/api/checklist/get");
-        const apiItems = response.data.checklistItems;
-        
-        setChecklistItems(apiItems);
-        
-        // If we have saved state and the number of items matches
-        if (savedState && savedState.items.length === apiItems.length) {
-          setCheckedItems(savedState.checked);
-        } else {
-          // Initialize all items as unchecked
-          setCheckedItems(Array(apiItems.length).fill(false));
-        }
+        // Fetch both user data and checklist items in parallel
+        await Promise.all([fetchUserData(), fetchChecklistItems()]);
       } catch (error) {
-        console.error("Error fetching checklist items:", error);
-        // If API fails, try to use saved state as fallback
-        const savedState = await loadSavedChecklistState();
-        if (savedState) {
-          setChecklistItems(savedState.items);
-          setCheckedItems(savedState.checked);
-        }
+        console.error("Error loading data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchChecklistItems();
+    loadData();
   }, []);
 
-  // Save state whenever checked items change
-  useEffect(() => {
-    if (checklistItems.length > 0 && checkedItems.length > 0) {
-      saveChecklistState(checklistItems, checkedItems);
-    }
-  }, [checkedItems, checklistItems]);
+  const handleCheckboxToggle = (item) => {
+    if (updating) return; // Prevent multiple clicks while updating
+    
+    const itemId = item._id;
+    const isCurrentlyChecked = checkedItemIds.includes(itemId);
+    
+    // Toggle the checked state
+    updateChecklistProgress(itemId, !isCurrentlyChecked);
+  };
 
-  const handleCheckboxToggle = (index: number) => {
-    const updatedCheckedItems = [...checkedItems];
-    updatedCheckedItems[index] = !updatedCheckedItems[index];
-    setCheckedItems(updatedCheckedItems);
+  const isItemChecked = (itemId) => {
+    return checkedItemIds.includes(itemId);
   };
 
   const calculateProgress = () => {
     if (checklistItems.length === 0) return 0;
-    const checkedCount = checkedItems.filter(Boolean).length;
-    return (checkedCount / checklistItems.length) * 100;
+    return (checkedItemIds.length / checklistItems.length) * 100;
   };
 
   return (
@@ -109,7 +125,7 @@ export default function ChecklistScreen() {
           showsVerticalScrollIndicator={false} 
           showsHorizontalScrollIndicator={false}
         >
-          <NavbarTwo title="Checklist" onBackPress={() => navigation.goBack()} />
+          <NavbarTwo title="Checklist" />
           <View className="items-center flex flex-col mt-5">
             <View className="w-[90%] my-3 flex h-36 flex-col items-start rounded-3xl border border-[#37384B] bg-opacity-50 px-6 pt-4">
               <Text className="text-2xl pb-4 font-bold text-white" style={{ fontFamily: "LatoBold" }}>
@@ -136,19 +152,27 @@ export default function ChecklistScreen() {
 
             <View className="flex flex-col bg-[#0A0D28] rounded-xl p-6 shadow-md gap-7 items-center w-[90%] pr-12 mt-8">
               {loading ? (
-                <Text className="text-white text-center py-4">Loading checklist items...</Text>
+                <ActivityIndicator size="large" color="#815BF5" />
               ) : (
-                checklistItems.map((item, index) => (
+                checklistItems.map((item) => (
                   <View key={item._id} className="flex w-full flex-row gap-3 items-center">
                     <CheckboxTwo
-                      isChecked={checkedItems[index]}
-                      onPress={() => handleCheckboxToggle(index)}
+                      isChecked={isItemChecked(item._id)}
+                      onPress={() => handleCheckboxToggle(item)}
                     />
-                    <Text className="text-white text-sm pr-1" style={{ fontFamily: "LatoBold" }}>
+                    <Text 
+                      className={`text-white text-sm pr-1 ${isItemChecked(item._id) ? 'opacity-70' : ''}`} 
+                      style={{ fontFamily: "LatoBold" }}
+                    >
                       {item.text}
                     </Text>
                   </View>
                 ))
+              )}
+              {updating && (
+                <View className="absolute top-0 left-0 right-0 bottom-0 justify-center items-center bg-black bg-opacity-20 rounded-xl">
+                  <ActivityIndicator size="small" color="#815BF5" />
+                </View>
               )}
             </View>
           </View>

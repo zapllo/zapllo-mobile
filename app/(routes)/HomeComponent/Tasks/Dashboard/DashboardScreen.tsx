@@ -467,44 +467,43 @@ export default function DashboardScreen() {
 
             {/* Content */}
             <View className="p-4.2 mb-40 flex h-full w-full flex-col items-center gap-2.5 pt-1">
-              <View className="mb-4 flex w-[90%] flex-col items-center gap-5">
-                {/* 1st row */}
-                <View className="flex flex-row items-center gap-5">
+              <View className="mb-6 w-full px-4">
+                <View className="flex-row flex-wrap justify-between gap-y-4">
                   <TaskStatusCard
                     imageSource={require('../../../../../assets/commonAssets/overdue.png')}
                     status="Overdue"
                     count={taskCounts?.Overdue}
+                    color="#FF595E"
                   />
                   <TaskStatusCard
                     imageSource={require('../../../../../assets/Tasks/overdue.png')}
                     status="Pending"
                     count={taskCounts?.Pending}
+                    color="#FDB314"
                   />
-                </View>
-                {/* 2nd row */}
-                <View className="flex flex-row items-center gap-5">
                   <TaskStatusCard
                     imageSource={require('../../../../../assets/commonAssets/Progress.png')}
                     status="In Progress"
                     count={taskCounts?.['In Progress'] || taskCounts?.InProgress}
+                    color="#A914DD"
                   />
                   <TaskStatusCard
                     imageSource={require('../../../../../assets/commonAssets/Completed.png')}
                     status="Completed"
                     count={taskCounts?.Completed}
+                    color="#00A36C"
                   />
-                </View>
-                {/* 3rd row */}
-                <View className="flex flex-row items-center gap-5">
                   <TaskStatusCard
                     imageSource={require('../../../../../assets/commonAssets/inTime.png')}
                     status="In Time"
                     count={taskCounts['In Time']}
+                    color="#4CAF50"
                   />
                   <TaskStatusCard
                     imageSource={require('../../../../../assets/commonAssets/Delayed.png')}
                     status="Delayed"
                     count={taskCounts?.Delayed}
+                    color="#E44444"
                   />
                 </View>
               </View>

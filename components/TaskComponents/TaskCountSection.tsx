@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, Animated, Easing, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 
 interface TaskStatusCardProps {
   imageSource: any;
@@ -16,7 +15,7 @@ const TaskStatusCard: React.FC<TaskStatusCardProps> = ({
   imageSource, 
   status, 
   count = 0, 
-  color = '#37384B',
+  color = '#4b4d64',
   gradientColors = ['rgba(255,255,255,0.01)', 'rgba(255,255,255,0.02)'],
   animationDelay = 0
 }) => {
@@ -77,11 +76,8 @@ const TaskStatusCard: React.FC<TaskStatusCardProps> = ({
 
   // Generate colors for various elements
   const iconBgColor = `${color}15`;
-  const borderColor = `${color}30`;
-  const shadowColor = color;
-  
-  // Determine if we should use blur effect (iOS only)
-  const useBlur = Platform.OS === 'ios';
+  const borderColor = `#191d4d`;
+  const shadowColor = "#342f5c";
 
   return (
     <Animated.View 
@@ -93,41 +89,34 @@ const TaskStatusCard: React.FC<TaskStatusCardProps> = ({
         }
       ]}
     >
-      {useBlur ? (
-        <BlurView intensity={15} tint="dark" className="rounded-2xl overflow-hidden">
-          <CardContent 
-            status={status}
-            count={count}
-            imageSource={imageSource}
-            color={color}
-            iconBgColor={iconBgColor}
-            borderColor={borderColor}
-            shadowColor={shadowColor}
-            animatedCount={animatedCount}
-            barWidth={barWidth}
-            gradientColors={gradientColors}
-          />
-        </BlurView>
-      ) : (
- 
-          <CardContent 
-            status={status}
-            count={count}
-            imageSource={imageSource}
-            color={color}
-            iconBgColor={iconBgColor}
-            borderColor={borderColor}
-            shadowColor={shadowColor}
-            animatedCount={animatedCount}
-            barWidth={barWidth}
-          />
-   
-      )}
+      <View 
+        className="rounded-2xl overflow-hidden"
+        style={[
+          styles.cardContainer,
+          { 
+            backgroundColor: '#0A0D28', // Simple background color that matches the theme
+            borderColor: borderColor,
+            shadowColor: shadowColor
+          }
+        ]}
+      >
+        <CardContent 
+          status={status}
+          count={count}
+          imageSource={imageSource}
+          color={color}
+          iconBgColor={iconBgColor}
+          borderColor={borderColor}
+          shadowColor={shadowColor}
+          animatedCount={animatedCount}
+          barWidth={barWidth}
+        />
+      </View>
     </Animated.View>
   );
 };
 
-// Extracted card content to avoid duplication between BlurView and LinearGradient versions
+// Extracted card content to avoid duplication
 const CardContent = ({ 
   status, 
   count, 
@@ -138,7 +127,6 @@ const CardContent = ({
   shadowColor,
   animatedCount,
   barWidth,
-  gradientColors
 }) => (
   <View className="p-4">
     {/* Status and count section */}
@@ -156,7 +144,6 @@ const CardContent = ({
       >
         <Image 
           source={imageSource} 
-    
           className="h-5 w-5"
         />
       </View>
@@ -203,7 +190,6 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderWidth: 1,
     borderBottomWidth: 2,
-    backgroundColor: 'rgba(135, 135, 174, 0.7)',
   },
   statusLabel: {
     fontFamily: "SF-Pro-Display-Medium",

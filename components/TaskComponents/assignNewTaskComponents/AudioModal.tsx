@@ -156,32 +156,42 @@ const AudioModal: React.FC<AudioModalProps> = ({
         </View>
 
         {!isRecordingStopped ? (
-          <View className="flex w-full items-center">
-            {!recording ? (
-              <TouchableOpacity
-                onPress={startRecording}
-                className="flex h-32 w-full flex-row items-center justify-center gap-4 rounded-2xl border border-dashed border-[#815BF5]">
-                <Image className="h-9 w-9" source={require('../../../assets/Tasks/voice.png')} />
-                <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>
-                  Tap to Record Your Voice Note
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <View className="flex h-32 w-full  flex-row items-center justify-center gap-3">
-                <AudioVisualizer recording={recording} />
-                <TouchableOpacity
-                  onPress={stopRecording}
-                  className="flex flex-row h-20 w-20 items-center justify-center gap-2 rounded-3xl bg-white p-2">
-                  <View className="h-4 w-4 bg-red-600"></View>
-                  <Text className="text-gray-500" style={{ fontFamily: 'LatoBold' }}>
-                    Stop
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
+  <View className="w-full">
+  {!recording ? (
+    <TouchableOpacity
+      onPress={startRecording}
+      className="flex h-36 w-full flex-row items-center justify-center rounded-2xl bg-[#1A1D3A] shadow-lg">
+      <View className="flex items-center justify-center">
+        <View className="mb-3 h-16 w-16 items-center justify-center rounded-full bg-[#2A2D4A]">
+          <Image 
+            className="h-8 w-8" 
+            source={require('../../../assets/Tasks/voice.png')} 
+            style={{ tintColor: '#815BF5' }}
+          />
+        </View>
+        <Text className="text-base text-white" style={{ fontFamily: 'LatoBold' }}>
+          Tap to Record Voice Note
+        </Text>
+      </View>
+    </TouchableOpacity>
+  ) : (
+    <View className=" mb-3 h-36">
+
+      <View className="flex-1 flex-row items-center justify-center gap-6">
+        <View className="flex-1">
+          <AudioVisualizer recording={recording} />
+        </View>
+        <TouchableOpacity
+          onPress={stopRecording}
+          className="h-14 w-14 items-center justify-center rounded-full bg-[#EF4444] shadow-md">
+          <View className="h-5 w-5 rounded-sm bg-white" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  )}
+</View>
         ) : (
-          <View className="flex h-32  w-full justify-center  rounded-2xl  border border-dashed border-[#815BF5] p-4">
+          <View className="flex h-36  w-full justify-center  rounded-2xl border  p-4  mb-3  bg-[#1A1D3A] ">
             <View className="flex flex-row justify-between">
               <View className="flex flex-col">
                 <Text className="text-sm text-white ">Voice Note</Text>

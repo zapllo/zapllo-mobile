@@ -58,7 +58,7 @@ const NavbarTwo: React.FC<NavbarProps> = ({ title, showProfile = false }) => {
       />
       <SafeAreaView 
         style={{
-          backgroundColor: '#05071E',
+        
           paddingTop: topPadding,
           ...(Platform.OS === 'ios' 
             ? { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 }

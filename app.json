@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Zapllo",
-    "slug": "zaplloMobile",
+    "slug": "zapplo-mobile",
     "version": "1.0.0",
     "newArchEnabled": true,
     "scheme": "zapllo",
@@ -42,7 +42,6 @@
           "apiKey": "YOUR_API_KEY"
         }
       },
-
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA"
@@ -54,8 +53,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "f395a5e5-ccda-415b-901b-0494c3251220"
+        "projectId": "5fccbdd2-50f5-4e43-9c99-03b8aa35e5e8"
       }
-    }
+    },
+    "owner": "zapllomobile"
   }
 }

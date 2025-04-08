@@ -371,6 +371,25 @@ const ProfileScreen: React.FC = () => {
               </Text>
 
               <View className="bg-[#0A0D28] rounded-xl shadow-md shadow-[#000]/20 overflow-hidden mb-4">
+
+              {
+                userData?.user?.role || userData?.data?.role === 'orgAdmin' && 
+                <TouchableOpacity
+                onPress={() => router.push('/(routes)/profile/general' as any)}
+                className="flex-row items-center px-4 py-3.5 border-b border-[#1E2142]">
+                <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
+                  <AntDesign name="setting" color="#815BF5" size={18} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+                    General
+                  </Text>
+                </View>
+                <AntDesign name="right" color="#787CA5" size={16} />
+              </TouchableOpacity>
+              }
+
+
                 {/* Tutorials */}
                 <TouchableOpacity
                   onPress={() => router.push('/(routes)/profile/tutorials' as any)}

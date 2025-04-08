@@ -85,14 +85,11 @@ const Navbar: React.FC<NavbarProps> = ({ title, showBackButton = false, onBackPr
         </View>
         
         <Text 
-          className="text-2xl font-semibold text-white"
+          className="text-xl font-semibold text-white"
           style={{ 
             fontFamily: "LatoBold",
             textAlign: 'center',
-            maxWidth: '60%',
-            // Ensure text doesn't overflow
-            numberOfLines: 1,
-            ellipsizeMode: 'tail'
+          
           }}
         >
           {title}

@@ -25,6 +25,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
+import { checkTrialStatus, formatDate, isLoginAfterSevenDays } from '~/services/TrailExpair';
+import TrialExpirationModal from '~/components/TrialExpirationModal';
 
 // Types
 type HomeScreenComponents = {
@@ -118,14 +120,18 @@ const WelcomeSection = ({
   companyLogo,
   isAdmin,
   hasTaskAccess,
-  hasLeaveAccess
+  hasLeaveAccess,
+  isTrialExpired,
+  showTrialModal
 }: { 
   userName: string, 
   companyName: string, 
   companyLogo: string | null,
   isAdmin: boolean,
   hasTaskAccess: boolean,
-  hasLeaveAccess: boolean
+  hasLeaveAccess: boolean,
+  isTrialExpired: boolean,
+  showTrialModal: () => void
 }) => {
   const fadeAnim = useMemo(() => new Animated.Value(0), []);
   const slideAnim = useMemo(() => new Animated.Value(20), []);
@@ -135,82 +141,82 @@ const WelcomeSection = ({
   const userId = userData?.data?._id || "anonymous";
   
   // Function to check login and break status
-const checkLoginStatus = async () => {
-  try {
-    if (!token) {
-      setIsLoggedIn(false);
-      setIsOnBreak(false);
-      return;
-    }
-
-    // Check login status from the server using the token
-    const loginResponse = await axios.get(`${backend_Host}/loginEntries`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (loginResponse.data.success && loginResponse.data.entries) {
-      // Sort entries by timestamp in descending order (newest first)
-      const sortedEntries = loginResponse.data.entries.sort(
-        (a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-
-      // Get today's entries
-      const today = new Date();
-      const todayEntries = sortedEntries.filter((entry: any) => {
-        const entryDate = new Date(entry.timestamp);
-        return entryDate.getDate() === today.getDate() &&
-          entryDate.getMonth() === today.getMonth() &&
-          entryDate.getFullYear() === today.getFullYear();
-      });
-
-      if (todayEntries.length === 0) {
-        // No entries for today
+  const checkLoginStatus = async () => {
+    try {
+      if (!token) {
         setIsLoggedIn(false);
         setIsOnBreak(false);
-      } else {
-        // Get the most recent entry for today
-        const latestEntry = todayEntries[0];
-        
-        // Update status based on latest entry
-        if (latestEntry.action === 'login') {
-          setIsLoggedIn(true);
-          setIsOnBreak(false);
-        } else if (latestEntry.action === 'logout') {
+        return;
+      }
+
+      // Check login status from the server using the token
+      const loginResponse = await axios.get(`${backend_Host}/loginEntries`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (loginResponse.data.success && loginResponse.data.entries) {
+        // Sort entries by timestamp in descending order (newest first)
+        const sortedEntries = loginResponse.data.entries.sort(
+          (a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+
+        // Get today's entries
+        const today = new Date();
+        const todayEntries = sortedEntries.filter((entry: any) => {
+          const entryDate = new Date(entry.timestamp);
+          return entryDate.getDate() === today.getDate() &&
+            entryDate.getMonth() === today.getMonth() &&
+            entryDate.getFullYear() === today.getFullYear();
+        });
+
+        if (todayEntries.length === 0) {
+          // No entries for today
           setIsLoggedIn(false);
           setIsOnBreak(false);
-        } else if (latestEntry.action === 'break_started') {
-          setIsLoggedIn(true);
-          setIsOnBreak(true);
-        } else if (latestEntry.action === 'break_ended') {
-          setIsLoggedIn(true);
-          setIsOnBreak(false);
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error checking login status:', error);
-    
-    // If server request fails, try to fetch user status directly
-    try {
-      if (token) {
-        const userStatusResponse = await axios.get(`${backend_Host}/users/status/${userId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
+        } else {
+          // Get the most recent entry for today
+          const latestEntry = todayEntries[0];
+          
+          // Update status based on latest entry
+          if (latestEntry.action === 'login') {
+            setIsLoggedIn(true);
+            setIsOnBreak(false);
+          } else if (latestEntry.action === 'logout') {
+            setIsLoggedIn(false);
+            setIsOnBreak(false);
+          } else if (latestEntry.action === 'break_started') {
+            setIsLoggedIn(true);
+            setIsOnBreak(true);
+          } else if (latestEntry.action === 'break_ended') {
+            setIsLoggedIn(true);
+            setIsOnBreak(false);
           }
-        });
-        
-        if (userStatusResponse.data && userStatusResponse.data.success) {
-          setIsLoggedIn(userStatusResponse.data.isLoggedIn);
-          setIsOnBreak(userStatusResponse.data.isOnBreak);
         }
       }
-    } catch (statusError) {
-      console.error('Error fetching user status:', statusError);
+    } catch (error) {
+      console.error('Error checking login status:', error);
+      
+      // If server request fails, try to fetch user status directly
+      try {
+        if (token) {
+          const userStatusResponse = await axios.get(`${backend_Host}/users/status/${userId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (userStatusResponse.data && userStatusResponse.data.success) {
+            setIsLoggedIn(userStatusResponse.data.isLoggedIn);
+            setIsOnBreak(userStatusResponse.data.isOnBreak);
+          }
+        }
+      } catch (statusError) {
+        console.error('Error fetching user status:', statusError);
+      }
     }
-  }
-};
+  };
   
   // Get current time to display appropriate greeting
   const getGreeting = () => {
@@ -280,6 +286,46 @@ const checkLoginStatus = async () => {
     } else {
       return "Log in";
     }
+  };
+  
+  // Handle attendance-related actions with trial check
+  const handleAttendanceAction = () => {
+    // If trial is expired, show the trial modal instead of performing the action
+    if (isTrialExpired) {
+      showTrialModal();
+      return;
+    }
+    
+    // Otherwise, navigate to the attendance screen
+    router.push("/(routes)/HomeComponent/Attendance");
+  };
+  
+  // Handle admin attendance navigation with trial check
+  const handleAdminAttendanceNav = () => {
+    // If trial is expired, show the trial modal instead of navigating
+    if (isTrialExpired) {
+      showTrialModal();
+      return;
+    }
+    
+    // Otherwise, navigate to the appropriate screen
+    if (isAdmin) {
+      router.push("(routes)/HomeComponent/Attendance/AllAttendence");
+    } else {
+      router.push("/(routes)/HomeComponent/Tasks");
+    }
+  };
+  
+  // Handle task assignment with trial check
+  const handleTaskAssignment = () => {
+    // If trial is expired, show the trial modal instead of navigating
+    if (isTrialExpired) {
+      showTrialModal();
+      return;
+    }
+    
+    // Otherwise, navigate to the task assignment screen
+    router.push("/HomeComponent/Tasks/AssignTask/AssignTaskScreen");
   };
   
   useEffect(() => {
@@ -354,9 +400,7 @@ const checkLoginStatus = async () => {
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <TouchableOpacity
-                onPress={() => router.push(isAdmin ? 
-                  "(routes)/HomeComponent/Attendance/AllAttendence" : 
-                  "/(routes)/HomeComponent/Tasks")}
+                onPress={handleAdminAttendanceNav}
                 style={styles.iconWrapper}>
                 {
                   isAdmin ?                 <Image 
@@ -375,7 +419,7 @@ const checkLoginStatus = async () => {
             <View style={styles.statItem}>
               {isAdmin && hasTaskAccess ? (
                 <TouchableOpacity 
-                  onPress={() => router.push("/HomeComponent/Tasks/AssignTask/AssignTaskScreen")} 
+                  onPress={handleTaskAssignment} 
                   style={[ {
                     width: 60,
                     height: 60,
@@ -403,7 +447,7 @@ const checkLoginStatus = async () => {
 
              
                 <TouchableOpacity 
-                  onPress={() => router.push("/(routes)/HomeComponent/Attendance")} 
+                  onPress={handleAttendanceAction} 
                   style={[{
                     width: 60,
                     height: 60,
@@ -436,7 +480,7 @@ const checkLoginStatus = async () => {
                 style={styles.iconWrapper}>
                 <Image 
                   source={isAdmin ? 
-                    require("../../assets/Billing/Billing.png") : 
+                    require("../../assets/Billing/walet.png") : 
                     require("../../assets/HomeComponents/ZTutorials.png")} 
                   style={isAdmin ? {
                     width: 47,
@@ -455,6 +499,7 @@ const checkLoginStatus = async () => {
   );
 };
 
+
 // Progress Card Component
 const ProgressCard = ({ 
   progressPercentage, 
@@ -469,17 +514,16 @@ const ProgressCard = ({
   const scaleAnim = useMemo(() => new Animated.Value(0.98), []);
   
   useEffect(() => {
-    Animated.timing(animatedWidth, {
-      toValue: progressPercentage,
-      duration: 1200,
-      useNativeDriver: false,
-    }).start();
-  }, [progressPercentage, animatedWidth]);
-
-  const interpolatedWidth = animatedWidth.interpolate({
-    inputRange: [0, 100],
-    outputRange: ['0%', '100%'],
-  });
+    // Reset animation when loading changes to ensure proper animation
+    if (!loading) {
+      animatedWidth.setValue(0);
+      Animated.timing(animatedWidth, {
+        toValue: progressPercentage,
+        duration: 1200,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [progressPercentage, animatedWidth, loading]);
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -529,7 +573,18 @@ const ProgressCard = ({
                 style={styles.progressLoader}
               />
             ) : (
-              <Animated.View style={[styles.progressBarFill, { width: interpolatedWidth }]}>
+              <Animated.View 
+                style={[
+                  styles.progressBarFill, 
+                  { 
+                    width: animatedWidth.interpolate({
+                      inputRange: [0, 100],
+                      outputRange: ['0%', '100%'],
+                      extrapolate: 'clamp'
+                    }) 
+                  }
+                ]}
+              >
                 <LinearGradient
                   colors={['#815BF5', '#FC8929']}
                   start={{ x: 0, y: 0 }}
@@ -547,6 +602,7 @@ const ProgressCard = ({
     </TouchableOpacity>
   );
 };
+
 
 // App Card Component
 const AppCard = ({ 
@@ -727,6 +783,11 @@ const HomeScreen: React.FC = () => {
   const [hasTaskAccess, setHasTaskAccess] = useState<boolean>(false);
   const [hasLeaveAccess, setHasLeaveAccess] = useState<boolean>(false);
   
+  // Trial expiration state
+  const [isTrialExpired, setIsTrialExpired] = useState<boolean>(false);
+  const [trialExpiresDate, setTrialExpiresDate] = useState<string | null>(null);
+  const [showTrialModal, setShowTrialModal] = useState<boolean>(false);
+  
   // Use userId for checklist storage key
   const STORAGE_KEY = `@zapllo_checklist_${userId}`;
   
@@ -738,6 +799,27 @@ const HomeScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scrollY] = useState(new Animated.Value(0));
+
+  // Check trial expiration status
+  const checkTrialExpiration = useCallback(async () => {
+    try {
+      // Always check trial status regardless of login time
+      const status = await checkTrialStatus(token);
+      
+      setIsTrialExpired(status.isExpired);
+      setTrialExpiresDate(status.trialExpiresDate);
+      
+      // Show the modal immediately if trial is expired, regardless of login time
+      if (status.isExpired) {
+        setShowTrialModal(true);
+      }
+      
+      return status.isExpired;
+    } catch (error) {
+      console.error('Error checking trial expiration:', error);
+      return false;
+    }
+  }, [token]);
 
   // Function to fetch organization users data to check admin status
   const fetchOrganizationUsers = useCallback(async () => {
@@ -907,7 +989,7 @@ const HomeScreen: React.FC = () => {
     }
   }, [fetchChecklistProgress]);
   
-  // Modify the useFocusEffect to handle errors better
+  // Modify the useFocusEffect to handle errors better and check trial expiration
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
@@ -917,7 +999,10 @@ const HomeScreen: React.FC = () => {
             setLoading(false);
           }, 3000);
           
-          // Try to fetch all data in parallel
+          // Check trial status first before loading other data
+          await checkTrialExpiration();
+          
+          // Then load the rest of the data
           await Promise.allSettled([
             fetchChecklistProgress(),
             fetchOrganizationUsers(),
@@ -944,7 +1029,7 @@ const HomeScreen: React.FC = () => {
       return () => {
         clearInterval(intervalId);
       };
-    }, [fetchChecklistProgress, fetchOrganizationUsers, fetchCompanyData])
+    }, [fetchChecklistProgress, fetchOrganizationUsers, fetchCompanyData, checkTrialExpiration])
   );
 
   const onRefresh = useCallback(() => {
@@ -952,42 +1037,32 @@ const HomeScreen: React.FC = () => {
     fetchChecklistProgress();
     fetchOrganizationUsers();
     fetchCompanyData();
-  }, [fetchChecklistProgress, fetchOrganizationUsers, fetchCompanyData]);
+    checkTrialExpiration();
+  }, [fetchChecklistProgress, fetchOrganizationUsers, fetchCompanyData, checkTrialExpiration]);
 
-  // Use useFocusEffect to call API functions when screen is focused
-  useFocusEffect(
-    useCallback(() => {
-      const fetchData = async () => {
-        try {
-          await Promise.all([
-            fetchChecklistProgress(),
-            fetchOrganizationUsers(),
-            fetchCompanyData()
-          ]);
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      };
-      
-      fetchData();
-      
-      // Set up an interval to periodically refresh checklist progress
-      const intervalId = setInterval(() => {
-        fetchChecklistProgress();
-      }, 30000); // Check every 30 seconds
-      
-      return () => clearInterval(intervalId);
-    }, [fetchChecklistProgress, fetchOrganizationUsers, fetchCompanyData])
-  );
-
+  // Handle app card press with trial expiration check
   const handleAppPress = useCallback((item: HomeScreenComponents) => {
+    // Always check if trying to access restricted routes when trial is expired
+    if (isTrialExpired && 
+        (item.screen.includes('/Tasks') || item.screen.includes('/Attendance'))) {
+      setShowTrialModal(true);
+      return;
+    }
+    
     if (item.screen) {
       router.push(item.screen);
     } else if (item.comingSoon) {
       // Could show a toast or modal here
       console.log(`${item.title} is coming soon!`);
     }
-  }, [router]);
+  }, [router, isTrialExpired]);
+
+  // Handle upgrade button press
+  const handleUpgradePress = () => {
+    setShowTrialModal(false);
+    // Navigate to subscription or upgrade screen
+    router.push("/(routes)/profile/billing");
+  };
 
   // Parallax effect for header
   const headerTranslateY = scrollY.interpolate({
@@ -1009,7 +1084,7 @@ const HomeScreen: React.FC = () => {
   if (error) {
     return <ErrorView message={error} onRetry={fetchChecklistData} />;
   }
-
+ 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.container}>
@@ -1049,6 +1124,8 @@ const HomeScreen: React.FC = () => {
               isAdmin={isAdmin}
               hasTaskAccess={hasTaskAccess}
               hasLeaveAccess={hasLeaveAccess}
+              isTrialExpired={isTrialExpired}
+              showTrialModal={() => setShowTrialModal(true)}
             />
           </Animated.View>
           
@@ -1072,6 +1149,15 @@ const HomeScreen: React.FC = () => {
             />
           ))}
         </Animated.ScrollView>
+        
+        {/* Trial Expiration Modal */}
+        <TrialExpirationModal
+          visible={showTrialModal}
+          onClose={() => setShowTrialModal(false)}
+          onUpgrade={handleUpgradePress}
+          trialExpiresDate={formatDate(trialExpiresDate)}
+          companyName={companyName}
+        />
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );

@@ -38,7 +38,7 @@ const CategoryWiseScreen: React.FC<Props> = ({ navigation }) => {
   const { employeeWiseData } = route.params;
 
   // State for dropdown selection and search filter
-  const [selectedFilter, setSelectedFilter] = useState(null);
+  const [selectedFilter, setSelectedFilter] = useState("This Week");
   const [search, setSearch] = useState('');
 
   console.log(employeeWiseData, 'Category Data');
@@ -49,8 +49,8 @@ const CategoryWiseScreen: React.FC<Props> = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView className="h-full flex-1 bg-primary">
-      <NavbarTwo title="Category Wise" onBackPress={() => navigation.navigate('DashboardHome')} />
+    <SafeAreaView className="h-full flex-1 bg-primary  pb-20">
+      <NavbarTwo title="Category Wise" />
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView

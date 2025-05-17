@@ -11,6 +11,7 @@ import SettingEditableComponent from "~/components/settings/SettingEditableCompo
 import SettingEditableForNumberComponent from "~/components/settings/SettingEditableForNumberComponent";
 import SettingEditableDropdownComponent from "~/components/settings/SettingEditableDropdownComponent";
 import { backend_Host } from "~/config";
+import CustomSplashScreen from "~/components/CustomSplashScreen";
 
 type RootStackParamList = {
   "(routes)/home/index": undefined;
@@ -41,6 +42,9 @@ export default function SettingScreen() {
   const [saving, setSaving] = useState(false);
   const [updatedFields, setUpdatedFields] = useState<{[key: string]: string | number}>({});
   const [hasChanges, setHasChanges] = useState(false);
+  
+  // State for success splash screen
+  const [isSplashVisible, setIsSplashVisible] = useState(false);
 
   // Function to collect field updates
   const updateField = (fieldName: string, value: string | number) => {
@@ -51,13 +55,18 @@ export default function SettingScreen() {
     setHasChanges(true);
   };
 
+  // Function to handle splash screen completion
+  const handleSplashComplete = () => {
+    setIsSplashVisible(false);
+  };
+
   // Function to update all company details
   const updateCompanyDetails = async () => {
     if (!hasChanges) return;
     
     setSaving(true);
     try {
-      const response = await axios.post(
+      const response = await axios.patch(
         `${backend_Host}/organization/update`,
         updatedFields,
         {
@@ -65,14 +74,20 @@ export default function SettingScreen() {
         }
       );
 
-      if (response.data && response.data.data) {
+      if (response.status === 200) {
+        // Update local state with the response data
         setCompany(response.data.data);
         setUpdatedFields({});
         setHasChanges(false);
+        
+        // Show success splash screen instead of alert
+        setIsSplashVisible(true);
+      } else {
+        alert("Failed to update organization");
       }
     } catch (error) {
       console.error("Error updating organization:", error);
-      alert("Failed to update organization details. Please try again.");
+      alert("An error occurred while updating the organization");
     } finally {
       setSaving(false);
     }
@@ -171,7 +186,7 @@ export default function SettingScreen() {
                     className="w-full bg-[#4A72FF] rounded-xl py-4 mt-6"
                   >
                     <Text className="text-white text-center font-bold text-base">
-                      Update Organization
+                      {saving ? "Updating..." : "Update Organization"}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -198,6 +213,17 @@ export default function SettingScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      
+      {/* Success Splash Screen */}
+      <CustomSplashScreen
+        visible={isSplashVisible}
+        lottieSource={require("../../assets/Animation/success.json")}
+        mainText="Organization Updated Successfully"
+        subtitle="Your organization details have been updated"
+        onComplete={handleSplashComplete}
+        onDismiss={() => setIsSplashVisible(false)}
+        duration={3000}
+      />
     </SafeAreaView>
   );
 }

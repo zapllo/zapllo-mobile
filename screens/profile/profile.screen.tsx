@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -35,6 +36,8 @@ import { Share } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import * as SecureStore from 'expo-secure-store';
+import { logOut } from '~/redux/slices/authSlice';
 
 // Define the type for your navigation
 type RootStackParamList = {
@@ -114,6 +117,7 @@ const ProfileScreen: React.FC = () => {
     setIsLogoutModalVisible(false);
 
     try {
+      // Call the logout API
       const response = await axios.get(
         `${backend_Host}/users/logout`,
         {
@@ -123,14 +127,36 @@ const ProfileScreen: React.FC = () => {
           },
         }
       );
-      setButtonSpinner(true);
+      
+      // Clear all auth-related data from SecureStore
+      await SecureStore.deleteItemAsync('authToken');
+      await SecureStore.deleteItemAsync('userData');
+      await SecureStore.deleteItemAsync('hasCompletedLogin');
+      
+      // Dispatch logout action to clear Redux state
+      dispatch(logOut());
+      
+      // Show success message
       setCustomAlertVisible(true);
       setCustomAlertMessage('Logged out successfully!');
       setCustomAlertType('success');
+      
+      // Navigate to login screen
       router.push('/(routes)/login');
     } catch (err: any) {
       console.error('API Error:', err.response || err.message);
-      setButtonSpinner(true);
+      
+      // Even if API fails, clear local storage for security
+      try {
+        await SecureStore.deleteItemAsync('authToken');
+        await SecureStore.deleteItemAsync('userData');
+        await SecureStore.deleteItemAsync('hasCompletedLogin');
+        dispatch(logOut());
+        router.push('/(routes)/login');
+      } catch (storageErr) {
+        console.error('Error clearing secure storage:', storageErr);
+      }
+      
       setCustomAlertVisible(true);
       setCustomAlertMessage('Failed to log out. Please try again.');
       setCustomAlertType('error');

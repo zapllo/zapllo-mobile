@@ -463,7 +463,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
                 {/* email input */}
                 <InputContainer
                   label="Email Address"
-                  value={formData.email}
+                  value={formData.email.toLowerCase()}
                   onChangeText={handleEmailValidation}
                   placeholder="Email Address"
                   className="flex-1  text-[#787CA5]"

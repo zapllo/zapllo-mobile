@@ -39,16 +39,15 @@ const daysData = [
 const MyReportScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<MyReportsScreenRouteProp>();
   const { employeeWiseData } = route.params;
-  // const navigation = useNavigation<PendingTaskScreenRouteProp>();
-  const [selectedTeamSize, setSelectedTeamSize] = useState(null);
+
+  const [selectedTeamSize, setSelectedTeamSize] = useState("This Week");
   const [search, setSearch] = useState('');
-  const { userData } = useSelector((state: RootState) => state.auth);
 
   console.log('🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻🙏🏻E', JSON.stringify(employeeWiseData, null, 2));
 
   return (
-    <SafeAreaView className="h-full flex-1 bg-primary">
-      <NavbarTwo title="My Reports" onBackPress={() => navigation.navigate('DashboardHome')} />
+    <SafeAreaView className="h-full flex-1 bg-primary  pb-20">
+      <NavbarTwo title="My Reports"  />
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView

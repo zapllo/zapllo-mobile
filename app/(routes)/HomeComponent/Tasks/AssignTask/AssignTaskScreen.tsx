@@ -322,15 +322,10 @@ export default function AssignTaskScreen() {
       // Show splash screen instead of alert
       setShowSplashScreen(true);
       
-      // Hide splash screen after 3 seconds and proceed
-      setTimeout(() => {
-        setShowSplashScreen(false);
-        if (!isOn) {
+    
+  
           navigation.goBack();
-        } else {
-          resetForm();
-        }
-      }, 3000);
+  
 
     } catch (error) {
       console.error('Error creating task:', error.response?.data || error.message);

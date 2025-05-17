@@ -36,7 +36,7 @@ const daysData = [
 const EmployeeWiseScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<EmployeeWiseScreenRouteProp>();
   const { employeeWiseData } = route.params;
-  const [selectedTeamSize, setSelectedTeamSize] = useState(null);
+  const [selectedTeamSize, setSelectedTeamSize] = useState("This Week");
   const [search, setSearch] = useState('');
 
   console.log(employeeWiseData, 'data?');
@@ -48,8 +48,8 @@ const EmployeeWiseScreen: React.FC<Props> = ({ navigation }) => {
   });
 
   return (
-    <SafeAreaView className="h-full flex-1 bg-primary">
-      <NavbarTwo title="Employee Wise" onBackPress={() => navigation.navigate('DashboardHome')} />
+    <SafeAreaView className="h-full flex-1 bg-primary  pb-20">
+      <NavbarTwo title="Employee Wise" />
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
@@ -65,6 +65,7 @@ const EmployeeWiseScreen: React.FC<Props> = ({ navigation }) => {
                 placeholder="Select Filters"
                 selectedValue={selectedTeamSize}
                 onSelect={(value) => setSelectedTeamSize(value)}
+                
               />
             </View>
 

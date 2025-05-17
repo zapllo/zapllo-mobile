@@ -1,43 +1,49 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity,Dimensions } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/core';
+import { View, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
 
-// Define the Task interface
-interface Task {
-  _id: string; // Assuming tasks have an ID
-
-  assignedUser: {
-    firstName?: string;
-    lastName?: string;
-  };
-  // Add other properties of a task as needed
+interface Employee {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
 }
 
-// Ensure this is imported where needed
 interface TaskCardProps {
   title: string;
   count: number;
-  tasks: Task[];
-  backgroundColor: string;
+  tasks: Employee[];
+  status?: string;
+  backgroundColor?: string;
   borderColor: string;
-  onPress: any;
-  date:any;
+  onPress?: () => void;
+  date?: string;
 }
 
-const DashboardThree: React.FC<TaskCardProps> = ({ title, count, tasks, borderColor,onPress,date }) => {
+const DashboardThree: React.FC<TaskCardProps> = ({ 
+  title, 
+  count, 
+  tasks = [], // Provide default empty array
+  borderColor,
+  onPress,
+  date 
+}) => {
   const screenHeight = Dimensions.get('window').height;
   const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
   const colors = ['#c3c5f7', '#ccc', '#fff', '#3399FF', '#FF33A6'];
 
-  const getInitials = (task: { firstName?: string; lastName?: string }): string => {
-    const firstInitial = task?.firstName ? task.firstName[0].toUpperCase() : '';
-    const lastInitial = task?.lastName ? task.lastName[0].toUpperCase() : '';
+  const getInitials = (employee: Employee): string => {
+    if (!employee) return '';
+    
+    const firstInitial = employee?.firstName ? employee.firstName[0].toUpperCase() : '';
+    const lastInitial = employee?.lastName ? employee.lastName[0].toUpperCase() : '';
     return firstInitial + lastInitial;
   };
 
-  console.log("dellllllllll", tasks);
+  // Ensure tasks is an array and filter out any invalid employees
+  const validEmployees = Array.isArray(tasks) 
+    ? tasks.filter(employee => employee && employee._id) 
+    : [];
 
   return (
     <>
@@ -47,21 +53,21 @@ const DashboardThree: React.FC<TaskCardProps> = ({ title, count, tasks, borderCo
         </Text>
         <Text
           className="text-white text-5xl mt-1"
-          style={{  fontFamily: 'LatoBold' }}>
+          style={{ fontFamily: 'LatoBold' }}>
           {count}
         </Text>
-        <Text className="w-[40vw] pt-2 text-[10px]  text-white " style={{ fontFamily: 'LatoBold' }}>
-       {date}
+        <Text className="w-[40vw] pt-2 text-[10px] text-white" style={{ fontFamily: 'LatoBold' }}>
+          {date}
         </Text>
       </View>
 
       <View className={`flex w-[28vw] flex-row items-center ${
         screenHeight > 900 ? 'mt-12' : 'mt-8'
       }`}>
-        <View className=" flex flex-row items-start">
+        <View className="flex flex-row items-start">
           <View className="flex w-full flex-row">
-            {tasks?.slice(0, 2).map((task, index) => (
-              <View key={task._id} className="relative flex flex-row">
+            {validEmployees.slice(0, 2).map((employee, index) => (
+              <View key={employee._id} className="relative flex flex-row">
                 <View
                   className="-m-1.5 flex h-10 w-10 items-center justify-center rounded-full border-2"
                   style={{
@@ -69,14 +75,14 @@ const DashboardThree: React.FC<TaskCardProps> = ({ title, count, tasks, borderCo
                     backgroundColor: colors[index % colors.length],
                   }}>
                   <Text
-                    className=" text-center text-sm text-black"
+                    className="text-center text-sm text-black"
                     style={{ fontFamily: 'Lato-Thin' }}>
-                    {getInitials(task)}
+                    {getInitials(employee)}
                   </Text>
                 </View>
               </View>
             ))}
-            {tasks?.length > 2 && (
+            {validEmployees.length > 2 && (
               <View className="relative -m-1.5 flex flex-row">
                 <View
                   className="h-10 w-10 items-center justify-center rounded-full border-2"
@@ -84,17 +90,19 @@ const DashboardThree: React.FC<TaskCardProps> = ({ title, count, tasks, borderCo
                     borderColor,
                     backgroundColor: colors[2 % colors.length],
                   }}>
-                  <Text className="text-center text-black">+{tasks.length - 2} </Text>
+                  <Text className="text-center text-black">+{validEmployees.length - 2}</Text>
                 </View>
               </View>
             )}
           </View>
         </View>
-        <TouchableOpacity onPress={onPress}>
-          <View className=" flex h-10 w-10 items-center justify-center self-end rounded-full border border-white">
-            <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
-          </View>
-        </TouchableOpacity>
+        {onPress && (
+          <TouchableOpacity onPress={onPress}>
+            <View className="flex h-10 w-10 items-center justify-center self-end rounded-full border border-white">
+              <Image className="h-4 w-4" source={require('~/assets/Tasks/goto.png')} />
+            </View>
+          </TouchableOpacity>
+        )}
       </View>
     </>
   );

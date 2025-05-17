@@ -21,8 +21,9 @@ import { logIn } from '~/redux/slices/authSlice'
 import { backend_Host } from '~/config'
 import Checkbox from '~/components/Checkbox'
 import CustomAlert from '~/components/CustomAlert/CustomAlert'
-import InputContainer from '~/components/InputContainer' // ✅ Import your custom input
+import InputContainer from '~/components/InputContainer'
 import { GradientText } from '~/components/GradientText'
+import * as SecureStore from 'expo-secure-store'
 
 export default function Loginscreen() {
   const dispatch = useDispatch()
@@ -42,10 +43,38 @@ export default function Loginscreen() {
     if (!userInfo.email || !userInfo.password || !isChecked) return
     setButtonSpinner(true)
     try {
-      const response = await axios.post(`${backend_Host}/users/login`, userInfo)
+      // Convert email to lowercase before sending to API
+      const loginData = {
+        ...userInfo,
+        email: userInfo.email.toLowerCase()
+      };
+      
+      const response = await axios.post(`${backend_Host}/users/login`, loginData)
 
       if (response.data.success) {
-        dispatch(logIn({ token: response.data.token, userData: response.data }))
+        // Store the token from the response
+        const token = response.data.token;
+        
+        // IMPORTANT: Make sure we're storing the complete user data
+        // This ensures the home screen can access firstName and other user details
+        const userData = response.data;
+        
+        // Dispatch login action with token and complete user data
+        dispatch(logIn({ token: token, userData: userData }));
+        
+        // Store token in SecureStore for persistence
+        await SecureStore.setItemAsync('authToken', token);
+        
+        // Also store user data in SecureStore as a backup
+        await SecureStore.setItemAsync('userData', JSON.stringify(userData));
+        
+        // Set login and onboarding flags
+        await SecureStore.setItemAsync('hasCompletedLogin', 'true');
+        await SecureStore.setItemAsync('hasCompletedOnboarding', 'true');
+        
+        console.log('Login successful, user data stored:', userData);
+        
+        // Navigate to home screen
         router.push('/(routes)/home')
       } else {
         setAlertMessage(response.data.message || 'Invalid credentials')
@@ -53,6 +82,7 @@ export default function Loginscreen() {
         setShowAlert(true)
       }
     } catch (err) {
+      console.error('Error during login:', err);
       setAlertMessage('An error occurred, please try again.')
       setAlertType('error')
       setShowAlert(true)
@@ -63,8 +93,6 @@ export default function Loginscreen() {
 
   return (
     <YStack flex={1} backgroundColor="$bg">
-
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -77,17 +105,12 @@ export default function Loginscreen() {
           <Image
             source={require('~/assets/sign-in/sign_in.png')}
             scale={0.4}
-          // marginTop={12}
           />
         </YStack>
 
-        <YStack alignItems="center"  >
-
+        <YStack alignItems="center">
           <Image src={require('~/assets/sign-in/logo.png')} scale={0.4} />
-
         </YStack>
-
-
 
         <Separator width="80%" />
 
@@ -135,7 +158,6 @@ export default function Loginscreen() {
           </XStack>
         )}
 
-
         {/* Checkbox */}
         <XStack width="90%" alignItems="center" marginTop={24} marginBottom={12}>
           <Checkbox isChecked={isChecked} onPress={() => setIsChecked(!isChecked)} />
@@ -165,7 +187,7 @@ export default function Loginscreen() {
         {/* Register Section */}
         <View className="flex-row items-center justify-center bg-primary py-2">
           <View className="flex-row">
-            <Text className="text-base  text-white" style={{ fontFamily: 'Lato-Light' }}>
+            <Text className="text-base text-white" style={{ fontFamily: 'Lato-Light' }}>
               Not a{' '}
             </Text>
             <GradientText
@@ -185,6 +207,6 @@ export default function Loginscreen() {
           onClose={() => setShowAlert(false)}
         />
       </ScrollView>
-    </YStack >
+    </YStack>
   )
 }

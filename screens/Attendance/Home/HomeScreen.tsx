@@ -1694,7 +1694,6 @@ const capturePhoto = async () => {
               style={{
                 alignItems: 'center',
                 display: 'flex',
-              
                 marginTop: 56,
                 marginBottom: 30,
                 paddingBottom: 40,
@@ -1702,15 +1701,13 @@ const capturePhoto = async () => {
                 width: '92%',
                 height: 472, 
                 backgroundColor: 'rgba(27, 23, 57, 0.6)', 
-               
+                // Properly nest shadowOffset in the style object
                 shadowColor: 'rgba(0, 0, 0, 0.8)',
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.9,
                 shadowRadius: 15,
-               
                 borderWidth: 1,
                 borderColor: 'rgba(48, 41, 86, 0.7)',
-            
                 borderStyle: 'solid',
                 position: 'relative',
                 overflow: 'hidden',
@@ -1718,23 +1715,24 @@ const capturePhoto = async () => {
             >
               {/* Inner shadow overlay for depth effect */}
               <View 
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  borderRadius: 24,
-                  borderWidth: 2,
-                  borderColor: 'rgba(0, 0, 0, 0.2)',
-                  backgroundColor: 'transparent',
-                  shadowColor: 'rgba(0, 0, 0, 0.5)',
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.4,
-                  shadowRadius: 12,
-                  elevation: 5,
-                }}
-              />
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                borderRadius: 24,
+                borderWidth: 2,
+                borderColor: 'rgba(0, 0, 0, 0.2)',
+                backgroundColor: 'transparent',
+                // Properly nest shadowOffset in the style object
+                shadowColor: 'rgba(0, 0, 0, 0.5)',
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.4,
+                shadowRadius: 12,
+                elevation: 5,
+              }}
+            />
 
 
               
@@ -2463,7 +2461,7 @@ const capturePhoto = async () => {
 const styles = StyleSheet.create({
   gradientBorder: {
     borderRadius: 10,
-    padding: 1 ,
+    padding: 1,
   },
   gradientBorderOne: {
     borderRadius: 1000,
@@ -2617,9 +2615,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
-
-  
-
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 10,

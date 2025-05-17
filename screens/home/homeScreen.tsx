@@ -23,9 +23,7 @@ import axios from 'axios';
 import { backend_Host } from '~/config';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
-import { StatusBar } from 'expo-status-bar';
-import { MaterialIcons } from '@expo/vector-icons';
-import { checkTrialStatus, formatDate, isLoginAfterSevenDays } from '~/services/TrailExpair';
+import { checkTrialStatus, formatDate,} from '~/services/TrailExpair';
 import TrialExpirationModal from '~/components/TrialExpirationModal';
 
 // Types

@@ -44,7 +44,7 @@ export default function Index() {
                     // User is authenticated, redirect to home
                     console.log("Redirecting to home: token exists");
                     setRedirectPath("/(routes)/home");
-                } else if (hasCompletedOnboarding ) {
+                } else if (!hasCompletedOnboarding ) {
                     // First time user, show onboarding
                     console.log("Redirecting to onboarding: first time user");
                     setRedirectPath("/(routes)/onboarding");

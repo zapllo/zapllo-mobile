@@ -1,5 +1,6 @@
 import * as Location from 'expo-location';
 import { useToast } from "react-native-toast-notifications";
+import { PermissionManager } from '~/utils/permissions';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -712,27 +713,14 @@ useEffect(() => {
       // Set loading state to true when starting to fetch location
       setIsLocationLoading(true);
       
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Location permission denied');
-        Alert.alert('Permission Denied', 'Location permission is required for attendance.');
-        setIsLocationLoading(false);
-        return;
-      }
-  
       console.log('Getting current location with high accuracy...');
-      const locationData = await Location.getCurrentPositionAsync({
+      const locationData = await PermissionManager.getCurrentLocation({
         accuracy: Location.Accuracy.Highest,
         maximumAge: 0 // Get a fresh location
       });
-  
-      const newLocation = {
-        lat: locationData.coords.latitude,
-        lng: locationData.coords.longitude
-      };
       
-      console.log('Location fetched with high accuracy:', newLocation);
-      setLocation(newLocation);
+      console.log('Location fetched with high accuracy:', locationData);
+      setLocation(locationData);
       
       // Check geofence status with the new location
       if (orgData && orgData.allowGeofencing) {
@@ -742,7 +730,7 @@ useEffect(() => {
       }
     } catch (error) {
       console.error('Error fetching location:', error);
-      Alert.alert('Error', 'Failed to get your location. Please check your location settings.');
+      Alert.alert('Error', 'Failed to get your location. Please check your location settings and ensure location permissions are granted.');
     } finally {
       // Set loading state to false when location fetch completes (success or failure)
       setIsLocationLoading(false);
@@ -931,21 +919,12 @@ const proceedWithLoginLogout = async () => {
   // Set the action type based on current login state
   setActionType(isLoggedIn ? 'logout' : 'login');
   
-  // Check camera permissions
-  if (!cameraPermission || !cameraPermission.granted) {
-    try {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        // Show splash screen for camera permission denied
-        setShowGeofencingSplashModal(true);
-        return;
-      }
-    } catch (error) {
-      console.error('Error requesting camera permission:', error);
-      // Show splash screen for camera error
-      setShowGeofencingSplashModal(true);
-      return;
-    }
+  // Check camera permissions using PermissionManager
+  const cameraPermissionGranted = await PermissionManager.requestCameraPermission();
+  if (!cameraPermissionGranted) {
+    // Show splash screen for camera permission denied
+    setShowGeofencingSplashModal(true);
+    return;
   }
   
   try {
@@ -1061,21 +1040,12 @@ const proceedWithLoginLogout = async () => {
     // Set the action type based on current break state
     setActionType(isBreakOpen ? 'break_ended' : 'break_started');
   
-    // Check camera permissions
-    if (!cameraPermission || !cameraPermission.granted) {
-      try {
-        const { status } = await Camera.requestCameraPermissionsAsync();
-        if (status !== 'granted') {
-          // Show splash screen with custom message for camera permission denied
-          setShowGeofencingSplashModal(true);
-          return;
-        }
-      } catch (error) {
-        console.error('Error requesting camera permission:', error);
-        // Show splash screen for camera error
-        setShowGeofencingSplashModal(true);
-        return;
-      }
+    // Check camera permissions using PermissionManager
+    const cameraPermissionGranted = await PermissionManager.requestCameraPermission();
+    if (!cameraPermissionGranted) {
+      // Show splash screen with custom message for camera permission denied
+      setShowGeofencingSplashModal(true);
+      return;
     }
   
     try {

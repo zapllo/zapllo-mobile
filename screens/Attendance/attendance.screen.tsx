@@ -12,7 +12,7 @@ import MyLeavesStack from '~/app/(routes)/HomeComponent/Attendance/MyLeaves/MyLe
 import AllAttendenceScreen from './AllTask/AllAttendenceScreen';
 import { LinearGradient } from 'expo-linear-gradient';
 import HolidaysStack from '~/app/(routes)/HomeComponent/Attendance/Holiday/HolidaysStack';
-import ApprovalStack from '~/app/(routes)/HomeComponent/Attendance/Approval/ApprovalStack';
+import ApprovalStack from '~/app/(routes)/HomeComponent/Attendance/Approval';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import * as Haptics from 'expo-haptics';

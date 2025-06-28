@@ -94,6 +94,46 @@ const AllAttendenceScreen: React.FC<AllAttendenceScreen> = ({ isVisible, onClose
         <View className="bg-transparent">
           <View className="flex items-end flex-col gap-5 justify-around mb-10 mr-7">
 
+            {/* Approval */}
+              <View className="flex flex-row items-center gap-2">
+              <TouchableOpacity 
+                onPress={() => isAdmin 
+                  ? handleNavigation("/app/(routes)/HomeComponent/Attendance/Approval", true)
+                  : handleAccessDenied()
+                }
+              >
+                <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Approvals</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => isAdmin 
+                  ? handleNavigation("/app/(routes)/HomeComponent/Attendance/Approval", true)
+                  : handleAccessDenied()
+                }
+              >
+                <Image className="w-16 h-16" source={require("../../../assets/Attendence/Approval.png")} />
+              </TouchableOpacity>
+            </View>
+
+
+            <View className="flex flex-row items-center gap-2">
+              <TouchableOpacity 
+                onPress={() => isAdmin 
+                  ? handleNavigation("/app/(routes)/HomeComponent/Attendance/AllLeaves", true)
+                  : handleAccessDenied()
+                }
+              >
+                <Text className="text-white" style={{ fontFamily: "LatoBold" }}>All Leaves</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => isAdmin 
+                  ? handleNavigation("/app/(routes)/HomeComponent/Attendance/AllLeaves", true)
+                  : handleAccessDenied()
+                }
+              >
+                <Image className="w-16 h-16" source={require("../../../assets/Attendence/settings.png")} />
+              </TouchableOpacity>
+            </View>
+
             <View className="flex flex-row items-center gap-2">
               <TouchableOpacity 
                 onPress={() => isAdmin 

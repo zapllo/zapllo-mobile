@@ -55,7 +55,7 @@ const Navbar: React.FC<NavbarProps> = ({ title, showBackButton = false, onBackPr
   return (
     <SafeAreaView >
       <StatusBar 
-        barStyle="dark-content" 
+        barStyle="light-content" 
         backgroundColor="#05071E" 
         
       />

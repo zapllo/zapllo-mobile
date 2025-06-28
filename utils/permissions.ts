@@ -98,16 +98,40 @@ export class PermissionManager {
 
   static async getCurrentLocation(options?: Location.LocationOptions) {
     try {
-      const hasPermission = await this.requestLocationPermission();
-      if (!hasPermission) {
-        throw new Error('Location permission not granted');
+      // First check if location services are enabled on the device
+      const isLocationEnabled = await Location.hasServicesEnabledAsync();
+      if (!isLocationEnabled) {
+        throw new Error('Location services are disabled on this device. Please enable location services in your device settings.');
       }
 
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Highest,
-        maximumAge: 10000, // 10 seconds
-        timeout: 15000, // 15 seconds timeout
+      // Check current permission status first
+      const { status: currentStatus } = await Location.getForegroundPermissionsAsync();
+      
+      if (currentStatus !== 'granted') {
+        // Request permission if not already granted
+        const hasPermission = await this.requestLocationPermission();
+        if (!hasPermission) {
+          throw new Error('Location permission not granted');
+        }
+      }
+
+      // Use more conservative settings for production builds
+      const locationOptions = {
+        accuracy: Location.Accuracy.Balanced, // Changed from Highest to Balanced for better reliability
+        maximumAge: 30000, // Increased to 30 seconds to allow cached location
+        timeout: 20000, // Increased timeout to 20 seconds
         ...options
+      };
+
+      console.log('Requesting location with options:', locationOptions);
+      
+      const location = await Location.getCurrentPositionAsync(locationOptions);
+
+      console.log('Location received:', {
+        lat: location.coords.latitude,
+        lng: location.coords.longitude,
+        accuracy: location.coords.accuracy,
+        timestamp: location.timestamp
       });
 
       return {
@@ -117,7 +141,17 @@ export class PermissionManager {
       };
     } catch (error) {
       console.error('Error getting current location:', error);
-      throw error;
+      
+      // Provide more specific error messages for different scenarios
+      if (error.message?.includes('Location request timed out')) {
+        throw new Error('Location request timed out. Please ensure you have a clear view of the sky and try again.');
+      } else if (error.message?.includes('Location services are disabled')) {
+        throw new Error('Location services are disabled. Please enable location services in your device settings.');
+      } else if (error.message?.includes('permission')) {
+        throw new Error('Location permission is required for attendance. Please grant location permission in your device settings.');
+      } else {
+        throw new Error('Unable to get your current location. Please check your location settings and try again.');
+      }
     }
   }
 

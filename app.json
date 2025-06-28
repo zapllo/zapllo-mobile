@@ -57,7 +57,11 @@
         "NSMicrophoneUsageDescription": "This app needs access to microphone for audio recording features.",
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to verify your attendance location and enable geofencing features.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to verify your attendance location and enable geofencing features.",
-        "NSPhotoLibraryUsageDescription": "This app needs access to photo library to save and manage attendance photos."
+        "NSPhotoLibraryUsageDescription": "This app needs access to photo library to save and manage attendance photos.",
+        "LSRequiresIPhoneOS": true,
+        "UIRequiredDeviceCapabilities": [
+          "location-services"
+        ]
       }
     },
     "android": {

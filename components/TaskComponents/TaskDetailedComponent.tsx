@@ -676,6 +676,7 @@ const handleSliderChange = async (value: number) => {
           <TouchableOpacity 
             style={styles.actionButton}
             activeOpacity={0.7}
+            onPress={() => setModalVisible(true)}
           >
             <Text style={styles.actionButtonText}>View Details</Text>
             <MaterialIcons name="arrow-forward-ios" size={14} color="#FFFFFF" />

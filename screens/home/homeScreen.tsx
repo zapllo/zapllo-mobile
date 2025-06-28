@@ -25,6 +25,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import { checkTrialStatus, formatDate,} from '~/services/TrailExpair';
 import TrialExpirationModal from '~/components/TrialExpirationModal';
+import { MaterialIcons } from '@expo/vector-icons';
 
 // Types
 type HomeScreenComponents = {

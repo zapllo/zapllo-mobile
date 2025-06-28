@@ -408,12 +408,7 @@ export default function TickitScreen() {
             style={styles.modalKeyboardAvoid}
           >
             <View style={styles.modalContent}>
-              <LinearGradient
-                colors={['#1A1C2E', '#0A0D28']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={styles.modalGradient}
-              />
+             
               
               <View style={styles.modalHeader}>
                 <View style={styles.modalHeaderContent}>
@@ -461,7 +456,7 @@ export default function TickitScreen() {
                   </View>
 
                   <View style={styles.formGroup}>
-                    <Text style={styles.formLabel}>Subject</Text>
+                    
                     <InputContainer
                       placeholder="Enter a brief subject for your ticket"
                       value={newTicketMessage}
@@ -687,11 +682,12 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   modalContent: {
-    backgroundColor: '#0A0D28',
+    backgroundColor: '#05071E',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     overflow: 'hidden',
     maxHeight: height * 0.85,
+    width: '100%',
   },
   modalGradient: {
     ...StyleSheet.absoluteFillObject,
@@ -754,6 +750,7 @@ const styles = StyleSheet.create({
   },
   formSection: {
     marginTop: 20,
+    width: '100%',
   },
   formSectionTitle: {
     color: '#FFFFFF',
@@ -763,6 +760,8 @@ const styles = StyleSheet.create({
   },
   formGroup: {
     marginBottom: 20,
+    width: '100%',
+  
   },
   formLabel: {
     color: '#787CA5',

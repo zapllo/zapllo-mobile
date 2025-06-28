@@ -260,7 +260,7 @@ export default function SetPayslipScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <View className="w-[90%] mt-8 flex items-center flex-col">
-              <View className="h-44 w-44 rounded-full border border-dashed border-[#815BF5] overflow-hidden justify-center items-center ">
+              <View className="h-44 w-full rounded-xl  border border-dashed border-[#815BF5] overflow-hidden justify-center items-center ">
                 {companyLogo ? (
                   <Image 
                     source={{ uri: companyLogo }} 
@@ -307,7 +307,7 @@ export default function SetPayslipScreen() {
                     )}
                     <TouchableOpacity className="w-[10%]" onPress={toggleEditName}>
                       <Image 
-                        className="w-8 h-8" 
+                        className="h-5 w-5" 
                         source={isEditingName 
                           ? require("../../../../assets/Tasks/isEditing.png") 
                           : require("../../../../assets/Tasks/addto.png")}
@@ -333,7 +333,7 @@ export default function SetPayslipScreen() {
                     )}
                     <TouchableOpacity className="w-[10%]" onPress={toggleEditAddress}>
                       <Image 
-                        className="w-8 h-8" 
+                        className="h-5 w-5" 
                         source={isEditingAddress 
                           ? require("../../../../assets/Tasks/isEditing.png") 
                           : require("../../../../assets/Tasks/addto.png")}
@@ -360,7 +360,7 @@ export default function SetPayslipScreen() {
                     )}
                     <TouchableOpacity className="w-[10%]" onPress={toggleEditContact}>
                       <Image 
-                        className="w-8 h-8" 
+                        className="h-5 w-5" 
                         source={isEditingContact 
                           ? require("../../../../assets/Tasks/isEditing.png") 
                           : require("../../../../assets/Tasks/addto.png")}
@@ -388,7 +388,7 @@ export default function SetPayslipScreen() {
                     )}
                     <TouchableOpacity className="w-[10%]" onPress={toggleEditEmail}>
                       <Image 
-                        className="w-8 h-8" 
+                        className="h-5 w-5" 
                         source={isEditingEmail 
                           ? require("../../../../assets/Tasks/isEditing.png") 
                           : require("../../../../assets/Tasks/addto.png")}

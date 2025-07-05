@@ -26,6 +26,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import moment from 'moment';
 import { getDateRange } from '~/utils/GetDateRange';
+import { Image } from 'react-native';
 
 // Types
 type LeaveType = {
@@ -908,7 +909,7 @@ export default function ApprovalScreen() {
                 );
               }}
             >
-              <Ionicons name="trash" size={16} color="#fff" />
+              <Image source={require("../../../assets/Tasks/deleteTwo.png")} className='h-6 w-5'/>
             </TouchableOpacity>
           </View>
         )}
@@ -1497,14 +1498,21 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   approveButton: {
-    backgroundColor: '#10b981',
+    backgroundColor: 'rgba(6, 214, 160, 0.15)',
+    borderColor: '#06D6A0',
+    borderWidth: 1,
   },
   rejectButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: 'rgba(231, 101, 101, 0.15)',
+    borderWidth: 1,
+    borderColor: '#EF4444',
   },
   deleteButton: {
-    backgroundColor: '#dc2626',
-    paddingHorizontal: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
   },
   actionButtonText: {
     color: '#fff',

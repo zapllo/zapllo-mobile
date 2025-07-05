@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "~/redux/store";
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
+import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 
 interface AllAttendenceScreen {
   isVisible: boolean;
@@ -98,7 +99,7 @@ const AllAttendenceScreen: React.FC<AllAttendenceScreen> = ({ isVisible, onClose
               <View className="flex flex-row items-center gap-2">
               <TouchableOpacity 
                 onPress={() => isAdmin 
-                  ? handleNavigation("/app/(routes)/HomeComponent/Attendance/Approval", true)
+                  ? handleNavigation("(routes)/HomeComponent/Attendance/Approval", true)
                   : handleAccessDenied()
                 }
               >
@@ -106,11 +107,16 @@ const AllAttendenceScreen: React.FC<AllAttendenceScreen> = ({ isVisible, onClose
               </TouchableOpacity>
               <TouchableOpacity 
                 onPress={() => isAdmin 
-                  ? handleNavigation("/app/(routes)/HomeComponent/Attendance/Approval", true)
+                  ? handleNavigation("(routes)/HomeComponent/Attendance/Approval", true)
                   : handleAccessDenied()
                 }
+                className=" items-center justify-center flex w-16 h-16 bg-[#815BF5] rounded-full"
               >
-                <Image className="w-16 h-16" source={require("../../../assets/Attendence/Approval.png")} />
+                <MaterialIcons
+                name="approval"
+                size={27}
+                color={"white"}                
+                />
               </TouchableOpacity>
             </View>
 
@@ -118,7 +124,7 @@ const AllAttendenceScreen: React.FC<AllAttendenceScreen> = ({ isVisible, onClose
             <View className="flex flex-row items-center gap-2">
               <TouchableOpacity 
                 onPress={() => isAdmin 
-                  ? handleNavigation("/app/(routes)/HomeComponent/Attendance/AllLeaves", true)
+                  ? handleNavigation("(routes)/HomeComponent/Attendance/AllLeaves", true)
                   : handleAccessDenied()
                 }
               >
@@ -126,11 +132,18 @@ const AllAttendenceScreen: React.FC<AllAttendenceScreen> = ({ isVisible, onClose
               </TouchableOpacity>
               <TouchableOpacity 
                 onPress={() => isAdmin 
-                  ? handleNavigation("/app/(routes)/HomeComponent/Attendance/AllLeaves", true)
+                  ? handleNavigation("(routes)/HomeComponent/Attendance/AllLeaves", true)
                   : handleAccessDenied()
                 }
+                className=" items-center justify-center flex w-16 h-16 bg-[#815BF5] rounded-full"
               >
-                <Image className="w-16 h-16" source={require("../../../assets/Attendence/settings.png")} />
+                <FontAwesome
+                name="calendar-check-o"
+                size={27}
+                color={"white"}
+
+                />
+              
               </TouchableOpacity>
             </View>
 

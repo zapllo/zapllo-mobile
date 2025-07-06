@@ -9,6 +9,7 @@ import MyTasksStack from './myTask/MyTaskStack';
 import { useEffect, useRef, useState } from 'react';
 import Modal from "react-native-modal";
 import AllTaskModalScreen from '../../app/(routes)/HomeComponent/Tasks/AllTaskModalScreen';
+import AiSuggestionScreen from '../../app/(routes)/HomeComponent/Tasks/AiSuggestion/AiSuggestionScreen';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { router } from 'expo-router';
@@ -23,6 +24,7 @@ const Tab = createBottomTabNavigator();
 
 export default function TasksScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isAiModalVisible, setAiModalVisible] = useState(false);
 
   const navigation = useNavigation<StackNavigationProp<any>>();
   const fabLabelAnim = useRef(new Animated.Value(0)).current;
@@ -219,6 +221,34 @@ export default function TasksScreen() {
         isVisible={isModalVisible}
         onClose={() => setModalVisible(false)}
       />
+
+      <AiSuggestionScreen
+        isVisible={isAiModalVisible}
+        onClose={() => setAiModalVisible(false)}
+      />
+
+       {/* Ai suggestion button*/}
+      <View style={styles.fabContainerAi}>
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={() => {
+              triggerHapticFeedback(); // Add haptic feedback to FAB
+              setAiModalVisible(true); // Open AI modal
+            }}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={['#4929fc', '#a395f0']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.fabGradient}
+            >
+              <MaterialIcons name="auto-awesome" size={28} color="#FFFFFF" />
+            </LinearGradient>
+          </TouchableOpacity>
+      </View>
+
+      {/* Assign task button */}
       <View style={styles.fabContainer}>
         {showFabLabel && (
           <Animated.View 
@@ -321,6 +351,15 @@ const styles = StyleSheet.create({
   fabContainer: {
     position: 'absolute',
     bottom: 100,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+
+    fabContainerAi: {
+    position: 'absolute',
+    bottom: 170,
     right: 20,
     flexDirection: 'row',
     alignItems: 'center',

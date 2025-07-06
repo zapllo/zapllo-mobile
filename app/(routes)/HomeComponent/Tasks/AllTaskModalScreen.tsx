@@ -6,6 +6,7 @@ import Modal from "react-native-modal";
 import { useSelector } from "react-redux";
 import { RootState } from "~/redux/store";
 import { BlurView } from 'expo-blur';
+import { AntDesign, Entypo, Octicons } from "@expo/vector-icons";
 
 interface AllTaskModalProps {
   isVisible: boolean;
@@ -36,6 +37,7 @@ const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose })
       <BlurView intensity={15} style={{ flex: 1, justifyContent: 'flex-end' }}>
         <View className="bg-transparent">
           <View className="flex items-end flex-col gap-5 justify-around mb-10 mr-7">
+
             <View className="flex flex-row items-center gap-2">
               <TouchableOpacity onPress={() => handleNavigation("/(routes)/all-task", true)}>
                 <Text className="text-white" style={{ fontFamily: "LatoBold" }}>All Tasks</Text>
@@ -60,6 +62,26 @@ const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose })
               </TouchableOpacity>
               <TouchableOpacity onPress={() => handleNavigation("/(routes)/categories")}>
                 <Image className="w-16 h-16" source={require("../../../../assets/More/categories.png")} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Task Templates */}
+            <View className="flex flex-row items-center gap-2">
+              <TouchableOpacity onPress={() => handleNavigation("/(routes)/HomeComponent/Tasks/TaskTemplates", true)}>
+                <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Task Templates</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleNavigation("/(routes)/HomeComponent/Tasks/TaskTemplates", true)} className=" bg-[#815BF5] rounded-full p-4">
+                <AntDesign name="layout" size={25} color="white" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Task Directory  */}
+            <View className="flex flex-row items-center gap-2">
+              <TouchableOpacity onPress={() => handleNavigation("/(routes)/HomeComponent/Tasks/TaskDirectory")} >
+                <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Task Directory</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleNavigation("/(routes)/HomeComponent/Tasks/TaskDirectory")} className=" bg-[#815BF5] rounded-full p-4">
+                <Entypo name="folder" size={25} color="white" />
               </TouchableOpacity>
             </View>
 

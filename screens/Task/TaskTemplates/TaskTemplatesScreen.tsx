@@ -13,6 +13,7 @@ import {
   Dimensions,
   RefreshControl,
   Animated,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { 
@@ -828,9 +829,9 @@ function TemplateCard({
           
           <TouchableOpacity
             onPress={onDelete}
-            className="bg-[#FF4757] bg-opacity-20 p-2 rounded-lg"
+            className="bg-[#2A2D47] bg-opacity-20 p-2 rounded-lg"
           >
-            <MaterialIcons name="delete" size={16} color="#FF4757" />
+            <Image source={require('../../../assets/Tasks/deleteTwo.png')} className='h-6 w-6' />
           </TouchableOpacity>
         </View>
       </View>

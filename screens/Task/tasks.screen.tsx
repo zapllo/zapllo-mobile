@@ -9,7 +9,7 @@ import MyTasksStack from './myTask/MyTaskStack';
 import { useEffect, useRef, useState } from 'react';
 import Modal from "react-native-modal";
 import AllTaskModalScreen from '../../app/(routes)/HomeComponent/Tasks/AllTaskModalScreen';
-import AiSuggestionScreen from '../../app/(routes)/HomeComponent/Tasks/AiSuggestion/AiSuggestionScreen';
+// Removed AiSuggestionScreen import since we'll navigate to it instead of using as modal
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { router } from 'expo-router';
@@ -24,7 +24,7 @@ const Tab = createBottomTabNavigator();
 
 export default function TasksScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
-  const [isAiModalVisible, setAiModalVisible] = useState(false);
+  // Removed isAiModalVisible since we'll navigate to AiSuggestionScreen instead
 
   const navigation = useNavigation<StackNavigationProp<any>>();
   const fabLabelAnim = useRef(new Animated.Value(0)).current;
@@ -222,31 +222,30 @@ export default function TasksScreen() {
         onClose={() => setModalVisible(false)}
       />
 
-      <AiSuggestionScreen
-        isVisible={isAiModalVisible}
-        onClose={() => setAiModalVisible(false)}
-      />
+      {/* Removed AiSuggestionScreen modal since we now navigate to it as a proper screen */}
 
-       {/* Ai suggestion button*/}
-      <View style={styles.fabContainerAi}>
-          <TouchableOpacity
-            style={styles.fab}
-            onPress={() => {
-              triggerHapticFeedback(); // Add haptic feedback to FAB
-              setAiModalVisible(true); // Open AI modal
-            }}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={['#4929fc', '#a395f0']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.fabGradient}
+       {/* Ai suggestion button - Only visible to admin users */}
+      {isAdmin && (
+        <View style={styles.fabContainerAi}>
+            <TouchableOpacity
+              style={styles.fab}
+              onPress={() => {
+                triggerHapticFeedback(); // Add haptic feedback to FAB
+                router.push('/(routes)/HomeComponent/Tasks/AiSuggestion/AiSuggestionScreen'); // Navigate to AI screen
+              }}
+              activeOpacity={0.8}
             >
-              <MaterialIcons name="auto-awesome" size={28} color="#FFFFFF" />
-            </LinearGradient>
-          </TouchableOpacity>
-      </View>
+              <LinearGradient
+                colors={['#4929fc', '#a395f0']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.fabGradient}
+              >
+                <MaterialIcons name="auto-awesome" size={28} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+        </View>
+      )}
 
       {/* Assign task button */}
       <View style={styles.fabContainer}>

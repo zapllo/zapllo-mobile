@@ -4,18 +4,18 @@ import {
   Text,
   SafeAreaView,
   Platform,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   Image,
   ActivityIndicator,
   TextInput,
-  KeyboardAvoidingView,
   FlatList,
   Keyboard,
   Dimensions,
+  TouchableWithoutFeedback,
+  StatusBar,
+  KeyboardAvoidingView,
 } from 'react-native';
-import Modal from 'react-native-modal';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -28,11 +28,6 @@ import * as Haptics from 'expo-haptics';
 import CustomAlert from '~/components/CustomAlert/CustomAlert';
 import CustomSplashScreen from '~/components/CustomSplashScreen';
 import { router } from 'expo-router';
-
-interface AiSuggestionScreenProps {
-  isVisible?: boolean;
-  onClose?: () => void;
-}
 
 interface TaskData {
   title: string;
@@ -63,9 +58,9 @@ interface User {
   profilePic?: string;
 }
 
-const { height: screenHeight } = Dimensions.get('window');
+const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
-export default function AiSuggestionScreen({ isVisible = true, onClose }: AiSuggestionScreenProps) {
+export default function AiSuggestionScreen() {
   const navigation = useNavigation<StackNavigationProp<any>>();
   const { token, userData } = useSelector((state: RootState) => state.auth);
   const textInputRef = useRef<TextInput>(null);
@@ -74,6 +69,7 @@ export default function AiSuggestionScreen({ isVisible = true, onClose }: AiSugg
   const [isLoading, setIsLoading] = useState(false);
   const [taskData, setTaskData] = useState<TaskData | null>(null);
   const [creditStatus, setCreditStatus] = useState<CreditStatus | null>(null);
+  const [aiCredits, setAiCredits] = useState<number>(0);
   const [customAlertVisible, setCustomAlertVisible] = useState(false);
   const [customAlertMessage, setCustomAlertMessage] = useState('');
   const [customAlertType, setCustomAlertType] = useState<'success' | 'error' | 'loading'>('success');
@@ -86,49 +82,103 @@ export default function AiSuggestionScreen({ isVisible = true, onClose }: AiSugg
   const [mentionQuery, setMentionQuery] = useState('');
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [cursorPosition, setCursorPosition] = useState(0);
+  const [mentionStartPosition, setMentionStartPosition] = useState(-1);
+  const [selectedMentionedUser, setSelectedMentionedUser] = useState<User | null>(null);
 
-  // Fetch users for @mention functionality
+  // Fetch users and AI credits
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await axios.get(`${backend_Host}/users/organization`, {
+        // Fetch users for @mention functionality
+        const usersResponse = await axios.get(`${backend_Host}/users/organization`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });
-        setUsers(response.data.data);
+        setUsers(usersResponse.data.data);
+
+        // Fetch AI credits
+        const creditsResponse = await axios.get(`${backend_Host}/organization/ai-credits`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        if (creditsResponse.data.success) {
+          setAiCredits(creditsResponse.data.aiCredits);
+        }
       } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error('Error fetching initial data:', error);
       }
     };
     
     if (token) {
-      fetchUsers();
+      fetchInitialData();
     }
   }, [token]);
 
-  // Handle @mention detection and filtering
+  // Handle @mention detection and filtering (similar to web version)
   useEffect(() => {
+    // Only process if we have users data
+    if (users.length === 0) return;
+    
     const lastAtIndex = prompt.lastIndexOf('@', cursorPosition);
     const lastSpaceIndex = prompt.lastIndexOf(' ', cursorPosition);
+    const lastNewlineIndex = prompt.lastIndexOf('\n', cursorPosition);
     
-    if (lastAtIndex > lastSpaceIndex && lastAtIndex !== -1) {
+    // Check if @ is at the start or after a space/newline
+    const isValidMentionStart = lastAtIndex !== -1 && 
+      (lastAtIndex === 0 || 
+       prompt[lastAtIndex - 1] === ' ' || 
+       prompt[lastAtIndex - 1] === '\n');
+    
+    if (isValidMentionStart && lastAtIndex > Math.max(lastSpaceIndex, lastNewlineIndex)) {
       const query = prompt.substring(lastAtIndex + 1, cursorPosition);
-      setMentionQuery(query);
-      setShowMentionSuggestions(true);
       
-      // Filter users based on query
-      const filtered = users.filter(user => 
-        `${user.firstName} ${user.lastName}`.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredUsers(filtered);
+      // Set mention start position
+      if (mentionStartPosition !== lastAtIndex) {
+        setMentionStartPosition(lastAtIndex);
+      }
+      
+      // Only update if query actually changed
+      if (query !== mentionQuery) {
+        setMentionQuery(query);
+        
+        // Filter users based on query (same as web version)
+        const filtered = users.filter(user => {
+          const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+          const firstName = user.firstName.toLowerCase();
+          const lastName = user.lastName.toLowerCase();
+          const searchQuery = query.toLowerCase();
+          
+          return fullName.includes(searchQuery) || 
+                 firstName.includes(searchQuery) || 
+                 lastName.includes(searchQuery);
+        });
+        setFilteredUsers(filtered);
+        
+        setShowMentionSuggestions(filtered.length > 0);
+      }
     } else {
-      setShowMentionSuggestions(false);
-      setMentionQuery('');
-      setFilteredUsers([]);
+      if (showMentionSuggestions) {
+        setShowMentionSuggestions(false);
+        setMentionQuery('');
+        setFilteredUsers([]);
+        setMentionStartPosition(-1);
+      }
     }
-  }, [prompt, cursorPosition, users]);
+  }, [prompt, cursorPosition, users, mentionQuery, showMentionSuggestions, mentionStartPosition]);
+
+  // Suggested prompts similar to web version
+  const suggestedPrompts = [
+    "Schedule a team meeting next Thursday",
+    "Prepare Q4 marketing report",
+    "Review designs for homepage update",
+    "Follow up with client about proposal",
+    "Create a high priority bug fix task for next Monday",
+    "Set up a weekly report task every Monday morning"
+  ];
 
   const handleClose = () => {
     setPrompt('');
@@ -136,41 +186,51 @@ export default function AiSuggestionScreen({ isVisible = true, onClose }: AiSugg
     setCreditStatus(null);
     setSelectedUserId(null);
     setShowMentionSuggestions(false);
+    setMentionStartPosition(-1);
+    setSelectedMentionedUser(null);
     Keyboard.dismiss();
-    if (onClose) {
-      onClose();
-    } else {
-      navigation.goBack();
-    }
+    navigation.goBack();
   };
 
-  const handleTextChange = (text: string) => {
+  const handleInputChange = (text: string) => {
     setPrompt(text);
   };
 
   const handleSelectionChange = (event: any) => {
-    setCursorPosition(event.nativeEvent.selection.start);
+    const newPosition = event.nativeEvent.selection.start;
+    setCursorPosition(newPosition);
+  };
+
+  const handleTextInputFocus = () => {
+    console.log('TextInput focused');
   };
 
   const handleMentionSelect = (user: User) => {
-    const lastAtIndex = prompt.lastIndexOf('@', cursorPosition);
-    const beforeMention = prompt.substring(0, lastAtIndex);
-    const afterMention = prompt.substring(cursorPosition);
-    const mentionText = `@${user.firstName} ${user.lastName} `;
-    
-    const newText = beforeMention + mentionText + afterMention;
-    setPrompt(newText);
-    setShowMentionSuggestions(false);
-    setSelectedUserId(user._id);
-    
-    // Focus back to input
-    setTimeout(() => {
-      textInputRef.current?.focus();
-      const newCursorPosition = beforeMention.length + mentionText.length;
-      textInputRef.current?.setNativeProps({
-        selection: { start: newCursorPosition, end: newCursorPosition }
-      });
-    }, 100);
+    if (mentionStartPosition !== -1 && textInputRef.current) {
+      // Replace the @mention text with the selected user's name (similar to web version)
+      const beforeMention = prompt.substring(0, mentionStartPosition);
+      const afterMention = prompt.substring(cursorPosition);
+      const mentionText = `@${user.firstName} ${user.lastName} `;
+      
+      const newText = beforeMention + mentionText + afterMention;
+      const newCursorPosition = mentionStartPosition + mentionText.length;
+      
+      setPrompt(newText);
+      setSelectedMentionedUser(user);
+      setShowMentionSuggestions(false);
+      setMentionStartPosition(-1);
+      setSelectedUserId(user._id);
+      
+      // Set focus back to textarea and position cursor after the inserted name
+      setCursorPosition(newCursorPosition);
+      
+      // Keep focus on the input
+      setTimeout(() => {
+        if (textInputRef.current) {
+          textInputRef.current.focus();
+        }
+      }, 100);
+    }
   };
 
   const handleAiSuggestion = async () => {
@@ -181,15 +241,51 @@ export default function AiSuggestionScreen({ isVisible = true, onClose }: AiSugg
       return;
     }
 
+    if (aiCredits <= 0) {
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('No AI credits remaining. Please contact your administrator.');
+      setCustomAlertType('error');
+      return;
+    }
+
     setIsLoading(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
+      // Extract assigned user from the prompt if one was selected (similar to web version)
+      let assignedUserId = null;
+      if (selectedMentionedUser) {
+        assignedUserId = selectedMentionedUser._id;
+      } else if (selectedUserId) {
+        assignedUserId = selectedUserId;
+      } else {
+        // Try to find any @mentions in the text (similar to web version)
+        try {
+          const mentionRegex = /@([a-zA-Z]+\s[a-zA-Z]+)/g;
+          const matches = prompt.match(mentionRegex);
+          if (matches && matches.length > 0) {
+            // Extract the name without the @ symbol
+            const mentionedName = matches[0].substring(1).trim();
+            // Find user by name
+            const user = users.find(u =>
+              `${u.firstName} ${u.lastName}`.toLowerCase() === mentionedName.toLowerCase()
+            );
+            if (user) {
+              assignedUserId = user._id;
+              setSelectedMentionedUser(user);
+            }
+          }
+        } catch (error) {
+          console.error('Error extracting @mentions:', error);
+          // Continue without assigning a user
+        }
+      }
+
       const response = await axios.post(
-        `${backend_Host}/ai-suggestion`, // Fixed endpoint - removed /tasks prefix
+        `${backend_Host}/tasks/suggest`,
         {
           prompt: prompt.trim(),
-          assignedUserId: selectedUserId,
+          assignedUserId: assignedUserId,
         },
         {
           headers: {
@@ -200,31 +296,42 @@ export default function AiSuggestionScreen({ isVisible = true, onClose }: AiSugg
       );
 
       if (response.data.success) {
+        // Update AI credits from response if available
+        if (response.data.creditStatus) {
+          setAiCredits(response.data.creditStatus.remaining);
+        }
+        
         setTaskData(response.data.taskData);
         setCreditStatus(response.data.creditStatus);
         setCustomAlertVisible(true);
         setCustomAlertMessage('AI suggestion generated successfully!');
         setCustomAlertType('success');
       } else {
-        setCustomAlertVisible(true);
-        setCustomAlertMessage(response.data.error || 'Failed to generate AI suggestion');
-        setCustomAlertType('error');
+        // Handle credit errors specifically
+        if (response.data.creditStatus && response.data.creditStatus.remaining === 0) {
+          setCustomAlertVisible(true);
+          setCustomAlertMessage('No AI credits remaining. Please contact your administrator.');
+          setCustomAlertType('error');
+        } else {
+          setCustomAlertVisible(true);
+          setCustomAlertMessage('Failed to generate task from AI: ' + (response.data.error || 'Unknown error'));
+          setCustomAlertType('error');
+        }
       }
     } catch (error: any) {
       console.error('Error generating AI suggestion:', error);
-      let errorMessage = 'Failed to generate AI suggestion. Please try again.';
       
-      if (error.response?.status === 404) {
-        errorMessage = 'AI suggestion service is not available. Please contact support.';
-      } else if (error.response?.status === 403) {
-        errorMessage = error.response?.data?.error || 'No AI credits remaining.';
-      } else if (error.response?.data?.error) {
-        errorMessage = error.response.data.error;
+      if (error.response?.data?.creditStatus?.remaining === 0) {
+        setCustomAlertVisible(true);
+        setCustomAlertMessage('No AI credits remaining. Please contact your administrator.');
+        setCustomAlertType('error');
+        setAiCredits(0);
+      } else {
+        let errorMessage = error.response?.data?.error || 'Failed to process AI prompt';
+        setCustomAlertVisible(true);
+        setCustomAlertMessage(errorMessage);
+        setCustomAlertType('error');
       }
-      
-      setCustomAlertVisible(true);
-      setCustomAlertMessage(errorMessage);
-      setCustomAlertType('error');
     } finally {
       setIsLoading(false);
     }
@@ -296,70 +403,36 @@ export default function AiSuggestionScreen({ isVisible = true, onClose }: AiSugg
     handleClose();
   };
 
-  const renderUserMentions = () => {
-    return users.map((user: User) => (
-      <TouchableOpacity
-        key={user._id}
-        style={[
-          styles.userMentionItem,
-          selectedUserId === user._id && styles.selectedUserMention
-        ]}
-        onPress={() => {
-          setSelectedUserId(selectedUserId === user._id ? null : user._id);
-          Haptics.selectionAsync();
-        }}
-      >
-        <View style={styles.userMentionContent}>
-          {user.profilePic ? (
-            <Image source={{ uri: user.profilePic }} style={styles.userAvatar} />
-          ) : (
-            <View style={styles.userAvatarPlaceholder}>
-              <Text style={styles.userAvatarText}>
-                {user.firstName?.charAt(0)?.toUpperCase() || 'U'}
-              </Text>
-            </View>
-          )}
-          <Text style={styles.userMentionText}>
-            {user.firstName} {user.lastName || ''}
-          </Text>
-        </View>
-        {selectedUserId === user._id && (
-          <MaterialIcons name="check-circle" size={20} color="#815BF5" />
-        )}
-      </TouchableOpacity>
-    ));
-  };
-
+  
   const renderMentionSuggestions = () => {
     if (!showMentionSuggestions || filteredUsers.length === 0) return null;
 
     return (
       <View style={styles.mentionSuggestionsContainer}>
-        <FlatList
-          data={filteredUsers}
-          keyExtractor={(item) => item._id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.mentionSuggestionItem}
-              onPress={() => handleMentionSelect(item)}
-            >
-              {item.profilePic ? (
-                <Image source={{ uri: item.profilePic }} style={styles.mentionAvatar} />
-              ) : (
-                <View style={styles.mentionAvatarPlaceholder}>
-                  <Text style={styles.mentionAvatarText}>
-                    {item.firstName?.charAt(0)?.toUpperCase() || 'U'}
-                  </Text>
-                </View>
-              )}
-              <Text style={styles.mentionSuggestionText}>
-                {item.firstName} {item.lastName || ''}
-              </Text>
-            </TouchableOpacity>
-          )}
-          style={styles.mentionSuggestionsList}
-          keyboardShouldPersistTaps="handled"
-        />
+        {filteredUsers.slice(0, 5).map((item) => (
+          <TouchableOpacity
+            key={item._id}
+            style={styles.mentionSuggestionItem}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleMentionSelect(item);
+            }}
+            activeOpacity={0.7}
+          >
+            {item.profilePic ? (
+              <Image source={{ uri: item.profilePic }} style={styles.mentionAvatar} />
+            ) : (
+              <View style={styles.mentionAvatarPlaceholder}>
+                <Text style={styles.mentionAvatarText}>
+                  {item.firstName?.charAt(0)?.toUpperCase() || 'U'}
+                </Text>
+              </View>
+            )}
+            <Text style={styles.mentionSuggestionText}>
+              {item.firstName} {item.lastName || ''}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
     );
   };
@@ -461,127 +534,245 @@ export default function AiSuggestionScreen({ isVisible = true, onClose }: AiSugg
     }
   };
 
-  const ModalContent = () => (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-            <AntDesign name="close" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>AI Task Assistant</Text>
-          <View style={styles.headerSpacer} />
-        </View>
+  // Prepare data for FlatList
+  const renderData = [
+    { type: 'aiIntro' },
+    { type: 'suggestedPrompts' },
+    ...(users.length > 0 ? [{ type: 'userSelection' }] : []),
+    { type: 'promptInput' },
+    ...(taskData ? [{ type: 'taskPreview' }] : []),
+  ];
 
-        <ScrollView
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled={true}
-        >
-          <View style={styles.content}>
-            {/* AI Icon and Description */}
-            <View style={styles.aiIntro}>
+  const renderItem = ({ item }: { item: { type: string } }) => {
+    switch (item.type) {
+      case 'aiIntro':
+        return (
+          <View style={styles.aiIntro}>
+            <View style={styles.aiIconContainer}>
               <LinearGradient
                 colors={['#815BF5', '#4929fc']}
                 style={styles.aiIcon}
               >
                 <MaterialIcons name="auto-awesome" size={32} color="#FFFFFF" />
               </LinearGradient>
-              <Text style={styles.aiIntroTitle}>Describe your task</Text>
-              <Text style={styles.aiIntroSubtitle}>
-                Tell me what you need to do and I'll help you create a structured task. Use @ to mention users.
-              </Text>
+              {/* Animated rings around AI icon */}
+              <View style={[styles.aiIconRing, styles.aiIconRing1]} />
+              <View style={[styles.aiIconRing, styles.aiIconRing2]} />
             </View>
-
-            {/* User Selection */}
-            {users.length > 0 && (
-              <View style={styles.userSelectionContainer}>
-                <Text style={styles.sectionTitle}>Assign to (optional)</Text>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.userMentionScroll}
-                >
-                  {renderUserMentions()}
-                </ScrollView>
+            <Text style={styles.aiIntroTitle}>Describe your task</Text>
+            <Text style={styles.aiIntroSubtitle}>
+              Tell me what you need to do and I'll help you create a structured task. Use @ to mention users.
+            </Text>
+            
+            {/* AI Credits Warning */}
+            {aiCredits <= 5 && (
+              <View style={styles.creditsWarning}>
+                <MaterialIcons name="warning" size={16} color="#FC8929" />
+                <Text style={styles.creditsWarningText}>
+                  {aiCredits === 0 ? 'No AI credits remaining' : `Only ${aiCredits} credit${aiCredits !== 1 ? 's' : ''} left`}
+                </Text>
               </View>
             )}
+          </View>
+        );
 
-            {/* Prompt Input */}
-            <View style={styles.promptContainer}>
-              <Text style={styles.sectionTitle}>Task Description</Text>
+      case 'suggestedPrompts':
+        return (
+          <View style={styles.suggestedPromptsContainer}>
+            <Text style={styles.sectionTitle}>
+              <MaterialIcons name="lightbulb" size={16} color="#FC8929" /> Suggested Prompts
+            </Text>
+            <View style={styles.suggestedPromptsGrid}>
+              {suggestedPrompts.slice(0, 4).map((promptText, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.suggestedPromptItem}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    setPrompt(promptText);
+                    textInputRef.current?.focus();
+                    Haptics.selectionAsync();
+                  }}
+                >
+                  <Text style={styles.suggestedPromptText}>{promptText}</Text>
+                  <MaterialIcons name="arrow-forward-ios" size={12} color="#787CA5" />
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        );
+
+
+
+      case 'promptInput':
+        return (
+          <View style={styles.promptContainer}>
+            <Text style={styles.sectionTitle}>Task Description</Text>
+            <TouchableWithoutFeedback 
+              onPress={(e) => {
+                e.stopPropagation();
+                textInputRef.current?.focus();
+              }}
+            >
               <View style={styles.promptInputContainer}>
                 <TextInput
                   ref={textInputRef}
                   style={styles.promptInput}
                   value={prompt}
-                  onChangeText={handleTextChange}
+                  onChangeText={handleInputChange}
                   onSelectionChange={handleSelectionChange}
-                  placeholder="e.g., 'Create a marketing presentation for next Friday at 3 PM and assign it to @John'"
+                  onFocus={handleTextInputFocus}
+                  placeholder="e.g., 'Create a marketing presentation for next Friday at 3 PM' (Use @ to mention users)"
                   placeholderTextColor="#787CA5"
-                  multiline
+                  multiline={true}
                   textAlignVertical="top"
                   blurOnSubmit={false}
+                  autoCorrect={false}
+                  autoCapitalize="sentences"
+                  keyboardType="default"
                   returnKeyType="default"
+                  enablesReturnKeyAutomatically={false}
+                  scrollEnabled={false}
+                  showSoftInputOnFocus={true}
+                  editable={true}
+                  contextMenuHidden={false}
                 />
                 {renderMentionSuggestions()}
               </View>
-              
-              <TouchableOpacity
-                style={[styles.generateButton, (!prompt.trim() || isLoading) && styles.generateButtonDisabled]}
-                onPress={handleAiSuggestion}
-                disabled={isLoading || !prompt.trim()}
-              >
-                <LinearGradient
-                  colors={(!prompt.trim() || isLoading) ? ['#37384B', '#37384B'] : ['#4929fc', '#815BF5']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.generateButtonGradient}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : (
-                    <>
-                      <MaterialIcons name="auto-awesome" size={20} color="#FFFFFF" />
-                      <Text style={styles.generateButtonText}>Generate Task</Text>
-                    </>
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-
-            {/* Task Preview */}
-            {renderTaskPreview()}
-
-            {/* Example Prompts */}
-            <View style={styles.examplesContainer}>
-              <Text style={styles.sectionTitle}>Example prompts</Text>
-              {[
-                "Schedule a team meeting for tomorrow at 2 PM",
-                "Create a high priority bug fix task for next Monday",
-                "Assign a content review task to @Sarah for this Friday",
-                "Set up a weekly report task every Monday morning"
-              ].map((example, index) => (
+            </TouchableWithoutFeedback>
+            
+            {/* Selected user chip (similar to web version) */}
+            {selectedMentionedUser && (
+              <View style={styles.selectedUserChip}>
+                {selectedMentionedUser.profilePic ? (
+                  <Image source={{ uri: selectedMentionedUser.profilePic }} style={styles.selectedUserAvatar} />
+                ) : (
+                  <View style={styles.selectedUserAvatarPlaceholder}>
+                    <Text style={styles.selectedUserAvatarText}>
+                      {selectedMentionedUser.firstName?.charAt(0)?.toUpperCase() || 'U'}
+                    </Text>
+                  </View>
+                )}
+                <Text style={styles.selectedUserText}>
+                  Assigning to <Text style={styles.selectedUserName}>{selectedMentionedUser.firstName} {selectedMentionedUser.lastName}</Text>
+                </Text>
                 <TouchableOpacity
-                  key={index}
-                  style={styles.exampleItem}
-                  onPress={() => {
-                    setPrompt(example);
-                    textInputRef.current?.focus();
+                  style={styles.removeUserButton}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    setSelectedMentionedUser(null);
+                    setSelectedUserId(null);
                   }}
                 >
-                  <Text style={styles.exampleText}>{example}</Text>
-                  <MaterialIcons name="arrow-forward-ios" size={14} color="#787CA5" />
+                  <MaterialIcons name="close" size={16} color="#787CA5" />
                 </TouchableOpacity>
-              ))}
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={[
+                styles.generateButton, 
+                (!prompt.trim() || isLoading || aiCredits <= 0) && styles.generateButtonDisabled
+              ]}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleAiSuggestion();
+              }}
+              disabled={isLoading || !prompt.trim() || aiCredits <= 0}
+            >
+              <LinearGradient
+                colors={(!prompt.trim() || isLoading || aiCredits <= 0) ? ['#37384B', '#37384B'] : ['#4929fc', '#815BF5']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.generateButtonGradient}
+              >
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <MaterialIcons name="auto-awesome" size={20} color="#FFFFFF" />
+                    <Text style={styles.generateButtonText}>
+                      {aiCredits <= 0 ? 'No Credits Left' : 'Generate Task'}
+                    </Text>
+                  </>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+            
+            {/* AI explainer (similar to web version) */}
+            <View style={styles.aiExplainer}>
+              <MaterialIcons name="info" size={16} color="#815BF5" />
+              <View style={styles.aiExplainerContent}>
+                <Text style={styles.aiExplainerText}>
+                  The AI will analyze your request and create a task with suggested title, description, priority, 
+                  category, and due date. You can edit these details before saving.
+                </Text>
+              </View>
+            </View>
+
+            {/* Credit usage info */}
+            <View style={styles.creditUsageInfo}>
+              <MaterialIcons name="info" size={14} color="#787CA5" />
+              <Text style={styles.creditUsageText}>
+                Each AI task generation uses 1 credit
+              </Text>
             </View>
           </View>
-        </ScrollView>
+        );
+
+      case 'taskPreview':
+        return renderTaskPreview();
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#05071E" />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+          <AntDesign name="arrowleft" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>AI Task Assistant</Text>
+          <Text style={styles.headerSubtitle}>Turn your ideas into structured tasks</Text>
+        </View>
+        <View style={[
+          styles.creditsBadge,
+          {
+            backgroundColor: aiCredits > 10 ? '#065F46' : aiCredits > 0 ? '#92400E' : '#7F1D1D'
+          }
+        ]}>
+          {aiCredits <= 5 && <MaterialIcons name="warning" size={12} color="#FFFFFF" />}
+          <Text style={styles.creditsText}>{aiCredits}</Text>
+        </View>
+      </View>
+
+      <KeyboardAvoidingView 
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+          <View style={styles.dismissKeyboardArea}>
+            <FlatList
+              data={renderData}
+              keyExtractor={(item, index) => `${item.type}-${index}`}
+              renderItem={renderItem}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+              contentContainerStyle={styles.flatListContent}
+              bounces={true}
+              overScrollMode="auto"
+              scrollEventThrottle={16}
+            />
+          </View>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
 
       <CustomAlert
@@ -613,41 +804,12 @@ export default function AiSuggestionScreen({ isVisible = true, onClose }: AiSugg
       />
     </SafeAreaView>
   );
-
-  // If used as a modal
-  if (isVisible !== undefined && onClose) {
-    return (
-      <Modal
-        isVisible={isVisible}
-        onBackdropPress={handleClose}
-        style={styles.modal}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        backdropOpacity={0.8}
-        avoidKeyboard={true}
-        propagateSwipe={true}
-      >
-        <ModalContent />
-      </Modal>
-    );
-  }
-
-  // If used as a screen
-  return <ModalContent />;
 }
 
 const styles = StyleSheet.create({
-  modal: {
-    margin: 0,
-    justifyContent: 'flex-end',
-  },
   container: {
     flex: 1,
     backgroundColor: '#05071E',
-    maxHeight: screenHeight * 0.95,
-  },
-  keyboardAvoidingView: {
-    flex: 1,
   },
   header: {
     flexDirection: 'row',
@@ -657,28 +819,60 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#37384B',
+    paddingTop: Platform.OS === 'ios' ? 10 : 15,
   },
   closeButton: {
     padding: 5,
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 18,
     fontFamily: 'LatoBold',
     color: '#FFFFFF',
   },
-  headerSpacer: {
-    width: 34,
+  headerSubtitle: {
+    fontSize: 12,
+    fontFamily: 'LatoRegular',
+    color: '#787CA5',
+    marginTop: 2,
   },
-  scrollView: {
+  creditsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    minWidth: 40,
+    justifyContent: 'center',
+  },
+  creditsText: {
+    fontSize: 12,
+    fontFamily: 'LatoBold',
+    color: '#FFFFFF',
+    marginLeft: 4,
+  },
+  keyboardAvoidingView: {
     flex: 1,
   },
-  content: {
+  dismissKeyboardArea: {
+    flex: 1,
+  },
+  flatListContent: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
   aiIntro: {
     alignItems: 'center',
     marginBottom: 30,
+  },
+  aiIconContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
   },
   aiIcon: {
     width: 64,
@@ -686,7 +880,22 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+  },
+  aiIconRing: {
+    position: 'absolute',
+    borderWidth: 1,
+    borderColor: '#815BF520',
+    borderRadius: 50,
+  },
+  aiIconRing1: {
+    width: 80,
+    height: 80,
+    borderColor: '#815BF530',
+  },
+  aiIconRing2: {
+    width: 96,
+    height: 96,
+    borderColor: '#815BF520',
   },
   aiIntroTitle: {
     fontSize: 24,
@@ -701,6 +910,50 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
   },
+  creditsWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#92400E20',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#92400E40',
+  },
+  creditsWarningText: {
+    fontSize: 14,
+    fontFamily: 'LatoRegular',
+    color: '#FC8929',
+    marginLeft: 8,
+  },
+  suggestedPromptsContainer: {
+    marginBottom: 25,
+  },
+  suggestedPromptsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  suggestedPromptItem: {
+    width: '48%',
+    backgroundColor: '#37384B',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#4A4B5C',
+  },
+  suggestedPromptText: {
+    fontSize: 12,
+    fontFamily: 'LatoRegular',
+    color: '#787CA5',
+    flex: 1,
+    lineHeight: 16,
+  },
   userSelectionContainer: {
     marginBottom: 25,
   },
@@ -710,10 +963,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginBottom: 12,
   },
-  userMentionScroll: {
-    flexDirection: 'row',
-  },
-  userMentionItem: {
+    userMentionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#37384B',
@@ -776,6 +1026,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     minHeight: 120,
     maxHeight: 200,
+    textAlignVertical: 'top',
   },
   mentionSuggestionsContainer: {
     position: 'absolute',
@@ -789,11 +1040,16 @@ const styles = StyleSheet.create({
     borderTopColor: '#4A4B5C',
     maxHeight: 150,
     zIndex: 1000,
+    elevation: 5, // For Android shadow
+    shadowColor: '#000', // For iOS shadow
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
-  mentionSuggestionsList: {
-    maxHeight: 150,
-  },
-  mentionSuggestionItem: {
+    mentionSuggestionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -826,6 +1082,51 @@ const styles = StyleSheet.create({
     fontFamily: 'LatoRegular',
     color: '#FFFFFF',
   },
+  selectedUserChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#37384B',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#815BF5',
+  },
+  selectedUserAvatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    marginRight: 8,
+  },
+  selectedUserAvatarPlaceholder: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#815BF5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  selectedUserAvatarText: {
+    fontSize: 12,
+    fontFamily: 'LatoBold',
+    color: '#FFFFFF',
+  },
+  selectedUserText: {
+    fontSize: 14,
+    fontFamily: 'LatoRegular',
+    color: '#787CA5',
+    flex: 1,
+  },
+  selectedUserName: {
+    fontFamily: 'LatoBold',
+    color: '#FFFFFF',
+  },
+  removeUserButton: {
+    padding: 4,
+    borderRadius: 12,
+    backgroundColor: '#4A4B5C',
+  },
   generateButton: {
     borderRadius: 12,
     overflow: 'hidden',
@@ -845,6 +1146,44 @@ const styles = StyleSheet.create({
     fontFamily: 'LatoBold',
     color: '#FFFFFF',
     marginLeft: 8,
+  },
+  aiExplainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#37384B20',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#37384B40',
+  },
+  aiExplainerContent: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  aiExplainerText: {
+    fontSize: 12,
+    fontFamily: 'LatoRegular',
+    color: '#787CA5',
+    lineHeight: 16,
+  },
+  creditUsageInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#37384B20',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#37384B40',
+  },
+  creditUsageText: {
+    fontSize: 12,
+    fontFamily: 'LatoRegular',
+    color: '#787CA5',
+    marginLeft: 6,
   },
   taskPreviewContainer: {
     marginBottom: 25,
@@ -960,23 +1299,5 @@ const styles = StyleSheet.create({
     fontFamily: 'LatoRegular',
     color: '#FC8929',
     marginLeft: 6,
-  },
-  examplesContainer: {
-    marginBottom: 20,
-  },
-  exampleItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#37384B',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
-  },
-  exampleText: {
-    fontSize: 14,
-    fontFamily: 'LatoRegular',
-    color: '#787CA5',
-    flex: 1,
   },
 });

@@ -14,7 +14,7 @@ import {
 import React, { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView } from 'react-native';
 import NavbarTwo from '~/components/navbarTwo';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useLocalSearchParams } from 'expo-router';
 import { StackNavigationProp } from '@react-navigation/stack';
 import InputContainer from '~/components/InputContainer';
 import { TextInput } from 'react-native';
@@ -53,6 +53,7 @@ const selectRepetType = [
 export default function AssignTaskScreen() {
   const navigation = useNavigation<StackNavigationProp<any>>();
   const { token, userData } = useSelector((state: RootState) => state.auth);
+  const params = useLocalSearchParams();
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
   const [activeButton, setActiveButton] = useState('High');
@@ -129,6 +130,72 @@ export default function AssignTaskScreen() {
     fetchUsers();
     fetchCategories();
   }, [token]);
+
+  // Handle template data and AI suggestion data
+  useEffect(() => {
+    if (params.templateData) {
+      try {
+        const template = JSON.parse(params.templateData as string);
+        console.log('Template data received:', template);
+        
+        // Pre-fill form with template data
+        if (template.title) setTaskTitle(template.title);
+        if (template.description) setTaskDescription(template.description);
+        if (template.priority) setActiveButton(template.priority);
+        if (template.category?._id) setCategory(template.category._id);
+        if (template.repeat !== undefined) setIsChecked(template.repeat);
+        if (template.repeatType) setRepeatType(template.repeatType);
+        if (template.days) setWeekDays(template.days);
+        
+        // Show success message
+        setCustomAlertVisible(true);
+        setCustomAlertMessage('Template loaded successfully! You can modify the details before assigning.');
+        setCustomAlertType('success');
+      } catch (error) {
+        console.error('Error parsing template data:', error);
+        setCustomAlertVisible(true);
+        setCustomAlertMessage('Error loading template data.');
+        setCustomAlertType('error');
+      }
+    }
+
+    if (params.aiSuggestion) {
+      try {
+        const aiData = JSON.parse(params.aiSuggestion as string);
+        console.log('AI suggestion data received:', aiData);
+        
+        // Pre-fill form with AI suggestion data
+        if (aiData.title) setTaskTitle(aiData.title);
+        if (aiData.description) setTaskDescription(aiData.description);
+        if (aiData.priority) setActiveButton(aiData.priority);
+        if (aiData.category?._id) setCategory(aiData.category._id);
+        if (aiData.assignedUser?.id) setSelectedUser(aiData.assignedUser.id);
+        
+        // Handle due date from AI suggestion
+        if (aiData.dueDate) {
+          const suggestedDate = new Date(aiData.dueDate);
+          if (aiData.dueTime) {
+            // Parse time and set it to the date
+            const [hours, minutes] = aiData.dueTime.split(':');
+            suggestedDate.setHours(parseInt(hours), parseInt(minutes));
+          }
+          setDueDate(suggestedDate);
+          setSelectedDate(suggestedDate);
+          setSelectedTime(suggestedDate);
+        }
+        
+        // Show success message
+        setCustomAlertVisible(true);
+        setCustomAlertMessage('AI suggestion loaded successfully! Review and modify as needed.');
+        setCustomAlertType('success');
+      } catch (error) {
+        console.error('Error parsing AI suggestion data:', error);
+        setCustomAlertVisible(true);
+        setCustomAlertMessage('Error loading AI suggestion data.');
+        setCustomAlertType('error');
+      }
+    }
+  }, [params.templateData, params.aiSuggestion]);
 
   const fetchCategories = async () => {
     try {
@@ -427,7 +494,13 @@ export default function AssignTaskScreen() {
       <KeyboardAvoidingView
         className=" w-full"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <NavbarTwo title="Assign New Task"  />
+        <NavbarTwo 
+          title={
+            params.templateData ? "Create Task from Template" : 
+            params.aiSuggestion ? "Create Task from AI" : 
+            "Assign New Task"
+          } 
+        />
         <ScrollView
           className="h-full w-full flex-grow"
           showsVerticalScrollIndicator={false}

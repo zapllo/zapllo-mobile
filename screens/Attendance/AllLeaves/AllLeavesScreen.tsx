@@ -23,6 +23,7 @@ import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import NavbarTwo from '~/components/navbarTwo';
 import CustomDropdown from '~/components/customDropDown';
+import EditLeaveBalanceModal from '~/components/Attendence/EditLeaveBalanceModal';
 import {
   endOfMonth,
   format,
@@ -361,6 +362,59 @@ export default function AllLeavesScreen() {
       Alert.alert("Error", "Failed to reject leave request");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle updating leave balance - matches web version API call
+  const handleUpdateLeaveBalance = async (updatedLeaveBalances: LeaveBalance[]) => {
+    try {
+      if (!selectedUser) return;
+
+      // Format the data to match the web version API call exactly
+      const formattedBalances = updatedLeaveBalances.map((balance) => ({
+        leaveType: balance.leaveTypeId,
+        balance: balance.userLeaveBalance,
+      }));
+
+      const response = await fetch(`https://zapllo.com/api/leaveBalances/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userIdToUpdate: selectedUser.userId,
+          leaveBalances: formattedBalances,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success || response.ok) {
+        // Show success feedback
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Success', 'Leave balance updated successfully!');
+        
+        // Refresh the leave balances data to get updated values
+        const refreshResponse = await fetch("https://zapllo.com/api/leaves/getAllUsersBalances", {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        const refreshData = await refreshResponse.json();
+        if (refreshData.success) {
+          setUsers(refreshData.data.users);
+          setLeaveTypes(refreshData.data.leaveTypes);
+        }
+        
+        setIsEditModalOpen(false);
+        setSelectedUser(null);
+      } else {
+        throw new Error(data.error || 'Failed to update leave balance');
+      }
+    } catch (error) {
+      console.error("Error updating leave balance:", error);
+      throw error; // Re-throw to let the modal handle the error display
     }
   };
 
@@ -741,6 +795,7 @@ export default function AllLeavesScreen() {
     return (
       <SafeAreaView className="h-full flex-1 bg-primary">
         <NavbarTwo title="Leave Management" />
+      
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#815BF5" />
           <Text style={styles.loadingText}>Loading...</Text>
@@ -752,6 +807,31 @@ export default function AllLeavesScreen() {
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
       <NavbarTwo title="Leave Management" />
+      
+      {/* Debug button - remove after testing */}
+      <TouchableOpacity
+        style={{
+          backgroundColor: '#815BF5',
+          padding: 10,
+          margin: 20,
+          borderRadius: 8,
+          alignItems: 'center',
+        }}
+        onPress={() => {
+          console.log('Debug button pressed');
+          if (users.length > 0) {
+            setSelectedUser(users[0]);
+            setIsEditModalOpen(true);
+            console.log('Modal should open with user:', users[0].firstName);
+          } else {
+            console.log('No users available');
+          }
+        }}
+      >
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>
+          DEBUG: Open Modal (Remove this)
+        </Text>
+      </TouchableOpacity>
       
       <ScrollView
         style={styles.scrollView}
@@ -887,6 +967,19 @@ export default function AllLeavesScreen() {
       {renderCustomDateModal()}
       {renderRejectModal()}
       {renderDeleteDialog()}
+      
+      {/* Edit Leave Balance Modal */}
+      <EditLeaveBalanceModal
+        visible={isEditModalOpen}
+        user={selectedUser}
+        leaveTypes={leaveTypes}
+        onClose={() => {
+          console.log('Modal closing');
+          setIsEditModalOpen(false);
+          setSelectedUser(null);
+        }}
+        onSubmit={handleUpdateLeaveBalance}
+      />
     </SafeAreaView>
   );
 }

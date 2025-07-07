@@ -215,6 +215,11 @@ export default function HolidaysScreen() {
       }),
     ]).start();
 
+    // Dismiss keyboard when canceling (closing the form)
+    if (isAddingNew) {
+      Keyboard.dismiss();
+    }
+
     setIsAddingNew(!isAddingNew);
     if (!isAddingNew) {
       setNewHoliday({ holidayName: '', holidayDate: new Date() });
@@ -340,6 +345,14 @@ export default function HolidaysScreen() {
   };
 
   const toggleEdit = (id: string) => {
+    // Find the holiday being toggled
+    const holiday = holidays.find(h => h._id === id);
+    
+    // If we're closing edit mode (holiday is currently editing), dismiss keyboard
+    if (holiday?.isEditing) {
+      Keyboard.dismiss();
+    }
+    
     setHolidays(holidays.map(holiday => 
       holiday._id === id 
         ? { ...holiday, isEditing: !holiday.isEditing } 
@@ -483,6 +496,7 @@ export default function HolidaysScreen() {
 
   // Cancel delete
   const cancelDelete = () => {
+    Keyboard.dismiss();
     setDeleteModal(false);
   };
 
@@ -616,6 +630,7 @@ export default function HolidaysScreen() {
 
   // Cancel date selection for iOS
   const cancelIOSDateSelection = () => {
+    Keyboard.dismiss();
     setDatePickerVisible(false);
     setActiveDatePickerId(null);
   };

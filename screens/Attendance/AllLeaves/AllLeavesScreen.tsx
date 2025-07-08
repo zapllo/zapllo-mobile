@@ -808,31 +808,7 @@ export default function AllLeavesScreen() {
     <SafeAreaView className="h-full flex-1 bg-primary">
       <NavbarTwo title="Leave Management" />
       
-      {/* Debug button - remove after testing */}
-      <TouchableOpacity
-        style={{
-          backgroundColor: '#815BF5',
-          padding: 10,
-          margin: 20,
-          borderRadius: 8,
-          alignItems: 'center',
-        }}
-        onPress={() => {
-          console.log('Debug button pressed');
-          if (users.length > 0) {
-            setSelectedUser(users[0]);
-            setIsEditModalOpen(true);
-            console.log('Modal should open with user:', users[0].firstName);
-          } else {
-            console.log('No users available');
-          }
-        }}
-      >
-        <Text style={{ color: 'white', fontWeight: 'bold' }}>
-          DEBUG: Open Modal (Remove this)
-        </Text>
-      </TouchableOpacity>
-      
+            
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollViewContent}
@@ -967,19 +943,19 @@ export default function AllLeavesScreen() {
       {renderCustomDateModal()}
       {renderRejectModal()}
       {renderDeleteDialog()}
-      
+
       {/* Edit Leave Balance Modal */}
       <EditLeaveBalanceModal
         visible={isEditModalOpen}
         user={selectedUser}
         leaveTypes={leaveTypes}
         onClose={() => {
-          console.log('Modal closing');
           setIsEditModalOpen(false);
           setSelectedUser(null);
         }}
         onSubmit={handleUpdateLeaveBalance}
       />
+
     </SafeAreaView>
   );
 }

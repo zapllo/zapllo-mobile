@@ -21,7 +21,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
-import NavbarTwo from '~/components/navbarTwo';
+import Navbar from '~/components/navbar';
 import CustomDropdown from '~/components/customDropDown';
 import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
 import LeaveApplyModal from '~/components/Attendence/LeaveApplyModal';
@@ -1315,7 +1315,7 @@ const renderLeaveItem = (leave: Leave) => {
 if (initialLoading) {
   return (
     <SafeAreaView className="h-full flex-1 bg-primary">
-      <NavbarTwo title="My Leave History" />
+      <Navbar title="My Leave History" />
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollViewContent}
@@ -1332,7 +1332,7 @@ if (initialLoading) {
 
 return (
 <SafeAreaView className="h-full flex-1 bg-primary">
-<NavbarTwo title="My Leave History" />
+<Navbar title="My Leaves" />
     
     <ScrollView
       style={styles.scrollView}

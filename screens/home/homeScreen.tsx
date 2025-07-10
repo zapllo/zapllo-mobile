@@ -18,7 +18,7 @@ import {
 import { router, useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import Navbar from '~/components/navbar';
+import NavbarThree from '~/components/navbarThree';
 import axios from 'axios';
 import { backend_Host } from '~/config';
 import { useSelector } from 'react-redux';
@@ -1088,7 +1088,7 @@ const HomeScreen: React.FC = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.container}>
         
-        <Navbar title="My Business Apps" />
+        <NavbarThree title="My Business Apps" />
         
         <Animated.ScrollView
           ref={scrollViewRef}

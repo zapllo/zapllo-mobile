@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, Platform, StatusBar, SafeAreaView, TouchableOpacity } from "react-native";
+import { View, Text, Image, Platform, StatusBar, SafeAreaView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ProfileButton from "../profile/ProfileButton";
 import { useSelector } from "react-redux";
@@ -8,19 +7,15 @@ import { RootState } from "~/redux/store";
 import axios from "axios";
 import { backend_Host } from "~/config";
 import { useFocusEffect } from "@react-navigation/native";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 
-interface NavbarProps {
+interface NavbarThreeProps {
   title: string;
-  onBackPress?: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ title, onBackPress }) => {
+const NavbarThree: React.FC<NavbarThreeProps> = ({ title }) => {
   const { token } = useSelector((state: RootState) => state.auth);
   const [profilePic, setProfilePic] = useState('');
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   
   // Platform-specific styling
   const platformStyles = {
@@ -53,14 +48,6 @@ const Navbar: React.FC<NavbarProps> = ({ title, onBackPress }) => {
     }
   };
 
-  const handleBackPress = () => {
-    if (onBackPress) {
-      onBackPress();
-    } else {
-      router.back();
-    }
-  };
-
   return (
     <SafeAreaView >
       <StatusBar 
@@ -76,13 +63,11 @@ const Navbar: React.FC<NavbarProps> = ({ title, onBackPress }) => {
           ...platformStyles.shadowProps
         }}
       >
-        <TouchableOpacity 
-          onPress={handleBackPress} 
-          className="p-2"
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
+        <Image 
+          className="w-11 h-7" 
+          source={require("~/assets/home/logo.png")}
+          resizeMode="contain"
+        />
         
         <Text 
           className="text-xl font-semibold text-white"
@@ -101,4 +86,4 @@ const Navbar: React.FC<NavbarProps> = ({ title, onBackPress }) => {
   );
 };
 
-export default Navbar;
+export default NavbarThree;

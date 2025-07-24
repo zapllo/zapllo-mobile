@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,7 @@ import { backend_Host } from '~/config';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
+import ToastAlert from '../ToastAlert';
 
 interface LeaveType {
   _id: string;
@@ -78,6 +79,7 @@ export default function LeaveApplyModal({
   const [tempToDate, setTempToDate] = useState(new Date());
   const [openDropdownDate, setOpenDropdownDate] = useState<string>('');
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // Day type options
   const dayTypeOptions = [
@@ -113,7 +115,8 @@ export default function LeaveApplyModal({
     };
   }, []);
 
-  const handleAttachmentPicker = async () => {
+  // Memoized handlers for better performance
+  const handleAttachmentPicker = useCallback(async () => {
     Alert.alert(
       "Select Attachment",
       "Choose how you want to add an attachment",
@@ -131,7 +134,7 @@ export default function LeaveApplyModal({
               mediaTypes: ImagePicker.MediaTypeOptions.Images,
               allowsEditing: true,
               aspect: [4, 3],
-              quality: 1,
+              quality: 0.8, // Reduced quality for better performance
             });
 
             if (!result.canceled && result.assets[0]) {
@@ -160,7 +163,7 @@ export default function LeaveApplyModal({
               mediaTypes: ImagePicker.MediaTypeOptions.Images,
               allowsEditing: true,
               aspect: [4, 3],
-              quality: 1,
+              quality: 0.8, // Reduced quality for better performance
             });
 
             if (!result.canceled && result.assets[0]) {
@@ -208,16 +211,16 @@ export default function LeaveApplyModal({
         }
       ]
     );
-  };
+  }, []);
 
-  const removeAttachment = (index: number) => {
+  const removeAttachment = useCallback((index: number) => {
     setApplyLeaveForm(prev => ({
       ...prev,
       attachments: prev.attachments.filter((_, i) => i !== index)
     }));
-  };
+  }, []);
 
-  const resetApplyLeaveForm = () => {
+  const resetApplyLeaveForm = useCallback(() => {
     setApplyLeaveForm({
       leaveTypeId: '',
       fromDate: '',
@@ -233,35 +236,35 @@ export default function LeaveApplyModal({
     setTempFromDate(new Date());
     setTempToDate(new Date());
     setOpenDropdownDate('');
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     Keyboard.dismiss();
     onClose();
     setOpenDropdownDate('');
     setTimeout(() => {
       resetApplyLeaveForm();
     }, 300);
-  };
+  }, [onClose, resetApplyLeaveForm]);
 
-  const dismissKeyboard = () => {
+  const dismissKeyboard = useCallback(() => {
     Keyboard.dismiss();
-  };
+  }, []);
 
   // Date picker handlers
-  const handleFromDateSelect = () => {
+  const handleFromDateSelect = useCallback(() => {
     dismissKeyboard();
     setTempFromDate(applyLeaveForm.fromDate ? new Date(applyLeaveForm.fromDate) : new Date());
     setIsFromDatePickerVisible(true);
-  };
+  }, [applyLeaveForm.fromDate, dismissKeyboard]);
 
-  const handleToDateSelect = () => {
+  const handleToDateSelect = useCallback(() => {
     dismissKeyboard();
     setTempToDate(applyLeaveForm.toDate ? new Date(applyLeaveForm.toDate) : new Date());
     setIsToDatePickerVisible(true);
-  };
+  }, [applyLeaveForm.toDate, dismissKeyboard]);
 
-  const confirmIOSFromDateSelection = () => {
+  const confirmIOSFromDateSelection = useCallback(() => {
     const formattedDate = tempFromDate.toISOString().split('T')[0];
     setApplyLeaveForm(prev => {
       const newForm = { ...prev, fromDate: formattedDate };
@@ -271,9 +274,9 @@ export default function LeaveApplyModal({
       return newForm;
     });
     setIsFromDatePickerVisible(false);
-  };
+  }, [tempFromDate]);
 
-  const confirmIOSToDateSelection = () => {
+  const confirmIOSToDateSelection = useCallback(() => {
     const formattedDate = tempToDate.toISOString().split('T')[0];
     setApplyLeaveForm(prev => {
       const newForm = { ...prev, toDate: formattedDate };
@@ -283,17 +286,17 @@ export default function LeaveApplyModal({
       return newForm;
     });
     setIsToDatePickerVisible(false);
-  };
+  }, [tempToDate]);
 
-  const cancelFromDateSelection = () => {
+  const cancelFromDateSelection = useCallback(() => {
     setIsFromDatePickerVisible(false);
-  };
+  }, []);
 
-  const cancelToDateSelection = () => {
+  const cancelToDateSelection = useCallback(() => {
     setIsToDatePickerVisible(false);
-  };
+  }, []);
 
-  const handleFromDateConfirm = (date: Date) => {
+  const handleFromDateConfirm = useCallback((date: Date) => {
     const formattedDate = date.toISOString().split('T')[0];
     setApplyLeaveForm(prev => {
       const newForm = { ...prev, fromDate: formattedDate };
@@ -303,9 +306,9 @@ export default function LeaveApplyModal({
       return newForm;
     });
     setIsFromDatePickerVisible(false);
-  };
+  }, []);
 
-  const handleToDateConfirm = (date: Date) => {
+  const handleToDateConfirm = useCallback((date: Date) => {
     const formattedDate = date.toISOString().split('T')[0];
     setApplyLeaveForm(prev => {
       const newForm = { ...prev, toDate: formattedDate };
@@ -315,16 +318,17 @@ export default function LeaveApplyModal({
       return newForm;
     });
     setIsToDatePickerVisible(false);
-  };
+  }, []);
 
-  const formatDate = (dateString: string) => {
+  // Memoized utility functions
+  const formatDate = useCallback((dateString: string) => {
     if (!dateString) return 'Select Date';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-  };
+  }, []);
 
   // Generate dates between from and to date
-  const generateDatesBetween = (fromDate: string, toDate: string) => {
+  const generateDatesBetween = useCallback((fromDate: string, toDate: string) => {
     const dates = [];
     const start = new Date(fromDate);
     const end = new Date(toDate);
@@ -332,10 +336,10 @@ export default function LeaveApplyModal({
       dates.push(new Date(date).toISOString().split('T')[0]);
     }
     return dates;
-  };
+  }, []);
 
   // Update leave days when dates change
-  const updateLeaveDays = (fromDate: string, toDate: string) => {
+  const updateLeaveDays = useCallback((fromDate: string, toDate: string) => {
     if (fromDate && toDate) {
       const dates = generateDatesBetween(fromDate, toDate);
       const newLeaveDays = dates.map(date => {
@@ -343,7 +347,7 @@ export default function LeaveApplyModal({
         return existingDay || {
           date,
           unit: applyLeaveForm.dayType as 'Full Day' | '1st Half' | '2nd Half' | '1st Quarter' | '2nd Quarter' | '3rd Quarter' | '4th Quarter',
-          status: 'Pending' as 'Pending' | 'Approved' | 'Rejected' // Add status field like in web version
+          status: 'Pending' as 'Pending' | 'Approved' | 'Rejected'
         };
       });
 
@@ -352,10 +356,10 @@ export default function LeaveApplyModal({
         leaveDays: newLeaveDays
       }));
     }
-  };
+  }, [generateDatesBetween, applyLeaveForm.leaveDays, applyLeaveForm.dayType]);
 
   // Update day type for a specific date
-  const updateDayTypeForDate = (date: string, unit: string) => {
+  const updateDayTypeForDate = useCallback((date: string, unit: string) => {
     setApplyLeaveForm(prev => ({
       ...prev,
       leaveDays: prev.leaveDays.map(day =>
@@ -363,12 +367,40 @@ export default function LeaveApplyModal({
           ? { 
               ...day, 
               unit: unit as 'Full Day' | '1st Half' | '2nd Half' | '1st Quarter' | '2nd Quarter' | '3rd Quarter' | '4th Quarter',
-              status: day.status || 'Pending' // Preserve existing status or default to Pending
+              status: day.status || 'Pending'
             }
           : day
       )
     }));
-  };
+  }, []);
+
+  // Memoized computed values
+  const selectedLeaveType = useMemo(() => 
+    leaveTypes.find(type => type._id === applyLeaveForm.leaveTypeId),
+    [leaveTypes, applyLeaveForm.leaveTypeId]
+  );
+
+  const leaveBalanceInfo = useMemo(() => {
+    if (!applyLeaveForm.leaveTypeId) return null;
+    
+    const leaveDetail = leaveDetails[applyLeaveForm.leaveTypeId];
+    const totalAllotted = leaveDetail?.totalAllotedLeaves || selectedLeaveType?.allotedLeaves || 0;
+    const available = leaveDetail?.userLeaveBalance || 0;
+    const used = totalAllotted - available;
+    
+    return { totalAllotted, available, used };
+  }, [applyLeaveForm.leaveTypeId, leaveDetails, selectedLeaveType]);
+
+  const requestSummary = useMemo(() => {
+    if (!applyLeaveForm.leaveTypeId || !applyLeaveForm.leaveDays.length) return null;
+    
+    const leaveDetail = leaveDetails[applyLeaveForm.leaveTypeId];
+    const availableBalance = leaveDetail?.userLeaveBalance || 0;
+    const requestedDays = applyLeaveForm.leaveDays.length;
+    const isExceeding = requestedDays > availableBalance;
+    
+    return { availableBalance, requestedDays, isExceeding };
+  }, [applyLeaveForm.leaveTypeId, applyLeaveForm.leaveDays.length, leaveDetails]);
 
   const handleSubmitLeave = async () => {
     // Validation
@@ -485,19 +517,17 @@ export default function LeaveApplyModal({
       console.log('Response Status:', response.status);
 
       if (response.data.success || response.status === 200 || response.status === 201) {
-        Alert.alert(
-          'Success',
-          'Leave request submitted successfully!',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                handleCloseModal();
-                onSuccess?.();
-              }
-            }
-          ]
-        );
+        resetApplyLeaveForm();
+        
+        // Show success toast
+        console.log('Showing success toast for leave submission');
+        setShowSuccessToast(true);
+        
+        // Close the modal immediately
+        handleCloseModal();
+        
+        // Call onSuccess callback
+        onSuccess?.();
       } else {
         Alert.alert('Error', response.data.message || 'Failed to submit leave request');
       }
@@ -508,7 +538,7 @@ export default function LeaveApplyModal({
       if (error.response) {
         // Server responded with error status
         console.error('Response error status:', error.response.status);
-                console.error('Response error data:', error.response.data);
+        console.error('Response error data:', error.response.data);
         console.error('Response error headers:', error.response.headers);
         
         if (error.response.status === 400) {
@@ -545,20 +575,21 @@ export default function LeaveApplyModal({
       setIsSubmittingLeave(false);
     }
   };
-return (
+
+  return (
     <>
     {/* Apply Leave Modal */}
       <Modal
         isVisible={isVisible}
-        onBackdropPress={() => {
-          Keyboard.dismiss();
-          handleCloseModal();
-        }}
+        onBackdropPress={dismissKeyboard}
         style={styles.bottomModal}
         animationIn="slideInUp"
         animationOut="slideOutDown"
         backdropOpacity={0.5}
         avoidKeyboard={true}
+        useNativeDriver={true}
+        hideModalContentWhileAnimating={true}
+        propagateSwipe={true}
       >
         <TouchableWithoutFeedback onPress={dismissKeyboard}>
           <KeyboardAvoidingView
@@ -577,6 +608,7 @@ return (
               </View>
 
               <ScrollView
+                ref={scrollViewRef}
                 showsVerticalScrollIndicator={false}
                 style={styles.modalScrollView}
                 keyboardShouldPersistTaps="handled"
@@ -680,7 +712,6 @@ return (
                     </View>
                   </View>
                 )}
-
 
                 {/* Date Selection */}
                 <View style={styles.dateRow}>
@@ -924,129 +955,140 @@ return (
                 </View>
               </ScrollView>
 
-                {/* From Date Picker Modal */}
-      {Platform.OS === 'ios' ? (
-        <Modal
-          isVisible={isFromDatePickerVisible}
-          onBackdropPress={cancelFromDateSelection}
-          style={{ justifyContent: 'flex-end', margin: 0 }}
-          backdropOpacity={0.5}
-          animationIn="slideInUp"
-          animationOut="slideOutDown"
-        >
-          <View style={styles.datePickerContainer}>
-            <View style={styles.datePickerHeader}>
-              <TouchableOpacity onPress={cancelFromDateSelection}>
-                <Text style={styles.datePickerCancel}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={confirmIOSFromDateSelection}>
-                <Text style={styles.datePickerDone}>Done</Text>
-              </TouchableOpacity>
-            </View>
-            <DateTimePicker
-              value={tempFromDate}
-              mode="date"
-              display="spinner"
-              onChange={(event, date) => date && setTempFromDate(date)}
-              style={styles.datePicker}
-              minimumDate={new Date()}
-            />
-          </View>
-        </Modal>
-      ) : (
-        <Modal
-          isVisible={isFromDatePickerVisible}
-          onBackdropPress={cancelFromDateSelection}
-          style={{ margin: 20, justifyContent: 'center' }}
-          backdropOpacity={0.5}
-        >
-          <View style={[styles.datePickerContainer, { padding: 20, alignItems: 'center', borderRadius: 12 }]}>
-            <Text style={{ color: 'white', fontSize: 18, marginBottom: 20, fontFamily: 'LatoBold' }}>Select From Date</Text>
-            <DateTimePicker
-              value={tempFromDate}
-              mode="date"
-              display="default"
-              onChange={(event, selectedDate) => {
-                if (selectedDate) {
-                  handleFromDateConfirm(selectedDate);
-                }
-              }}
-              textColor="white"
-              minimumDate={new Date()}
-            />
-            <TouchableOpacity 
-              onPress={cancelFromDateSelection}
-              style={styles.androidCancelButton}
-            >
-              <Text style={styles.androidCancelText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </Modal>
-      )}
+              {/* From Date Picker Modal */}
+              {Platform.OS === 'ios' ? (
+                <Modal
+                  isVisible={isFromDatePickerVisible}
+                  onBackdropPress={cancelFromDateSelection}
+                  style={{ justifyContent: 'flex-end', margin: 0 }}
+                  backdropOpacity={0.5}
+                  animationIn="slideInUp"
+                  animationOut="slideOutDown"
+                >
+                  <View style={styles.datePickerContainer}>
+                    <View style={styles.datePickerHeader}>
+                      <TouchableOpacity onPress={cancelFromDateSelection}>
+                        <Text style={styles.datePickerCancel}>Cancel</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={confirmIOSFromDateSelection}>
+                        <Text style={styles.datePickerDone}>Done</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePicker
+                      value={tempFromDate}
+                      mode="date"
+                      display="spinner"
+                      onChange={(event, date) => date && setTempFromDate(date)}
+                      style={styles.datePicker}
+                      minimumDate={new Date()}
+                    />
+                  </View>
+                </Modal>
+              ) : (
+                <Modal
+                  isVisible={isFromDatePickerVisible}
+                  onBackdropPress={cancelFromDateSelection}
+                  style={{ margin: 20, justifyContent: 'center' }}
+                  backdropOpacity={0.5}
+                >
+                  <View style={[styles.datePickerContainer, { padding: 20, alignItems: 'center', borderRadius: 12 }]}>
+                    <Text style={{ color: 'white', fontSize: 18, marginBottom: 20, fontFamily: 'LatoBold' }}>Select From Date</Text>
+                    <DateTimePicker
+                      value={tempFromDate}
+                      mode="date"
+                      display="default"
+                      onChange={(event, selectedDate) => {
+                        if (selectedDate) {
+                          handleFromDateConfirm(selectedDate);
+                        }
+                      }}
+                      textColor="white"
+                      minimumDate={new Date()}
+                    />
+                    <TouchableOpacity 
+                      onPress={cancelFromDateSelection}
+                      style={styles.androidCancelButton}
+                    >
+                      <Text style={styles.androidCancelText}>Cancel</Text>
+                    </TouchableOpacity>
+                  </View>
+                </Modal>
+              )}
 
-      {/* To Date Picker Modal */}
-      {Platform.OS === 'ios' ? (
-        <Modal
-          isVisible={isToDatePickerVisible}
-          onBackdropPress={cancelToDateSelection}
-          style={{ justifyContent: 'flex-end', margin: 0 }}
-          backdropOpacity={0.5}
-          animationIn="slideInUp"
-          animationOut="slideOutDown"
-        >
-          <View style={styles.datePickerContainer}>
-            <View style={styles.datePickerHeader}>
-              <TouchableOpacity onPress={cancelToDateSelection}>
-                <Text style={styles.datePickerCancel}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={confirmIOSToDateSelection}>
-                <Text style={styles.datePickerDone}>Done</Text>
-              </TouchableOpacity>
-            </View>
-            <DateTimePicker
-              value={tempToDate}
-              mode="date"
-              display="spinner"
-              onChange={(event, date) => date && setTempToDate(date)}
-              style={styles.datePicker}
-              minimumDate={applyLeaveForm.fromDate ? new Date(applyLeaveForm.fromDate) : new Date()}
-            />
-          </View>
-        </Modal>
-      ) : (
-        <Modal
-          isVisible={isToDatePickerVisible}
-          onBackdropPress={cancelToDateSelection}
-          style={{ margin: 20, justifyContent: 'center' }}
-          backdropOpacity={0.5}
-        >
-          <View style={[styles.datePickerContainer, { padding: 20, alignItems: 'center', borderRadius: 12 }]}>
-            <Text style={{ color: 'white', fontSize: 18, marginBottom: 20, fontFamily: 'LatoBold' }}>Select To Date</Text>
-            <DateTimePicker
-              value={tempToDate}
-              mode="date"
-              display="default"
-              onChange={(event, selectedDate) => {
-                if (selectedDate) {
-                  handleToDateConfirm(selectedDate);
-                }
-              }}
-              textColor="white"
-              minimumDate={applyLeaveForm.fromDate ? new Date(applyLeaveForm.fromDate) : new Date()}
-            />
-            <TouchableOpacity 
-              onPress={cancelToDateSelection}
-              style={styles.androidCancelButton}
-            >
-              <Text style={styles.androidCancelText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </Modal>
-      )}
+              {/* To Date Picker Modal */}
+              {Platform.OS === 'ios' ? (
+                <Modal
+                  isVisible={isToDatePickerVisible}
+                  onBackdropPress={cancelToDateSelection}
+                  style={{ justifyContent: 'flex-end', margin: 0 }}
+                  backdropOpacity={0.5}
+                  animationIn="slideInUp"
+                  animationOut="slideOutDown"
+                >
+                  <View style={styles.datePickerContainer}>
+                    <View style={styles.datePickerHeader}>
+                      <TouchableOpacity onPress={cancelToDateSelection}>
+                        <Text style={styles.datePickerCancel}>Cancel</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={confirmIOSToDateSelection}>
+                        <Text style={styles.datePickerDone}>Done</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePicker
+                      value={tempToDate}
+                      mode="date"
+                      display="spinner"
+                      onChange={(event, date) => date && setTempToDate(date)}
+                      style={styles.datePicker}
+                      minimumDate={applyLeaveForm.fromDate ? new Date(applyLeaveForm.fromDate) : new Date()}
+                    />
+                  </View>
+                </Modal>
+              ) : (
+                <Modal
+                  isVisible={isToDatePickerVisible}
+                  onBackdropPress={cancelToDateSelection}
+                  style={{ margin: 20, justifyContent: 'center' }}
+                  backdropOpacity={0.5}
+                >
+                  <View style={[styles.datePickerContainer, { padding: 20, alignItems: 'center', borderRadius: 12 }]}>
+                    <Text style={{ color: 'white', fontSize: 18, marginBottom: 20, fontFamily: 'LatoBold' }}>Select To Date</Text>
+                    <DateTimePicker
+                      value={tempToDate}
+                      mode="date"
+                      display="default"
+                      onChange={(event, selectedDate) => {
+                        if (selectedDate) {
+                          handleToDateConfirm(selectedDate);
+                        }
+                      }}
+                      textColor="white"
+                      minimumDate={applyLeaveForm.fromDate ? new Date(applyLeaveForm.fromDate) : new Date()}
+                    />
+                    <TouchableOpacity 
+                      onPress={cancelToDateSelection}
+                      style={styles.androidCancelButton}
+                    >
+                      <Text style={styles.androidCancelText}>Cancel</Text>
+                    </TouchableOpacity>
+                  </View>
+                </Modal>
+              )}
             </View>
           </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
       </Modal>
+
+      {/* Success Toast - Outside Modal for proper positioning */}
+      <ToastAlert
+        visible={showSuccessToast}
+        type="success"
+        title="Leave Request Submitted!"
+        message="Your leave request has been submitted successfully and is pending approval."
+        onHide={() => setShowSuccessToast(false)}
+        duration={4000}
+        position="bottom"
+      />
     </>
   );
 }

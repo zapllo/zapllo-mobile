@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -31,6 +30,7 @@ import axios from 'axios';
 import { backend_Host } from '~/config';
 import { useFocusEffect } from '@react-navigation/native';
 import CustomAlert from '~/components/CustomAlert/CustomAlert';
+import CustomSplashScreen from '~/components/CustomSplashScreen';
 import { rgba } from '@tamagui/core';
 import { Share } from 'react-native';
 import { BlurView } from 'expo-blur';
@@ -73,7 +73,14 @@ const ProfileScreen: React.FC = () => {
   const [customAlertType, setCustomAlertType] = useState<'success' | 'error' | 'loading'>('success');
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
+  const [showSuccessSplash, setShowSuccessSplash] = useState(false);
   const appLink = "https://zapllo.com/download"; 
+
+  const handleSplashComplete = () => {
+    setShowSuccessSplash(false);
+    // Refresh profile data to show the new image
+    handleGetProfile();
+  };
 
   const toggleShareModal = () => {
     setIsShareModalVisible(!isShareModalVisible);
@@ -169,7 +176,6 @@ const ProfileScreen: React.FC = () => {
     try {
       const response = await axios.get(
         `${backend_Host}/users/me`,
-
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -177,7 +183,7 @@ const ProfileScreen: React.FC = () => {
           },
         }
       );
-      console.log("pljoihbihbuoi", response.data.data.profilePic)
+      console.log("Profile data:", response.data.data.profilePic)
       setProfilePic(response.data.data.profilePic);
     } catch (err: any) {
       console.error('API Error:', err.response || err.message);
@@ -185,7 +191,6 @@ const ProfileScreen: React.FC = () => {
   };
 
   const uploadPhoto = async ({ picture }) => {
-
     try {
       const base64Data = picture.base64;
       const mimeType = picture.mimeType || 'image/jpeg';
@@ -204,6 +209,8 @@ const ProfileScreen: React.FC = () => {
         '[PROXY]'
       );
 
+      console.log('Uploading image...');
+      
       // Send the formData to the backend using Axios
       const uploadResponse = await axios.post('https://zapllo.com/api/upload', formData, {
         headers: {
@@ -211,7 +218,12 @@ const ProfileScreen: React.FC = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
-      setProfilePhoto(uploadResponse?.data?.fileUrls[0]);
+      
+      const uploadedImageUrl = uploadResponse?.data?.fileUrls[0];
+      console.log('Image uploaded successfully:', uploadedImageUrl);
+      
+      // Return the uploaded image URL
+      return uploadedImageUrl;
 
     } catch (error: any) {
       console.error('Error uploading image:', error.response || error.message);
@@ -219,35 +231,17 @@ const ProfileScreen: React.FC = () => {
         console.log('Error Response:', error.response.data);
         console.log('Error Headers:', error.response.headers);
       }
+      throw error; // Re-throw to handle in calling function
     }
   };
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-      base64: true,
-    });
-
-    console.log(result);
-
-    if (!result.canceled) {
-      setProfileModal(false)
-      uploadPhoto({ picture: result.assets[0] });
-      handleProfileUpdate();
-    } else {
-      setProfileModal(false);
-    }
-  };
-
-  const handleProfileUpdate = async () => {
-    setLoading(true)
+  const handleProfileUpdate = async (imageUrl: string) => {
     try {
+      console.log('Updating profile with image URL:', imageUrl);
+      
       const response = await axios.patch(
         `${backend_Host}/users/profilePic`,
-        { profilePic: profilePhoto },
+        { profilePic: imageUrl },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -255,20 +249,72 @@ const ProfileScreen: React.FC = () => {
           },
         }
       );
-      setImage(response?.data?.profilePic);
+      
+      console.log('Profile updated successfully:', response.data);
+      
+      // Update local state immediately for instant UI update
+      setProfilePic(imageUrl);
+      setImage(imageUrl);
+      
+      // Show success splash screen
+      setShowSuccessSplash(true);
+      
+      return response.data;
     } catch (err: any) {
-      console.error('API Error:', err.response || err.message);
-      setButtonSpinner(true);
-      setCustomAlertVisible(true);
-      setCustomAlertMessage('Failed to update profile. Please try again.');
-      setCustomAlertType('error');
-
-    } finally {
-      setLoading(false)
+      console.error('Profile update API Error:', err.response || err.message);
+      throw err; // Re-throw to handle in calling function
     }
   };
 
-  console.log("ppppppp", profilePic, image)
+  const pickImage = async () => {
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8, // Reduced quality for better performance
+        base64: true,
+      });
+
+      console.log('Image picker result:', result);
+
+      if (!result.canceled && result.assets[0]) {
+        setProfileModal(false);
+        setLoading(true);
+
+        try {
+          // First upload the image
+          const uploadedImageUrl = await uploadPhoto({ picture: result.assets[0] });
+          
+          if (uploadedImageUrl) {
+            // Then update the profile with the uploaded image URL
+            await handleProfileUpdate(uploadedImageUrl);
+          } else {
+            throw new Error('Failed to get uploaded image URL');
+          }
+        } catch (error) {
+          console.error('Error in image upload/update process:', error);
+          setCustomAlertVisible(true);
+          setCustomAlertMessage('Failed to update profile picture. Please try again.');
+          setCustomAlertType('error');
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setProfileModal(false);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      setProfileModal(false);
+      setLoading(false);
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Failed to pick image. Please try again.');
+      setCustomAlertType('error');
+    }
+  };
+
+  console.log("Current profile states - profilePic:", profilePic, "image:", image)
+  
   return (
     <SafeAreaView className="h-full w-full flex-1 bg-[#05071E]">
       <KeyboardAvoidingView
@@ -321,7 +367,7 @@ const ProfileScreen: React.FC = () => {
               <View className="mb-9 mt-9 rounded-full h-0.5 w-full bg-[#453f56]"></View>
             </View>
 
-
+  
             {/* Account Information */}
             <View className="w-full px-5 mt-6">
               <Text
@@ -675,11 +721,25 @@ const ProfileScreen: React.FC = () => {
       </Modal>
         </ScrollView>
       </KeyboardAvoidingView>
+      
       <CustomAlert
         visible={customAlertVisible}
         message={customAlertMessage}
         type={customAlertType}
         onClose={() => setCustomAlertVisible(false)}
+      />
+
+      {/* Success Splash Screen */}
+      <CustomSplashScreen
+        visible={showSuccessSplash}
+        lottieSource={require('~/assets/Animation/success.json')}
+        mainText="Profile Picture Updated!"
+        subtitle="Your profile picture has been successfully updated and is now visible across the app."
+        onComplete={handleSplashComplete}
+        onDismiss={handleSplashComplete}
+        duration={3000}
+        gradientColors={["#05071E", "#0A0D28"]}
+        textGradientColors={["#815BF5", "#FC8929"]}
       />
     </SafeAreaView>
   );

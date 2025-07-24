@@ -1298,6 +1298,7 @@ const renderDailyReportContent = () => {
                     display="spinner"
                     onChange={(event, date) => date && setTempSelectedDate(date)}
                     style={styles.datePicker}
+                    textColor="white"
                   />
                 </View>
               </Modal>

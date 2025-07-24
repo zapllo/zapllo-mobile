@@ -30,6 +30,7 @@ import * as Haptics from 'expo-haptics';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import TaskTemplateForm from '~/components/TaskComponents/TaskTemplateForm';
+import ToastAlert, { ToastType } from '~/components/ToastAlert';
 
 const { width, height } = Dimensions.get('window');
 
@@ -43,6 +44,12 @@ interface Template {
   repeat?: boolean;
   repeatType?: string;
   days?: string[];
+  links?: string[];
+  attachments?: any[];
+  reminders?: any[];
+  audioUrl?: string;
+  dates?: number[];
+  repeatInterval?: number;
   subcategory?: string;
 }
 
@@ -72,7 +79,21 @@ export default function TaskTemplatesScreen() {
   const [templateToEdit, setTemplateToEdit] = useState<Template | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Toast states
+  const [showToast, setShowToast] = useState(false);
+  const [toastType, setToastType] = useState<ToastType>('success');
+  const [toastTitle, setToastTitle] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
+
   const { userData, token } = useSelector((state: RootState) => state.auth);
+
+  // Helper function to show toast
+  const showToastMessage = (type: ToastType, title: string, message?: string) => {
+    setToastType(type);
+    setToastTitle(title);
+    setToastMessage(message || '');
+    setShowToast(true);
+  };
 
   // Fetch categories from the server
   useEffect(() => {
@@ -121,11 +142,11 @@ export default function TaskTemplatesScreen() {
         setTemplates(data.data || []);
       } else {
         console.error("Error fetching templates:", data.error);
-        Alert.alert("Error", "Failed to load templates");
+        showToastMessage("error", "Error", "Failed to load templates");
       }
     } catch (error) {
       console.error("Error:", error);
-      Alert.alert("Error", "An error occurred while loading templates");
+      showToastMessage("error", "Error", "An error occurred while loading templates");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -271,15 +292,24 @@ export default function TaskTemplatesScreen() {
         throw new Error(errorData.error || "Failed to delete template");
       }
       
-      Alert.alert("Success", "Template deleted successfully!");
+      showToastMessage("success", "Success!", "Template deleted successfully!");
       setShowDeleteConfirm(false);
       setTemplateToDelete(null);
       fetchTemplates();
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", "Failed to delete template");
+      showToastMessage("error", "Error", "Failed to delete template");
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  // Handler for template form success
+  const handleTemplateFormSuccess = (message?: string) => {
+    fetchTemplates();
+    setTemplateToEdit(null);
+    if (message) {
+      showToastMessage("success", "Success!", message);
     }
   };
 
@@ -540,10 +570,7 @@ export default function TaskTemplatesScreen() {
           setTemplateToEdit(null);
         }}
         existingTemplate={templateToEdit}
-        onSuccess={() => {
-          fetchTemplates();
-          setTemplateToEdit(null);
-        }}
+        onSuccess={handleTemplateFormSuccess}
       />
 
       {/* Template Details Modal */}
@@ -680,6 +707,16 @@ export default function TaskTemplatesScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Toast Alert - Shows on main screen */}
+      <ToastAlert
+        visible={showToast}
+        type={toastType}
+        title={toastTitle}
+        message={toastMessage}
+        onHide={() => setShowToast(false)}
+        position="top"
+      />
     </SafeAreaView>
   );
 }

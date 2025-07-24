@@ -6,7 +6,7 @@ import Modal from "react-native-modal";
 import { useSelector } from "react-redux";
 import { RootState } from "~/redux/store";
 import { BlurView } from 'expo-blur';
-import { AntDesign, Entypo, Octicons } from "@expo/vector-icons";
+import { AntDesign, Entypo, Octicons, MaterialIcons, Ionicons } from "@expo/vector-icons";
 
 interface AllTaskModalProps {
   isVisible: boolean;
@@ -42,17 +42,17 @@ const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose })
               <TouchableOpacity onPress={() => handleNavigation("/(routes)/all-task", true)}>
                 <Text className="text-white" style={{ fontFamily: "LatoBold" }}>All Tasks</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleNavigation("/(routes)/all-task", true)}>
-                <Image className="w-16 h-16" source={require("../../../../assets/More/AllTAsk.png")} />
+              <TouchableOpacity onPress={() => handleNavigation("/(routes)/all-task", true)} className=" bg-[#815BF5] rounded-full p-4">
+                <MaterialIcons name="task" size={25} color="white" />
               </TouchableOpacity>
             </View>
 
             <View className="flex flex-row items-center gap-2">
-              <TouchableOpacity onPress={() => handleNavigation("/(routes)/my-team")}>
+              <TouchableOpacity onPress={() => handleNavigation("/(routes)/teams")}>
                 <Text className="text-white" style={{ fontFamily: "LatoBold" }}>My Team</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleNavigation("/(routes)/my-team")}>
-                <Image className="w-16 h-16" source={require("../../../../assets/More/myTeam.png")} />
+              <TouchableOpacity onPress={() => handleNavigation("/(routes)/teams")} className=" bg-[#815BF5] rounded-full p-4">
+                <Ionicons name="people" size={25} color="white" />
               </TouchableOpacity>
             </View>
 
@@ -60,8 +60,8 @@ const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose })
               <TouchableOpacity onPress={() => handleNavigation("/(routes)/categories")}>
                 <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Categories</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleNavigation("/(routes)/categories")}>
-                <Image className="w-16 h-16" source={require("../../../../assets/More/categories.png")} />
+              <TouchableOpacity onPress={() => handleNavigation("/(routes)/categories")} className=" bg-[#815BF5] rounded-full p-4">
+                <MaterialIcons name="category" size={25} color="white" />
               </TouchableOpacity>
             </View>
 
@@ -89,14 +89,15 @@ const AllTaskModalScreen: React.FC<AllTaskModalProps> = ({ isVisible, onClose })
               <TouchableOpacity onPress={() => handleNavigation("/(routes)/settings", true)}>
                 <Text className="text-white" style={{ fontFamily: "LatoBold" }}>Settings</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleNavigation("/(routes)/settings", true)}>
-                <Image className="w-16 h-16" source={require("../../../../assets/More/settings.png")} />
+              <TouchableOpacity onPress={() => handleNavigation("/(routes)/settings", true)} className=" bg-[#815BF5] rounded-full p-4">
+                <Ionicons name="settings" size={25} color="white" />
               </TouchableOpacity>
             </View>
 
             <View className="flex flex-row items-center gap-2 mb-1">
-              <TouchableOpacity onPress={onClose}>
-                <Image className="w-16 h-11" source={require("../../../../assets/Tasks/cross.png")} />
+
+              <TouchableOpacity onPress={onClose} className="bg-gray-600 rounded-full p-3 mr-1">
+                <AntDesign name="close" size={20} color="white" />
               </TouchableOpacity>
             </View>
           </View>

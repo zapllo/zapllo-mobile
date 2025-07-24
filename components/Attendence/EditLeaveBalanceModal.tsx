@@ -112,9 +112,9 @@ export default function EditLeaveBalanceModal({
       
       await onSubmit(leaveBalances);
       
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Success', 'Balance updated successfully!');
-      onClose();
+      // Don't show success alert here - let parent component handle it
+      // The parent will show the CustomSplashScreen instead
+      // onClose() is also handled by the parent component now
     } catch (error) {
       console.error('Error updating leave balances:', error);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);

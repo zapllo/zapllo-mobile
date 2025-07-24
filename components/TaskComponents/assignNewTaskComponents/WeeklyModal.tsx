@@ -38,6 +38,11 @@ const WeeklyModal: React.FC<WeeklyModalProps> = ({ isVisible, onClose ,setWeekDa
     onClose()
   }
 
+  const handleClose = () => {
+    setSelectedDays([]);
+    onClose();
+  }
+
   return (
     <Modal
       isVisible={isVisible}
@@ -49,7 +54,7 @@ const WeeklyModal: React.FC<WeeklyModalProps> = ({ isVisible, onClose ,setWeekDa
           <Text className="text-lg text-white" style={{ fontFamily: 'Lato-Bold' }}>
             Select Days
           </Text>
-          <TouchableOpacity onPress={onClose}>
+          <TouchableOpacity onPress={handleClose}>
             <Image source={require('../../../assets/commonAssets/cross.png')} className="h-8 w-8" />
           </TouchableOpacity>
         </View>
@@ -94,7 +99,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   selectedDayBox: {
-    backgroundColor: '#46765f', // Change color when selected
+    backgroundColor: '#815BF5', // Change color when selected
   },
   dayText: {
     color: 'white',

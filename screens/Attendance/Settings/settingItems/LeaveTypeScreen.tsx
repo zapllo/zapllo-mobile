@@ -21,6 +21,7 @@ import NavbarTwo from '~/components/navbarTwo';
 import InputContainer from '../../../../components/InputContainer';
 import ToggleSwitch from '../../../../components/ToggleSwitch';
 import CheckboxTwo from '~/components/CheckBoxTwo';
+import ToastAlert from '~/components/ToastAlert';
 import axios from 'axios';
 
 interface LeaveType {
@@ -63,6 +64,12 @@ export default function LeaveTypeScreen() {
   const [totalLeavesAllotted, setTotalLeavesAllotted] = useState(0);
   const [paidCount, setPaidCount] = useState(0);
   const [unpaidCount, setUnpaidCount] = useState(0);
+  const [updateBalanceModal, setUpdateBalanceModal] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showDeleteToast, setShowDeleteToast] = useState(false);
+  const [showUpdateBalanceToast, setShowUpdateBalanceToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastTitle, setToastTitle] = useState('');
 
   useEffect(() => {
     fetchLeaveTypes();
@@ -170,7 +177,11 @@ export default function LeaveTypeScreen() {
         
         setLeaveTypes(leaveTypes.filter(leave => leave.id !== leaveToDelete.id));
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert('Success', 'Leave type deleted successfully');
+        
+        // Show delete success toast
+        setToastTitle('Leave Type Deleted!');
+        setToastMessage(`${leaveToDelete.title} has been deleted successfully.`);
+        setShowDeleteToast(true);
       } catch (error) {
         console.error('Error deleting leave type:', error);
         Alert.alert('Error', 'Failed to delete leave type. Please try again.');
@@ -227,11 +238,9 @@ export default function LeaveTypeScreen() {
       if (editingLeaveType) {
         // Update existing leave type
         await axios.put(`https://zapllo.com/api/leaves/leaveType/${editingLeaveType.id}`, payload);
-        Alert.alert('Success', 'Leave type updated successfully');
       } else {
         // Create new leave type
         await axios.post('https://zapllo.com/api/leaves/leaveType', payload);
-        Alert.alert('Success', 'Leave type created successfully');
       }
 
       // Refresh leave types from server to get updated data
@@ -239,6 +248,9 @@ export default function LeaveTypeScreen() {
       
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toggleModal(); // This will call resetModal() as well
+      
+      // Show success toast
+      setShowSuccessToast(true);
       
     } catch (error) {
       console.error('Error saving leave type:', error);
@@ -327,10 +339,11 @@ export default function LeaveTypeScreen() {
         await axios.put(`https://zapllo.com/api/leaves/leaveType/${leave.id}`, payload);
       }
   
-      Alert.alert(
-        'Success', 
-        `Leave balances updated for ${nextYear}. If you want to carry forward balances, update leave reset criteria accordingly.`
-      );
+      // Show update balance success toast
+      setToastTitle('Leave Balances Updated!');
+      setToastMessage(`Leave balances updated for ${nextYear}. If you want to carry forward balances, update leave reset criteria accordingly.`);
+      setShowUpdateBalanceToast(true);
+      
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
       await fetchLeaveTypes(); // Refresh leave types
@@ -369,9 +382,9 @@ export default function LeaveTypeScreen() {
                 end={{ x: 1, y: 1 }}
                 colors={['#815BF5', '#FC8929']}
                 style={styles.gradientBorder}
-              >
-                <TouchableOpacity
-                  onPress={updateLeaveBalance}
+                >
+              <TouchableOpacity
+                  onPress={() => setUpdateBalanceModal(true)}
                   className='flex h-[3rem] px-7 items-center justify-center rounded-full bg-primary'>
                   <Text className='text-white text-xs' style={{ fontFamily: 'LatoBold' }}>Update Leave Balance for 2025</Text>
                 </TouchableOpacity>
@@ -382,57 +395,59 @@ export default function LeaveTypeScreen() {
               <Text className="text-white mr-4" style={{ fontFamily: 'LatoBold' }}>Total Leaves Alloted: {totalLeavesAllotted}</Text>
             </View>
 
-            <View className="flex w-full flex-row justify-start items-center mb-4 ">
-              <TouchableOpacity
-                className="flex items-center justify-center flex-col w-1/5"
-                onPress={() => handleReportOptionPressAdmin('All')}
-              >
-                <View className="flex flex-row gap-1 justify-end mb-4">
-                  <Text className={`${alloteds === 'All' ? 'text-white' : 'text-[#787CA5]'} text-xs `}>
-                    All
-                  </Text>
-                  <Text className="text-primary rounded-md bg-white p-0.5 text-xs" style={{ fontFamily: "Lato" }}>{leaveTypes.length}</Text>
+            {/* Status Filter - Matching ApprovalScreen Style */}
+            <View style={styles.statusFilters}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.statusFiltersRow}>
+                  <TouchableOpacity
+                    style={[
+                      styles.statusBadge,
+                      alloteds === 'All' && styles.activeStatusBadge
+                    ]}
+                    onPress={() => handleReportOptionPressAdmin('All')}
+                  >
+                    <Text style={[
+                      styles.statusBadgeText,
+                      alloteds === 'All' && styles.activeStatusBadgeText
+                    ]}>
+                      All ({leaveTypes.length})
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.statusBadge,
+                      alloteds === 'Paid' && styles.activeStatusBadge
+                    ]}
+                    onPress={() => handleReportOptionPressAdmin('Paid')}
+                  >
+                    <Text style={[
+                      styles.statusBadgeText,
+                      alloteds === 'Paid' && styles.activeStatusBadgeText
+                    ]}>
+                      Paid ({paidCount})
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.statusBadge,
+                      alloteds === 'Unpaid' && styles.activeStatusBadge
+                    ]}
+                    onPress={() => handleReportOptionPressAdmin('Unpaid')}
+                  >
+                    <Text style={[
+                      styles.statusBadgeText,
+                      alloteds === 'Unpaid' && styles.activeStatusBadgeText
+                    ]}>
+                      Unpaid ({unpaidCount})
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-
-                {alloteds === 'All' && (
-                  <View className="h-[2px] bg-white w-[80%] " />
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                className="flex items-center justify-center flex-col w-1/5 mr-4"
-                onPress={() => handleReportOptionPressAdmin('Paid')}
-              >
-                <View className="flex flex-row gap-1 justify-end mb-4">
-                  <Text className={`${alloteds === 'Paid' ? 'text-white' : 'text-[#787CA5]'} text-xs `}>
-                    Paid
-                  </Text>
-                  <Text className="text-primary rounded-md bg-[#06D6A0] p-0.5 text-xs" style={{ fontFamily: "Lato" }}>{paidCount}</Text>
-                </View>
-
-                {alloteds === 'Paid' && (
-                  <View className="h-[2px] bg-white w-full mr-2 " />
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                className="flex items-center justify-center flex-col w-1/5"
-                onPress={() => handleReportOptionPressAdmin('Unpaid')}
-              >
-                <View className="flex flex-row gap-1 justify-end mb-4">
-                  <Text className={`${alloteds === 'Unpaid' ? 'text-white' : 'text-[#787CA5]'} text-xs `}>
-                    Unpaid
-                  </Text>
-                  <Text className="text-primary bg-[#FDB314] rounded-md p-0.5 text-xs" style={{ fontFamily: "Lato" }}>{unpaidCount}</Text>
-                </View>
-                {alloteds === 'Unpaid' && (
-                  <View className="h-[2px] bg-white w-full mr-3 " />
-                )}
-              </TouchableOpacity>
+              </ScrollView>
             </View>
 
             {filteredLeaveTypes.map((leave, index) => (
-
             <View key={index} className="border border-[#37384B] p-5 rounded-xl mb-4 bg-[#10122D]">
               {/* Header with title and actions */}
               <View className="flex flex-row items-center justify-between mb-3">
@@ -596,6 +611,7 @@ export default function LeaveTypeScreen() {
                     placeholder=""
                     className="flex-1 text-sm text-[#787CA5]"
                     passwordError={''}
+                    backgroundColor="#0A0D28"
                   />
                   <View
                     style={[
@@ -631,6 +647,7 @@ export default function LeaveTypeScreen() {
                     className="flex-1 text-sm text-[#787CA5]"
                     passwordError={''}
                     keyboardType="numeric"
+                    backgroundColor="#0A0D28"
                   />
 
                   <View className="px-5 mt-6 w-[90%] mb-6">
@@ -772,9 +789,104 @@ export default function LeaveTypeScreen() {
                 </View>
               </View>
             </Modal>
-          </ScrollView>
+
+        <Modal
+          isVisible={updateBalanceModal}
+          onBackdropPress={() => setUpdateBalanceModal(false)}
+          style={{ justifyContent: 'center', margin: 20 }}
+        >
+          <View
+            style={{
+              backgroundColor: '#0A0D28',
+              padding: 25,
+              borderRadius: 20,
+              alignItems: 'center',
+            }}
+          >
+            <View style={{ alignItems: 'center', marginBottom: 20 }}>
+              <Image
+                style={{ width: 60, height: 60, marginBottom: 15 }}
+                source={require('../../../../assets/Tickit/delIcon.png')}
+              />
+              <Text style={{ color: 'white', fontSize: 20, fontFamily: 'LatoBold', textAlign: 'center', marginBottom: 10 }}>
+                Update Leave Balances
+              </Text>
+              <Text style={{ color: '#787CA5', fontSize: 14, textAlign: 'center', lineHeight: 20 }}>
+                By default, leave balances will reset to the number of allotted leaves. If you want to carry forward the previous year's balance, please edit each leave type and update the Leave Reset criteria.
+              </Text>
+            </View>
+            
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', gap: 10 }}>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#37384B',
+                  padding: 15,
+                  borderRadius: 12,
+                  flex: 1,
+                }}
+                onPress={() => setUpdateBalanceModal(false)}
+              >
+                <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'LatoBold' }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ 
+                  backgroundColor: '#815BF5', 
+                  padding: 15, 
+                  borderRadius: 12, 
+                  flex: 1 
+                }}
+                onPress={() => {
+                  setUpdateBalanceModal(false);
+                  updateLeaveBalance();
+                }}
+              >
+                <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'LatoBold' }}>
+                  Confirm
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+
+      {/* Toast Notifications - Outside ScrollView for proper positioning */}
+      {/* Success Toast */}
+      <ToastAlert
+        visible={showSuccessToast}
+        type="success"
+        title={editingLeaveType ? "Leave Type Updated!" : "Leave Type Created!"}
+        message={editingLeaveType ? "Leave type has been updated successfully and is now available for use." : "New leave type has been created successfully and is now available for use."}
+        onHide={() => setShowSuccessToast(false)}
+        duration={4000}
+        position="bottom"
+      />
+
+      {/* Delete Toast */}
+      <ToastAlert
+        visible={showDeleteToast}
+        type="success"
+        title={toastTitle}
+        message={toastMessage}
+        onHide={() => setShowDeleteToast(false)}
+        duration={4000}
+        position="bottom"
+      />
+
+      {/* Update Balance Toast */}
+      <ToastAlert
+        visible={showUpdateBalanceToast}
+        type="success"
+        title={toastTitle}
+        message={toastMessage}
+        onHide={() => setShowUpdateBalanceToast(false)}
+        duration={5000}
+        position="bottom"
+      />
     </SafeAreaView>
   );
 }
@@ -833,4 +945,35 @@ const styles = StyleSheet.create({
     fontWeight: 400,
     fontFamily: 'lato',
   },
+  statusFilters: {
+  paddingHorizontal: 16,
+  marginBottom: 36,
+},
+statusFiltersRow: {
+  flexDirection: 'row',
+  paddingHorizontal: 20,
+  gap: 8,
+},
+statusBadge: {
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 16,
+  backgroundColor: '#37384B',
+  borderWidth: 1,
+  borderColor: '#37384B',
+},
+activeStatusBadge: {
+  backgroundColor: '#815BF5',
+  borderColor: '#815BF5',
+},
+statusBadgeText: {
+  fontSize: 12,
+  color: '#787CA5',
+  fontWeight: '500',
+  fontFamily: 'Lato-Regular',
+},
+activeStatusBadgeText: {
+  color: '#ffffff',
+  fontFamily: 'LatoBold',
+},
 });

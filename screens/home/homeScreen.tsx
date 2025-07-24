@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import {
   ScrollView,
@@ -26,6 +25,7 @@ import { RootState } from '~/redux/store';
 import { checkTrialStatus, formatDate,} from '~/services/TrailExpair';
 import TrialExpirationModal from '~/components/TrialExpirationModal';
 import { MaterialIcons } from '@expo/vector-icons';
+import LoadingZapllo from '~/components/LoadingZapllo';
 
 // Types
 type HomeScreenComponents = {
@@ -482,10 +482,10 @@ const WelcomeSection = ({
                     require("../../assets/Billing/walet.png") : 
                     require("../../assets/HomeComponents/ZTutorials.png")} 
                   style={isAdmin ? {
-                    width: 47,
-                    height: 37,
+                    width: 30,
+                    height: 22,
                     resizeMode: 'contain',
-                    marginTop: 7,
+                    
                   } : styles.statIcon}
                 />
               </TouchableOpacity>
@@ -566,10 +566,11 @@ const ProgressCard = ({
         <View style={styles.progressBarContainer}>
           <View style={styles.progressBarBackground}>
             {loading ? (
-              <ActivityIndicator
+              <LoadingZapllo 
+                isVisible={true}
                 size="small"
-                color="#FC8929"
-                style={styles.progressLoader}
+                showText={false}
+                showBackground={false}
               />
             ) : (
               <Animated.View 
@@ -736,37 +737,6 @@ const ErrorView = ({
   );
 };
 
-// Loading View Component
-const LoadingView = () => {
-  const pulseAnim = useRef(new Animated.Value(0.8)).current;
-  
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 0.8,
-          duration: 800,
-          useNativeDriver: true,
-        })
-      ])
-    ).start();
-  }, [pulseAnim]);
-
-  return (
-    <View style={styles.loadingContainer}>
-      <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-        <ActivityIndicator size="large" color="#FC8929" />
-      </Animated.View>
-      <Text style={styles.loadingText}>Loading your business apps...</Text>
-    </View>
-  );
-};
-
 // Main Component
 const HomeScreen: React.FC = () => {
   const router = useRouter();
@@ -794,6 +764,8 @@ const HomeScreen: React.FC = () => {
   const [checkedItemIds, setCheckedItemIds] = useState<string[]>([]);
   const [progressPercentage, setProgressPercentage] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false); // New state to track if all data is loaded
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false); // Track if we have any initial data
   const [checklistLoading, setChecklistLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -958,60 +930,50 @@ const HomeScreen: React.FC = () => {
     }
   }, [token]);
   
-  // Modify the fetchChecklistData function to not block the UI
-  const fetchChecklistData = useCallback(async (isRefreshing = false) => {
-    if (!isRefreshing) setLoading(true);
-    setError(null);
-    
-    try {
-      // Set a timeout to ensure we don't block the UI for too long
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
-          reject(new Error("Checklist data fetch timeout"));
-        }, 5000); // 5 second timeout
-      });
-      
-      // Race between the actual fetch and the timeout
-      await Promise.race([
-        fetchChecklistProgress(),
-        timeoutPromise
-      ]);
-      
-    } catch (err: any) {
-      console.error("Error or timeout fetching checklist data:", err);
-      // Don't set error state to allow UI to load anyway
-      setProgressPercentage(0);
-    } finally {
-      // Always complete loading to prevent UI from being stuck
-      setLoading(false);
-      if (isRefreshing) setRefreshing(false);
-    }
-  }, [fetchChecklistProgress]);
-  
   // Modify the useFocusEffect to handle errors better and check trial expiration
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
         try {
-          // Set a loading timeout to ensure the UI isn't blocked
-          const loadingTimeout = setTimeout(() => {
-            setLoading(false);
-          }, 3000);
+          // Check if we have essential data already (user name and company info)
+          const hasEssentialData = firstName && companyName;
+          
+          // Only show loading screen if we don't have essential data
+          if (!hasEssentialData && !initialDataLoaded) {
+            setLoading(true);
+            setDataLoaded(false);
+          }
           
           // Check trial status first before loading other data
           await checkTrialExpiration();
           
           // Then load the rest of the data
-          await Promise.allSettled([
+          const results = await Promise.allSettled([
             fetchChecklistProgress(),
             fetchOrganizationUsers(),
             fetchCompanyData()
           ]);
           
-          clearTimeout(loadingTimeout);
-          setLoading(false);
+          // Mark data as loaded
+          setDataLoaded(true);
+          setInitialDataLoaded(true);
+          
+          // If we were showing loading screen, hide it after data is loaded
+          if (!hasEssentialData) {
+            // Only wait minimum time if this is the first load
+            const minLoadTime = initialDataLoaded ? 0 : 800;
+            setTimeout(() => {
+              setLoading(false);
+            }, minLoadTime);
+          } else {
+            // If we already had data, don't show loading
+            setLoading(false);
+          }
+          
         } catch (error) {
           console.error("Error fetching data:", error);
+          setDataLoaded(true);
+          setInitialDataLoaded(true);
           setLoading(false);
         }
       };
@@ -1028,7 +990,7 @@ const HomeScreen: React.FC = () => {
       return () => {
         clearInterval(intervalId);
       };
-    }, [fetchChecklistProgress, fetchOrganizationUsers, fetchCompanyData, checkTrialExpiration])
+    }, [fetchChecklistProgress, fetchOrganizationUsers, fetchCompanyData, checkTrialExpiration, firstName, companyName, initialDataLoaded])
   );
 
   const onRefresh = useCallback(() => {
@@ -1076,12 +1038,22 @@ const HomeScreen: React.FC = () => {
     extrapolate: 'clamp',
   });
 
-  if (loading) {
-    return <LoadingView />;
+  // Show loading screen until data is loaded
+  if (loading || !dataLoaded) {
+    return (
+      <LoadingZapllo 
+        isVisible={true}
+        size="large"
+        showText={true}
+      />
+    );
   }
 
   if (error) {
-    return <ErrorView message={error} onRetry={fetchChecklistData} />;
+    return <ErrorView message={error} onRetry={() => {
+      setLoading(true);
+      setDataLoaded(false);
+    }} />;
   }
  
   return (
@@ -1166,11 +1138,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0A0D28',
-    paddingBottom: 14,
+ 
   },
   scrollContent: {
     paddingHorizontal: 14,
-    paddingBottom: 20,
+    paddingBottom: 60,
   },
   sectionTitle: {
     fontFamily: 'LatoBold',

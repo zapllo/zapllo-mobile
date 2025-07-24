@@ -1,13 +1,13 @@
 import { router, useNavigation } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Alert, Image, TouchableOpacity } from "react-native";
+import { Alert, TouchableOpacity } from "react-native";
 import { View, Text } from "react-native";
 import Modal from "react-native-modal";
 import { useSelector } from "react-redux";
 import { RootState } from "~/redux/store";
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
-import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome, MaterialIcons, Ionicons, AntDesign } from "@expo/vector-icons";
 
 interface AllAttendenceScreen {
   isVisible: boolean;
@@ -96,7 +96,7 @@ const AllAttendenceScreen: React.FC<AllAttendenceScreen> = ({ isVisible, onClose
           <View className="flex items-end flex-col gap-5 justify-around mb-10 mr-7">
 
             {/* Approval */}
-              <View className="flex flex-row items-center gap-2">
+            <View className="flex flex-row items-center gap-2">
               <TouchableOpacity 
                 onPress={() => isAdmin 
                   ? handleNavigation("(routes)/HomeComponent/Attendance/Approval", true)
@@ -110,17 +110,17 @@ const AllAttendenceScreen: React.FC<AllAttendenceScreen> = ({ isVisible, onClose
                   ? handleNavigation("(routes)/HomeComponent/Attendance/Approval", true)
                   : handleAccessDenied()
                 }
-                className=" items-center justify-center flex w-16 h-16 bg-[#815BF5] rounded-full"
+                className="bg-[#815BF5] rounded-full p-4"
               >
                 <MaterialIcons
-                name="approval"
-                size={27}
-                color={"white"}                
+                  name="approval"
+                  size={25}
+                  color={"white"}                
                 />
               </TouchableOpacity>
             </View>
 
-
+            {/* All Leaves */}
             <View className="flex flex-row items-center gap-2">
               <TouchableOpacity 
                 onPress={() => isAdmin 
@@ -135,18 +135,17 @@ const AllAttendenceScreen: React.FC<AllAttendenceScreen> = ({ isVisible, onClose
                   ? handleNavigation("(routes)/HomeComponent/Attendance/AllLeaves", true)
                   : handleAccessDenied()
                 }
-                className=" items-center justify-center flex w-16 h-16 bg-[#815BF5] rounded-full"
+                className="bg-[#815BF5] rounded-full p-4"
               >
                 <FontAwesome
-                name="calendar-check-o"
-                size={27}
-                color={"white"}
-
+                  name="calendar-check-o"
+                  size={25}
+                  color={"white"}
                 />
-              
               </TouchableOpacity>
             </View>
 
+            {/* All Attendance */}
             <View className="flex flex-row items-center gap-2">
               <TouchableOpacity 
                 onPress={() => isAdmin 
@@ -161,11 +160,13 @@ const AllAttendenceScreen: React.FC<AllAttendenceScreen> = ({ isVisible, onClose
                   ? handleNavigation("/(routes)/HomeComponent/Attendance/AllAttendence", true)
                   : handleAccessDenied()
                 }
+                className="bg-[#815BF5] rounded-full p-4"
               >
-                <Image className="w-16 h-16" source={require("../../../assets/Attendence/AllAttendence.png")} />
+                <MaterialIcons name="people" size={25} color="white" />
               </TouchableOpacity>
             </View>
 
+            {/* Settings */}
             <View className="flex flex-row items-center gap-2">
               <TouchableOpacity 
                 onPress={() => isAdmin 
@@ -180,14 +181,16 @@ const AllAttendenceScreen: React.FC<AllAttendenceScreen> = ({ isVisible, onClose
                   ? handleNavigation("/(routes)/settings/AttendenceSettings", true)
                   : handleAccessDenied()
                 }
+                className="bg-[#815BF5] rounded-full p-4"
               >
-                <Image className="w-16 h-16" source={require("../../../assets/Attendence/settings.png")} />
+                <Ionicons name="settings" size={25} color="white" />
               </TouchableOpacity>
             </View>
 
+            {/* Close Button */}
             <View className="flex flex-row items-center gap-2 mb-1">
-              <TouchableOpacity onPress={onClose}>
-                <Image className="w-14 h-14 rounded-full mr-1" source={require("../../../assets/Tasks/cross.png")} />
+              <TouchableOpacity onPress={onClose} className="bg-gray-600 rounded-full p-3 mr-1">
+                <AntDesign name="close" size={20} color="white" />
               </TouchableOpacity>
             </View>
           </View>

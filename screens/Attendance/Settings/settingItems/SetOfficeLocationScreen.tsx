@@ -11,6 +11,7 @@ import * as Location from 'expo-location';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
+import ToastAlert from "~/components/ToastAlert";
 
 export default function SetOfficeLocationScreen() {
   const [selectedUnit, setSelectedUnit] = useState('Kilometers');
@@ -27,6 +28,7 @@ export default function SetOfficeLocationScreen() {
   const [fetchingData, setFetchingData] = useState(true);
   const [initialLocationSet, setInitialLocationSet] = useState(false);
   const [locationManuallySet, setLocationManuallySet] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
   
   // Get auth token from Redux store
   const { token } = useSelector((state: RootState) => state.auth);
@@ -157,10 +159,8 @@ export default function SetOfficeLocationScreen() {
       );
       
       if (response.data.success) {
-        Alert.alert(
-          "Success", 
-          `Office location and geofencing settings updated successfully`
-        );
+        // Show success toast
+        setShowSuccessToast(true);
       } else {
         Alert.alert("Error", response.data.message || "Failed to update settings");
       }
@@ -391,6 +391,17 @@ export default function SetOfficeLocationScreen() {
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+
+      {/* Success Toast */}
+      <ToastAlert
+        visible={showSuccessToast}
+        type="success"
+        title="Settings Updated!"
+        message="Office location and geofencing settings have been updated successfully."
+        onHide={() => setShowSuccessToast(false)}
+        duration={4000}
+        position="bottom"
+      />
     </SafeAreaView>
   );
 }

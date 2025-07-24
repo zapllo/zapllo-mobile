@@ -69,7 +69,7 @@ export const config = createTamagui({
     },
 })
 
-console.log(`config is`, getConfig())
+// console.log(`config is`, getConfig()) // Removed for production
 export default config
 
 type AppConfig = typeof config

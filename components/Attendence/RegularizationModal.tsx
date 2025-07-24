@@ -19,7 +19,10 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { FontAwesome, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useToast } from 'react-native-toast-notifications';
+import * as SecureStore from 'expo-secure-store';
+
+import { backend_Host } from '~/config';
+import CustomSplashScreen from '../CustomSplashScreen';
 
 interface RegularizationModalProps {
   isVisible: boolean;
@@ -28,7 +31,7 @@ interface RegularizationModalProps {
 }
 
 const RegularizationModal: React.FC<RegularizationModalProps> = ({ isVisible, onClose, onSuccess }) => {
-  const toast = useToast();
+
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const [isLoginTimePickerVisible, setLoginTimePickerVisible] = useState(false);
   const [isLogoutTimePickerVisible, setLogoutTimePickerVisible] = useState(false);
@@ -41,6 +44,7 @@ const RegularizationModal: React.FC<RegularizationModalProps> = ({ isVisible, on
   const [remarks, setRemarks] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [showSuccessSplash, setShowSuccessSplash] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -130,37 +134,34 @@ const RegularizationModal: React.FC<RegularizationModalProps> = ({ isVisible, on
     setRemarks('');
   };
 
+  const handleSplashComplete = () => {
+    setShowSuccessSplash(false);
+    onSuccess();
+    onClose();
+  };
+
   const handleSubmit = async () => {
     // Validate inputs
     if (!selectedDate || !loginTime || !logoutTime || !remarks.trim()) {
-        Alert.alert("Please fill in all fields")
+      Alert.alert("Validation Error", "Please fill in all fields");
 
-    //   toast.show("Please fill in all fields", {
-    //     type: "warning",
-    //     placement: "bottom",
-    //     duration: 3000,
-    //   });
       return;
     }
 
     // Validate that logout time is after login time
     if (logoutTime && loginTime && logoutTime.getTime() <= loginTime.getTime()) {
-        Alert.alert("Logout time must be after login time")
-    //   toast.show("Logout time must be after login time", {
-    //     type: "warning",
-    //     placement: "bottom",
-    //     duration: 3000,
-    //   });
+      Alert.alert("Validation Error", "Logout time must be after login time");
+
       return;
     }
 
     try {
       setIsSubmitting(true);
       
-      // Get auth token
-      const token = await AsyncStorage.getItem('authToken');
+      // Get auth token from SecureStore (consistent with login storage)
+      const token = await SecureStore.getItemAsync('authToken');
       if (!token) {
-        throw new Error('Authentication token not found');
+        throw new Error('Authentication token not found. Please log in again.');
       }
 
       // Format date and times for API
@@ -168,44 +169,42 @@ const RegularizationModal: React.FC<RegularizationModalProps> = ({ isVisible, on
       const formattedLoginTime = loginTime.toTimeString().split(' ')[0].substring(0, 5);
       const formattedLogoutTime = logoutTime.toTimeString().split(' ')[0].substring(0, 5);
 
-      // Make API request
-      const response = await fetch('https://zapllo.com/api/regularize', {
+      const requestBody = {
+        date: formattedDate,
+        loginTime: formattedLoginTime,
+        logoutTime: formattedLogoutTime,
+        remarks: remarks
+      };
+
+      console.log('Submitting regularization request:', {
+        endpoint: `${backend_Host}/regularize`,
+        body: requestBody,
+        hasToken: !!token
+      });
+
+      // Make API request using consistent backend_Host
+      const response = await fetch(`${backend_Host}/regularize`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          date: formattedDate,
-          loginTime: formattedLoginTime,
-          logoutTime: formattedLogoutTime,
-          remarks: remarks
-        })
+        body: JSON.stringify(requestBody)
       });
 
       const data = await response.json();
 
       if (response.ok && data.success) {
-        Alert.alert("Success", "Regularization request submitted successfully");
-        // toast.show("Regularization request submitted successfully", {
-        //   type: "success",
-        //   placement: "bottom",
-        //   duration: 3000,
-        // });
         resetForm();
-        onSuccess();
-        onClose();
+        setShowSuccessSplash(true);
       } else {
         throw new Error(data.message || 'Failed to submit regularization request');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting regularization:', error);
-        Alert.alert("An error occurred")
-    //   toast.show(error.message || "An error occurred", {
-    //     type: "error",
-    //     placement: "bottom",
-    //     duration: 3000,
-    //   });
+      const errorMessage = error.message || "An error occurred while submitting regularization request";
+      Alert.alert("Error", errorMessage);
+
     } finally {
       setIsSubmitting(false);
     }
@@ -532,6 +531,19 @@ const RegularizationModal: React.FC<RegularizationModalProps> = ({ isVisible, on
           </View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+
+      {/* Success Splash Screen */}
+      <CustomSplashScreen
+        visible={showSuccessSplash}
+        lottieSource={require('../../assets/Animation/success.json')}
+        mainText="Request Submitted Successfully!"
+        subtitle="Your regularization request has been submitted and is pending approval."
+        onComplete={handleSplashComplete}
+        onDismiss={handleSplashComplete}
+        duration={3000}
+        gradientColors={["#05071E", "#0A0D28"]}
+        textGradientColors={["#815BF5", "#FC8929"]}
+      />
     </Modal>
   );
 };

@@ -8,6 +8,7 @@ interface InputContainerProps extends TextInputProps {
   onChangeText: (text: string) => void;
   passwordError: any;
   rightIcon?: JSX.Element;
+  backgroundColor?: string;
 }
 
 const InputContainer: React.FC<InputContainerProps> = ({
@@ -18,6 +19,7 @@ const InputContainer: React.FC<InputContainerProps> = ({
   passwordError,
   style,
   rightIcon,
+  backgroundColor = '#05071E', // Default background color
   ...rest
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -33,7 +35,10 @@ const InputContainer: React.FC<InputContainerProps> = ({
           : { borderColor: '#37384B' },
       ]}
     >
-      <Text style={[styles.baseName, { fontFamily: 'Nunito_400Regular' }]}>{label}</Text>
+      <Text style={[
+        styles.baseName, 
+        { fontFamily: 'Nunito_400Regular', backgroundColor: backgroundColor }
+      ]}>{label}</Text>
       <View style={styles.inputWrapper}>
         <TextInput
           style={[styles.inputSome, style]}
@@ -68,7 +73,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -9,
     left: 25,
-    backgroundColor: '#05071E',
     paddingRight: 5,
     paddingLeft: 5,
     fontSize: 13,

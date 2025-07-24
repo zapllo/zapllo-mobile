@@ -77,6 +77,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState<'success' | 'error' | 'loading'>('success');
+  const [isWorkspaceFormValid, setIsWorkspaceFormValid] = useState(false);
 
 
   const [selectedCountry, setSelectedCountry] = useState(
@@ -210,7 +211,39 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
     return valid;
   };
 
+  // Check if all required fields are filled and valid
+  const isFormValid = () => {
+    const {
+      firstName,
+      lastName,
+      phone,
+      email,
+      password,
+      confirmPassword,
+    } = formData;
+
+    return (
+      firstName.trim() !== '' &&
+      lastName.trim() !== '' &&
+      phone.trim() !== '' &&
+      email.trim() !== '' &&
+      password.trim() !== '' &&
+      confirmPassword.trim() !== '' &&
+      password === confirmPassword &&
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
+      password.length >= 6 &&
+      !firstNameError &&
+      !lastNameError &&
+      !phoneError &&
+      !emailError &&
+      !error &&
+      !confirmPasswordError
+    );
+  };
+
   const handleNextOrSignUp = async () => {
+    if (!isFormValid()) return;
+    
     if (handleValidation()) {
       if (showWorkspace) {
         const payload = {
@@ -266,7 +299,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
   };
 
   return (
-    <SafeAreaView className="h-full w-full bg-[#05071E]">
+    <SafeAreaView className="h-full w-full bg-[#0B0F19]">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1">
@@ -313,6 +346,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
                   placeholder="First Name"
                   className="flex-1  text-[#787CA5]"
                   passwordError={firstNameError}
+                  backgroundColor="#0B0F19"
                 />
 
                 {firstNameError && (
@@ -334,6 +368,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
                   placeholder="Last Name"
                   passwordError={lastNameError}
                   className="flex-1  text-sm text-[#787CA5]"
+                  backgroundColor="#0B0F19"
                 />
 
                 {lastNameError && (
@@ -446,6 +481,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
                     keyboardType="numeric"
                     className="flex-1 p-2 text-sm text-[#787CA5]"
                     passwordError={phoneError}
+                    backgroundColor="#0B0F19"
                   />
                 </View>
 
@@ -468,6 +504,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
                   placeholder="Email Address"
                   className="flex-1  text-[#787CA5]"
                   passwordError={emailError}
+                  backgroundColor="#0B0F19"
                 />
 
                 {emailError && (
@@ -491,6 +528,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
                     secureTextEntry={!passwordVisible}
                     className="flex-1  text-[#787CA5]"
                     passwordError={error}
+                    backgroundColor="#0B0F19"
                   />
                   <TouchableOpacity
                     className="absolute right-12 top-12"
@@ -524,6 +562,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
                     placeholder="**********"
                     className="flex-1  text-[#787CA5]"
                     passwordError={confirmPasswordError}
+                    backgroundColor="#0B0F19"
                   />
                   <TouchableOpacity
                     className="absolute right-12 top-12"
@@ -553,7 +592,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
                     height={50}
                     marginBottom={20}
                     size={16}
-                    backgroundColor={showWorkspace ? '$primary' : '$border'}
+                    backgroundColor={isFormValid() ? '$primary' : '$border'}
                     pressStyle={{ opacity: 0.8 }}
                     onPress={handleNextOrSignUp}
                     borderRadius="$lg"
@@ -603,6 +642,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
                 setTeamSize={setTeamSize}
                 businessIndustry={businessIndustry}
                 setBusinessIndustry={setBusinessIndustry}
+                onValidationChange={setIsWorkspaceFormValid}
               />
               <View className="w-full px-4">
                 <Button
@@ -610,7 +650,7 @@ const SignupScreen: React.FC<SignupScreenProps> = () => {
                   height={50}
                   marginBottom={4}
                   size={16}
-                  backgroundColor={showWorkspace ? '$primary' : '$border'}
+                  backgroundColor={isWorkspaceFormValid ? '$primary' : '$border'}
                   pressStyle={{ opacity: 0.8 }}
                   onPress={handleNextOrSignUp}
                   borderRadius="$lg"

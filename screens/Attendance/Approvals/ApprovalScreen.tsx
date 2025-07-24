@@ -11,6 +11,8 @@ import {
   TextInput,
   ActivityIndicator,
   Dimensions,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +22,10 @@ import * as Haptics from 'expo-haptics';
 import NavbarTwo from '~/components/navbarTwo';
 import CustomDropdown from '~/components/customDropDown';
 import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
+import CustomDeleteModal from '~/components/CustomDeleteModal';
+import ToastAlert, { ToastType } from '~/components/ToastAlert';
+import RegularizationApprovalModal from '~/components/Attendence/Approvals/RegularizationApprovalModal';
+import LeaveApprovalModal from '~/components/Attendence/Approvals/LeaveApprovalModal';
 import axios from 'axios';
 import { backend_Host } from '~/config';
 import { useSelector } from 'react-redux';
@@ -120,6 +126,25 @@ export default function ApprovalScreen() {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [rejectRemarks, setRejectRemarks] = useState('');
+  
+  // Toast state
+  const [showToast, setShowToast] = useState(false);
+  const [toastType, setToastType] = useState<ToastType>('success');
+  const [toastTitle, setToastTitle] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
+
+  // Toast handler function for modals
+  const handleShowToast = (type: ToastType, title: string, message: string) => {
+    setToastType(type);
+    setToastTitle(title);
+    setToastMessage(message);
+    setShowToast(true);
+  };
+    
+  // CustomDeleteModal states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<Leave | Regularization | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Date filter options (matching MyLeavesScreen)
   const daysData = [
@@ -280,7 +305,7 @@ export default function ApprovalScreen() {
 
       let response;
       
-      // Use mobile app API endpoints (without /api prefix)
+      // Use API endpoints matching web version
       if (currentUserRole === "member") {
         response = await axios.get(`${backend_Host}/leaves`, {
           headers: {
@@ -298,7 +323,7 @@ export default function ApprovalScreen() {
           timeout: 10000
         });
       } else {
-        response = await axios.get(`${backend_Host}/leaves/approvals`, {
+        response = await axios.get(`${backend_Host}/leaveApprovals/get`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -363,7 +388,7 @@ export default function ApprovalScreen() {
         return;
       }
 
-      // Use mobile app API endpoints (without /api prefix)
+      // Use API endpoints matching web version
       if (currentUserRole === "member") {
         const response = await fetch(`${backend_Host}/loginEntries`, {
           headers: {
@@ -398,7 +423,7 @@ export default function ApprovalScreen() {
           setRegularizations([]);
         }
       } else {
-        const response = await axios.get(`${backend_Host}/regularizations/approvals`, {
+        const response = await axios.get(`${backend_Host}/regularization-approvals`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -517,9 +542,14 @@ export default function ApprovalScreen() {
   const handleApprove = async (entry: Leave | Regularization) => {
     try {
       if (!token) {
-        Alert.alert("Error", "Authentication required");
+        setToastType('error');
+        setToastTitle('Authentication Error');
+        setToastMessage('Authentication required');
+        setShowToast(true);
         return;
       }
+
+      setLoading(true);
 
       if (isLeave(entry)) {
         const leaveDays = entry.leaveDays.map(day => ({
@@ -528,7 +558,7 @@ export default function ApprovalScreen() {
           status: "Approved" as const,
         }));
 
-        const response = await axios.post(`${backend_Host}/leaves/approvals/${entry._id}`, {
+        const response = await axios.post(`${backend_Host}/leaveApprovals/${entry._id}`, {
           action: "approve",
           leaveDays,
         }, {
@@ -536,24 +566,39 @@ export default function ApprovalScreen() {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+          timeout: 10000
         });
 
         if (response.data.success) {
-          Alert.alert("Success", "Leave approved successfully");
+          // Show success toast
+          setToastType('success');
+          setToastTitle('Leave Approved');
+          setToastMessage('The leave request has been approved successfully');
+          setShowToast(true);
+          
+          // Refresh data
           fetchData();
         } else {
           throw new Error(response.data.message || "Failed to approve leave request.");
         }
       } else {
-        const response = await axios.post(`${backend_Host}/regularizations/approvals/${entry._id}/approve`, {}, {
+        // Use the correct endpoint matching web version
+        const response = await axios.post(`${backend_Host}/regularization-approvals/${entry._id}/approve`, {}, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+          timeout: 10000
         });
         
         if (response.data.success) {
-          Alert.alert("Success", "Regularization approved successfully");
+          // Show success toast
+          setToastType('success');
+          setToastTitle('Regularization Approved');
+          setToastMessage('The regularization request has been approved successfully');
+          setShowToast(true);
+          
+          // Refresh data
           fetchData();
         } else {
           throw new Error(response.data.message || "Failed to approve regularization request.");
@@ -561,14 +606,31 @@ export default function ApprovalScreen() {
       }
     } catch (error: any) {
       console.error("Error approving:", error);
-      Alert.alert("Error", `Failed to approve request: ${error.response?.data?.message || error.message}`);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      
+      // Show error toast instead of Alert
+      setToastType('error');
+      setToastTitle('Approval Failed');
+      setToastMessage(`Failed to approve request: ${error.response?.data?.message || error.message}`);
+      setShowToast(true);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleReject = async () => {
-    if (!selectedEntry || !token) return;
+    if (!selectedEntry || !token) {
+      setToastType('error');
+      setToastTitle('Error');
+      setToastMessage('Authentication required');
+      setShowToast(true);
+      return;
+    }
 
     try {
+      setLoading(true);
+
       if (isLeave(selectedEntry)) {
         const leaveDays = selectedEntry.leaveDays.map(day => ({
           date: day.date,
@@ -576,7 +638,7 @@ export default function ApprovalScreen() {
           status: "Rejected" as const,
         }));
 
-        const response = await axios.post(`${backend_Host}/leaves/approvals/${selectedEntry._id}`, {
+        const response = await axios.post(`${backend_Host}/leaveApprovals/${selectedEntry._id}`, {
           action: "reject",
           leaveDays,
           remarks: rejectRemarks,
@@ -585,30 +647,47 @@ export default function ApprovalScreen() {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+          timeout: 10000
         });
 
         if (response.data.success) {
-          Alert.alert("Success", "Leave rejected successfully");
+          // Show success toast
+          setToastType('success');
+          setToastTitle('Leave Rejected');
+          setToastMessage('The leave request has been rejected successfully');
+          setShowToast(true);
+          
+          // Close modal and refresh data
           setShowRejectModal(false);
           setRejectRemarks('');
+          setSelectedEntry(null);
           fetchData();
         } else {
           throw new Error(response.data.message || "Failed to reject leave request.");
         }
       } else {
-        const response = await axios.post(`${backend_Host}/regularizations/approvals/${selectedEntry._id}/reject`, {
+        // Use the correct endpoint matching web version
+        const response = await axios.post(`${backend_Host}/regularization-approvals/${selectedEntry._id}/reject`, {
           remarks: rejectRemarks,
         }, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+          timeout: 10000
         });
         
         if (response.data.success) {
-          Alert.alert("Success", "Regularization rejected successfully");
+          // Show success toast
+          setToastType('success');
+          setToastTitle('Regularization Rejected');
+          setToastMessage('The regularization request has been rejected successfully');
+          setShowToast(true);
+          
+          // Close modal and refresh data
           setShowRejectModal(false);
           setRejectRemarks('');
+          setSelectedEntry(null);
           fetchData();
         } else {
           throw new Error(response.data.message || "Failed to reject regularization request.");
@@ -616,60 +695,197 @@ export default function ApprovalScreen() {
       }
     } catch (error: any) {
       console.error("Error rejecting:", error);
-      Alert.alert("Error", `Failed to reject request: ${error.response?.data?.message || error.message}`);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      
+      // Show error toast instead of Alert
+      setToastType('error');
+      setToastTitle('Rejection Failed');
+      setToastMessage(`Failed to reject request: ${error.response?.data?.message || error.message}`);
+      setShowToast(true);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Delete handlers (matching web version)
+  // Delete modal handlers
+  const openDeleteModal = (entry: Leave | Regularization) => {
+    setItemToDelete(entry);
+    setShowDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setItemToDelete(null);
+    setIsDeleting(false);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      if (isLeave(itemToDelete)) {
+        await handleDeleteLeave(itemToDelete._id);
+      } else {
+        await handleDeleteRegularization(itemToDelete._id);
+      }
+      
+      // Close modal and refresh data
+      closeDeleteModal();
+      fetchData();
+    } catch (error) {
+      console.error("Error in confirmDelete:", error);
+      setIsDeleting(false);
+    }
+  };
+
+  // Delete handlers - trying different endpoints for mobile
   const handleDeleteLeave = async (leaveId: string) => {
     try {
       if (!token) {
-        Alert.alert("Error", "Authentication required");
+        setToastType('error');
+        setToastTitle('Authentication Error');
+        setToastMessage('Authentication required');
+        setShowToast(true);
         return;
       }
 
-      const response = await axios.delete(`${backend_Host}/leaves/approvals/${leaveId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      setLoading(true);
+
+      // Try different possible endpoints for mobile
+      let response;
+      let deleteEndpoint = '';
+      
+      try {
+        // First try: Direct leaves endpoint
+        deleteEndpoint = `${backend_Host}/leaves/${leaveId}`;
+        console.log("Trying delete endpoint:", deleteEndpoint);
+        response = await axios.delete(deleteEndpoint, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 10000
+        });
+      } catch (firstError: any) {
+        console.log("First endpoint failed:", firstError.response?.status);
+        
+        if (firstError.response?.status === 405) {
+          // Second try: leaveApprovals endpoint
+          deleteEndpoint = `${backend_Host}/leaveApprovals/${leaveId}`;
+          console.log("Trying second delete endpoint:", deleteEndpoint);
+          response = await axios.delete(deleteEndpoint, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            timeout: 10000
+          });
+        } else {
+          throw firstError;
+        }
+      }
+
+      console.log("Delete leave response:", response.data);
 
       if (response.data.success) {
-        Alert.alert("Success", "Leave request deleted successfully");
-        fetchData();
+        // Show success toast
+        setToastType('success');
+        setToastTitle('Leave Deleted');
+        setToastMessage('Leave request deleted successfully');
+        setShowToast(true);
       } else {
-        throw new Error(response.data.error || "Failed to delete leave.");
+        console.error("Delete failed - response:", response.data);
+        throw new Error(response.data.error || response.data.message || "Failed to delete leave.");
       }
     } catch (error: any) {
       console.error("Error deleting leave:", error);
-      Alert.alert("Error", `Error deleting leave: ${error.response?.data?.message || error.message}`);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      
+      // More detailed error handling
+      let errorMessage = "Failed to delete leave request";
+      if (error.response?.status === 405) {
+        errorMessage = "Delete operation not supported on this endpoint";
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Show error toast instead of Alert
+      setToastType('error');
+      setToastTitle('Delete Failed');
+      setToastMessage(`Error deleting leave: ${errorMessage}`);
+      setShowToast(true);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDeleteRegularization = async (regularizationId: string) => {
     try {
       if (!token) {
-        Alert.alert("Error", "Authentication required");
+        setToastType('error');
+        setToastTitle('Authentication Error');
+        setToastMessage('Authentication required');
+        setShowToast(true);
         return;
       }
 
-      const response = await axios.delete(`${backend_Host}/regularizations/approvals/${regularizationId}`, {
+      setLoading(true);
+
+      // Use the correct endpoint matching web version
+      const response = await axios.delete(`${backend_Host}/regularization-approvals/${regularizationId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        timeout: 10000
       });
 
+      console.log("Delete regularization response:", response.data);
+
       if (response.data.success) {
-        Alert.alert("Success", "Regularization request deleted successfully");
-        fetchData();
+        // Show success toast
+        setToastType('success');
+        setToastTitle('Regularization Deleted');
+        setToastMessage('Regularization request deleted successfully');
+        setShowToast(true);
       } else {
-        throw new Error(response.data.error || "Failed to delete regularization.");
+        console.error("Delete failed - response:", response.data);
+        throw new Error(response.data.error || response.data.message || "Failed to delete regularization.");
       }
     } catch (error: any) {
       console.error("Error deleting regularization:", error);
-      Alert.alert("Error", `Error deleting regularization: ${error.response?.data?.message || error.message}`);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      
+      // More detailed error handling
+      let errorMessage = "Failed to delete regularization request";
+      if (error.response?.status === 404) {
+        errorMessage = "Regularization request not found";
+      } else if (error.response?.status === 403) {
+        errorMessage = "You don't have permission to delete this request";
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Show error toast instead of Alert
+      setToastType('error');
+      setToastTitle('Delete Failed');
+      setToastMessage(`Error deleting regularization: ${errorMessage}`);
+      setShowToast(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -869,7 +1085,10 @@ export default function ApprovalScreen() {
           <View style={styles.actionButtons}>
             <TouchableOpacity
               style={[styles.actionButton, styles.approveButton]}
-              onPress={() => handleApprove(entry)}
+              onPress={() => {
+                setSelectedEntry(entry);
+                setShowApprovalModal(true);
+              }}
             >
               <Ionicons name="checkmark" size={16} color="#fff" />
               <Text style={styles.actionButtonText}>Approve</Text>
@@ -886,28 +1105,7 @@ export default function ApprovalScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.actionButton, styles.deleteButton]}
-              onPress={() => {
-                Alert.alert(
-                  "Confirm Delete",
-                  isLeave(entry) 
-                    ? "Are you sure you want to delete this leave request? This action cannot be undone."
-                    : "Are you sure you want to delete this regularization request? This action cannot be undone.",
-                  [
-                    { text: "Cancel", style: "cancel" },
-                    { 
-                      text: "Delete", 
-                      style: "destructive",
-                      onPress: () => {
-                        if (isLeave(entry)) {
-                          handleDeleteLeave(entry._id);
-                        } else {
-                          handleDeleteRegularization(entry._id);
-                        }
-                      }
-                    }
-                  ]
-                );
-              }}
+              onPress={() => openDeleteModal(entry)}
             >
               <Image source={require("../../../assets/Tasks/deleteTwo.png")} className='h-6 w-5'/>
             </TouchableOpacity>
@@ -937,51 +1135,88 @@ export default function ApprovalScreen() {
   );
 
   
-  const renderRejectModal = () => (
-    <Modal
-      visible={showRejectModal}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={() => setShowRejectModal(false)}
-    >
+const renderRejectModal = () => (
+  <Modal
+    visible={showRejectModal}
+    animationType="slide"
+    presentationStyle="pageSheet"
+    onRequestClose={() => setShowRejectModal(false)}
+  >
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.modalContainer}>
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>Reject Request</Text>
           <TouchableOpacity onPress={() => setShowRejectModal(false)}>
-            <Ionicons name="close" size={24} color="#374151" />
+            <Ionicons name="close" size={24} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
 
-        <View style={styles.modalContent}>
-          <Text style={styles.rejectLabel}>Reason for rejection (optional)</Text>
-          <TextInput
-            style={styles.rejectInput}
-            multiline
-            numberOfLines={4}
-            placeholder="Enter rejection reason..."
-            value={rejectRemarks}
-            onChangeText={setRejectRemarks}
-            textAlignVertical="top"
-          />
-        </View>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.modalContent}>
+            <Text style={styles.rejectLabel}>Reason for rejection (optional)</Text>
+            <TextInput
+              style={styles.rejectInput}
+              multiline
+              numberOfLines={4}
+              placeholder="Enter rejection reason..."
+              placeholderTextColor="#787CA5"
+              value={rejectRemarks}
+              onChangeText={setRejectRemarks}
+              textAlignVertical="top"
+            />
+          </View>
+        </TouchableWithoutFeedback>
 
-        <View style={styles.modalFooter}>
+        <View style={[styles.modalFooter, { 
+          flexDirection: 'row', 
+          justifyContent: 'space-between',
+          paddingHorizontal: 16,
+          paddingVertical: 16,
+          backgroundColor: '#0A0D28',
+          gap: 12,
+        }]}>
           <TouchableOpacity
-            style={styles.cancelButton}
+            style={[styles.cancelButton, {
+              flex: 1,
+              paddingVertical: 14,
+              borderRadius: 8,
+              alignItems: 'center',
+              backgroundColor: 'rgba(27, 23, 57, 0.8)',
+              borderWidth: 1,
+              borderColor: '#676B93',
+            }]}
             onPress={() => setShowRejectModal(false)}
           >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
+            <Text style={[styles.cancelButtonText, {
+              color: '#FFFFFF',
+              fontSize: 16,
+              fontWeight: '600',
+              fontFamily: 'LatoBold',
+            }]}>Cancel</Text>
           </TouchableOpacity>
+          
           <TouchableOpacity
-            style={styles.rejectConfirmButton}
+            style={[styles.rejectConfirmButton, {
+              flex: 1,
+              paddingVertical: 14,
+              borderRadius: 8,
+              alignItems: 'center',
+              backgroundColor: '#ef4444',
+            }]}
             onPress={handleReject}
           >
-            <Text style={styles.rejectConfirmButtonText}>Reject</Text>
+            <Text style={[styles.rejectConfirmButtonText, {
+              color: '#FFFFFF',
+              fontSize: 16,
+              fontWeight: '600',
+              fontFamily: 'LatoBold',
+            }]}>Reject</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
-    </Modal>
-  );
+    </TouchableWithoutFeedback>
+  </Modal>
+);
 
   const renderDetailsModal = () => {
     if (!selectedEntry) return null;
@@ -1185,6 +1420,84 @@ export default function ApprovalScreen() {
       {/* Modals */}
       {renderRejectModal()}
       {renderDetailsModal()}
+
+      {/* Approval Modals */}
+      {selectedEntry && isLeave(selectedEntry) && (
+        <LeaveApprovalModal
+          visible={showApprovalModal}
+          leaveId={selectedEntry._id}
+          leaveDays={selectedEntry.leaveDays}
+          appliedDays={selectedEntry.appliedDays}
+          leaveReason={selectedEntry.leaveReason}
+          leaveType={selectedEntry.leaveType?.leaveType || 'Unknown'}
+          fromDate={selectedEntry.fromDate}
+          toDate={selectedEntry.toDate}
+          user={{
+            firstName: selectedEntry.user.firstName,
+            lastName: selectedEntry.user.lastName,
+          }}
+          manager={{
+            firstName: selectedEntry.user.reportingManager?.firstName || 'Unknown',
+            lastName: selectedEntry.user.reportingManager?.lastName || 'Manager',
+          }}
+          onClose={() => {
+            setShowApprovalModal(false);
+            setSelectedEntry(null);
+          }}
+          onUpdate={() => {
+            fetchData();
+          }}
+          onShowToast={handleShowToast}
+        />
+      )}
+
+      {selectedEntry && isRegularization(selectedEntry) && (
+        <RegularizationApprovalModal
+          visible={showApprovalModal}
+          regularizationId={selectedEntry._id}
+          timestamp={selectedEntry.timestamp}
+          loginTime={selectedEntry.loginTime}
+          logoutTime={selectedEntry.logoutTime}
+          remarks={selectedEntry.remarks}
+          onClose={() => {
+            setShowApprovalModal(false);
+            setSelectedEntry(null);
+          }}
+          onSubmit={() => {
+            fetchData();
+          }}
+          onShowToast={handleShowToast}
+        />
+      )}
+
+      {/* Custom Toast Alert */}
+      <ToastAlert
+        visible={showToast}
+        type={toastType}
+        title={toastTitle}
+        message={toastMessage}
+        onHide={() => setShowToast(false)}
+        duration={4000}
+      />
+
+      {/* Custom Delete Modal */}
+      {itemToDelete && (
+        <CustomDeleteModal
+          visible={showDeleteModal}
+          title="Are you sure you want to"
+          subtitle="delete this request?"
+          itemName={
+            isLeave(itemToDelete) 
+              ? `${itemToDelete.leaveType?.leaveType || 'Leave'} request from ${itemToDelete.user.firstName} ${itemToDelete.user.lastName}`
+              : `Regularization request from ${itemToDelete.userId?.firstName || 'Unknown'} ${itemToDelete.userId?.lastName || 'User'}`
+          }
+          onCancel={closeDeleteModal}
+          onConfirm={confirmDelete}
+          isDeleting={isDeleting}
+          cancelText="No, Keep It."
+          confirmText="Delete"
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -1627,5 +1940,11 @@ const styles = StyleSheet.create({
     flex: 2,
     textAlign: 'right',
     fontFamily: 'LatoRegular',
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#FFFFFF',
+    fontFamily: 'LatoMedium',
   },
 });

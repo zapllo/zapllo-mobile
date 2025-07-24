@@ -53,9 +53,21 @@ const CustomSplashScreen: React.FC<CustomSplashScreenProps> = ({
   const mainTextTranslateY = useSharedValue(20);
   const subtitleTranslateY = useSharedValue(20);
   
+  // Store timeout references for cleanup
+  const timeoutRefs = React.useRef<NodeJS.Timeout[]>([]);
+  
+  // Cleanup function to clear all timeouts
+  const clearAllTimeouts = () => {
+    timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
+    timeoutRefs.current = [];
+  };
+
   // Reset animation states when modal becomes visible
   useEffect(() => {
     if (visible) {
+      // Clear any existing timeouts
+      clearAllTimeouts();
+      
       // Reset states
       setShowMainText(false);
       setShowSubtitle(false);
@@ -67,7 +79,15 @@ const CustomSplashScreen: React.FC<CustomSplashScreenProps> = ({
       
       // Start animations
       startAnimations();
+    } else {
+      // Clear timeouts when modal becomes invisible
+      clearAllTimeouts();
     }
+    
+    // Cleanup on unmount
+    return () => {
+      clearAllTimeouts();
+    };
   }, [visible]);
   
   // Determine which animation to show based on condition
@@ -119,7 +139,7 @@ const CustomSplashScreen: React.FC<CustomSplashScreenProps> = ({
     
     // After a delay, show main text
     const mainTextDelay = 1000;
-    setTimeout(() => {
+    const mainTextTimeout = setTimeout(() => {
       setShowMainText(true);
       mainTextOpacity.value = withTiming(1, {
         duration: 600,
@@ -130,10 +150,11 @@ const CustomSplashScreen: React.FC<CustomSplashScreenProps> = ({
         easing: Easing.bezier(0.25, 0.1, 0.25, 1),
       });
     }, mainTextDelay);
+    timeoutRefs.current.push(mainTextTimeout);
     
     // After another delay, show subtitle
     const subtitleDelay = 1800;
-    setTimeout(() => {
+    const subtitleTimeout = setTimeout(() => {
       setShowSubtitle(true);
       subtitleOpacity.value = withTiming(1, {
         duration: 600,
@@ -144,16 +165,18 @@ const CustomSplashScreen: React.FC<CustomSplashScreenProps> = ({
         easing: Easing.bezier(0.25, 0.1, 0.25, 1),
       });
     }, subtitleDelay);
+    timeoutRefs.current.push(subtitleTimeout);
     
-    // Call onComplete after the specified duration
-    if (onComplete) {
-      setTimeout(() => {
+    // Call onComplete and/or onDismiss after the specified duration
+    const dismissTimeout = setTimeout(() => {
+      if (onComplete) {
         onComplete();
-        if (onDismiss) {
-          onDismiss(); // Call onDismiss to close the modal
-        }
-      }, duration);
-    }
+      }
+      if (onDismiss) {
+        onDismiss(); // Call onDismiss to close the modal
+      }
+    }, duration);
+    timeoutRefs.current.push(dismissTimeout);
   };
   
   return (

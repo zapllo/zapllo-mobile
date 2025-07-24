@@ -10,6 +10,7 @@ import { AntDesign } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
 import CustomDropdown from '~/components/customDropDown';
 import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
+import ToastAlert from '~/components/ToastAlert';
 
 // Define types for our data
 interface User {
@@ -85,6 +86,12 @@ export default function RegularizationDetailsScreen() {
   
   // Delete modal state
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  
+  // Toast alert states
+  const [showToast, setShowToast] = useState(false);
+  const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info'>('success');
+  const [toastTitle, setToastTitle] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
   
   // Get date range based on selected filter
   const getDateRange = () => {
@@ -298,12 +305,11 @@ export default function RegularizationDetailsScreen() {
         // Close the modal
         setModalVisible(false);
         
-        // Show success message
-        Alert.alert(
-          "Success",
-          `Regularization request ${modalAction === 'approve' ? 'approved' : 'rejected'} successfully`,
-          [{ text: "OK" }]
-        );
+        // Show custom toast alert
+        setToastType('success');
+        setToastTitle(`Request ${modalAction === 'approve' ? 'Approved' : 'Rejected'}`);
+        setToastMessage(`Regularization request ${modalAction === 'approve' ? 'approved' : 'rejected'} successfully`);
+        setShowToast(true);
         
         // Refresh data from server
         fetchRegularizations();
@@ -337,12 +343,11 @@ export default function RegularizationDetailsScreen() {
         // Close the modal
         setDeleteModalVisible(false);
         
-        // Show success message
-        Alert.alert(
-          "Success",
-          "Regularization request deleted successfully",
-          [{ text: "OK" }]
-        );
+        // Show custom toast alert
+        setToastType('success');
+        setToastTitle('Request Deleted');
+        setToastMessage('Regularization request deleted successfully');
+        setShowToast(true);
         
         // Refresh data from server
         fetchRegularizations();
@@ -444,189 +449,185 @@ export default function RegularizationDetailsScreen() {
         >
           {filteredRegularizations.length > 0 ? (
             filteredRegularizations.map((reg, index) => (
-
-
-          <View 
-            key={index} 
-            className="bg-[#10122d] border border-[#37384B] rounded-2xl p-5 mb-5"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 5,
-            }}
-          >
-            {/* Header with status badge */}
-            <View className="flex-row justify-between items-center mb-4">
-              <View className="flex-row items-center">
-                <LinearGradient
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  colors={["#815BF5", "#FC8929"]}
-                  className="w-1 h-6 rounded-full mr-2"
-                />
-                <Text className="text-white font-bold text-base">
-                  {reg.action === 'login' ? 'Login Request' : 'Regularization Request'}
-                </Text>
-              </View>
               <View 
-                style={{ 
-                  backgroundColor: getStatusColor(reg.approvalStatus),
-                  shadowColor: getStatusColor(reg.approvalStatus),
-                  shadowOffset: { width: 0, height: 2 },
+                key={index} 
+                className="bg-[#10122d] border border-[#37384B] rounded-2xl p-5 mb-5"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.3,
-                  shadowRadius: 3,
-                  elevation: 2,
+                  shadowRadius: 8,
+                  elevation: 5,
                 }}
-                className="px-3 py-1.5 rounded-full"
               >
-                <Text className="text-white text-xs font-bold">{reg.approvalStatus}</Text>
-              </View>
-            </View>
-            
-            {/* Divider */}
-            <View className="h-[1px] bg-[#37384B] w-full mb-4 opacity-50" />
-            
-            {/* Content section */}
-            <View className="mb-4">
-              <View className="flex-row items-center mb-3">
-                <View className="w-8 h-8 rounded-full bg-[#1A1C3D] items-center justify-center mr-3">
-                  <AntDesign name="calendar" size={16} color="#676B93" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-[#676B93] text-xs mb-1">Date & Time</Text>
-                  <Text className="text-white font-medium">{formatDate(reg.timestamp)}</Text>
-                </View>
-              </View>
-              
-              {reg.loginTime && reg.logoutTime && (
-                <View className="flex-row items-center mb-3">
-                  <View className="w-8 h-8 rounded-full bg-[#1A1C3D] items-center justify-center mr-3">
-                    <AntDesign name="clockcircleo" size={16} color="#676B93" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-[#676B93] text-xs mb-1">Duration</Text>
-                    <Text className="text-white font-medium">{formatDuration(reg.loginTime, reg.logoutTime)}</Text>
-                  </View>
-                </View>
-              )}
-              
-              {reg.remarks && (
-                <View className="flex-row items-start mb-3">
-                  <View className="w-8 h-8 rounded-full bg-[#1A1C3D] items-center justify-center mr-3 mt-0.5">
-                    <AntDesign name="filetext1" size={16} color="#676B93" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-[#676B93] text-xs mb-1">Remarks</Text>
-                    <Text className="text-white font-medium">{reg.remarks}</Text>
-                  </View>
-                </View>
-              )}
-              
-              {reg.approvalStatus !== 'Pending' && reg.approvedBy && (
-                <View className="flex-row items-center mb-3">
-                  <View className="w-8 h-8 rounded-full bg-[#1A1C3D] items-center justify-center mr-3">
-                    <AntDesign name="user" size={16} color="#676B93" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-[#676B93] text-xs mb-1">
-                      {reg.approvalStatus === 'Approved' ? 'Approved by' : 'Rejected by'}
-                    </Text>
-                    <Text className="text-white font-medium">
-                      {`${reg.approvedBy.firstName} ${reg.approvedBy.lastName}`}
+                {/* Header with status badge */}
+                <View className="flex-row justify-between items-center mb-4">
+                  <View className="flex-row items-center">
+                    <LinearGradient
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      colors={["#815BF5", "#FC8929"]}
+                      className="w-1 h-6 rounded-full mr-2"
+                    />
+                    <Text className="text-white font-bold text-base">
+                      {reg.action === 'login' ? 'Login Request' : 'Regularization Request'}
                     </Text>
                   </View>
-                </View>
-              )}
-              
-              {reg.approvalStatus !== 'Pending' && reg.approvedAt && (
-                <View className="flex-row items-center mb-3">
-                  <View className="w-8 h-8 rounded-full bg-[#1A1C3D] items-center justify-center mr-3">
-                    <AntDesign name="checksquareo" size={16} color="#676B93" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-[#676B93] text-xs mb-1">
-                      {reg.approvalStatus === 'Approved' ? 'Approved on' : 'Rejected on'}
-                    </Text>
-                    <Text className="text-white font-medium">{formatDate(reg.approvedAt)}</Text>
-                  </View>
-                </View>
-              )}
-              
-              {reg.notes && (
-                <View className="flex-row items-start mb-3">
-                  <View className="w-8 h-8 rounded-full bg-[#1A1C3D] items-center justify-center mr-3 mt-0.5">
-                    <AntDesign name="message1" size={16} color="#676B93" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-[#676B93] text-xs mb-1">Notes</Text>
-                    <Text className="text-white font-medium">{reg.notes}</Text>
+                  <View 
+                    style={{ 
+                      backgroundColor: getStatusColor(reg.approvalStatus),
+                      shadowColor: getStatusColor(reg.approvalStatus),
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 3,
+                      elevation: 2,
+                    }}
+                    className="px-3 py-1.5 rounded-full"
+                  >
+                    <Text className="text-white text-xs font-bold">{reg.approvalStatus}</Text>
                   </View>
                 </View>
-              )}
-            </View>
-            
-            {/* Action buttons for pending regularizations */}
-            {selectedStatus === 'Pending' && (
-              <>
+                
+                {/* Divider */}
                 <View className="h-[1px] bg-[#37384B] w-full mb-4 opacity-50" />
-                <View className="flex-row justify-between">
-                  <TouchableOpacity
-                    onPress={() => openApproveModal(reg._id)}
-                    className="border-[#06D6A0] border justify-center flex items-center py-2.5 px-4 rounded-lg flex-1 mr-2"
-                    style={{ 
-                      backgroundColor: 'rgba(6, 214, 160, 0.15)',
-                      shadowColor: "#06D6A0",
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.2,
-                      shadowRadius: 3,
-                      elevation: 2,
-                    }}
-                  >
-                    <View className="flex-row items-center">
-                      <AntDesign name="checkcircleo" size={16} color="#06D6A0" style={{ marginRight: 8 }} />
-                      <Text className="text-white text-center font-bold text-xs">Approve</Text>
+                
+                {/* Content section */}
+                <View className="mb-4">
+                  <View className="flex-row items-center mb-3">
+                    <View className="w-8 h-8 rounded-full bg-[#1A1C3D] items-center justify-center mr-3">
+                      <AntDesign name="calendar" size={16} color="#676B93" />
                     </View>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity
-                    onPress={() => openRejectModal(reg._id)}
-                    className="border-[#EF4444] border py-2.5 px-4 rounded-lg flex-1 mx-2 items-center justify-center"
-                    style={{ 
-                      backgroundColor: 'rgba(231, 101, 101, 0.15)',
-                      shadowColor: "#EF4444",
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.2,
-                      shadowRadius: 3,
-                      elevation: 2,
-                    }}
-                  >
-                    <View className="flex-row items-center">
-                      <AntDesign name="closecircleo" size={16} color="#EF4444" style={{ marginRight: 8 }} />
-                      <Text className="text-white text-center font-bold text-xs">Reject</Text>
+                    <View className="flex-1">
+                      <Text className="text-[#676B93] text-xs mb-1">Date & Time</Text>
+                      <Text className="text-white font-medium">{formatDate(reg.timestamp)}</Text>
                     </View>
-                  </TouchableOpacity>
+                  </View>
                   
-                  <TouchableOpacity
-                    onPress={() => openDeleteModal(reg._id)}
-                    className="py-2.5 px-4 rounded-lg flex-1 ml-2 items-center justify-center bg-[#1A1C3D]"
-                    style={{
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.2,
-                      shadowRadius: 3,
-                      elevation: 2,
-                    }}
-                  >
-                    <Image source={require("../../../assets/Tasks/deleteTwo.png")} className='h-6 w-5'/>
-                  </TouchableOpacity>
+                  {reg.loginTime && reg.logoutTime && (
+                    <View className="flex-row items-center mb-3">
+                      <View className="w-8 h-8 rounded-full bg-[#1A1C3D] items-center justify-center mr-3">
+                        <AntDesign name="clockcircleo" size={16} color="#676B93" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-[#676B93] text-xs mb-1">Duration</Text>
+                        <Text className="text-white font-medium">{formatDuration(reg.loginTime, reg.logoutTime)}</Text>
+                      </View>
+                    </View>
+                  )}
+                  
+                  {reg.remarks && (
+                    <View className="flex-row items-start mb-3">
+                      <View className="w-8 h-8 rounded-full bg-[#1A1C3D] items-center justify-center mr-3 mt-0.5">
+                        <AntDesign name="filetext1" size={16} color="#676B93" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-[#676B93] text-xs mb-1">Remarks</Text>
+                        <Text className="text-white font-medium">{reg.remarks}</Text>
+                      </View>
+                    </View>
+                  )}
+                  
+                  {reg.approvalStatus !== 'Pending' && reg.approvedBy && (
+                    <View className="flex-row items-center mb-3">
+                      <View className="w-8 h-8 rounded-full bg-[#1A1C3D] items-center justify-center mr-3">
+                        <AntDesign name="user" size={16} color="#676B93" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-[#676B93] text-xs mb-1">
+                          {reg.approvalStatus === 'Approved' ? 'Approved by' : 'Rejected by'}
+                        </Text>
+                        <Text className="text-white font-medium">
+                          {`${reg.approvedBy.firstName} ${reg.approvedBy.lastName}`}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+                  
+                  {reg.approvalStatus !== 'Pending' && reg.approvedAt && (
+                    <View className="flex-row items-center mb-3">
+                      <View className="w-8 h-8 rounded-full bg-[#1A1C3D] items-center justify-center mr-3">
+                        <AntDesign name="checksquareo" size={16} color="#676B93" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-[#676B93] text-xs mb-1">
+                          {reg.approvalStatus === 'Approved' ? 'Approved on' : 'Rejected on'}
+                        </Text>
+                        <Text className="text-white font-medium">{formatDate(reg.approvedAt)}</Text>
+                      </View>
+                    </View>
+                  )}
+                  
+                  {reg.notes && (
+                    <View className="flex-row items-start mb-3">
+                      <View className="w-8 h-8 rounded-full bg-[#1A1C3D] items-center justify-center mr-3 mt-0.5">
+                        <AntDesign name="message1" size={16} color="#676B93" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-[#676B93] text-xs mb-1">Notes</Text>
+                        <Text className="text-white font-medium">{reg.notes}</Text>
+                      </View>
+                    </View>
+                  )}
                 </View>
-              </>
-            )}
-          </View>
-
-
+                
+                {/* Action buttons for pending regularizations */}
+                {selectedStatus === 'Pending' && (
+                  <>
+                    <View className="h-[1px] bg-[#37384B] w-full mb-4 opacity-50" />
+                    <View className="flex-row justify-between">
+                      <TouchableOpacity
+                        onPress={() => openApproveModal(reg._id)}
+                        className="border-[#06D6A0] border justify-center flex items-center py-2.5 px-4 rounded-lg flex-1 mr-2"
+                        style={{ 
+                          backgroundColor: 'rgba(6, 214, 160, 0.15)',
+                          shadowColor: "#06D6A0",
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.2,
+                          shadowRadius: 3,
+                          elevation: 2,
+                        }}
+                      >
+                        <View className="flex-row items-center">
+                          <AntDesign name="checkcircleo" size={16} color="#06D6A0" style={{ marginRight: 8 }} />
+                          <Text className="text-white text-center font-bold text-xs">Approve</Text>
+                        </View>
+                      </TouchableOpacity>
+                      
+                      <TouchableOpacity
+                        onPress={() => openRejectModal(reg._id)}
+                        className="border-[#EF4444] border py-2.5 px-4 rounded-lg flex-1 mx-2 items-center justify-center"
+                        style={{ 
+                          backgroundColor: 'rgba(231, 101, 101, 0.15)',
+                          shadowColor: "#EF4444",
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.2,
+                          shadowRadius: 3,
+                          elevation: 2,
+                        }}
+                      >
+                        <View className="flex-row items-center">
+                          <AntDesign name="closecircleo" size={16} color="#EF4444" style={{ marginRight: 8 }} />
+                          <Text className="text-white text-center font-bold text-xs">Reject</Text>
+                        </View>
+                      </TouchableOpacity>
+                      
+                      <TouchableOpacity
+                        onPress={() => openDeleteModal(reg._id)}
+                        className="py-2.5 px-4 rounded-lg flex-1 ml-2 items-center justify-center bg-[#1A1C3D]"
+                        style={{
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.2,
+                          shadowRadius: 3,
+                          elevation: 2,
+                        }}
+                      >
+                        <Image source={require("../../../assets/Tasks/deleteTwo.png")} className='h-6 w-5'/>
+                      </TouchableOpacity>
+                    </View>
+                  </>
+                )}
+              </View>
             ))
           ) : (
             <View className="flex-1 justify-center items-center py-10">
@@ -734,13 +735,9 @@ export default function RegularizationDetailsScreen() {
               <View className="items-center justify-center my-4">
                 <Image 
                   source={require("../../../assets/Tickit/delIcon.png")} 
-                  
                   style={{ width: 80, height: 80, marginBottom: 20 }}
-                  
                 />
               </View>
-              
-      
               
               <Text className="text-white text-center mb-6">
                 Are you sure you want to delete this regularization request? This action cannot be undone.
@@ -782,6 +779,16 @@ export default function RegularizationDetailsScreen() {
         onApply={handleCustomDateApply}
         initialStartDate={customStartDate || new Date()}
         initialEndDate={customEndDate || new Date()}
+      />
+      
+      {/* Custom Toast Alert */}
+      <ToastAlert
+        visible={showToast}
+        type={toastType}
+        title={toastTitle}
+        message={toastMessage}
+        onHide={() => setShowToast(false)}
+        duration={3000}
       />
     </SafeAreaView>
   );

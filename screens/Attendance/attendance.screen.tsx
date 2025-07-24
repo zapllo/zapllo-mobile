@@ -1,4 +1,3 @@
-
 import { Image, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AllTaskScreen from '~/app/(routes)/HomeComponent/Tasks/AllTaskScreen';
@@ -16,6 +15,7 @@ import ApprovalStack from '~/app/(routes)/HomeComponent/Attendance/Approval';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import * as Haptics from 'expo-haptics';
+import LoadingZapllo from '~/components/LoadingZapllo';
 
 const Tab = createBottomTabNavigator();
 
@@ -23,6 +23,7 @@ export default function AttendanceScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showDataLoading, setShowDataLoading] = useState(true); // Show loading only when data is being fetched
   const { userData } = useSelector((state: RootState) => state.auth);
 
   const navigation = useNavigation<StackNavigationProp<any>>();
@@ -31,6 +32,7 @@ export default function AttendanceScreen() {
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
+        setShowDataLoading(true); // Show loading when starting data fetch
         const response = await fetch('https://zapllo.com/api/users/organization');
         const data = await response.json();
         
@@ -64,19 +66,12 @@ export default function AttendanceScreen() {
         setIsAdmin(reduxAdminStatus);
       } finally {
         setIsLoading(false);
+        setShowDataLoading(false); // Hide loading when data fetch is complete
       }
     };
     
     fetchUserRole();
   }, [userData]);
-
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1 }} className="bg-primary flex items-center justify-center">
-        <ActivityIndicator size="large" color="#5367CB" />
-      </View>
-    );
-  }
 
   // Define tab icons and names based on user role
   const getTabConfig = (routeName: string, focused: boolean) => {
@@ -125,6 +120,13 @@ export default function AttendanceScreen() {
 
   return (
     <View style={{ flex: 1, zIndex: 50 }} className='bg-primary'>
+      {/* Data Loading when fetching user role */}
+      <LoadingZapllo 
+        isVisible={showDataLoading}
+        size="large"
+        showText={true}
+      />
+
       <Tab.Navigator
         initialRouteName="Home"
         screenOptions={({ route }) => ({

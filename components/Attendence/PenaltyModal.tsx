@@ -26,6 +26,7 @@ interface PenaltyModalProps {
   onSave: (settings: PenaltySettings) => void;
   onFetchSettings?: (settings: PenaltySettings) => void;
   initialSettings?: PenaltySettings;
+  onShowSuccessToast?: () => void;
 }
 
 export interface PenaltySettings {
@@ -40,6 +41,7 @@ const PenaltyModal: React.FC<PenaltyModalProps> = ({
   onClose,
   onSave,
   onFetchSettings,
+  onShowSuccessToast,
   initialSettings = {
     lateLoginsAllowed: 3,
     penaltyLeaveDeductionType: 'Half Day',
@@ -166,23 +168,16 @@ const PenaltyModal: React.FC<PenaltyModalProps> = ({
           penaltySalaryAmount
         };
         
-        // Show success alert
-        Alert.alert(
-          'Success',
-          'Penalty settings updated successfully!',
-          [
-            { 
-              text: 'OK', 
-              onPress: () => {
-                // Call the onSave callback with the updated settings
-                onSave(updatedSettings);
-                
-                // Close the modal
-                onClose();
-              }
-            }
-          ]
-        );
+        // Call the onSave callback with the updated settings
+        onSave(updatedSettings);
+        
+        // Show success toast if callback is provided
+        if (onShowSuccessToast) {
+          onShowSuccessToast();
+        }
+        
+        // Close the modal
+        onClose();
       } else {
         Alert.alert('Error', response.data.message || 'Failed to save penalty settings');
       }
@@ -259,7 +254,7 @@ const PenaltyModal: React.FC<PenaltyModalProps> = ({
    
       >
         <TouchableWithoutFeedback onPress={dismissKeyboard}>
-          <View className="bg-[#1E1F2E] rounded-t-3xl p-6">
+          <View className="bg-primary rounded-t-3xl p-6">
             <View className="flex-row justify-between items-center mb-6">
               <Text className="text-white text-xl" style={{fontFamily:"LatoBold"}}>Set Penalties</Text>
               <TouchableOpacity onPress={onClose}>
@@ -284,7 +279,7 @@ const PenaltyModal: React.FC<PenaltyModalProps> = ({
                       <LinearGradient
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
-                        colors={penaltyOption === 'leave' ? ["#6641d5", "#262739"] : ["#1E1F2E", "#1E1F2E"]}
+                        colors={penaltyOption === 'leave' ? ["#815BF5", "#FC8929"] : ["#05071E", "#05071E"]}
                         style={styles.tablet}
                       >
                         <Text className={`text-sm ${penaltyOption === 'leave' ? 'text-white' : 'text-[#676B93]'}`} style={{ fontFamily: "LatoBold" }}>Leave</Text>
@@ -297,7 +292,7 @@ const PenaltyModal: React.FC<PenaltyModalProps> = ({
                       <LinearGradient
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
-                        colors={penaltyOption === 'salary' ? ["#6641d5", "#262739"] : ["#1E1F2E", "#1E1F2E"]}
+                        colors={penaltyOption === 'salary' ? ["#815BF5", "#FC8929"] : ["#05071E", "#05071E"]}
                         style={styles.tablet}
                       >
                         <Text className={`text-sm ${penaltyOption === 'salary' ? 'text-white' : 'text-[#676B93]'}`} style={{ fontFamily: "LatoBold" }}>Salary</Text>
@@ -382,7 +377,7 @@ const PenaltyModal: React.FC<PenaltyModalProps> = ({
 
                 <TouchableOpacity 
                   onPress={handleSave}
-                  className="bg-[#4A65FF] py-4 rounded-xl mb-4"
+                  className="bg-[#815BF5] py-4 rounded-xl mb-4"
                   disabled={loading}
                 >
                   {loading ? (

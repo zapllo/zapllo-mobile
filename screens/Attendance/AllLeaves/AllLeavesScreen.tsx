@@ -13,7 +13,10 @@ import {
   FlatList,
   Dimensions,
   Image,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,6 +27,10 @@ import * as Haptics from 'expo-haptics';
 import NavbarTwo from '~/components/navbarTwo';
 import CustomDropdown from '~/components/customDropDown';
 import EditLeaveBalanceModal from '~/components/Attendence/EditLeaveBalanceModal';
+import CustomSplashScreen from '~/components/CustomSplashScreen';
+import CustomDeleteModal from '~/components/CustomDeleteModal';
+import LeaveApprovalModal from '~/components/Attendence/Approvals/LeaveApprovalModal';
+import ToastAlert, { ToastType } from '~/components/ToastAlert';
 import {
   endOfMonth,
   format,
@@ -132,6 +139,30 @@ export default function AllLeavesScreen() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showDateFilterModal, setShowDateFilterModal] = useState(false);
+  const [showSplashScreen, setShowSplashScreen] = useState(false);
+  
+  // CustomDeleteModal states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<Leave | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // LeaveApprovalModal states
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [selectedLeaveForApproval, setSelectedLeaveForApproval] = useState<Leave | null>(null);
+
+  // Toast state
+  const [showToast, setShowToast] = useState(false);
+  const [toastType, setToastType] = useState<ToastType>('success');
+  const [toastTitle, setToastTitle] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
+
+  // Toast handler function
+  const handleShowToast = (type: ToastType, title: string, message: string) => {
+    setToastType(type);
+    setToastTitle(title);
+    setToastMessage(message);
+    setShowToast(true);
+  };
 
   // Date filter options (matching MyLeavesScreen)
   const daysData = [
@@ -261,16 +292,16 @@ export default function AllLeavesScreen() {
       const data = await response.json();
       if (data.success) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert("Success", "Leave Request approved successfully");
+        handleShowToast('success', 'Leave Approved', 'Leave request approved successfully');
         fetchAllLeaves();
       } else {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        Alert.alert("Error", data.error || "Failed to approve leave request");
+        handleShowToast('error', 'Approval Failed', data.error || 'Failed to approve leave request');
       }
     } catch (error) {
       console.error("Error approving leave:", error);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert("Error", "Failed to approve leave request");
+      handleShowToast('error', 'Approval Failed', 'Failed to approve leave request');
     }
   };
 
@@ -293,16 +324,16 @@ export default function AllLeavesScreen() {
       const data = await response.json();
       if (data.success) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert("Success", "Leave Request deleted successfully!");
+        handleShowToast('success', 'Leave Deleted', 'Leave request deleted successfully');
         fetchAllLeaves();
       } else {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        Alert.alert("Error", data.error || "Failed to delete leave request");
+        handleShowToast('error', 'Delete Failed', data.error || 'Failed to delete leave request');
       }
     } catch (error) {
       console.error("Error deleting leave:", error);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert("Error", "Failed to delete leave request");
+      handleShowToast('error', 'Delete Failed', 'Failed to delete leave request');
     }
   };
 
@@ -310,6 +341,33 @@ export default function AllLeavesScreen() {
     if (leaveIdToDelete) {
       handleDelete(leaveIdToDelete);
       setIsDeleteDialogOpen(false);
+    }
+  };
+
+  // Delete modal handlers
+  const openDeleteModal = (leave: Leave) => {
+    setItemToDelete(leave);
+    setShowDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setItemToDelete(null);
+    setIsDeleting(false);
+  };
+
+  const confirmDeleteFromModal = async () => {
+    if (!itemToDelete) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      await handleDelete(itemToDelete._id);
+      // Close modal and refresh data
+      closeDeleteModal();
+    } catch (error) {
+      console.error("Error in confirmDeleteFromModal:", error);
+      setIsDeleting(false);
     }
   };
 
@@ -321,7 +379,7 @@ export default function AllLeavesScreen() {
   const handleRejectSubmit = async () => {
     if (!remarks) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert("Error", "Please provide rejection remarks");
+      handleShowToast('error', 'Validation Error', 'Please provide rejection remarks');
       return;
     }
 
@@ -350,16 +408,19 @@ export default function AllLeavesScreen() {
       const data = await response.json();
       if (data.success) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert("Success", "Leave Request rejected successfully");
+        handleShowToast('success', 'Leave Rejected', 'Leave request rejected successfully');
         fetchAllLeaves();
         setIsRejectModalOpen(false);
         setSelectedLeave(null);
         setRemarks("");
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        handleShowToast('error', 'Rejection Failed', data.error || 'Failed to reject leave request');
       }
     } catch (error) {
       console.error("Error rejecting leave:", error);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert("Error", "Failed to reject leave request");
+      handleShowToast('error', 'Rejection Failed', 'Failed to reject leave request');
     } finally {
       setLoading(false);
     }
@@ -391,7 +452,16 @@ export default function AllLeavesScreen() {
       if (data.success || response.ok) {
         // Show success feedback
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert('Success', 'Leave balance updated successfully!');
+        
+        // Close the edit modal first
+        setIsEditModalOpen(false);
+        setSelectedUser(null);
+        
+        // Show CustomSplashScreen after a small delay to ensure modal is closed
+        setTimeout(() => {
+          console.log('Showing splash screen after leave balance update');
+          setShowSplashScreen(true);
+        }, 300);
         
         // Refresh the leave balances data to get updated values
         const refreshResponse = await fetch("https://zapllo.com/api/leaves/getAllUsersBalances", {
@@ -406,9 +476,6 @@ export default function AllLeavesScreen() {
           setUsers(refreshData.data.users);
           setLeaveTypes(refreshData.data.leaveTypes);
         }
-        
-        setIsEditModalOpen(false);
-        setSelectedUser(null);
       } else {
         throw new Error(data.error || 'Failed to update leave balance');
       }
@@ -478,70 +545,124 @@ export default function AllLeavesScreen() {
     return '#10b981';
   };
 
-  const renderLeaveCard = ({ item: leave }: { item: Leave }) => (
-    <TouchableOpacity
-      style={styles.leaveCard}
-      onPress={() => setSelectedLeaveForDetails(leave)}
-    >
-      <View style={styles.leaveCardHeader}>
-        <View style={styles.userInfo}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{leave.user.firstName[0]}</Text>
-          </View>
-          <View style={styles.userDetails}>
-            <Text style={styles.userName}>
-              {leave.user.firstName} {leave.user.lastName}
-            </Text>
-            <Text style={styles.leaveInfo}>
-              {leave.leaveType?.leaveType} • {format(new Date(leave.fromDate), "MMM d")} - {format(new Date(leave.toDate), "MMM d, yyyy")} • {leave.appliedDays} day{leave.appliedDays > 1 ? 's' : ''}
-            </Text>
-          </View>
-        </View>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(leave.status) }]}>
-          <Text style={styles.statusText}>{leave.status}</Text>
-        </View>
-      </View>
+  const getInitials = (firstName: string, lastName?: string) => {
+    return `${firstName[0]}${lastName ? lastName[0] : ''}`.toUpperCase();
+  };
 
-      {isAdmin && leave.status === "Pending" && (
-        <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.approveButton]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              handleApproval(leave);
-            }}
-          >
-            <Text style={styles.approveButtonText}>Approve</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.rejectButton]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              handleReject(leave);
-            }}
-          >
-            <Text style={styles.rejectButtonText}>Reject</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="py-2.5 px-4 rounded-lg  ml-2 items-center justify-center bg-[#1A1C3D]"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.2,
-              shadowRadius: 3,
-              elevation: 2,
-            }}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              openDeleteDialog(leave._id);
-            }}
-          >
-            <Image source={require("../../../assets/Tasks/deleteTwo.png")} className='h-6 w-5'/>
-          </TouchableOpacity>
+  const renderLeaveCard = ({ item: leave }: { item: Leave }) => {
+    const statusColors = {
+      "Approved": { bg: '#dcfce7', text: '#166534', border: '#bbf7d0' },
+      "Partially Approved": { bg: '#fef3c7', text: '#92400e', border: '#fde68a' },
+      "Rejected": { bg: '#fee2e2', text: '#991b1b', border: '#fecaca' },
+      "Pending": { bg: '#dbeafe', text: '#1e40af', border: '#bfdbfe' },
+    };
+
+    const statusColor = statusColors[leave.status as keyof typeof statusColors] || statusColors["Pending"];
+    const userInitials = getInitials(leave.user.firstName, leave.user.lastName);
+
+    return (
+      <TouchableOpacity
+        style={styles.requestCard}
+        onPress={() => setSelectedLeaveForDetails(leave)}
+      >
+        <View style={styles.cardHeader}>
+          <View style={styles.userInfo}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{userInitials}</Text>
+            </View>
+            <View style={styles.userDetails}>
+              <Text style={styles.userName}>
+                {leave.user.firstName} {leave.user.lastName}
+              </Text>
+              <Text style={styles.requestDetails}>
+                {leave.leaveType?.leaveType} • {format(new Date(leave.fromDate), "MMM d")} - {format(new Date(leave.toDate), "MMM d, yyyy")} • {leave.appliedDays} day{leave.appliedDays > 1 ? 's' : ''}
+              </Text>
+            </View>
+          </View>
+          
+          <View style={styles.statusContainer}>
+            {leave.leaveReason === "Penalty" && (
+              <View style={styles.penaltyBadge}>
+                <Text style={styles.penaltyBadgeText}>Penalty</Text>
+              </View>
+            )}
+            <View style={[
+              styles.statusBadgeSmall,
+              { backgroundColor: statusColor?.bg, borderColor: statusColor?.border }
+            ]}>
+              <Text style={[styles.statusBadgeSmallText, { color: statusColor?.text }]}>
+                {leave.status}
+              </Text>
+            </View>
+          </View>
         </View>
-      )}
-    </TouchableOpacity>
-  );
+
+        <View style={styles.separator} />
+
+        <View style={styles.requestItemDetails}>
+          <View style={styles.requestDetailRow}>
+            <Text style={styles.requestDetailLabel}>From:</Text>
+            <Text style={styles.requestDetailValue}>
+              {format(new Date(leave.fromDate), "MMM d, yyyy")}
+            </Text>
+          </View>
+          
+          <View style={styles.requestDetailRow}>
+            <Text style={styles.requestDetailLabel}>To:</Text>
+            <Text style={styles.requestDetailValue}>
+              {format(new Date(leave.toDate), "MMM d, yyyy")}
+            </Text>
+          </View>
+          
+          <View style={styles.requestDetailRow}>
+            <Text style={styles.requestDetailLabel}>Applied:</Text>
+            <Text style={styles.requestDetailValue}>{leave.appliedDays} day(s)</Text>
+            <Text style={styles.requestDetailSeparator}>|</Text>
+            <Text style={styles.requestDetailLabel}>Approved:</Text>
+            <Text style={styles.requestDetailValue}>
+              {leave.leaveDays?.filter((day) => day.status === "Approved").length || 0} day(s)
+            </Text>
+          </View>
+        </View>
+
+        {isAdmin && leave.status === "Pending" && (
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.approveButton]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setSelectedLeaveForApproval(leave);
+                setShowApprovalModal(true);
+              }}
+            >
+              <Ionicons name="checkmark" size={16} color="#fff" />
+              <Text style={styles.actionButtonText}>Approve</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.rejectButton]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setSelectedLeave(leave);
+                setIsRejectModalOpen(true);
+              }}
+            >
+              <Ionicons name="close" size={16} color="#fff" />
+              <Text style={styles.actionButtonText}>Reject</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.deleteButton]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                openDeleteModal(leave);
+              }}
+            >
+              <Image source={require("../../../assets/Tasks/deleteTwo.png")} className='h-6 w-5'/>
+            </TouchableOpacity>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   const renderUserBalance = ({ item: user }: { item: User }) => (
     <View style={styles.userBalanceCard}>
@@ -696,52 +817,89 @@ export default function AllLeavesScreen() {
   const renderRejectModal = () => (
     <Modal
       visible={isRejectModalOpen}
-      transparent
       animationType="slide"
+      presentationStyle="pageSheet"
       onRequestClose={() => setIsRejectModalOpen(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.rejectModal}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Reject Leave Request</Text>
-            <TouchableOpacity onPress={() => setIsRejectModalOpen(false)}>
-              <Text style={styles.closeButton}>✕</Text>
-            </TouchableOpacity>
-          </View>
+      >
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <SafeAreaView style={styles.modalContainer}>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Reject Request</Text>
+          <TouchableOpacity onPress={() => {
+            setIsRejectModalOpen(false);
+            setRemarks("");
+          }}>
+            <Ionicons name="close" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
 
-          <View style={styles.rejectContent}>
-            <Text style={styles.rejectLabel}>Rejection Remarks *</Text>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.modalContent}>
+            <Text style={styles.rejectLabel}>Reason for rejection (optional)</Text>
             <TextInput
-              style={styles.remarksInput}
+              style={styles.rejectInput}
               multiline
               numberOfLines={4}
-              placeholder="Please provide reason for rejection..."
+              placeholder="Enter rejection reason..."
+              placeholderTextColor="#787CA5"
               value={remarks}
               onChangeText={setRemarks}
               textAlignVertical="top"
             />
           </View>
+        </TouchableWithoutFeedback>
 
-          <View style={styles.modalActions}>
-            <TouchableOpacity
-              style={[styles.modalButton, styles.cancelButton]}
-              onPress={() => {
-                setIsRejectModalOpen(false);
-                setRemarks("");
-              }}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.modalButton, styles.rejectSubmitButton]}
-              onPress={handleRejectSubmit}
-              disabled={!remarks.trim()}
-            >
-              <Text style={styles.rejectSubmitButtonText}>Reject Leave</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={[styles.modalFooter, { 
+          flexDirection: 'row', 
+          justifyContent: 'space-between',
+          paddingHorizontal: 16,
+          paddingVertical: 16,
+          backgroundColor: '#0A0D28',
+          gap: 12,
+        }]}>
+          <TouchableOpacity
+            style={[styles.cancelButton, {
+              flex: 1,
+              paddingVertical: 14,
+              borderRadius: 8,
+              alignItems: 'center',
+              backgroundColor: 'rgba(27, 23, 57, 0.8)',
+              borderWidth: 1,
+              borderColor: '#676B93',
+            }]}
+            onPress={() => {
+              setIsRejectModalOpen(false);
+              setRemarks("");
+            }}
+          >
+            <Text style={[styles.cancelButtonText, {
+              color: '#FFFFFF',
+              fontSize: 16,
+              fontWeight: '600',
+              fontFamily: 'LatoBold',
+            }]}>Cancel</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[styles.rejectConfirmButton, {
+              flex: 1,
+              paddingVertical: 14,
+              borderRadius: 8,
+              alignItems: 'center',
+              backgroundColor: '#ef4444',
+            }]}
+            onPress={handleRejectSubmit}
+          >
+            <Text style={[styles.rejectConfirmButtonText, {
+              color: '#FFFFFF',
+              fontSize: 16,
+              fontWeight: '600',
+              fontFamily: 'LatoBold',
+            }]}>Reject</Text>
+          </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
     </Modal>
   );
 
@@ -879,6 +1037,7 @@ export default function AllLeavesScreen() {
           </View>
         </View>
 
+        
         {/* Content */}
         {activeTab === "balances" && (
           <View style={styles.balancesTab}>
@@ -956,6 +1115,77 @@ export default function AllLeavesScreen() {
         onSubmit={handleUpdateLeaveBalance}
       />
 
+      {/* LeaveApprovalModal */}
+      {selectedLeaveForApproval && (
+        <LeaveApprovalModal
+          visible={showApprovalModal}
+          leaveId={selectedLeaveForApproval._id}
+          leaveDays={selectedLeaveForApproval.leaveDays}
+          appliedDays={selectedLeaveForApproval.appliedDays}
+          leaveReason={selectedLeaveForApproval.leaveReason}
+          leaveType={selectedLeaveForApproval.leaveType?.leaveType || 'Unknown'}
+          fromDate={selectedLeaveForApproval.fromDate}
+          toDate={selectedLeaveForApproval.toDate}
+          user={{
+            firstName: selectedLeaveForApproval.user.firstName,
+            lastName: selectedLeaveForApproval.user.lastName,
+          }}
+          manager={{
+            firstName: selectedLeaveForApproval.user.reportingManager?.firstName || 'Unknown',
+            lastName: selectedLeaveForApproval.user.reportingManager?.lastName || 'Manager',
+          }}
+          onClose={() => {
+            setShowApprovalModal(false);
+            setSelectedLeaveForApproval(null);
+          }}
+          onUpdate={() => {
+            fetchAllLeaves();
+            setShowApprovalModal(false);
+            setSelectedLeaveForApproval(null);
+          }}
+          onShowToast={handleShowToast}
+        />
+      )}
+
+      {/* Custom Splash Screen for Leave Balance Update */}
+      {showSplashScreen && (
+        <CustomSplashScreen
+          visible={showSplashScreen}
+          lottieSource={require('../../../assets/Animation/success.json')}
+          mainText="Leave Balance Updated!"
+          subtitle="The leave balance has been successfully updated for the selected user."
+          onDismiss={() => setShowSplashScreen(false)}
+          onComplete={() => setShowSplashScreen(false)}
+          duration={3000}
+          gradientColors={["#05071E", "#0A0D28"]}
+          textGradientColors={["#815BF5", "#FC8929"]}
+        />
+      )}
+
+      {/* Custom Delete Modal */}
+      {itemToDelete && (
+        <CustomDeleteModal
+          visible={showDeleteModal}
+          title="Are you sure you want to"
+          subtitle="delete this leave request?"
+          itemName={`${itemToDelete.leaveType?.leaveType || 'Leave'} request from ${itemToDelete.user.firstName} ${itemToDelete.user.lastName}`}
+          onCancel={closeDeleteModal}
+          onConfirm={confirmDeleteFromModal}
+          isDeleting={isDeleting}
+          cancelText="No, Keep It."
+          confirmText="Delete"
+        />)}
+
+      {/* Toast Alert */}
+      <ToastAlert
+        visible={showToast}
+        type={toastType}
+        title={toastTitle}
+        message={toastMessage}
+        onHide={() => setShowToast(false)}
+        duration={4000}
+      />
+
     </SafeAreaView>
   );
 }
@@ -986,6 +1216,8 @@ const styles = StyleSheet.create({
     borderRadius: 99,
     paddingVertical: 8,
     paddingHorizontal: 16,
+    width: '100%',
+    alignItems: 'center',
 
   },
   
@@ -1143,9 +1375,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#815BF5',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1153,14 +1385,16 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: 'LatoBold',
   },
   userName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
     fontFamily: 'LatoBold',
+    marginBottom: 4,
   },
   editButton: {
    
@@ -1201,89 +1435,146 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     maxWidth: 60,
   },
-  leaveCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+
+  // Request card styles (matching ApprovalScreen)
+  requestCard: {
+    backgroundColor: 'rgba(27, 23, 57, 0.6)',
     borderRadius: 12,
-    marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    borderColor: 'rgba(48, 41, 86, 0.7)',
+    shadowColor: 'rgba(0, 0, 0, 0.8)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.9,
+    shadowRadius: 15,
+    elevation: 8,
+    overflow: 'hidden',
+    marginBottom: 12,
   },
-  leaveCardHeader: {
+  cardHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
     padding: 16,
   },
   userDetails: {
     flex: 1,
   },
-  leaveInfo: {
+  requestDetails: {
     fontSize: 12,
-    color: '#ffffff',
-    marginTop: 2,
+    color: '#787CA5',
+    lineHeight: 16,
     fontFamily: 'LatoRegular',
-    opacity: 0.8,
+  },
+
+  // Status badge styles
+  statusContainer: {
+    alignItems: 'flex-end',
+    gap: 8,
+  },
+  statusBadgeSmall: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignSelf: 'flex-start',
+  },
+  statusBadgeSmallText: {
+    fontSize: 12,
+    fontWeight: '500',
+    fontFamily: 'LatoMedium',
+  },
+  penaltyBadge: {
+    backgroundColor: '#ef4444',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  penaltyBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '500',
+    fontFamily: 'LatoMedium',
+  },
+
+  // Separator
+  separator: {
+    height: 1,
+    backgroundColor: 'rgba(48, 41, 86, 0.7)',
+    marginHorizontal: 16,
+  },
+
+  // Request item details
+  requestItemDetails: {
+    padding: 16,
+  },
+  requestDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  requestDetailLabel: {
+    fontSize: 12,
+    color: '#787CA5',
+    fontFamily: 'LatoRegular',
+    marginRight: 8,
+  },
+  requestDetailValue: {
+    fontSize: 12,
+    color: '#FFFFFF',
+    fontFamily: 'LatoMedium',
+    marginRight: 8,
+  },
+  requestDetailSeparator: {
+    fontSize: 12,
+    color: '#787CA5',
+    marginHorizontal: 8,
+  },
+
+  // Action buttons
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    gap: 8,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    gap: 4,
+  },
+  approveButton: {
+    backgroundColor: 'rgba(6, 214, 160, 0.15)',
+    borderColor: '#06D6A0',
+    borderWidth: 1,
+  },
+  rejectButton: {
+    backgroundColor: 'rgba(231, 101, 101, 0.15)',
+    borderWidth: 1,
+    borderColor: '#EF4444',
+  },
+  deleteButton: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  actionButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '500',
+    fontFamily: 'LatoMedium',
   },
 
   statusText: {
     color: '#ffffff',
     fontSize: 12,
     fontWeight: '500',
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    gap: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
-    paddingTop: 8,
-  },
-  actionButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 1,
-  },
-  approveButton: {
-    backgroundColor: 'rgba(6, 214, 160, 0.15)',
-    borderColor: '#06D6A0',
-  },
-  rejectButton: {
-    backgroundColor: 'rgba(231, 101, 101, 0.15)',
-    borderColor: '#EF4444',
-  },
-  deleteButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 6,
-    backgroundColor: '#fef2f2',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  approveButtonText: {
-    color: '#16a34a',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  rejectButtonText: {
-    color: '#dc2626',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  deleteButtonText: {
-    fontSize: 14,
   },
     // Empty State Styles (matching MyLeavesScreen)
   emptyStateContainer: {
@@ -1324,7 +1615,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(48, 41, 86, 0.7)',
   },
   modalTitle: {
     fontSize: 18,
@@ -1417,24 +1711,23 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   rejectLabel: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '500',
     color: '#FFFFFF',
+    marginTop: 16,
     marginBottom: 8,
-    fontFamily: 'LatoBold',
+    fontFamily: 'LatoMedium',
   },
-  remarksInput: {
-    backgroundColor: '#2A2B3D',
+  rejectInput: {
     borderWidth: 1,
-    borderColor: '#4A4B5C',
+    borderColor: 'rgba(48, 41, 86, 0.7)',
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    padding: 12,
     fontSize: 14,
     color: '#FFFFFF',
     minHeight: 100,
+    backgroundColor: 'rgba(27, 23, 57, 0.6)',
     fontFamily: 'LatoRegular',
-    textAlignVertical: 'top',
   },
   rejectSubmitButton: {
     backgroundColor: '#dc2626',
@@ -1500,6 +1793,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#ffffff',
     fontWeight: '500',
+    fontFamily: 'LatoBold',
+  },
+
+  // Modal Styles (dark theme) - matching ApprovalScreen
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#0A0D28',
+  },
+  modalContent: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  modalFooter: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(48, 41, 86, 0.7)',
+  },
+  rejectConfirmButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#ef4444',
+    marginLeft: 8,
+  },
+  rejectConfirmButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
     fontFamily: 'LatoBold',
   },
 });

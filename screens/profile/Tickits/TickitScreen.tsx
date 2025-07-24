@@ -30,6 +30,7 @@ import NavbarTwo from '~/components/navbarTwo';
 import TickitCard from '~/components/profile/TickitCard';
 import InputContainer from '~/components/InputContainer';
 import CustomDropdown from '~/components/customDropDown';
+import ToastAlert from '~/components/ToastAlert';
 
 // Config & Redux
 import { backend_Host } from '~/config';
@@ -70,6 +71,9 @@ export default function TickitScreen() {
   const [tickitDescription, setTickitDescription] = useState('');
   const [showFabLabel, setShowFabLabel] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
+  const [toastMessage, setToastMessage] = useState('');
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -164,12 +168,15 @@ export default function TickitScreen() {
     );
   }, [searchTickit, tickets]);
 
-
-
+  const showToastMessage = (type: 'success' | 'error', message: string) => {
+    setToastType(type);
+    setToastMessage(message);
+    setShowToast(true);
+  };
 
   const handelAddNewTicket = async () => {
     if (!newTicketMessage) {
-      Alert.alert('Validation Error', 'Subject is required!');
+      showToastMessage('error', 'Subject is required!');
       return;
     }
     
@@ -194,16 +201,26 @@ export default function TickitScreen() {
         }
       );
 
+      console.log('Ticket created successfully:', response.data);
       setTickets([...tickets, response?.data]);
-      Alert.alert('Success', 'Your ticket has been submitted successfully.');
-      setModalVisible(false);
-    } catch (error) {
-      console.error('Error creating ticket:', error);
-      Alert.alert('Error', 'Failed to create ticket. Please try again.');
-    } finally {
-      setIsLoading(false);
+      
+      // Clear form fields first
       setNewTicketMessage('');
       setTickitDescription('');
+      
+      // Close modal
+      setModalVisible(false);
+      
+      // Show success toast
+      setTimeout(() => {
+        showToastMessage('success', 'Ticket submitted successfully!');
+      }, 500);
+      
+    } catch (error) {
+      console.error('Error creating ticket:', error);
+      showToastMessage('error', 'Failed to create ticket. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -240,11 +257,18 @@ export default function TickitScreen() {
     openTicketModal();
   };
 
+  // Function to handle ticket deletion from child component
+  const handleTicketDeleted = (deletedTicketId: string) => {
+    setTickets(tickets.filter((ticket: any) => ticket._id !== deletedTicketId));
+    showToastMessage('success', 'Ticket deleted successfully!');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        
         <NavbarTwo title="Support Tickets" />
         
         {/* Search Bar */}
@@ -304,6 +328,7 @@ export default function TickitScreen() {
                   subCategory={ticket?.subcategory}
                   subject={ticket?.subject}
                   id={ticket?._id}
+                  onTicketDeleted={handleTicketDeleted}
                   // Add user name prop for admin view
                   userName={isAdmin ? ticket?.user?.name || "Unknown User" : undefined}
                 />
@@ -460,14 +485,14 @@ export default function TickitScreen() {
                     <InputContainer
                       placeholder="Enter a brief subject for your ticket"
                       value={newTicketMessage}
-                      onChangeText={(value) => setNewTicketMessage(value)}
+                      onChangeText={(value) => setNewTicketMessage(value)}backgroundColor="#0A0D28"
                       passwordError={''}
                       keyboardType="default"
                       label='Subject'
                     />
                   </View>
 
-                  <View style={styles.formGroup}>
+                  <View >
                     <Text style={styles.formLabel}>Description</Text>
                     <View
                       style={[
@@ -524,6 +549,16 @@ export default function TickitScreen() {
           </KeyboardAvoidingView>
         </Modal>
       </KeyboardAvoidingView>
+
+      {/* Toast Alert */}
+      <ToastAlert
+        visible={showToast}
+        type={toastType}
+        title={toastMessage}
+        onHide={() => setShowToast(false)}
+        duration={3000}
+        position="bottom"
+      />
     </SafeAreaView>
   );
 }
@@ -682,7 +717,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   modalContent: {
-    backgroundColor: '#05071E',
+    backgroundColor: '#0A0D28',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     overflow: 'hidden',
@@ -760,7 +795,7 @@ const styles = StyleSheet.create({
   },
   formGroup: {
     marginBottom: 20,
-    width: '100%',
+    width: '110%',
   
   },
   formLabel: {

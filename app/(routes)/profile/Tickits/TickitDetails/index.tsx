@@ -24,6 +24,7 @@ import { backend_Host } from '~/config';
 import moment from 'moment';
 import * as DocumentPicker from 'expo-document-picker';
 import { MaterialIcons } from '@expo/vector-icons';
+import CustomSplashScreen from '~/components/CustomSplashScreen';
 
 const TickitDetails: React.FC = () => {
   const navigation = useNavigation<StackNavigationProp<any>>();
@@ -38,7 +39,7 @@ const TickitDetails: React.FC = () => {
   const [attachments, setAttachments] = useState<(string | null)[]>([]);
   const [commentData, setCommentData] = useState([]);
   const [fileNames, setFileNames] = useState<string[]>([]);
-  // console.log("userrr",userData.data.firstName)
+  const [showSuccessSplash, setShowSuccessSplash] = useState(false);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (e) => {
@@ -61,6 +62,7 @@ const TickitDetails: React.FC = () => {
   useEffect(() => {
     fetchTicket();
   }, [token]);
+  
   const fetchTicket = async () => {
     try {
       const response = await axios.get(`${backend_Host}/tickets/${id}`, {
@@ -136,15 +138,25 @@ const TickitDetails: React.FC = () => {
 
       const newCategoryy = response.data;
 
-      console.log('{{{{{{{{{{{{{{{{object}}}}}}}}}}}}}}}}', newCategoryy);
-      Alert.alert('Comment Added');
-      fetchTicket();
+      console.log('Comment added successfully:', newCategoryy);
+      
+      // Clear comment field
+      setComment('');
+      
+      // Fetch updated ticket data
+      await fetchTicket();
+      
+      // Show success splash screen
+      setTimeout(() => {
+        console.log('Showing success splash screen for comment');
+        setShowSuccessSplash(true);
+      }, 300);
+      
     } catch (error) {
       console.error('Error creating category:', error);
-      Alert.alert('Failed to create category. Please try again.');
+      Alert.alert('Error', 'Failed to add comment. Please try again.');
     } finally {
       setIsLoading(false);
-      setComment('');
     }
   };
 
@@ -168,8 +180,8 @@ const TickitDetails: React.FC = () => {
                 {/* Status Badge with improved styling */}
                 <View 
                   style={{
-                    backgroundColor: status.toLowerCase() === "pending" ? "#EF4444" : "#815BF5",
-                    shadowColor: status.toLowerCase() === "pending" ? "#EF4444" : "#815BF5",
+                    backgroundColor: status?.toLowerCase() === "pending" ? "#EF4444" : "#815BF5",
+                    shadowColor: status?.toLowerCase() === "pending" ? "#EF4444" : "#815BF5",
                     shadowOffset: { width: 0, height: 2 },
                     shadowOpacity: 0.3,
                     shadowRadius: 4,
@@ -178,7 +190,7 @@ const TickitDetails: React.FC = () => {
                   className="mb-4 self-start rounded-full px-4 py-2 flex-row items-center"
                 >
                   <MaterialIcons 
-                    name={status.toLowerCase() === "pending" ? "pending-actions" : "check-circle"} 
+                    name={status?.toLowerCase() === "pending" ? "pending-actions" : "check-circle"} 
                     size={14} 
                     color="#FFFFFF" 
                     style={{ marginRight: 4 }}
@@ -187,7 +199,7 @@ const TickitDetails: React.FC = () => {
                     className="text-xs text-white" 
                     style={{ fontFamily: 'LatoBold' }}
                   >
-                    {status.toUpperCase()}
+                    {status ? String(status).toUpperCase() : 'UNKNOWN'}
                   </Text>
                 </View>
 
@@ -198,7 +210,7 @@ const TickitDetails: React.FC = () => {
                     className="w-full text-xl font-bold text-white"
                     style={{ fontFamily: 'LatoBold', letterSpacing: 0.5 }}
                   >
-                    {ticket?.subject}
+                    {ticket?.subject || 'No Subject'}
                   </Text>
                 </View>
 
@@ -216,7 +228,7 @@ const TickitDetails: React.FC = () => {
                       </Text>
                     </View>
                     <Text className="text-sm text-white flex-1" style={{ fontFamily: 'LatoBold' }}>
-                      {moment(ticket?.createdAt).format('ddd, MMMM D - h:mm A')}
+                      {ticket?.createdAt ? moment(ticket.createdAt).format('ddd, MMMM D - h:mm A') : 'No Date'}
                     </Text>
                   </View>
 
@@ -230,7 +242,7 @@ const TickitDetails: React.FC = () => {
                     </View>
                     <View className="bg-[#2A2B3D] px-3 ml-5 py-1 rounded-md">
                       <Text className="text-sm text-white" style={{ fontFamily: 'LatoBold' }}>
-                        {ticket?.category}
+                        {ticket?.category || 'No Category'}
                       </Text>
                     </View>
                   </View>
@@ -245,7 +257,7 @@ const TickitDetails: React.FC = () => {
                     </View>
                     <View className="bg-[#2A2B3D] ml-9 px-3 py-1 rounded-md">
                       <Text className="text-sm text-white" style={{ fontFamily: 'LatoBold' }}>
-                        {ticket?.subcategory}
+                        {ticket?.subcategory || 'No Subcategory'}
                       </Text>
                     </View>
                   </View>
@@ -260,23 +272,20 @@ const TickitDetails: React.FC = () => {
                     </View>
                     <View className="bg-[#2A2B3D] p-3 rounded-lg mt-1">
                       <Text className="text-sm text-white leading-5" style={{ fontFamily: 'LatoBold' }}>
-                        {ticket?.description}
+                        {ticket?.description || 'No Description'}
                       </Text>
                     </View>
                   </View>
-
-
                 </View>
               </View>
 
-
             <View className="mt-6 w-[90%]">
               <Text className="text-sm text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
-                {' '}
                 Ticket Updates
               </Text>
             </View>
-            {commentData?.length &&
+            
+            {commentData?.length > 0 &&
               commentData.map((val, index) => {
                 const firstName = val?.userId?.firstName || "";
                 const lastName = val?.userId?.lastName || "";
@@ -303,11 +312,11 @@ const TickitDetails: React.FC = () => {
                             source={require('../../../../../assets/Tasks/calender.png')}
                           />
                           <Text className="text-xs text-[#787CA5]" style={{ fontFamily: 'LatoBold' }}>
-                            {moment(val?.createdAt).format('ddd, MMMM D - h:mm A')}
+                            {val?.createdAt ? moment(val.createdAt).format('ddd, MMMM D - h:mm A') : 'No Date'}
                           </Text>
                         </View>
                         <Text className="mt-2 text-sm text-white" style={{ fontFamily: 'LatoBold' }}>
-                          {val?.content}
+                          {val?.content || 'No Content'}
                         </Text>
                       </View>
                     </View>
@@ -316,9 +325,8 @@ const TickitDetails: React.FC = () => {
               })}
 
           </View>
-
-
         </ScrollView>
+        
         <View
           className="flex flex-row items-center justify-between  px-5"
           style={{
@@ -327,7 +335,7 @@ const TickitDetails: React.FC = () => {
             width: '100%',
             alignItems: 'center',
           }}>
-            <TouchableOpacity onPress={handleFileSelect} className="">
+            <TouchableOpacity onPress={() => handleFileSelect(0)} className="">
               <Image
                 className="h-14 w-14"
                 source={require('../../../../../assets/Tickit/fileUpload.png')}
@@ -361,6 +369,25 @@ const TickitDetails: React.FC = () => {
             </TouchableOpacity>
           </View>
       </KeyboardAvoidingView>
+
+      {/* Custom Splash Screen for Success */}
+      <CustomSplashScreen
+        visible={showSuccessSplash}
+        lottieSource={require('../../../../../assets/Animation/success.json')}
+        mainText="Comment Added!"
+        subtitle="Your comment has been added to the ticket successfully."
+        onDismiss={() => {
+          console.log('Comment splash screen dismissed');
+          setShowSuccessSplash(false);
+        }}
+        onComplete={() => {
+          console.log('Comment splash screen completed');
+          setShowSuccessSplash(false);
+        }}
+        duration={3000}
+        gradientColors={["#05071E", "#0A0D28"]}
+        textGradientColors={["#815BF5", "#FC8929"]}
+      />
     </SafeAreaView>
   );
 };

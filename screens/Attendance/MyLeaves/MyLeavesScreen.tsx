@@ -1160,7 +1160,7 @@ export default function MyLeavesScreen() {
       <View key={leaveType._id}
               style={{
                 alignItems: 'center',
-                width: '20%',
+                width: 250,
                 backgroundColor: 'rgba(27, 23, 57, 0.6)', 
                 // Properly nest shadowOffset in the style object
                 shadowColor: 'rgba(0, 0, 0, 0.8)',
@@ -1357,10 +1357,16 @@ return (
         </View>
         
         <TouchableOpacity
-          style={styles.applyLeaveButton}
           onPress={() => setIsModalOpen(true)}
         >
-          <Text style={styles.applyLeaveButtonText}>+ Apply Leave</Text>
+          <LinearGradient
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            colors={['#815BF5', '#FC8929']}
+            style={styles.applyLeaveButton}
+          >
+            <Text style={styles.applyLeaveButtonText}>+ Apply Leave</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
 
@@ -2107,7 +2113,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Lato-Regular',
   },
   applyLeaveButton: {
-    backgroundColor: '#815BF5',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 8,

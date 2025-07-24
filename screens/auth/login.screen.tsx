@@ -112,7 +112,6 @@ export default function Loginscreen() {
           <Image src={require('~/assets/sign-in/logo.png')} scale={0.4} />
         </YStack>
 
-        <Separator width="80%" />
 
         {/* Email Input (Using InputContainer) */}
         <InputContainer
@@ -122,6 +121,7 @@ export default function Loginscreen() {
           placeholder="Enter your email"
           passwordError={error.email}
           keyboardType="email-address"
+          backgroundColor="#0B0F19"
         />
         {error.email && (
           <XStack alignItems="center" marginTop="$2">
@@ -140,6 +140,7 @@ export default function Loginscreen() {
           placeholder="Enter your password"
           passwordError={error.password}
           secureTextEntry={!isPasswordVisible}
+          backgroundColor="#0B0F19"
           rightIcon={
             <Ionicons
               name={isPasswordVisible ? 'eye-outline' : 'eye-off-outline'}
@@ -185,7 +186,7 @@ export default function Loginscreen() {
         </Button>
 
         {/* Register Section */}
-        <View className="flex-row items-center justify-center bg-primary py-2">
+        <View className="flex-row items-center justify-center  py-2">
           <View className="flex-row">
             <Text className="text-base text-white" style={{ fontFamily: 'Lato-Light' }}>
               Not a{' '}

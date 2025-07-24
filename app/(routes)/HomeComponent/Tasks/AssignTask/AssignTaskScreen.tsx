@@ -137,6 +137,10 @@ export default function AssignTaskScreen() {
       try {
         const template = JSON.parse(params.templateData as string);
         console.log('Template data received:', template);
+        console.log('Template links:', template.links);
+        console.log('Template attachments:', template.attachments);
+        console.log('Template reminders:', template.reminders);
+        console.log('Template audioUrl:', template.audioUrl);
         
         // Pre-fill form with template data
         if (template.title) setTaskTitle(template.title);
@@ -146,6 +150,31 @@ export default function AssignTaskScreen() {
         if (template.repeat !== undefined) setIsChecked(template.repeat);
         if (template.repeatType) setRepeatType(template.repeatType);
         if (template.days) setWeekDays(template.days);
+        
+        // Pre-fill additional template data (links, files, reminders, audio)
+        if (template.links && Array.isArray(template.links)) {
+          setLinks(template.links.filter(link => link && link.trim()));
+        }
+        
+        // Convert attachment URIs back to proper attachment objects for AssignTask
+        if (template.attachments && Array.isArray(template.attachments)) {
+          const formattedAttachments = template.attachments.map((att: any) => {
+            if (typeof att === 'string') {
+              // If it's just a URI string, return it as is for AssignTask (it expects string URIs)
+              return att;
+            }
+            return att.uri || att; // If it's an object, extract the URI
+          });
+          setAttachments(formattedAttachments);
+        }
+        
+        if (template.reminders && Array.isArray(template.reminders)) {
+          setAddedReminders(template.reminders);
+        }
+        
+        if (template.audioUrl) {
+          setAudioUrl(template.audioUrl);
+        }
         
         // Show success message
         setCustomAlertVisible(true);
@@ -289,11 +318,7 @@ export default function AssignTaskScreen() {
 
   const assignTask = async () => {
     await handleCreateTask();
-    if (!isOn) {
-      navigation.goBack(); // Navigate back only if the toggle is off
-    } else {
-      resetForm(); // Reset the form if the toggle is on
-    }
+    // Navigation is now handled in the CustomSplashScreen's onDismiss callback
   };
 
   const toggleSwitch = () => {
@@ -388,17 +413,14 @@ export default function AssignTaskScreen() {
       
       // Show splash screen instead of alert
       setShowSplashScreen(true);
-      
-    
-  
-          navigation.goBack();
-  
+      return true;
 
     } catch (error) {
       console.error('Error creating task:', error.response?.data || error.message);
       setCustomAlertVisible(true);
       setCustomAlertMessage('Failed to create task. Please try again.');
       setCustomAlertType('error');
+      return false;
     } finally {
       setTaskLoading(false);
     }
@@ -682,6 +704,8 @@ export default function AssignTaskScreen() {
                   mode={mode}
                   display={'default'}
                   onChange={handleChange}
+                  textColor='white'
+                  style={{ backgroundColor: '#191B3A' }} 
                 />
               )}
             </View>
@@ -858,6 +882,8 @@ export default function AssignTaskScreen() {
         }}
         onDismiss={() => {
           setShowSplashScreen(false);
+          // Always navigate back after splash screen
+          navigation.goBack();
         }}
         duration={3000}
         gradientColors={["#05071E", "#0A0D28"]}

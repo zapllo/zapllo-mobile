@@ -8,6 +8,8 @@ import Modal from 'react-native-modal';
 import ReminderModal, { ReminderSettings } from "~/components/Attendence/ReminderModal";
 import LoginLogoutTimeModal, { LoginLogoutTimeSettings } from "~/components/Attendence/LoginLogoutTimeModal";
 import PenaltyModal, { PenaltySettings } from "~/components/Attendence/PenaltyModal";
+
+import ToastAlert from "~/components/ToastAlert";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "~/redux/store";
@@ -18,6 +20,9 @@ export default function SettingsScreen() {
   const [isLoginLogoutModalVisible, setLoginLogoutModalVisible] = useState(false);
   const [isPenaltyModalVisible, setPenaltyModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showPenaltySuccessToast, setShowPenaltySuccessToast] = useState(false);
+  const [showReminderSuccessToast, setShowReminderSuccessToast] = useState(false);
   
   // Get auth token from Redux store
   const { token } = useSelector((state: RootState) => state.auth);
@@ -140,6 +145,21 @@ export default function SettingsScreen() {
   const handleFetchedPenaltySettings = (settings: PenaltySettings) => {
     setPenaltySettings(settings);
     console.log('Fetched penalty settings:', settings);
+  };
+
+  // Function to show success toast for Login-Logout Time
+  const handleShowSuccessToast = () => {
+    setShowSuccessToast(true);
+  };
+
+  // Function to show success toast for Penalties
+  const handleShowPenaltySuccessToast = () => {
+    setShowPenaltySuccessToast(true);
+  };
+
+  // Function to show success toast for Reminders
+  const handleShowReminderSuccessToast = () => {
+    setShowReminderSuccessToast(true);
   };
 
   // Format time for display (12-hour format)
@@ -284,6 +304,7 @@ export default function SettingsScreen() {
           onSave={handleSaveReminders}
           onFetchSettings={handleFetchedReminderSettings}
           initialSettings={reminderSettings}
+          onShowSuccessToast={handleShowReminderSuccessToast}
         />
         
         <LoginLogoutTimeModal
@@ -292,6 +313,7 @@ export default function SettingsScreen() {
           onSave={handleSaveLoginLogoutTime}
           onFetchSettings={handleFetchedLoginLogoutSettings}
           initialSettings={loginLogoutSettings}
+          onShowSuccessToast={handleShowSuccessToast}
         />
         
         <PenaltyModal
@@ -300,8 +322,42 @@ export default function SettingsScreen() {
           onSave={handleSavePenalties}
           onFetchSettings={handleFetchedPenaltySettings}
           initialSettings={penaltySettings}
+          onShowSuccessToast={handleShowPenaltySuccessToast}
         />
       </KeyboardAvoidingView>
+
+      {/* Success Toast for Login-Logout Time */}
+      <ToastAlert
+        visible={showSuccessToast}
+        type="success"
+        title="Settings Updated!"
+        message="Login-Logout time settings have been updated successfully."
+        onHide={() => setShowSuccessToast(false)}
+        duration={4000}
+        position="bottom"
+      />
+
+      {/* Success Toast for Penalties */}
+      <ToastAlert
+        visible={showPenaltySuccessToast}
+        type="success"
+        title="Settings Updated!"
+        message="Penalty settings have been updated successfully."
+        onHide={() => setShowPenaltySuccessToast(false)}
+        duration={4000}
+        position="bottom"
+      />
+
+      {/* Success Toast for Reminders */}
+      <ToastAlert
+        visible={showReminderSuccessToast}
+        type="success"
+        title="Settings Updated!"
+        message="Reminder settings have been updated successfully."
+        onHide={() => setShowReminderSuccessToast(false)}
+        duration={4000}
+        position="bottom"
+      />
     </SafeAreaView>
   );
 }

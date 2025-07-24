@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,7 @@ interface WorkSpaceScreenProps {
   setTeamSize: React.Dispatch<React.SetStateAction<string>>;
   businessIndustry: string;
   setBusinessIndustry: React.Dispatch<React.SetStateAction<string>>;
+  onValidationChange?: (isValid: boolean) => void;
 }
 
 const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
@@ -35,8 +36,24 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
   setTeamSize,
   businessIndustry,
   setBusinessIndustry,
+  onValidationChange,
 }) => {
   const categories = ['Sales', 'Marketing', 'HR/Admin', 'General', 'Operations', 'Automation', 'Admin', 'UI/UX'];
+
+  // Check if all workspace fields are filled
+  useEffect(() => {
+    const isWorkspaceFormComplete = 
+      formData.companyName.trim() !== '' &&
+      formData.description.trim() !== '' &&
+      businessIndustry !== '' &&
+      teamSize !== '' &&
+      selectedCategories.length > 0;
+    
+    // Call the validation callback if provided
+    if (onValidationChange) {
+      onValidationChange(isWorkspaceFormComplete);
+    }
+  }, [formData.companyName, formData.description, businessIndustry, teamSize, selectedCategories, onValidationChange]);
 
   const businessOptions = [
     { label: 'Retail/E-Commerce', value: 'Retail/E-Commerce' },
@@ -84,6 +101,7 @@ const WorkSpaceScreen: React.FC<WorkSpaceScreenProps> = ({
         value={formData?.companyName}
         onChangeText={(text) => handleChange('companyName', text)}
         passwordError={''}
+        backgroundColor="#0B0F19"
       />
 
       {/* Business Industry Dropdown */}

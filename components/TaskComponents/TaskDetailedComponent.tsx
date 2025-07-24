@@ -22,7 +22,7 @@ import dayjs from 'dayjs';
 import { ActivityIndicator } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { router, useNavigation } from 'expo-router';
-import AwesomeAlertComponent from '../CustomAlert/CustomAlert';
+import ToastAlert from '../ToastAlert';
 import { XStack, YStack } from 'tamagui';
 import { Audio } from 'expo-av';
 import Slider from '@react-native-community/slider';
@@ -257,8 +257,15 @@ const handleSliderChange = async (value: number) => {
                 },
               });
               setShowMainModal(false);
-              Alert.alert('Success', 'Task deleted successfully!');
-              navigation.goBack()
+              setModalVisible(false);
+              setAlertMessage("Task deleted successfully!");
+              setAlertType('success');
+              setShowAlert(true);
+              
+              // Navigate back after a short delay to allow the toast to show
+              setTimeout(() => {
+                navigation.goBack();
+              }, 1500);
             } catch (error) {
               console.error('Error deleting task:', error);
               Alert.alert('Error', 'Failed to delete the task.');
@@ -446,10 +453,15 @@ const handleSliderChange = async (value: number) => {
 
       console.log('Task updated successfully:', response.data);
       setShowProgressModal(false);
+      setModalVisible(false);
       setAlertMessage("Task updated successfully!");
       setAlertType('success');
-      // setShowAlert(true);
-      navigation.goBack();
+      setShowAlert(true);
+      
+      // Navigate back after a short delay to allow the toast to show
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1500);
 
     } catch (error: any) {
       console.error('Error updating task:', error);
@@ -583,11 +595,11 @@ const handleSliderChange = async (value: number) => {
 
   return (
     <>
-      <AwesomeAlertComponent
+      <ToastAlert
         visible={showAlert}
-        message={alertMessage}
         type={alertType}
-        onClose={() => setShowAlert(false)}
+        title={alertMessage}
+        onHide={() => setShowAlert(false)}
       />
 
       <TouchableOpacity 

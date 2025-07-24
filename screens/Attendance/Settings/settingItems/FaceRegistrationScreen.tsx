@@ -31,6 +31,7 @@ import { AntDesign, Entypo, FontAwesome, MaterialIcons } from '@expo/vector-icon
 import { BlurView } from 'expo-blur';
 import LottieView from 'lottie-react-native';
 import * as Haptics from 'expo-haptics';
+import ToastAlert from '~/components/ToastAlert';
 
 export default function FaceRegistrationScreen() {
   const { token } = useSelector((state: RootState) => state.auth);
@@ -55,6 +56,12 @@ export default function FaceRegistrationScreen() {
   const [selectedFaceName, setSelectedFaceName] = useState('');
   const [deleteModal, setDeleteModal] = useState(false);
   const [faceToDelete, setFaceToDelete] = useState(null);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showDeleteToast, setShowDeleteToast] = useState(false);
+  const [showApproveToast, setShowApproveToast] = useState(false);
+  const [showRejectToast, setShowRejectToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastTitle, setToastTitle] = useState('');
 
   // Use useFocusEffect to refresh data when screen is focused
   useFocusEffect(
@@ -310,7 +317,11 @@ export default function FaceRegistrationScreen() {
       };
       
       setRegisteredFaces(updatedFaces);
-      Alert.alert('Success', `Face registration for ${updatedFaces[index].name} has been approved`);
+      
+      // Show success toast
+      setToastTitle('Success!');
+      setToastMessage(`Face registration for ${updatedFaces[index].name} has been approved successfully.`);
+      setShowApproveToast(true);
     } catch (error) {
       console.error('Error approving face:', error);
       
@@ -365,7 +376,11 @@ export default function FaceRegistrationScreen() {
       };
       
       setRegisteredFaces(updatedFaces);
-      Alert.alert('Success', `Face registration for ${updatedFaces[index].name} has been rejected`);
+      
+      // Show success toast
+      setToastTitle('Success!');
+      setToastMessage(`Face registration for ${updatedFaces[index].name} has been rejected.`);
+      setShowRejectToast(true);
     } catch (error) {
       console.error('Error rejecting face:', error);
       
@@ -475,8 +490,8 @@ export default function FaceRegistrationScreen() {
           
           setRegisteredFaces(prev => [...prev, newFace]);
           
-          // Show success message
-          Alert.alert('Success', registerResponse.data.message || 'Face registration submitted successfully');
+          // Provide haptic feedback for success
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           
           // Reset the form
           toggleFaceModal();
@@ -486,6 +501,9 @@ export default function FaceRegistrationScreen() {
           
           // Refresh the face registration list
           fetchFaceRegistrationRequests();
+          
+          // Show success toast
+          setShowSuccessToast(true);
         } else {
           Alert.alert('Error', registerResponse.data.message || 'Failed to register face');
         }
@@ -600,7 +618,7 @@ export default function FaceRegistrationScreen() {
               className="h-8 w-8 bg-[#37384B] rounded-full items-center justify-center"
               onPress={() => openDeleteModal(face.id, index)}
             >
-              <MaterialIcons name="delete-outline" size={18} color="#FF5A5A" />
+              <Image className='h-4 w-4' source={require('../../../../assets/Tasks/deleteTwo.png')}/>
             </TouchableOpacity>
           </View>
         </View>
@@ -704,7 +722,10 @@ export default function FaceRegistrationScreen() {
         // Provide haptic feedback for successful deletion
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         
-        Alert.alert('Success', 'Face registration has been deleted successfully');
+        // Show delete success toast
+        setToastTitle('Face Registration Deleted!');
+        setToastMessage('Face registration has been deleted successfully.');
+        setShowDeleteToast(true);
       } else {
         // Handle unsuccessful response
         const errorMessage = response.data?.message || 'Failed to delete face registration.';
@@ -885,17 +906,12 @@ return (
               </View>
               <Text className='text-[#787CA5] text-xs mt-2'>Click to upload your document.</Text>
               <TouchableOpacity 
-                className='flex h-[4rem] items-center justify-center rounded-full mt-10'
+                className='flex h-[4rem] items-center justify-center rounded-full mt-10 bg-[#37384B]'
                 onPress={handleRegisterFace}
               >
-                <LinearGradient
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  colors={["#815BF5", "#FC8929"]}
-                  style={styles.gradient}
-                >
+             
                   <Text className='text-white'>Register New Face</Text>
-                </LinearGradient>
+                
               </TouchableOpacity>
             </View>
           </Modal>
@@ -980,7 +996,6 @@ return (
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
-
 
     <Modal
       isVisible={isImageModalVisible}
@@ -1079,10 +1094,55 @@ return (
             Delete
           </Text>
         </TouchableOpacity>
-      </View>
-    </View>
+      </View></View>
   </View>
 </Modal>
+
+{/* Toast Notifications - Outside ScrollView for proper positioning */}
+    
+    {/* Success Toast for Face Registration */}
+    <ToastAlert
+      visible={showSuccessToast}
+      type="success"
+      title="Face Registration Submitted!"
+      message={`Face registration for ${selectedEmployeeName} has been submitted successfully and is now pending approval.`}
+      onHide={() => setShowSuccessToast(false)}
+      duration={4000}
+      position="bottom"
+    />
+
+    {/* Success Toast for Approve */}
+    <ToastAlert
+      visible={showApproveToast}
+      type="success"
+      title={toastTitle}
+      message={toastMessage}
+      onHide={() => setShowApproveToast(false)}
+      duration={4000}
+      position="bottom"
+    />
+
+    {/* Success Toast for Reject */}
+    <ToastAlert
+      visible={showRejectToast}
+      type="success"
+      title={toastTitle}
+      message={toastMessage}
+      onHide={() => setShowRejectToast(false)}
+      duration={4000}
+      position="bottom"
+    />
+
+    {/* Success Toast for Delete */}
+    <ToastAlert
+      visible={showDeleteToast}
+      type="success"
+      title={toastTitle}
+      message={toastMessage}
+      onHide={() => setShowDeleteToast(false)}
+      duration={4000}
+      position="bottom"
+    />
   </SafeAreaView>
 );
 }

@@ -27,6 +27,11 @@ const MonthlyModal: React.FC<MonthlyModalProps> = ({ isVisible, onClose,setMonth
     onClose()
   }
 
+  const handleClose = () => {
+    setSelectedDays([]);
+    onClose();
+  }
+
   return (
     <Modal
       isVisible={isVisible}
@@ -39,7 +44,7 @@ const MonthlyModal: React.FC<MonthlyModalProps> = ({ isVisible, onClose,setMonth
           <Text className="text-lg text-white" style={{ fontFamily: "LatoBold" }}>
             Select Days
           </Text>
-          <TouchableOpacity onPress={onClose}>
+          <TouchableOpacity onPress={handleClose}>
             <Image
               source={require("../../../assets/commonAssets/cross.png")}
               className="h-8 w-8"
@@ -96,7 +101,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   selectedDayBox: {
-    backgroundColor: '#46765f', // Change color when selected
+    backgroundColor: '#815BF5', // Change color when selected
   },
   dayText: {
     color: 'white',

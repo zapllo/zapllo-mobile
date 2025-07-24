@@ -7,6 +7,7 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import * as FileSystem from 'expo-file-system';
+import ToastAlert from "~/components/ToastAlert";
 
 export default function SetPayslipScreen() {
   // State for company details
@@ -34,6 +35,7 @@ export default function SetPayslipScreen() {
   const [fetchingData, setFetchingData] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // Get auth token from Redux store
   const { token } = useSelector((state: RootState) => state.auth);
@@ -222,8 +224,8 @@ export default function SetPayslipScreen() {
       });
       
       if (response.data.success) {
-        setSuccessMessage('Payslip details saved successfully!');
-        Alert.alert('Success', 'Payslip details saved successfully!');
+        // Show success toast
+        setShowSuccessToast(true);
       } else {
         setErrorMessage(response.data.message || 'Failed to save payslip details.');
         Alert.alert('Error', response.data.message || 'Failed to save payslip details.');
@@ -414,6 +416,17 @@ export default function SetPayslipScreen() {
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+
+      {/* Success Toast */}
+      <ToastAlert
+        visible={showSuccessToast}
+        type="success"
+        title="Settings Updated!"
+        message="Payslip details have been saved successfully."
+        onHide={() => setShowSuccessToast(false)}
+        duration={4000}
+        position="bottom"
+      />
     </SafeAreaView>
   );
 }

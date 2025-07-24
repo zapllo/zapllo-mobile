@@ -21,6 +21,7 @@ import Modal from 'react-native-modal';
 import * as Haptics from 'expo-haptics';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
+import ToastAlert, { ToastType } from '~/components/ToastAlert';
 
 const { width, height } = Dimensions.get('window');
 
@@ -75,7 +76,21 @@ export default function TaskDirectoryScreen() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Toast states
+  const [showToast, setShowToast] = useState(false);
+  const [toastType, setToastType] = useState<ToastType>('success');
+  const [toastTitle, setToastTitle] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
+
   const { userData, token } = useSelector((state: RootState) => state.auth);
+
+  // Helper function to show toast
+  const showToastMessage = (type: ToastType, title: string, message?: string) => {
+    setToastType(type);
+    setToastTitle(title);
+    setToastMessage(message || '');
+    setShowToast(true);
+  };
 
   // Get subcategories for the selected category
   const subcategories = useMemo(() => {
@@ -229,26 +244,23 @@ export default function TaskDirectoryScreen() {
         throw new Error(error || 'Failed to copy template');
       }
 
-      // Show success message
-      Alert.alert(
-        "Success",
-        `Template "${selectedTemplate.title}" has been copied to your organization successfully!`,
-        [{ 
-          text: "OK", 
-          style: "default",
-          onPress: () => {
-            setShowConfirmation(false);
-            setSelectedTemplate(null);
-          }
-        }]
+      // Show success toast
+      showToastMessage(
+        'success',
+        'Template Copied!',
+        `"${selectedTemplate.title}" has been successfully copied to your organization.`
       );
+      
+      // Close modals
+      setShowConfirmation(false);
+      setSelectedTemplate(null);
       
     } catch (error: any) {
       console.error('Error copying template:', error);
-      Alert.alert(
-        "Error",
-        `Error copying template: ${error.message}`,
-        [{ text: "OK", style: "default" }]
+      showToastMessage(
+        'error',
+        'Copy Failed',
+        `Error copying template: ${error.message}`
       );
     } finally {
       setIsLoading(false);
@@ -561,6 +573,16 @@ export default function TaskDirectoryScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Toast Alert */}
+      <ToastAlert
+        visible={showToast}
+        type={toastType}
+        title={toastTitle}
+        message={toastMessage}
+        onHide={() => setShowToast(false)}
+        position="top"
+      />
     </SafeAreaView>
   );
 }

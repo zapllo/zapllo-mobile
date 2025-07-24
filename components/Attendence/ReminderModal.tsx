@@ -15,6 +15,7 @@ interface ReminderModalProps {
   onSave: (reminderSettings: ReminderSettings) => void;
   onFetchSettings?: (reminderSettings: ReminderSettings) => void;
   initialSettings?: ReminderSettings;
+  onShowSuccessToast?: () => void;
 }
 
 export interface ReminderSettings {
@@ -28,6 +29,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
   onClose,
   onSave,
   onFetchSettings,
+  onShowSuccessToast,
   initialSettings = {
     dailyReportEnabled: false,
     dailyReportTime: '',
@@ -160,23 +162,16 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
           timezone,
         };
         
-        // Show success alert
-        Alert.alert(
-          'Success',
-          'Reminder settings updated successfully!',
-          [
-            { 
-              text: 'OK', 
-              onPress: () => {
-                // Call the onSave callback with the updated settings
-                onSave(updatedSettings);
-                
-                // Close the modal
-                onClose();
-              }
-            }
-          ]
-        );
+        // Call the onSave callback with the updated settings
+        onSave(updatedSettings);
+        
+        // Show success toast if callback is provided
+        if (onShowSuccessToast) {
+          onShowSuccessToast();
+        }
+        
+        // Close the modal
+        onClose();
       } else {
         Alert.alert('Error', response.data.message || 'Failed to save reminder settings');
       }
@@ -229,7 +224,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
       animationOut="slideOutDown"
       style={{ margin: 0, justifyContent: 'flex-end' }}
     >
-      <View className="bg-[#1E1F2E] rounded-t-3xl p-6">
+      <View className="bg-[#05071E] rounded-t-3xl p-6">
         <View className="flex-row justify-between items-center mb-6">
           <Text className="text-white text-xl" style={{fontFamily:"LatoBold"}}>Reminders</Text>
           <TouchableOpacity onPress={onClose}>
@@ -275,13 +270,14 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                     onChange={handleTimeChange}
                     textColor="white"
+                    
                   />
                 </View>
               )}
             </View>
 
             {/* Timezone dropdown */}
-            <View className="mb-6 w-[100%]">
+            <View className="mb-6 w-[110%]">
               <Text className="text-white" style={{fontFamily:"Lato"}}>TimeZone</Text>
               <CustomDropdown
                 placeholder='Select TimeZone'
@@ -293,7 +289,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
 
             <TouchableOpacity 
               onPress={handleSave}
-              className="bg-[#4A65FF] py-4 rounded-xl"
+              className="bg-[#815BF5] py-4 rounded-xl"
               disabled={loading}
             >
               {loading ? (
@@ -312,7 +308,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
 const styles = StyleSheet.create({
   pickerContainer: {
     width: '100%',
-    backgroundColor: Platform.OS === 'ios' ? '#0f0f12' : 'transparent',
+    backgroundColor: Platform.OS === 'ios' ? '#191B3A' : 'transparent',
     borderRadius: 8,
     marginTop: 8
   }

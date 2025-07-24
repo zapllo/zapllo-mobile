@@ -28,6 +28,7 @@ import GradientButton from '~/components/GradientButton';
 import CategoryComponent from '../../components/Dashboard/CategoryComponent';
 import InputContainer from '~/components/InputContainer';
 import CustomSplashScreen from '~/components/CustomSplashScreen';
+import ToastAlert, { ToastType } from '~/components/ToastAlert';
 import { RootState } from '~/redux/store';
 import { backend_Host } from '~/config';
 
@@ -49,6 +50,24 @@ export default function TaskCategories() {
   const [showFabLabel, setShowFabLabel] = useState(true);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [showSplashScreen, setShowSplashScreen] = useState(false);
+  const [splashMessage, setSplashMessage] = useState({
+    mainText: 'Success!',
+    subtitle: 'Operation completed successfully'
+  });
+  
+  // Toast states
+  const [showToast, setShowToast] = useState(false);
+  const [toastType, setToastType] = useState<ToastType>('success');
+  const [toastTitle, setToastTitle] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
+
+  // Helper function to show toast
+  const showToastMessage = (type: ToastType, title: string, message?: string) => {
+    setToastType(type);
+    setToastTitle(title);
+    setToastMessage(message || '');
+    setShowToast(true);
+  };
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -137,7 +156,7 @@ export default function TaskCategories() {
 
   const handleAddNewCategory = async () => {
     if (!newCategoryName.trim()) {
-      Alert.alert('Validation Error', 'Please enter a category name');
+      showToastMessage('error', 'Validation Error', 'Please enter a category name');
       return;
     }
 
@@ -159,16 +178,30 @@ export default function TaskCategories() {
     const selectedCategories = AiSelectedItems.map((index) => aiCategories[index]);
 
     if (selectedCategories.length === 0) {
-      Alert.alert('No Selection', 'Please select at least one category.');
+      showToastMessage('warning', 'No Selection', 'Please select at least one category.');
       return;
     }
 
-    for (const category of selectedCategories) {
-      await handleAddCategory(category);
+    try {
+      for (const category of selectedCategories) {
+        await handleAddCategory(category);
+      }
+      
       fetchCategories();
+      SetAiModalOpen(false);
+      
+      // Show success toast for AI categories
+      showToastMessage(
+        'success', 
+        'Categories Added!', 
+        `Successfully added ${selectedCategories.length} ${selectedCategories.length === 1 ? 'category' : 'categories'} from AI suggestions`
+      );
+      
+      // Reset AI selections
+      setAiSelectedItems([]);
+    } catch (error) {
+      showToastMessage('error', 'Error', 'Failed to add some categories. Please try again.');
     }
-
-    SetAiModalOpen(false);
   };
 
   const fetchCategories = async () => {
@@ -189,6 +222,7 @@ export default function TaskCategories() {
       setCategories(formattedCategories);
     } catch (err: any) {
       setError('Failed to fetch tasks. Please try again.');
+      showToastMessage('error', 'Error', 'Failed to fetch categories. Please try again.');
       console.error('API Error:', err.response || err.message);
     } finally {
       setLoading(false);
@@ -207,7 +241,7 @@ export default function TaskCategories() {
 
   const handleAddCategory = async (cat: string) => {
     if (!cat) {
-      Alert.alert('Validation Error', 'Enter new category');
+      showToastMessage('error', 'Validation Error', 'Enter new category');
       return;
     }
     setIsLoading(true);
@@ -226,10 +260,15 @@ export default function TaskCategories() {
       );
 
       fetchCategories();
-      setShowSplashScreen(true);
+      
+      // Show success toast instead of splash screen
+      showToastMessage('success', 'Success!', 'Category created successfully');
+      
+      // Add haptic feedback
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error) {
       console.error('Error creating category:', error);
-      Alert.alert('Failed to create category. Please try again.');
+      showToastMessage('error', 'Error', 'Failed to create category. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -254,13 +293,13 @@ export default function TaskCategories() {
       setAiCategories(suggestCategoryy);
     } catch (error) {
       console.error('Error suggesting categories:', error);
-      Alert.alert('Failed to suggest category. Please try again.');
+      showToastMessage('error', 'Error', 'Failed to suggest categories. Please try again.');
     }
   };
 
   const handleUpdateCategory = async (id: string, newName: string) => {
     if (!newName.trim()) {
-      Alert.alert('Validation Error', 'Category name cannot be empty.');
+      showToastMessage('error', 'Validation Error', 'Category name cannot be empty.');
       return;
     }
 
@@ -286,10 +325,14 @@ export default function TaskCategories() {
         )
       );
 
-      Alert.alert('Success', 'Category updated successfully.');
+      // Show success toast
+      showToastMessage('success', 'Success!', 'Category updated successfully');
+      
+      // Add haptic feedback
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err: any) {
       console.error('API Error:', err.response || err.message);
-      Alert.alert('Failed to update category. Please try again.');
+      showToastMessage('error', 'Error', 'Failed to update category. Please try again.');
     }
   };
 
@@ -304,10 +347,12 @@ export default function TaskCategories() {
           categoryId: id,
         },
       });
-      Alert.alert('Success', 'Category deleted successfully.');
+      
+      showToastMessage('success', 'Success!', 'Category deleted successfully');
+      fetchCategories(); // Refresh the categories list
     } catch (err: any) {
       console.error('API Error:', err.response || err.message);
-      Alert.alert('Failed to delete category. Please try again.');
+      showToastMessage('error', 'Error', 'Failed to delete category. Please try again.');
     }
   };
 
@@ -348,15 +393,11 @@ export default function TaskCategories() {
       <CustomSplashScreen
         visible={showSplashScreen}
         lottieSource={require('../../assets/Animation/success.json')}
-        mainText="Category Created Successfully!"
-        subtitle="Your new category has been added to the list"
-        duration={2000}
+        mainText={splashMessage.mainText}
+        subtitle={splashMessage.subtitle}
+        duration={3000}
         onComplete={() => setShowSplashScreen(false)}
         onDismiss={() => setShowSplashScreen(false)}
-        condition={{
-          type: 'custom',
-          status: true,
-        }}
       />
 
       <KeyboardAvoidingView
@@ -370,17 +411,7 @@ export default function TaskCategories() {
           showsHorizontalScrollIndicator={false}>
           <View className="h-full w-full items-center pb-44">
             <View className='flex items-center mb-12 flex-row gap-2'>
-              <View className='relative'>
-                <TouchableOpacity
-                  onPress={() => navigation.goBack()}
-                  className="  top-0 left-1  h-10 w-10 ">
-                  <Image
-                    // resizeMode="contain"
-                    className="h-10 w-10"
-                    source={require('../../assets/sign-in/back.png')}
-                  />
-                </TouchableOpacity>
-              </View>
+       
 
               <View
                 style={[
@@ -390,7 +421,7 @@ export default function TaskCategories() {
                     justifyContent: 'center',
                     alignItems: 'center',
                     paddingHorizontal: 2,
-                    width: '80%',
+                    width: '90%',
           
 
                   },
@@ -420,7 +451,7 @@ export default function TaskCategories() {
                         source={require('../../assets/ZAi/ZaplloAi.png')}
                       />
                     </View>
-                    <TouchableOpacity className="">
+                    <TouchableOpacity onPress={() => SetAiModalOpen(true)}>
                       <Image className="h-8 w-8" source={require('../../assets/Tasks/add.png')} />
                     </TouchableOpacity>
                   </View>
@@ -503,7 +534,7 @@ export default function TaskCategories() {
 
                         <TouchableOpacity
                           onPress={confirmAndSaveCategories}
-                          className="mt-8 w-full items-center rounded-full bg-[rgb(1,122,91)] p-3">
+                          className="mt-8 w-full items-center rounded-full bg-[#37384B] p-3">
                           <Text
                             className="text-lg font-bold text-white "
                             style={{ fontFamily: 'LatoBold' }}>
@@ -631,6 +662,7 @@ export default function TaskCategories() {
                   className='w-full'
                   placeholderTextColor="#787CA5"
                   passwordError={''}
+                  backgroundColor="#0A0D28"
                 />
               </View>
 
@@ -662,6 +694,16 @@ export default function TaskCategories() {
           </KeyboardAvoidingView>
         </View>
       </Modal>
+
+      {/* Toast Alert */}
+      <ToastAlert
+        visible={showToast}
+        type={toastType}
+        title={toastTitle}
+        message={toastMessage}
+        onHide={() => setShowToast(false)}
+        position="top"
+      />
 
     </SafeAreaView >
   );

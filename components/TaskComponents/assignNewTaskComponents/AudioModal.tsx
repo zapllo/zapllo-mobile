@@ -241,7 +241,9 @@ const AudioModal: React.FC<AudioModalProps> = ({
                 setAudioModalVisible(false);
               }
             }}
-            className="mb-10 flex h-[4rem] items-center justify-center rounded-full bg-[#37384B] p-5">
+            className={`mb-10 flex h-[4rem] items-center justify-center rounded-full p-5 ${
+              audioUrl ? 'bg-[#815BF5]' : 'bg-[#37384B]'
+            }`}>
             <Text
               className="text-center font-semibold text-white"
               style={{ fontFamily: 'Lato-Bold' }}>

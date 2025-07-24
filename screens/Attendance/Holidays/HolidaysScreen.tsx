@@ -1,16 +1,15 @@
-
 import { StyleSheet, Text, View, SafeAreaView, KeyboardAvoidingView, Keyboard, TouchableOpacity, TextInput, Animated, Platform, Image , ActivityIndicator } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import { ScrollView } from "react-native";
 import { TouchableWithoutFeedback } from "react-native";
 import Navbar from "~/components/navbar";
+import ToastAlert, { ToastType } from "~/components/ToastAlert";
 
 import { LinearGradient } from "expo-linear-gradient";
 import { EvilIcons, MaterialCommunityIcons, AntDesign, Ionicons } from "@expo/vector-icons";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import Modal from 'react-native-modal';
-import Toast from 'react-native-toast-message';
 import LottieView from "lottie-react-native";
 
 interface Holiday {
@@ -46,6 +45,11 @@ export default function HolidaysScreen() {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   
+  // Toast state
+  const [showToast, setShowToast] = useState(false);
+  const [toastType, setToastType] = useState<ToastType>('success');
+  const [toastTitle, setToastTitle] = useState('');
+    
   // Delete modal state
   const [deleteModal, setDeleteModal] = useState(false);
   const [selectedHolidayId, setSelectedHolidayId] = useState<string>('');
@@ -95,11 +99,6 @@ export default function HolidaysScreen() {
       } catch (error) {
         console.error('Error fetching user details:', error);
         setIsLoading(false);
-        Toast.show({
-          type: 'error',
-          text1: 'Error',
-          text2: 'Failed to load user details'
-        });
       }
     };
     
@@ -153,11 +152,6 @@ export default function HolidaysScreen() {
       setHolidays(formattedHolidays);
     } catch (error) {
       console.error('Error fetching holidays:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Failed to load holidays'
-      });
     } finally {
       setIsLoading(false);
     }
@@ -314,31 +308,22 @@ export default function HolidaysScreen() {
       setNewHoliday({ holidayName: '', holidayDate: new Date() });
       setIsAddingNew(false);
       
-      Toast.show({
-        type: 'success',
-        text1: 'Success',
-        text2: 'Holiday added successfully'
-      });
+      // Dismiss keyboard
+      Keyboard.dismiss();
       
-      // Refresh the holidays list to ensure we have the latest data
-      setTimeout(() => {
-        fetchHolidays();
-      }, 1000);
+      // Show success toast
+      setToastType('success');
+      setToastTitle('Holiday Added Successfully!');
+      setShowToast(true);
       
     } catch (error) {
       console.error('Error adding holiday:', error);
       
-      // Even if there's an error, try to refresh the holidays list
+      // If there's an error, refresh the holidays list to get the latest state
       // This handles the case where the holiday was added but the response had an error
       setTimeout(() => {
         fetchHolidays();
       }, 1000);
-      
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'There was an issue adding the holiday. Please refresh to see updates.'
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -374,11 +359,6 @@ export default function HolidaysScreen() {
     
     // Validate holiday name
     if (!holidayToUpdate.holidayName.trim()) {
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Holiday name cannot be empty'
-      });
       return;
     }
     
@@ -438,11 +418,10 @@ export default function HolidaysScreen() {
               : holiday
           ));
           
-          Toast.show({
-            type: 'success',
-            text1: 'Success',
-            text2: 'Holiday updated successfully'
-          });
+          // Show success toast for successful update
+          setToastType('success');
+          setToastTitle('Holiday Updated Successfully!');
+          setShowToast(true);
           
           return; // Exit early since we've handled the update
         } else {
@@ -457,11 +436,10 @@ export default function HolidaysScreen() {
       // Turn off edit mode
       toggleEdit(id);
       
-      Toast.show({
-        type: 'success',
-        text1: 'Success',
-        text2: 'Holiday updated successfully'
-      });
+      // Show success toast for successful update
+      setToastType('success');
+      setToastTitle('Holiday Updated Successfully!');
+      setShowToast(true);
       
       // Refresh holidays to ensure we have the latest data
       fetchHolidays();
@@ -473,12 +451,6 @@ export default function HolidaysScreen() {
       setTimeout(() => {
         fetchHolidays();
       }, 1000);
-      
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Failed to update holiday. Please refresh to see latest changes.'
-      });
     } finally {
       setIsUpdating(null);
     }
@@ -533,11 +505,11 @@ export default function HolidaysScreen() {
       // Clean up the ref when deleting a holiday
       delete inputRefs.current[selectedHolidayId];
       
-      Toast.show({
-        type: 'success',
-        text1: 'Success',
-        text2: 'Holiday deleted successfully'
-      });
+      // Show success toast for successful deletion
+      setToastType('success');
+      setToastTitle('Holiday Deleted Successfully!');
+      setShowToast(true);
+      
     } catch (error) {
       console.error('Error deleting holiday:', error);
       
@@ -545,12 +517,6 @@ export default function HolidaysScreen() {
       setTimeout(() => {
         fetchHolidays();
       }, 1000);
-      
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Failed to delete holiday. Please refresh to see latest changes.'
-      });
     } finally {
       setIsDeleting(null);
       setDeleteModal(false);
@@ -651,6 +617,7 @@ export default function HolidaysScreen() {
         <Navbar title="Holidays" />
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#815BF5" />
+          <Text className="text-white text-lg mt-4" style={{fontFamily:"LatoBold"}}>Loading Holidays...</Text>
         </View>
       </SafeAreaView>
     );
@@ -987,9 +954,14 @@ export default function HolidaysScreen() {
           </View>
         </View>
       </Modal>
-      
-      {/* Toast message component */}
-      <Toast />
+
+      {/* Toast Alert */}
+      <ToastAlert
+        visible={showToast}
+        type={toastType}
+        title={toastTitle}
+        onHide={() => setShowToast(false)}
+      />
     </SafeAreaView>
   );
 }

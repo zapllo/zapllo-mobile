@@ -183,7 +183,7 @@ export default function SettingScreen() {
                 {hasChanges && (
                   <TouchableOpacity
                     onPress={updateCompanyDetails}
-                    className="w-full bg-[#4A72FF] rounded-xl py-4 mt-6"
+                    className="w-full bg-[#815BF5] rounded-xl py-4 mt-6"
                   >
                     <Text className="text-white text-center font-bold text-base">
                       {saving ? "Updating..." : "Update Organization"}

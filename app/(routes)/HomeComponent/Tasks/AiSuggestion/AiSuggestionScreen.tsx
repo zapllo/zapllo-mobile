@@ -950,7 +950,7 @@ const styles = StyleSheet.create({
   suggestedPromptText: {
     fontSize: 12,
     fontFamily: 'LatoRegular',
-    color: '#787CA5',
+    color: '#ffffff',
     flex: 1,
     lineHeight: 16,
   },

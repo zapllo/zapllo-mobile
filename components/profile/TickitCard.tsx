@@ -12,7 +12,6 @@ import {
   Image
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import Modal from 'react-native-modal';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { backend_Host } from '~/config';
@@ -22,6 +21,7 @@ import { ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import CustomDeleteModal from '~/components/CustomDeleteModal';
 
 const { width } = Dimensions.get('window');
 
@@ -48,8 +48,8 @@ const TickitCard: React.FC<TickitCardProps> = ({
 }: TickitCardProps) => {
   const { token } = useSelector((state: RootState) => state.auth);
   const [isVisible, setIsVisible] = useState(true);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   
   // Animation values
@@ -102,23 +102,28 @@ const TickitCard: React.FC<TickitCardProps> = ({
 
   const handleDelete = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    setIsModalVisible(true);
+    setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    handelDeleteTicket(id);
-    setIsVisible(false);
-    setIsModalVisible(false);
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setIsDeleting(false);
   };
 
-  const cancelDelete = () => {
-    Haptics.selectionAsync();
-    setIsModalVisible(false);
+  const confirmDelete = async () => {
+    setIsDeleting(true);
+    
+    try {
+      await handelDeleteTicket(id);
+      setIsVisible(false);
+      closeDeleteModal();
+    } catch (error) {
+      console.error("Error in confirmDelete:", error);
+      setIsDeleting(false);
+    }
   };
 
   const handelDeleteTicket = async (id: string) => {
-    setLoading(true);
     try {
       const response = await axios.delete(`${backend_Host}/tickets/${id}`, {
         headers: {
@@ -129,9 +134,8 @@ const TickitCard: React.FC<TickitCardProps> = ({
       Alert.alert('Success', 'Ticket deleted successfully.');
     } catch (err: any) {
       console.error('API Error:', err.response || err.message);
-      Alert.alert('Failed to delete ticket. Please try again.');
-    } finally {
-      setLoading(false);
+      Alert.alert('Error', 'Failed to delete ticket. Please try again.');
+      throw err; // Re-throw to handle in confirmDelete
     }
   };
 
@@ -300,92 +304,18 @@ const TickitCard: React.FC<TickitCardProps> = ({
         </View>
       </TouchableOpacity>
 
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isVisible={isModalVisible}
-        onBackdropPress={cancelDelete}
-        backdropOpacity={0.6}
-        animationIn="fadeIn"
-        animationOut="fadeOut"
-        animationInTiming={300}
-        animationOutTiming={300}
-        backdropTransitionInTiming={300}
-        backdropTransitionOutTiming={300}
-        style={styles.modal}
-        customBackdrop={
-          <BlurView intensity={Platform.OS === 'ios' ? 40 : 80} tint="dark" style={styles.modalBackdrop} />
-        }
-      >
-        <Animated.View style={styles.modalContent}>
-          <LinearGradient
-            colors={['#1F2235', '#141625']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.modalBackground}
-          />
-          
-          <View style={styles.modalIconContainer}>
-            <LinearGradient
-              colors={['rgba(255, 71, 87, 0.2)', 'rgba(255, 71, 87, 0.1)']}
-              style={styles.warningIconCircle}
-            >
-
-              <Image
-              style={{ width: 50, height: 50, }}
-              source={require('../../assets/Tickit/delIcon.png')}
-            />
-            </LinearGradient>
-          </View>
-          
-          <Text style={styles.modalTitle}>Delete Ticket</Text>
-          <Text style={styles.modalSubtitle}>Are you sure you want to delete this ticket?</Text>
-          
-          <View style={styles.ticketPreview}>
-            <Text style={styles.ticketPreviewText}>
-              "{truncateText(subject, 40)}"
-            </Text>
-          </View>
-          
-          <Text style={styles.modalDescription}>
-            This action cannot be undone and all associated data will be permanently removed.
-          </Text>
-          
-          <View style={styles.modalButtonsContainer}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={cancelDelete}
-              activeOpacity={0.8}
-            >
-              <BlurView intensity={20} tint="dark" style={styles.cancelButtonBlur}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </BlurView>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              disabled={loading}
-              style={styles.deleteConfirmButton}
-              onPress={confirmDelete}
-              activeOpacity={0.8}
-            >
-              <LinearGradient
-                colors={['#FF6B6B', '#FF4757']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.deleteButtonGradient}
-              >
-                {loading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <View style={styles.deleteButtonContent}>
-                    <MaterialIcons name="delete" size={18} color="#fff" style={styles.deleteButtonIcon} />
-                    <Text style={styles.deleteButtonText}>Delete</Text>
-                  </View>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </Modal>
+      {/* Custom Delete Modal */}
+      <CustomDeleteModal
+        visible={showDeleteModal}
+        title="Are you sure you want to"
+        subtitle="delete this ticket?"
+        itemName={`"${truncateText(subject, 40)}"`}
+        onCancel={closeDeleteModal}
+        onConfirm={confirmDelete}
+        isDeleting={isDeleting}
+        cancelText="No, Keep It."
+        confirmText="Delete"
+      />
     </Animated.View>
   );
 };
@@ -486,122 +416,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#A3A9C1',
     marginHorizontal: 10,
     opacity: 0.5,
-  },
-  modal: {
-  
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  modalContent: {
-    width: width * 0.85,
-    borderRadius: 24,
-    overflow: 'hidden',
-  },
-  modalBackground: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  modalIconContainer: {
-    alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 20,
-  },
-  warningIconCircle: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 71, 87, 0.3)',
-  },
-  modalTitle: {
-    color: 'white',
-    fontSize: 24,
-    fontFamily: 'LatoBold',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  modalSubtitle: {
-    color: 'white',
-    fontSize: 16,
-    marginBottom: 20,
-    textAlign: 'center',
-    fontFamily: 'LatoRegular',
-    opacity: 0.9,
-  },
-  ticketPreview: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
-    marginHorizontal: 24,
-  },
-  ticketPreviewText: {
-    color: '#A3A9C1',
-    textAlign: 'center',
-    fontFamily: 'LatoItalic',
-    fontSize: 14,
-  },
-  modalDescription: {
-    color: '#A3A9C1',
-    textAlign: 'center',
-    marginBottom: 30,
-    paddingHorizontal: 24,
-    fontFamily: 'LatoRegular',
-    lineHeight: 20,
-    fontSize: 14,
-  },
-  modalButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingBottom: 30,
-  },
-  cancelButton: {
-    flex: 1,
-    marginRight: 12,
-    borderRadius: 16,
-    overflow: 'hidden',
-    height: 50,
-  },
-  cancelButtonBlur: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-
- 
-  },
-  cancelButtonText: {
-    color: 'white',
-    fontFamily: 'LatoBold',
-    fontSize: 16,
-  },
-  deleteConfirmButton: {
-    flex: 1,
-    borderRadius: 16,
-    overflow: 'hidden',
-    height: 50,
-  },
-  deleteButtonGradient: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  deleteButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  deleteButtonIcon: {
-    marginRight: 8,
-  },
-  deleteButtonText: {
-    color: 'white',
-    fontFamily: 'LatoBold',
-    fontSize: 16,
   },
 
 statusBadge: {

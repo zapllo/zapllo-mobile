@@ -92,6 +92,7 @@ const AddLinkModal: React.FC<LinkModalProps> = ({
                       placeholder={''}
                       className="flex-1 text-sm text-[#787CA5]"
                       passwordError={""}
+                      backgroundColor="#0A0D28"
                     />
                   </View>
                   <TouchableOpacity
@@ -120,6 +121,7 @@ const AddLinkModal: React.FC<LinkModalProps> = ({
                   }}
                   placeholder="Enter a link"
                   className="flex-1 text-sm text-[#787CA5]"
+                  backgroundColor="#0A0D28"
                 />
               </View>
 

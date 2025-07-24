@@ -396,7 +396,10 @@ export default function BillingScreen() {
             >
               <View className="w-full flex flex-row items-center my-4 justify-center gap-4">
                 <Text className="text-white text-lg" style={{ fontFamily: "LatoBold" }}>Connect with our team</Text>
-                <TouchableOpacity className="bg-white rounded-3xl p-2 px-5">
+                <TouchableOpacity 
+                  className="bg-white rounded-3xl p-2 px-5"
+                  onPress={() => Linking.openURL('https://api.whatsapp.com/send/?phone=%2B918910748670&text=Hello%2C+I+would+like+to+connect.&type=phone_number&app_absent=0')}
+                >
                   <Text className="text-black text-xs" style={{ fontFamily: "LatoBold" }}>Connect Now</Text>
                 </TouchableOpacity>
               </View>
@@ -441,6 +444,7 @@ export default function BillingScreen() {
                     onChangeText={setRechargeAmount}
                     keyboardType="numeric"
                     passwordError={false}
+                    backgroundColor="#0A0D28"
                   />
                   <Text className="text-white text-xs ml-5 mb-5" style={{ fontFamily: 'LatoLight' }}>Recharge Amount (minimum ₹5000)</Text>
                   <TouchableOpacity className="w-full items-center bg-[#017A5B] p-4 rounded-full mb-4" onPress={handleNextPress}>
@@ -476,6 +480,7 @@ export default function BillingScreen() {
                     onChangeText={setGstNumber}
                     keyboardType="default"
                     passwordError={false}
+                    backgroundColor="#0A0D28"
                   />
                   <View className="flex items-center gap-5 flex-row justify-center mt-8 mb-4">
                     <TouchableOpacity
@@ -495,14 +500,9 @@ export default function BillingScreen() {
               </KeyboardAvoidingView>
             </Modal>
 
-
-
-
-
             <Modal
               isVisible={messageVisible}
               animationIn="fadeIn"
-
               animationOut="fadeOut"
               backdropOpacity={0.3}
               style={{ justifyContent: 'flex-start', margin: 0 }}
@@ -542,59 +542,117 @@ export default function BillingScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-  
-
-
-
 
             {selectedOption === 'teams' ? (
               <View className="w-full items-center mt-2">
                 {["Zapllo Tasks", "Money Saver Bundle"].map((planName) => (
-                  <View
-                    key={planName}
-                    className={`w-[90%] p-6 rounded-3xl mt-10 mb-4 ${subscribedPlan === planName ? "bg-black" : "bg-[#0A0D28]"
-                      }`}
-                  >
-                    <Text className="text-white text-lg font-bold mb-7">{planName}</Text>
-                    <View className="flex flex-row items-end gap-3">
-                      <Text className="text-white text-5xl">
-                        ₹{planName === "Zapllo Tasks" ? "1999" : "2999"}
-                      </Text>
-                      <Text className="text-[#676B93] pb-1 text-sm"> / per user per year</Text>
-                    </View>
-
-                    {/* Feature List */}
-                    <View className="w-full flex flex-col gap-4 mt-4">
-                      {planFeatures[planName].map((feature: string, index: number) => (
-                        <View key={index} className="flex flex-row items-center gap-2">
-                          <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")} />
-                          <Text className="text-white">{feature}</Text>
+                  planName === "Money Saver Bundle" ? (
+                    <LinearGradient
+                      key={planName}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      colors={["#815BF5", "#FC8929"]}
+                      style={{
+                        width: '90%',
+                        borderRadius: 24,
+                        marginTop: 40,
+                        marginBottom: 16,
+                        padding: 3,
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: '100%',
+                          padding: 24,
+                          borderRadius: 21,
+                          backgroundColor: subscribedPlan === planName ? "#000000" : "#0A0D28"
+                        }}
+                      >
+                        <Text className="text-white text-lg font-bold mb-7">{planName}</Text>
+                        <View className="flex flex-row items-end gap-3">
+                          <Text className="text-white text-5xl">
+                            ₹{planName === "Zapllo Tasks" ? "1999" : "2999"}
+                          </Text>
+                          <Text className="text-[#676B93] pb-1 text-sm"> / per user per year</Text>
                         </View>
-                      ))}
-                    </View>
 
-                    {subscribedPlan === planName ? (
-                      <View>
-                        <Text className="text-white mt-4">Subscribed Users: {subscribedUserCount}</Text>
-                        <Text className="text-white mt-2">Renews On: {formatDate(renewsOn)}</Text>
+                        {/* Feature List */}
+                        <View className="w-full flex flex-col gap-4 mt-4">
+                          {planFeatures[planName].map((feature: string, index: number) => (
+                            <View key={index} className="flex flex-row items-center gap-2">
+                              <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")} />
+                              <Text className="text-white">{feature}</Text>
+                            </View>
+                          ))}
+                        </View>
+
+                        {subscribedPlan === planName ? (
+                          <View>
+                            <Text className="text-white mt-4">Subscribed Users: {subscribedUserCount}</Text>
+                            <Text className="text-white mt-2">Renews On: {formatDate(renewsOn)}</Text>
+                            <TouchableOpacity
+                              className="w-full my-9 rounded-full py-4 items-center border border-[#A485FF]"
+                              onPress={handleAddUsers} // Add users to existing subscription
+                            >
+                              <Text className="text-white">Add Users</Text>
+                            </TouchableOpacity>
+                          </View>
+                        ) : (
+                          <TouchableOpacity
+                            className="w-full my-9 rounded-full py-4 items-center border border-[#A485FF]"
+                            onPress={() => handleSubscribe(planName)} // Subscribe to a new plan
+                          >
+                            <Text className="text-white">Subscribe</Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    </LinearGradient>
+                  ) : (
+                    <View
+                      key={planName}
+                      className={`w-[90%] p-6 rounded-3xl mt-10 mb-4 ${subscribedPlan === planName ? "bg-black" : "bg-[#0A0D28]"
+                        }`}
+                    >
+                      <Text className="text-white text-lg font-bold mb-7">{planName}</Text>
+                      <View className="flex flex-row items-end gap-3">
+                        <Text className="text-white text-5xl">
+                          ₹{planName === "Zapllo Tasks" ? "1999" : "2999"}
+                        </Text>
+                        <Text className="text-[#676B93] pb-1 text-sm"> / per user per year</Text>
+                      </View>
+
+                      {/* Feature List */}
+                      <View className="w-full flex flex-col gap-4 mt-4">
+                        {planFeatures[planName].map((feature: string, index: number) => (
+                          <View key={index} className="flex flex-row items-center gap-2">
+                            <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")} />
+                            <Text className="text-white">{feature}</Text>
+                          </View>
+                        ))}
+                      </View>
+
+                      {subscribedPlan === planName ? (
+                        <View>
+                          <Text className="text-white mt-4">Subscribed Users: {subscribedUserCount}</Text>
+                          <Text className="text-white mt-2">Renews On: {formatDate(renewsOn)}</Text>
+                          <TouchableOpacity
+                            className="w-full my-9 rounded-full py-4 items-center border border-[#A485FF]"
+                            onPress={handleAddUsers} // Add users to existing subscription
+                          >
+                            <Text className="text-white">Add Users</Text>
+                          </TouchableOpacity>
+                        </View>
+                      ) : (
                         <TouchableOpacity
                           className="w-full my-9 rounded-full py-4 items-center border border-[#A485FF]"
-                          onPress={handleAddUsers} // Add users to existing subscription
+                          onPress={() => handleSubscribe(planName)} // Subscribe to a new plan
                         >
-                          <Text className="text-white">Add Users</Text>
+                          <Text className="text-white">Subscribe</Text>
                         </TouchableOpacity>
-                      </View>
-                    ) : (
-                      <TouchableOpacity
-                        className="w-full my-9 rounded-full py-4 items-center border border-[#A485FF]"
-                        onPress={() => handleSubscribe(planName)} // Subscribe to a new plan
-                      >
-                        <Text className="text-white">Subscribe</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
+                      )}
+                    </View>
+                  )
                 ))}
-
               </View>
             ) : (
               <View className="w-[90%] shadow-xl bg-[#0A0D28] p-6 rounded-3xl mt-10 mb-32">
@@ -609,8 +667,6 @@ export default function BillingScreen() {
               </TouchableOpacity>
               <View className="w-full bg-[#424882] h-0.5 "></View>
             </View>
-
-
             )}
           </View>
         </ScrollView>
@@ -710,6 +766,7 @@ export default function BillingScreen() {
               onChangeText={setGstNumber}
               keyboardType="default"
               passwordError={false}
+              backgroundColor="#0A0D28"
             />
             <View className="flex items-center gap-5 flex-row justify-center mt-8 mb-4">
               <TouchableOpacity
@@ -819,6 +876,7 @@ export default function BillingScreen() {
               onChangeText={setGstNumber}
               keyboardType="default"
               passwordError={false}
+              backgroundColor="#0A0D28"
             />
             <View className="flex items-center gap-5 flex-row justify-center mt-8 mb-4">
               <TouchableOpacity
@@ -846,6 +904,7 @@ const styles = StyleSheet.create({
     borderRadius: 9999,
     paddingVertical: 8,
     paddingHorizontal: 16,
+    width: '100%',
   },
   messageModal: {
     backgroundColor: 'white',

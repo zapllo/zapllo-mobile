@@ -12,6 +12,7 @@ interface LoginLogoutTimeModalProps {
   onSave: (settings: LoginLogoutTimeSettings) => void;
   onFetchSettings?: (settings: LoginLogoutTimeSettings) => void;
   initialSettings?: LoginLogoutTimeSettings;
+  onShowSuccessToast?: () => void;
 }
 
 export interface LoginLogoutTimeSettings {
@@ -28,6 +29,7 @@ const LoginLogoutTimeModal: React.FC<LoginLogoutTimeModalProps> = ({
   onClose,
   onSave,
   onFetchSettings,
+  onShowSuccessToast,
   initialSettings = {
     enforceLoginTime: false,
     enforceLogoutTime: false,
@@ -178,23 +180,16 @@ const LoginLogoutTimeModal: React.FC<LoginLogoutTimeModalProps> = ({
           graceTimeMins
         };
         
-        // Show success alert
-        Alert.alert(
-          'Success',
-          'Login-Logout time settings updated successfully!',
-          [
-            { 
-              text: 'OK', 
-              onPress: () => {
-                // Call the onSave callback with the updated settings
-                onSave(updatedSettings);
-                
-                // Close the modal
-                onClose();
-              }
-            }
-          ]
-        );
+        // Call the onSave callback with the updated settings
+        onSave(updatedSettings);
+        
+        // Show success toast if callback is provided
+        if (onShowSuccessToast) {
+          onShowSuccessToast();
+        }
+        
+        // Close the modal
+        onClose();
       } else {
         Alert.alert('Error', response.data.message || 'Failed to save login-logout time settings');
       }
@@ -218,7 +213,7 @@ const LoginLogoutTimeModal: React.FC<LoginLogoutTimeModalProps> = ({
       animationOut="slideOutDown"
       style={{ margin: 0, justifyContent: 'flex-end' }}
     >
-      <View className="bg-[#1E1F2E] rounded-t-3xl p-6">
+      <View className="bg-primary rounded-t-3xl p-6">
         <View className="flex-row justify-between items-center mb-6">
           <Text className="text-white text-xl" style={{fontFamily:"LatoBold"}}>Login-Logout Time</Text>
           <TouchableOpacity onPress={onClose}>
@@ -284,7 +279,7 @@ const LoginLogoutTimeModal: React.FC<LoginLogoutTimeModalProps> = ({
 
             <TouchableOpacity 
               onPress={handleSave}
-              className="bg-[#4A65FF] py-4 rounded-xl"
+              className="bg-[#815BF5] py-4 rounded-xl"
               disabled={loading}
             >
               {loading ? (

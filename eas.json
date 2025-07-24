@@ -1,49 +1,31 @@
 {
   "cli": {
-    "version": ">= 12.0.0",
-    "appVersionSource": "local"
+    "version": ">= 3.13.0"
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "ios": {
-        "resourceClass": "m-medium"
-      }
+      "distribution": "internal"
     },
     "preview": {
       "distribution": "internal",
-      "ios": {
-        "resourceClass": "m-medium",
-        "simulator": false,
-        "buildConfiguration": "Release"
-      },
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
-      "ios": {
-        "resourceClass": "m-medium",
-        "simulator": false,
-        "buildConfiguration": "Release",
-        "autoIncrement": true
-      },
       "android": {
         "buildType": "app-bundle",
-        "resourceClass": "medium",
-        "env": {
-          "GRADLE_OPTS": "-Xmx4g -XX:MaxMetaspaceSize=512m"
-        }
+        "autoIncrement": true
       }
     }
   },
   "submit": {
     "production": {
       "ios": {
-        "appleId": "your-apple-id@example.com",
-        "ascAppId": "your-app-store-connect-app-id",
-        "appleTeamId": "your-apple-team-id"
+      
+        "ascAppId": "6747584763",
+        "appleTeamId": "829MFUBW7B"
       },
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",

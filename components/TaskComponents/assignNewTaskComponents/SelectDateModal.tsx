@@ -61,6 +61,8 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
           mode={currentMode}
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleDateChange}
+          textColor="white"
+          style={{ backgroundColor: '#191B3A' }}
         />
         <View style={styles.actionsContainer}>
           <TouchableOpacity

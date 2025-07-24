@@ -28,8 +28,15 @@ import { Audio } from 'expo-av';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import AudioModal from './assignNewTaskComponents/AudioModal';
+import FileModal from './assignNewTaskComponents/FileModal';
+import AddLinkModal from './assignNewTaskComponents/AddLinkModal';
+import ReminderModal from './assignNewTaskComponents/ReminderModal';
+import WeeklyModal from './assignNewTaskComponents/WeeklyModal';
+import MonthlyModal from './assignNewTaskComponents/MonthlyModal';
 import InputContainer from '../InputContainer';
 import CustomDropdownWithSearchAndAdd from '../customDropDownFour';
+import CustomDropdown from '../customDropDown';
+import ToastAlert, { ToastType } from '../ToastAlert';
 
 const { width, height } = Dimensions.get('window');
 
@@ -43,7 +50,12 @@ interface Template {
   repeat?: boolean;
   repeatType?: string;
   days?: string[];
-  subcategory?: string;
+  links?: string[];
+  attachments?: any[];
+  reminders?: Reminder[];
+  audioUrl?: string;
+  dates?: number[];
+  repeatInterval?: number;
 }
 
 interface User {
@@ -69,7 +81,7 @@ interface TaskTemplateFormProps {
   isVisible: boolean;
   onClose: () => void;
   existingTemplate?: Template | null;
-  onSuccess?: () => void;
+  onSuccess?: (message?: string) => void;
 }
 
 export default function TaskTemplateForm({
@@ -83,8 +95,7 @@ export default function TaskTemplateForm({
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [priority, setPriority] = useState<'High' | 'Medium' | 'Low'>('Low');
-  const [subcategory, setSubcategory] = useState('');
-  
+    
   // Repeat states
   const [repeat, setRepeat] = useState(false);
   const [repeatType, setRepeatType] = useState('');
@@ -113,25 +124,82 @@ export default function TaskTemplateForm({
   const [showLinksModal, setShowLinksModal] = useState(false);
   const [showRemindersModal, setShowRemindersModal] = useState(false);
   const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
+  const [isWeeklyModalVisible, setWeeklyModalVisible] = useState(false);
+  const [isMonthlyModalVisible, setMonthlyModalVisible] = useState(false);
+  const [isPeriodicallyModalVisible, setPeriodicallyModalVisible] = useState(false);
   
   // Temporary states for modals
-  const [tempLinks, setTempLinks] = useState<string[]>(['']);
-  const [tempReminders, setTempReminders] = useState<Reminder[]>([]);
   const [newCategory, setNewCategory] = useState('');
+  
+  // Toast states (only for validation and error messages within the modal)
+  const [showToast, setShowToast] = useState(false);
+  const [toastType, setToastType] = useState<ToastType>('error');
+  const [toastTitle, setToastTitle] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
   
   const { userData, token } = useSelector((state: RootState) => state.auth);
   const isEditMode = !!existingTemplate?._id;
 
+  // Helper function to show toast (only for errors and validation within modal)
+  const showToastMessage = (type: ToastType, title: string, message?: string) => {
+    setToastType(type);
+    setToastTitle(title);
+    setToastMessage(message || '');
+    setShowToast(true);
+  };
+
   // Initialize form with existing template data
   useEffect(() => {
     if (existingTemplate) {
+      console.log('Loading existing template:', existingTemplate);
+      
       setTitle(existingTemplate.title || '');
       setDescription(existingTemplate.description || '');
       setPriority((existingTemplate.priority as 'High' | 'Medium' | 'Low') || 'Low');
-      setSubcategory(existingTemplate.subcategory || '');
       setRepeat(existingTemplate.repeat || false);
       setRepeatType(existingTemplate.repeatType || '');
       setSelectedDays(existingTemplate.days || []);
+      
+      // Load additional template data
+      if (existingTemplate.links && Array.isArray(existingTemplate.links)) {
+        console.log('Loading template links:', existingTemplate.links);
+        setLinks(existingTemplate.links);
+      }
+      
+      if (existingTemplate.attachments && Array.isArray(existingTemplate.attachments)) {
+        console.log('Loading template attachments:', existingTemplate.attachments);
+        // Convert attachment URIs back to proper attachment objects
+        const formattedAttachments = existingTemplate.attachments.map((att, index) => {
+          if (typeof att === 'string') {
+            // If it's just a URI string, create a proper attachment object
+            return {
+              uri: att,
+              name: `Attachment ${index + 1}`,
+              type: 'application/octet-stream'
+            };
+          }
+          return att; // If it's already an object, use as is
+        });
+        setAttachments(formattedAttachments);
+      }
+      
+      if (existingTemplate.reminders && Array.isArray(existingTemplate.reminders)) {
+        console.log('Loading template reminders:', existingTemplate.reminders);
+        setReminders(existingTemplate.reminders);
+      }
+      
+      if (existingTemplate.audioUrl) {
+        console.log('Loading template audioUrl:', existingTemplate.audioUrl);
+        setAudioUrl(existingTemplate.audioUrl);
+      }
+      
+      if (existingTemplate.dates && Array.isArray(existingTemplate.dates)) {
+        setMonthlyDays(existingTemplate.dates);
+      }
+      
+      if (existingTemplate.repeatInterval) {
+        setRepeatInterval(existingTemplate.repeatInterval);
+      }
       
       if (typeof existingTemplate.category === 'string') {
         setCategory(existingTemplate.category);
@@ -200,7 +268,6 @@ export default function TaskTemplateForm({
     setDescription('');
     setCategory('');
     setPriority('Low');
-    setSubcategory('');
     setRepeat(false);
     setRepeatType('');
     setRepeatInterval(1);
@@ -214,12 +281,12 @@ export default function TaskTemplateForm({
 
   const handleSubmit = async () => {
     if (!title.trim()) {
-      Alert.alert('Error', 'Please enter a title for the template');
+      showToastMessage('error', 'Validation Error', 'Please enter a title for the template');
       return;
     }
 
     if (!description.trim()) {
-      Alert.alert('Error', 'Please enter a description for the template');
+      showToastMessage('error', 'Validation Error', 'Please enter a description for the template');
       return;
     }
 
@@ -227,22 +294,35 @@ export default function TaskTemplateForm({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
+      // Prepare attachments data - ensure we save the URIs properly
+      const attachmentData = attachments.map(att => {
+        if (typeof att === 'string') {
+          return att; // Already a URI string
+        }
+        return att.uri || att; // Extract URI from object
+      });
+
       const templateData = {
         title: title.trim(),
         description: description.trim(),
         category: category || undefined,
         priority,
-        subcategory: subcategory || undefined,
         repeat,
         repeatType: repeat ? repeatType : undefined,
         repeatInterval: repeat && repeatType === 'Periodically' ? repeatInterval : undefined,
         days: repeat && repeatType === 'Weekly' ? selectedDays : [],
         dates: repeat && repeatType === 'Monthly' ? monthlyDays : [],
-        attachments: attachments.map(att => att.uri),
+        attachments: attachmentData,
         links: links.filter(link => link.trim()),
         reminders,
         audioUrl: audioUrl || undefined,
       };
+
+      console.log('Saving template data:', templateData);
+      console.log('Links count:', links.length);
+      console.log('Attachments count:', attachments.length);
+      console.log('Reminders count:', reminders.length);
+      console.log('AudioUrl:', audioUrl);
 
       const url = isEditMode 
         ? `https://zapllo.com/api/taskTemplates/${existingTemplate._id}`
@@ -262,21 +342,25 @@ export default function TaskTemplateForm({
       const result = await response.json();
 
       if (response.ok) {
-        Alert.alert(
-          'Success', 
-          `Template ${isEditMode ? 'updated' : 'created'} successfully!`,
-          [{ text: 'OK', onPress: () => {
-            onClose();
-            if (onSuccess) onSuccess();
-            if (!isEditMode) clearForm();
-          }}]
-        );
+        console.log('Template saved successfully:', result);
+        
+        // Close modal immediately and pass success message to parent
+        onClose();
+        if (onSuccess) {
+          onSuccess(`Template ${isEditMode ? 'updated' : 'created'} successfully!`);
+        }
+        if (!isEditMode) clearForm();
       } else {
-        Alert.alert('Error', result.error || `Failed to ${isEditMode ? 'update' : 'create'} template`);
+        console.error('Error saving template:', result);
+        showToastMessage(
+          'error', 
+          'Error', 
+          result.error || `Failed to ${isEditMode ? 'update' : 'create'} template`
+        );
       }
     } catch (error) {
       console.error('Error saving template:', error);
-      Alert.alert('Error', 'An error occurred while saving the template');
+      showToastMessage('error', 'Error', 'An error occurred while saving the template');
     } finally {
       setLoading(false);
     }
@@ -290,57 +374,9 @@ export default function TaskTemplateForm({
     }
   };
 
-  const handlePickDocument = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: '*/*',
-        multiple: true,
-      });
-
-      if (!result.canceled && result.assets) {
-        setAttachments([...attachments, ...result.assets]);
-        setShowAttachmentsModal(false);
-      }
-    } catch (error) {
-      console.error('Error picking document:', error);
-      Alert.alert('Error', 'Failed to pick document');
-    }
-  };
-
-  const removeAttachment = (index: number) => {
-    setAttachments(attachments.filter((_, i) => i !== index));
-  };
-
-  const handleAddLink = () => {
-    const validLinks = tempLinks.filter(link => link.trim());
-    setLinks([...links, ...validLinks]);
-    setTempLinks(['']);
-    setShowLinksModal(false);
-  };
-
-  const handleAddReminder = (reminder: Reminder) => {
-    const isDuplicate = tempReminders.some(r => 
-      r.notificationType === reminder.notificationType &&
-      r.type === reminder.type &&
-      r.value === reminder.value
-    );
-
-    if (isDuplicate) {
-      Alert.alert('Error', 'Duplicate reminders are not allowed');
-      return;
-    }
-
-    setTempReminders([...tempReminders, reminder]);
-  };
-
-  const handleSaveReminders = () => {
-    setReminders(tempReminders);
-    setShowRemindersModal(false);
-  };
-
   const handleCreateCategory = async (categoryName: string) => {
     if (!categoryName.trim()) {
-      Alert.alert('Error', 'Enter new category');
+      showToastMessage('error', 'Validation Error', 'Please enter a category name');
       return;
     }
     
@@ -361,13 +397,13 @@ export default function TaskTemplateForm({
         // Refresh categories
         fetchCategories();
         setCategory(result.data._id);
-        Alert.alert('Success', 'New Category Added');
+        showToastMessage('success', 'Success!', 'New category added successfully');
       } else {
-        Alert.alert('Error', result.error || 'Failed to create category');
+        showToastMessage('error', 'Error', result.error || 'Failed to create category');
       }
     } catch (error) {
       console.error('Error creating category:', error);
-      Alert.alert('Error', 'Failed to create category. Please try again.');
+      showToastMessage('error', 'Error', 'Failed to create category. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -384,6 +420,15 @@ export default function TaskTemplateForm({
     Medium: '#FFA726',
     Low: '#66BB6A'
   };
+
+  // Repeat type options - same as AssignTaskScreen
+  const selectRepetType = [
+    { label: 'Daily', value: 'Daily' },
+    { label: 'Weekly', value: 'Weekly' },
+    { label: 'Monthly', value: 'Monthly' },
+    { label: 'Yearly', value: 'Yearly' },
+    { label: 'Periodically', value: 'Periodically' },
+  ];
 
   return (
     <Modal
@@ -403,7 +448,7 @@ export default function TaskTemplateForm({
           style={{ 
             maxHeight: height * 0.95,
             minHeight: height * 0.8,
-            backgroundColor: '#05071E',
+            backgroundColor: '#0A0D28',
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
           }}
@@ -432,21 +477,57 @@ export default function TaskTemplateForm({
               onChangeText={setTitle}
               placeholder=""
               passwordError=""
+              backgroundColor="#0A0D28"
             />
           </View>
 
           {/* Description */}
           <View className="w-full items-center">
-            <InputContainer
-              label="Description *"
-              value={description}
-              onChangeText={setDescription}
-              placeholder=""
-              passwordError=""
-              multiline
-              numberOfLines={4}
-              style={{ textAlignVertical: 'top', height: 80 }}
-            />
+            <View style={{
+              borderWidth: 1,
+              borderColor: '#37384B',
+              padding: 10,
+              marginTop: 25,
+              width: '90%',
+              minHeight: 120,
+              position: 'relative',
+              borderRadius: 15,
+            }}>
+              <Text style={{
+                color: '#787CA5',
+                position: 'absolute',
+                top: -9,
+                left: 25,
+                backgroundColor: '#0A0D28',
+                paddingRight: 5,
+                paddingLeft: 5,
+                fontSize: 13,
+                fontWeight: '400',
+                fontFamily: 'Nunito_400Regular'
+              }}>
+                Description *
+              </Text>
+              <TextInput
+                value={description}
+                onChangeText={setDescription}
+                placeholder="Enter task description..."
+                placeholderTextColor="#787CA5"
+                multiline
+                numberOfLines={6}
+                style={{
+                  color: '#FFFFFF',
+                  fontSize: 14,
+                  fontWeight: '500',
+                  textAlignVertical: 'top',
+                  minHeight: 100,
+                  paddingTop: 8,
+                  paddingBottom: 8,
+                  paddingHorizontal: 8,
+                  lineHeight: 20,
+                  fontFamily: 'Nunito_400Regular'
+                }}
+              />
+            </View>
           </View>
 
           {/* Category */}
@@ -466,7 +547,7 @@ export default function TaskTemplateForm({
                 position: 'absolute',
                 top: -9,
                 left: 25,
-                backgroundColor: '#05071E',
+                backgroundColor: '#0A0D28',
                 paddingRight: 5,
                 paddingLeft: 5,
                 fontSize: 13,
@@ -485,17 +566,6 @@ export default function TaskTemplateForm({
                 isLoading={isLoading}
               />
             </View>
-          </View>
-
-          {/* Subcategory */}
-          <View className="w-full items-center ">
-            <InputContainer
-              label="Subcategory"
-              value={subcategory}
-              onChangeText={setSubcategory}
-              placeholder=""
-              passwordError=""
-            />
           </View>
         
           <View className='w-full p-6'>
@@ -550,60 +620,49 @@ export default function TaskTemplateForm({
             </View>
 
             {repeat && (
-              <View className="space-y-3">
-                {/* Repeat Type */}
-                <TouchableOpacity
-                  onPress={() => setShowRepeatModal(true)}
-                  className="bg-[#2A2D47] p-4 rounded-xl flex-row items-center justify-between"
-                >
-                  <Text className="text-white" style={{ fontFamily: 'LatoRegular' }}>
-                    {repeatType || 'Select Repeat Type'}
-                  </Text>
-                  <Ionicons name="chevron-down" size={20} color="#676B93" />
-                </TouchableOpacity>
+              <View className="space-y-3 w-[110%]">
+                {/* Repeat Type using CustomDropdown like AssignTaskScreen */}
+                <CustomDropdown
+                  data={selectRepetType}
+                  placeholder="Select Repeat Type"
+                  selectedValue={repeatType}
+                  onSelect={(value) => {
+                    setRepeatType(value);
 
-                {/* Weekly Days Selection */}
-                {repeatType === 'Weekly' && (
+                    if (value === 'Weekly') {
+                      setWeeklyModalVisible(true);
+                    } else if (value === 'Monthly') {
+                      setMonthlyModalVisible(true);
+                    } else if (value === 'Periodically') {
+                      setPeriodicallyModalVisible(true);
+                    }
+                  }}
+                />
+
+                {/* Display selected days for Weekly */}
+                {repeatType === 'Weekly' && selectedDays.length > 0 && (
                   <View>
                     <Text className="text-gray-300 text-sm mb-2" style={{ fontFamily: 'LatoBold' }}>
-                      Select Days
+                      Selected Days: {selectedDays.join(', ')}
                     </Text>
-                    <View className="flex-row flex-wrap gap-2">
-                      {weekDays.map((day) => (
-                        <TouchableOpacity
-                          key={day}
-                          onPress={() => handleDayToggle(day)}
-                          className={`px-3 py-2 rounded-full ${
-                            selectedDays.includes(day) 
-                              ? 'bg-[#815BF5]' 
-                              : 'bg-[#2A2D47] border border-[#676B93]'
-                          }`}
-                        >
-                          <Text 
-                            className={`text-xs ${
-                              selectedDays.includes(day) ? 'text-white' : 'text-gray-400'
-                            }`}
-                            style={{ fontFamily: 'LatoRegular' }}
-                          >
-                            {day.slice(0, 3)}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
                   </View>
                 )}
 
-                {/* Periodically Interval */}
-                {repeatType === 'Periodically' && (
-                  <View className="w-full items-center">
-                    <InputContainer
-                      label="Repeat every (days)"
-                      value={repeatInterval.toString()}
-                      onChangeText={(text) => setRepeatInterval(parseInt(text) || 1)}
-                      placeholder=""
-                      passwordError=""
-                      keyboardType="numeric"
-                    />
+                {/* Display selected dates for Monthly */}
+                {repeatType === 'Monthly' && monthlyDays.length > 0 && (
+                  <View>
+                    <Text className="text-gray-300 text-sm mb-2" style={{ fontFamily: 'LatoBold' }}>
+                      Selected Dates: {monthlyDays.join(', ')}
+                    </Text>
+                  </View>
+                )}
+
+                {/* Display interval for Periodically */}
+                {repeatType === 'Periodically' && repeatInterval > 0 && (
+                  <View>
+                    <Text className="text-gray-300 text-sm mb-2" style={{ fontFamily: 'LatoBold' }}>
+                      Repeat every {repeatInterval} day(s)
+                    </Text>
                   </View>
                 )}
               </View>
@@ -627,7 +686,7 @@ export default function TaskTemplateForm({
 
             {/* Attachments */}
             <TouchableOpacity
-              onPress={() => setShowAttachmentsModal(true)}
+              onPress={() => setShowLinksModal(true)}
               className={`items-center p-3 rounded-xl ${
                 attachments.length > 0 ? 'bg-[#815BF5]' : 'bg-[#2A2D47]'
               }`}
@@ -690,169 +749,28 @@ export default function TaskTemplateForm({
 
         </ScrollView>
 
-        
-        {/* Repeat Type Modal */}
-        <Modal
-          isVisible={showRepeatModal}
-          onBackdropPress={() => setShowRepeatModal(false)}
-          style={{ margin: 20 }}
-        >
-          <View className="bg-[#1A1D36] rounded-2xl p-6">
-            <Text className="text-white text-lg mb-4" style={{ fontFamily: 'LatoBold' }}>
-              Select Repeat Type
-            </Text>
-            
-            {['Daily', 'Weekly', 'Monthly', 'Yearly', 'Periodically'].map((type) => (
-              <TouchableOpacity
-                key={type}
-                onPress={() => {
-                  setRepeatType(type);
-                  setShowRepeatModal(false);
-                }}
-                className={`p-4 rounded-xl mb-2 ${
-                  repeatType === type ? 'bg-[#815BF5]' : 'bg-[#2A2D47]'
-                }`}
-              >
-                <Text className="text-white" style={{ fontFamily: 'LatoRegular' }}>
-                  {type}
-                </Text>
-              </TouchableOpacity>
-            ))}
-
-            <TouchableOpacity
-              onPress={() => setShowRepeatModal(false)}
-              className="bg-[#2A2D47] p-3 rounded-xl mt-4"
-            >
-              <Text className="text-white text-center" style={{ fontFamily: 'LatoBold' }}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </Modal>
-
         {/* Links Modal */}
-        <Modal
-          isVisible={showLinksModal}
-          onBackdropPress={() => setShowLinksModal(false)}
-          style={{ margin: 20 }}
-        >
-          <View className="bg-[#1A1D36] rounded-2xl p-6 max-h-[70%]">
-            <Text className="text-white text-lg mb-4" style={{ fontFamily: 'LatoBold' }}>
-              Add Links
-            </Text>
-            
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {tempLinks.map((link, index) => (
-                <View key={index} className="flex-row items-center mb-3">
-                  <TextInput
-                    value={link}
-                    onChangeText={(text) => {
-                      const newLinks = [...tempLinks];
-                      newLinks[index] = text;
-                      setTempLinks(newLinks);
-                    }}
-                    placeholder="Enter URL"
-                    placeholderTextColor="#676B93"
-                    className="flex-1 bg-[#2A2D47] text-white p-3 rounded-xl mr-2"
-                    style={{ fontFamily: 'LatoRegular' }}
-                  />
-                  <TouchableOpacity
-                    onPress={() => {
-                      if (tempLinks.length > 1) {
-                        setTempLinks(tempLinks.filter((_, i) => i !== index));
-                      }
-                    }}
-                    className="bg-[#FF4757] p-3 rounded-xl"
-                  >
-                    <MaterialIcons name="delete" size={20} color="#FFFFFF" />
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </ScrollView>
+        <AddLinkModal
+          isLinkModalVisible={showLinksModal}
+          setLinkModalVisible={setShowLinksModal}
+          setLinks={setLinks}
+          links={links}
+        />
 
-            <View className="flex-row gap-3 mt-4">
-              <TouchableOpacity
-                onPress={() => setTempLinks([...tempLinks, ''])}
-                className="flex-1 bg-[#2A2D47] p-3 rounded-xl"
-              >
-                <Text className="text-white text-center" style={{ fontFamily: 'LatoBold' }}>
-                  Add More
-                </Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                onPress={handleAddLink}
-                className="flex-1 bg-[#815BF5] p-3 rounded-xl"
-              >
-                <Text className="text-white text-center" style={{ fontFamily: 'LatoBold' }}>
-                  Save Links
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
+        {/* File Modal */}
+        <FileModal
+          isFileModalVisible={showAttachmentsModal}
+          setFileModalVisible={setShowAttachmentsModal}
+          attachments={attachments}
+          setAttachments={setAttachments}
+        />
 
-        {/* Attachments Modal */}
-        <Modal
-          isVisible={showAttachmentsModal}
-          onBackdropPress={() => setShowAttachmentsModal(false)}
-          style={{ margin: 20 }}
-        >
-          <View className="bg-[#1A1D36] rounded-2xl p-6 max-h-[70%]">
-            <Text className="text-white text-lg mb-4" style={{ fontFamily: 'LatoBold' }}>
-              Attachments
-            </Text>
-            
-            <TouchableOpacity
-              onPress={handlePickDocument}
-              className="bg-[#815BF5] p-4 rounded-xl flex-row items-center justify-center mb-4"
-            >
-              <MaterialIcons name="attach-file" size={20} color="#FFFFFF" />
-              <Text className="text-white ml-2" style={{ fontFamily: 'LatoBold' }}>
-                Pick Documents
-              </Text>
-            </TouchableOpacity>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {attachments.map((attachment, index) => (
-                <View key={index} className="flex-row items-center justify-between bg-[#2A2D47] p-3 rounded-xl mb-2">
-                  <Text className="text-white flex-1" style={{ fontFamily: 'LatoRegular' }}>
-                    {attachment.name}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => removeAttachment(index)}
-                    className="ml-2"
-                  >
-                    <MaterialIcons name="delete" size={20} color="#FF4757" />
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </ScrollView>
-
-            <TouchableOpacity
-              onPress={() => setShowAttachmentsModal(false)}
-              className="bg-[#2A2D47] p-3 rounded-xl mt-4"
-            >
-              <Text className="text-white text-center" style={{ fontFamily: 'LatoBold' }}>
-                Done
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </Modal>
-
-        {/* Reminders Modal */}
-        <Modal
-          isVisible={showRemindersModal}
-          onBackdropPress={() => setShowRemindersModal(false)}
-          style={{ margin: 20 }}
-        >
-          <ReminderModal
-            tempReminders={tempReminders}
-            setTempReminders={setTempReminders}
-            onSave={handleSaveReminders}
-            onClose={() => setShowRemindersModal(false)}
-          />
-        </Modal>
+        {/* Reminder Modal */}
+        <ReminderModal
+          isReminderModalVisible={showRemindersModal}
+          setReminderModalVisible={setShowRemindersModal}
+          setAddedReminders={setReminders}
+        />
 
         {/* Audio Modal */}
         <AudioModal
@@ -861,157 +779,78 @@ export default function TaskTemplateForm({
           audioUrl={audioUrl}
           setAudioUrl={setAudioUrl}
         />
+
+        {/* Weekly Modal */}
+        <WeeklyModal
+          isVisible={isWeeklyModalVisible}
+          onClose={() => setWeeklyModalVisible(false)}
+          setWeekDays={setSelectedDays}
+        />
+
+        {/* Monthly Modal */}
+        <MonthlyModal
+          isVisible={isMonthlyModalVisible}
+          onClose={() => setMonthlyModalVisible(false)}
+          setMonthDays={setMonthlyDays}
+        />
+
+        {/* Periodically Modal */}
+        <Modal
+          isVisible={isPeriodicallyModalVisible}
+          onBackdropPress={() => setPeriodicallyModalVisible(false)}
+          style={{ margin: 20 }}
+        >
+          <View className="bg-[#0A0D28] rounded-2xl p-6">
+            <Text className="text-white text-lg mb-4" style={{ fontFamily: 'LatoBold' }}>
+              Set Periodic Interval
+            </Text>
+            <View className="w-full items-center">
+              <InputContainer
+                label="Repeat every (days)"
+                value={repeatInterval.toString()}
+                onChangeText={(text) => setRepeatInterval(parseInt(text) || 1)}
+                placeholder=""
+                passwordError=""
+                keyboardType="numeric"
+                backgroundColor="#0A0D28"
+              />
+            </View>
+            <View className="flex-row justify-between mt-4">
+              <TouchableOpacity
+                onPress={() => setPeriodicallyModalVisible(false)}
+                className="bg-[#2A2D47] p-3 rounded-xl flex-1 mr-2"
+              >
+                <Text className="text-white text-center" style={{ fontFamily: 'LatoBold' }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  if (repeatInterval) {
+                    setPeriodicallyModalVisible(false);
+                  }
+                }}
+                className="bg-[#815BF5] p-3 rounded-xl flex-1 ml-2"
+              >
+                <Text className="text-white text-center" style={{ fontFamily: 'LatoBold' }}>
+                  Save
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Toast Alert - Only for validation errors and category creation within modal */}
+        <ToastAlert
+          visible={showToast}
+          type={toastType}
+          title={toastTitle}
+          message={toastMessage}
+          onHide={() => setShowToast(false)}
+          position="top"
+        />
         </KeyboardAvoidingView>
       </View>
     </Modal>
-  );
-}
-
-// Reminder Modal Component
-interface ReminderModalProps {
-  tempReminders: Reminder[];
-  setTempReminders: (reminders: Reminder[]) => void;
-  onSave: () => void;
-  onClose: () => void;
-}
-
-function ReminderModal({ tempReminders, setTempReminders, onSave, onClose }: ReminderModalProps) {
-  const [reminderType, setReminderType] = useState<'email' | 'whatsapp'>('email');
-  const [timeUnit, setTimeUnit] = useState<'minutes' | 'hours' | 'days'>('minutes');
-  const [value, setValue] = useState('');
-
-  const addReminder = () => {
-    const numValue = parseInt(value);
-    if (!numValue || numValue <= 0) {
-      Alert.alert('Error', 'Please enter a valid number');
-      return;
-    }
-
-    const newReminder: Reminder = {
-      notificationType: reminderType,
-      type: timeUnit,
-      value: numValue
-    };
-
-    const isDuplicate = tempReminders.some(r => 
-      r.notificationType === newReminder.notificationType &&
-      r.type === newReminder.type &&
-      r.value === newReminder.value
-    );
-
-    if (isDuplicate) {
-      Alert.alert('Error', 'Duplicate reminders are not allowed');
-      return;
-    }
-
-    setTempReminders([...tempReminders, newReminder]);
-    setValue('');
-  };
-
-  const removeReminder = (index: number) => {
-    setTempReminders(tempReminders.filter((_, i) => i !== index));
-  };
-
-  return (
-    <View className="bg-[#1A1D36] rounded-2xl p-6 max-h-[70%]">
-      <Text className="text-white text-lg mb-4" style={{ fontFamily: 'LatoBold' }}>
-        Add Reminders
-      </Text>
-      
-      {/* Add Reminder Form */}
-      <View className="mb-4">
-        <View className="flex-row gap-2 mb-3">
-          <View className="flex-1">
-            <Text className="text-gray-300 text-xs mb-1" style={{ fontFamily: 'LatoRegular' }}>
-              Type
-            </Text>
-            <TouchableOpacity
-              onPress={() => setReminderType(reminderType === 'email' ? 'whatsapp' : 'email')}
-              className="bg-[#2A2D47] p-3 rounded-xl"
-            >
-              <Text className="text-white text-center" style={{ fontFamily: 'LatoRegular' }}>
-                {reminderType === 'email' ? 'Email' : 'WhatsApp'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          
-          <View className="w-20">
-            <Text className="text-gray-300 text-xs mb-1" style={{ fontFamily: 'LatoRegular' }}>
-              Value
-            </Text>
-            <TextInput
-              value={value}
-              onChangeText={setValue}
-              placeholder="0"
-              placeholderTextColor="#676B93"
-              keyboardType="numeric"
-              className="bg-[#2A2D47] text-white p-3 rounded-xl text-center"
-              style={{ fontFamily: 'LatoRegular' }}
-            />
-          </View>
-          
-          <View className="flex-1">
-            <Text className="text-gray-300 text-xs mb-1" style={{ fontFamily: 'LatoRegular' }}>
-              Unit
-            </Text>
-            <TouchableOpacity
-              onPress={() => {
-                const units: ('minutes' | 'hours' | 'days')[] = ['minutes', 'hours', 'days'];
-                const currentIndex = units.indexOf(timeUnit);
-                const nextIndex = (currentIndex + 1) % units.length;
-                setTimeUnit(units[nextIndex]);
-              }}
-              className="bg-[#2A2D47] p-3 rounded-xl"
-            >
-              <Text className="text-white text-center" style={{ fontFamily: 'LatoRegular' }}>
-                {timeUnit}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          
-          <TouchableOpacity
-            onPress={addReminder}
-            className="bg-[#815BF5] p-3 rounded-xl justify-center"
-          >
-            <MaterialIcons name="add" size={20} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Reminders List */}
-      <ScrollView showsVerticalScrollIndicator={false} className="mb-4">
-        {tempReminders.map((reminder, index) => (
-          <View key={index} className="flex-row items-center justify-between bg-[#2A2D47] p-3 rounded-xl mb-2">
-            <Text className="text-white" style={{ fontFamily: 'LatoRegular' }}>
-              {reminder.notificationType} - {reminder.value} {reminder.type}
-            </Text>
-            <TouchableOpacity onPress={() => removeReminder(index)}>
-              <MaterialIcons name="delete" size={20} color="#FF4757" />
-            </TouchableOpacity>
-          </View>
-        ))}
-      </ScrollView>
-
-      {/* Action Buttons */}
-      <View className="flex-row gap-3">
-        <TouchableOpacity
-          onPress={onClose}
-          className="flex-1 bg-[#2A2D47] p-3 rounded-xl"
-        >
-          <Text className="text-white text-center" style={{ fontFamily: 'LatoBold' }}>
-            Cancel
-          </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          onPress={onSave}
-          className="flex-1 bg-[#815BF5] p-3 rounded-xl"
-        >
-          <Text className="text-white text-center" style={{ fontFamily: 'LatoBold' }}>
-            Save Reminders
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
   );
 }

@@ -19,12 +19,15 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import * as Haptics from 'expo-haptics'; // Import Haptics
+import LoadingZapllo from '~/components/LoadingZapllo';
 
 const Tab = createBottomTabNavigator();
 
 export default function TasksScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
-  // Removed isAiModalVisible since we'll navigate to AiSuggestionScreen instead
+  const [currentTab, setCurrentTab] = useState('Dashboard'); // Track current active tab
+  const [showDataLoading, setShowDataLoading] = useState(true); // Show loading only when data is being fetched
+  // Removed isAiModalVisible since we'll navigate to it instead of using as modal
 
   const navigation = useNavigation<StackNavigationProp<any>>();
   const fabLabelAnim = useRef(new Animated.Value(0)).current;
@@ -38,6 +41,7 @@ export default function TasksScreen() {
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
+        setShowDataLoading(true); // Show loading when starting data fetch
         const response = await fetch('https://zapllo.com/api/users/organization');
         const data = await response.json();
         
@@ -71,6 +75,7 @@ export default function TasksScreen() {
         setIsAdmin(reduxAdminStatus);
       } finally {
         setIsLoading(false);
+        setShowDataLoading(false); // Hide loading when data fetch is complete
       }
     };
     
@@ -104,8 +109,21 @@ export default function TasksScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
 
+  // Direct navigation to home without loading screen
+  const navigateToHome = () => {
+    router.push('/(routes)/home');
+  };
+
   return (
     <View style={{ flex: 1 }} className='bg-primary'>
+      {/* Data Loading when fetching user role */}
+      <LoadingZapllo 
+        isVisible={showDataLoading}
+        size="large"
+        showText={true}
+      />
+
+      
       <Tab.Navigator
         initialRouteName="Dashboard"
         screenOptions={({ route }) => ({
@@ -172,6 +190,7 @@ export default function TasksScreen() {
           listeners={{
             tabPress: () => {
               triggerHapticFeedback();
+              setCurrentTab('Dashboard');
             },
           }}
         />
@@ -181,6 +200,7 @@ export default function TasksScreen() {
           listeners={{
             tabPress: () => {
               triggerHapticFeedback();
+              setCurrentTab('My Task');
             },
           }}
         />
@@ -188,8 +208,11 @@ export default function TasksScreen() {
           name="Home Screen" 
           component={HomeScreen} 
           listeners={{
-            tabPress: () => {
+            tabPress: (e) => {
+              e.preventDefault(); // Prevent default tab navigation
               triggerHapticFeedback();
+              // Direct navigation without loading screen
+              navigateToHome();
             },
           }}
         />
@@ -199,6 +222,7 @@ export default function TasksScreen() {
           listeners={{
             tabPress: () => {
               triggerHapticFeedback();
+              setCurrentTab('Delegated Task');
             },
           }}
         />
@@ -217,15 +241,18 @@ export default function TasksScreen() {
         )}
       </Tab.Navigator>
 
-      <AllTaskModalScreen
-        isVisible={isModalVisible}
-        onClose={() => setModalVisible(false)}
-      />
+      {/* Hide AllTaskModalScreen when on My Apps tab */}
+      {currentTab !== 'Home Screen' && (
+        <AllTaskModalScreen
+          isVisible={isModalVisible}
+          onClose={() => setModalVisible(false)}
+        />
+      )}
 
       {/* Removed AiSuggestionScreen modal since we now navigate to it as a proper screen */}
 
-       {/* Ai suggestion button - Only visible to admin users */}
-      {isAdmin && (
+       {/* Ai suggestion button - Only visible to admin users and hidden on My Apps tab */}
+      {isAdmin && currentTab !== 'Home Screen' && (
         <View style={styles.fabContainerAi}>
             <TouchableOpacity
               style={styles.fab}
@@ -248,59 +275,61 @@ export default function TasksScreen() {
       )}
 
       {/* Assign task button */}
-      <View style={styles.fabContainer}>
-        {showFabLabel && (
+      {isAdmin && currentTab !== 'Home Screen' && (      
+        <View style={styles.fabContainer}>
+          {showFabLabel && (
+            <Animated.View 
+              style={[
+                styles.fabLabelContainer,
+                {
+                  opacity: fabLabelAnim,
+                  transform: [
+                    { translateX: fabLabelAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [20, 0]
+                      })
+                    }
+                  ]
+                }
+              ]}
+            >
+              <LinearGradient
+                colors={['#ebdba5', '#d7ae48']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.fabLabel}
+              >
+                <MaterialIcons name='assignment-add' size={20} color={"000000"}/>
+                <Text style={styles.fabLabelText}>Assign a task</Text>
+              </LinearGradient>
+            </Animated.View>
+          )}
+          
           <Animated.View 
-            style={[
-              styles.fabLabelContainer,
-              {
-                opacity: fabLabelAnim,
-                transform: [
-                  { translateX: fabLabelAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [20, 0]
-                    })
-                  }
-                ]
-              }
-            ]}
-          >
-            <LinearGradient
-              colors={['#ebdba5', '#d7ae48']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.fabLabel}
-            >
-              <MaterialIcons name='assignment-add' size={20} color={"000000"}/>
-              <Text style={styles.fabLabelText}>Assign a task</Text>
-            </LinearGradient>
-          </Animated.View>
-        )}
-        
-        <Animated.View 
-          style={{
-            transform: [{ scale: fabAnim }]
-          }}
-        >
-          <TouchableOpacity
-            style={styles.fab}
-            onPress={() => {
-              triggerHapticFeedback(); // Add haptic feedback to FAB
-              router.push('/(routes)/HomeComponent/Tasks/AssignTask/AssignTaskScreen');
+            style={{
+              transform: [{ scale: fabAnim }]
             }}
-            activeOpacity={0.8}
           >
-            <LinearGradient
-              colors={['#FC8929', '#f0be95']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.fabGradient}
+            <TouchableOpacity
+              style={styles.fab}
+              onPress={() => {
+                triggerHapticFeedback(); // Add haptic feedback to FAB
+                router.push('/(routes)/HomeComponent/Tasks/AssignTask/AssignTaskScreen');
+              }}
+              activeOpacity={0.8}
             >
-              <MaterialIcons name="add" size={28} color="#FFFFFF" />
-            </LinearGradient>
-          </TouchableOpacity>
-        </Animated.View>
-      </View>
+              <LinearGradient
+                colors={['#FC8929', '#f0be95']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.fabGradient}
+              >
+                <MaterialIcons name="add" size={28} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+       )}
     </View>
   );
 }

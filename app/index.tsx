@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { View, ActivityIndicator, Text } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "~/redux/store";
-import * as SecureStore from 'expo-secure-store';
 import { logIn } from '~/redux/slices/authSlice';
+import TokenStorage from '~/utils/tokenStorage';
 
 export default function Index() {
     const [isLoading, setIsLoading] = useState(true);
@@ -17,34 +17,28 @@ export default function Index() {
             try {
                 console.log("Checking auth status...");
                 
-                // Check if this is the first time launching the app
-                const hasCompletedOnboarding = await SecureStore.getItemAsync('hasCompletedOnboarding');
+                // Check if this is the first time launching the app using TokenStorage
+                const hasCompletedOnboarding = await TokenStorage.hasCompletedOnboarding();
                 
-                // Check for stored token and user data in SecureStore
-                const storedToken = await SecureStore.getItemAsync('authToken');
-                const storedUserDataString = await SecureStore.getItemAsync('userData');
+                // Check for stored token and user data using TokenStorage
+                const { token: storedToken, userData: storedUserData } = await TokenStorage.getAuthData();
                 
                 console.log("Stored token exists:", !!storedToken);
-                console.log("Stored user data exists:", !!storedUserDataString);
+                console.log("Stored user data exists:", !!storedUserData);
                 console.log("Redux token exists:", !!token);
                 console.log("Has completed onboarding:", hasCompletedOnboarding);
                 
-                // If we have a token and user data in SecureStore but not in Redux, restore them
-                if (storedToken && storedUserDataString && !token) {
-                    console.log("Restoring token and user data from SecureStore to Redux");
-                    try {
-                        const userData = JSON.parse(storedUserDataString);
-                        dispatch(logIn({ token: storedToken, userData: userData }));
-                    } catch (parseError) {
-                        console.error("Error parsing stored user data:", parseError);
-                    }
+                // If we have auth data in storage but not in Redux, restore them
+                if (storedToken && storedUserData && !token) {
+                    console.log("Restoring token and user data from AsyncStorage to Redux");
+                    dispatch(logIn({ token: storedToken, userData: storedUserData }));
                 }
                 
                 if (token || storedToken) {
                     // User is authenticated, redirect to home
                     console.log("Redirecting to home: token exists");
                     setRedirectPath("/(routes)/home");
-                } else if (!hasCompletedOnboarding ) {
+                } else if (!hasCompletedOnboarding) {
                     // First time user, show onboarding
                     console.log("Redirecting to onboarding: first time user");
                     setRedirectPath("/(routes)/onboarding");
@@ -53,6 +47,10 @@ export default function Index() {
                     console.log("Redirecting to login: no token");
                     setRedirectPath("/(routes)/login");
                 }
+                
+                // Debug: Print auth data for troubleshooting
+                await TokenStorage.debugPrintAuthData();
+                
             } catch (error) {
                 console.error("Error checking authentication status:", error);
                 // Fallback to login on error for security

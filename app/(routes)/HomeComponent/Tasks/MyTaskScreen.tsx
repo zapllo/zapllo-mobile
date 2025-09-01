@@ -27,6 +27,7 @@ import TaskStatusCard from '~/components/card/TaskStatusCard';
 import TaskCard from '~/components/TaskComponents/TaskCard';
 import { MyTasksStackParamList } from '~/screens/Task/myTask/MyTaskStack';
 import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
+import UserAvatar from '~/components/profile/UserAvatar';
 interface Task {
   _id: string;
   status: string;
@@ -312,7 +313,7 @@ export default function MyTaskScreen() {
                     <Text className="text-white " style={{ fontFamily: 'LatoBold' }}>Overdue Tasks</Text>
                     <Text className="text-xs text-white">{formattedDateRange}</Text>
                   </View>
-                  <Text className="mt-2  text-5xl text-white " style={{ fontFamily: 'LatoBold' }}>
+                  <Text className="mt-2 text-white text-5xl " style={{ fontFamily: 'LatoBold'}}>
                     {taskCounts.Overdue}
                   </Text>
                   <View className={`flex w-full flex-row items-center justify-between ${screenHeight > 900 ? 'pt-7' : 'pt-5'
@@ -324,14 +325,17 @@ export default function MyTaskScreen() {
                         .map((task, index) => (
                           <View key={task._id} className="relative rounded-full flex flex-row ">
                             <View
-                              className="-m-2 flex h-11 w-11 items-center justify-center rounded-full border-2"
+                              className="-m-2 h-11 w-11 items-center justify-center rounded-full border-2 overflow-hidden"
                               style={{
                                 borderColor: '#CE423B',
-                                backgroundColor: colors[index % colors.length], // Set background color
                               }}>
-                              <Text className="text-center text-sm  text-black">
-                                {getInitials(task?.assignedUser)} {/* Display initials */}
-                              </Text>
+                              <UserAvatar
+                                size={38}
+                                borderColor="transparent"
+                                userId={(task as any)?.assignedUser?._id}
+                                name={`${((task as any)?.assignedUser?.firstName || '')} ${((task as any)?.assignedUser?.lastName || '')}`.trim()}
+                                imageUrl={(task as any)?.assignedUser?.profilePic}
+                              />
                             </View>
                           </View>
                         ))}
@@ -343,7 +347,7 @@ export default function MyTaskScreen() {
                             style={{
                               backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
                             }}>
-                            <Text className="text-center font-medium text-black">
+                            <Text className="text-center text-black" style={{ fontSize: 10, fontFamily: 'LatoBold' }}>
                               +{tasks.filter((task) => new Date(task.dueDate) < today && task.status !== 'Completed').length - 2}
                             </Text>
                           </View>
@@ -428,7 +432,7 @@ export default function MyTaskScreen() {
                   <Text className="text-white " style={{ fontFamily: 'LatoBold' }}>Completed Tasks</Text>
                   <Text className="text-xs text-white">{formattedDateRange}</Text>
                 </View>
-                <Text className="mt-2  text-5xl text-white " style={{ fontFamily: 'LatoBold' }}>
+                <Text className="mt-2 text-white text-5xl" style={{ fontFamily: 'LatoBold'}}>
                   {taskCounts.Completed}
                 </Text>
 
@@ -441,14 +445,17 @@ export default function MyTaskScreen() {
                       .map((task, index) => (
                         <View key={task._id} className="relative rounded-full flex flex-row ">
                           <View
-                            className="-m-2 flex h-11 w-11 items-center justify-center rounded-full border-2"
+                            className="-m-2 h-11 w-11 items-center justify-center rounded-full border-2 overflow-hidden"
                             style={{
                               borderColor: '#007B5B',
-                              backgroundColor: colors[index % colors.length], // Set background color
                             }}>
-                            <Text className="text-center text-sm  text-black">
-                              {getInitials(task?.assignedUser)} {/* Display initials */}
-                            </Text>
+                            <UserAvatar
+                              size={38}
+                              borderColor="transparent"
+                              userId={(task as any)?.assignedUser?._id}
+                              name={`${((task as any)?.assignedUser?.firstName || '')} ${((task as any)?.assignedUser?.lastName || '')}`.trim()}
+                              imageUrl={(task as any)?.assignedUser?.profilePic}
+                            />
                           </View>
                         </View>
                       ))}
@@ -459,7 +466,7 @@ export default function MyTaskScreen() {
                           style={{
                             backgroundColor: colors[2 % colors.length], // Assign a color for the + circle
                           }}>
-                          <Text className="text-center font-medium text-black">
+                          <Text className="text-center text-black" style={{ fontSize: 10, fontFamily: 'LatoBold' }}>
                             +{tasks.filter((task) => task.status === 'Completed').length - 2}
                           </Text>
                         </View>

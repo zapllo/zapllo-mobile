@@ -657,7 +657,12 @@ export default function AssignTaskScreen() {
             ) : (
               ''
             )}
-            <View className="relative">
+            <TouchableOpacity 
+                onPress={() => {
+                  setShowPicker(true);
+                  setMode('date'); // Start with date picker
+                }}            
+            className="relative">
               <TouchableOpacity
                 onPress={() => {
                   setShowPicker(true);
@@ -674,6 +679,10 @@ export default function AssignTaskScreen() {
                   passwordError={''}
                   style={{ paddingEnd: 45 }}
                   editable={false} // Make the input non-editable
+                  onPress={() => {
+                  setShowPicker(true);
+                  setMode('date'); // Start with date picker
+                }}
                 />
               </TouchableOpacity>
               <TouchableOpacity
@@ -708,7 +717,7 @@ export default function AssignTaskScreen() {
                   style={{ backgroundColor: '#191B3A' }} 
                 />
               )}
-            </View>
+            </TouchableOpacity>
 
             <View className=" mt-6 flex w-[90%] flex-row items-center gap-3">
               <TouchableOpacity  onPress={() => setLinkModalVisible(true)}>

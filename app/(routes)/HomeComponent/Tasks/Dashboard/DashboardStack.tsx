@@ -4,6 +4,7 @@ import DashboardScreen from "./DashboardScreen";
 import EmployeeWiseScreen from "~/screens/Task/EmployeeWise.screen";
 import MyReportScreen from "~/screens/Task/MyReportScreen";
 import CategoryWiseScreen from "~/screens/Task/CategoryWiseScreen";
+import CategoryTasksScreen from "~/screens/Task/CategoryTasksScreen";
 import DelegatedScreen from "~/screens/Task/delegatedTask/DelegatedScreen";
 
 // Define the TaskStatus type
@@ -64,8 +65,8 @@ export type DashboardStackParamList = {
   EmployeeWise: { employeeWiseData: Task[] };
   MyReports: { employeeWiseData: Task[] };
   CategoryWise: { employeeWiseData: Task[] };
+  CategoryTasks: { categoryData: any; categoryName: string };
   Delegated: { employeeWiseData: Task[] };
-
 };
 
 const Stack = createStackNavigator<DashboardStackParamList>();
@@ -78,9 +79,8 @@ const DashboardStack = () => {
       <Stack.Screen name="EmployeeWise" component={EmployeeWiseScreen}/>
       <Stack.Screen name="MyReports" component={MyReportScreen}/>
       <Stack.Screen name="CategoryWise" component={CategoryWiseScreen}/>
+      <Stack.Screen name="CategoryTasks" component={CategoryTasksScreen}/>
       <Stack.Screen name="Delegated" component={DelegatedScreen}/>
-
-
     </Stack.Navigator>
   );
 };

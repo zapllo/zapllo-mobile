@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 
 type TaskStatus = 'Pending' | 'InProgress' | 'Completed'; // Add other statuses as needed
 
@@ -7,9 +7,12 @@ type TaskStatus = 'Pending' | 'InProgress' | 'Completed'; // Add other statuses 
 interface Task {
   _id: string; // Assuming tasks have an ID
   status: TaskStatus;
+  title?: string;
   assignedUser: {
     firstName?: string;
     lastName?: string;
+    profilePic?: string;
+    _id?: string;
   };
   // Add other properties of a task as needed
 }
@@ -41,6 +44,77 @@ const TaskCard: React.FC<TaskCardProps> = ({
     return firstInitial + lastInitial;
   };
 
+  const getFirstWord = (text?: string): string => {
+    if (!text) return '';
+    const word = text.trim().split(/\s+/)[0] || '';
+    return word.length > 12 ? word.slice(0, 12) : word;
+  };
+
+  const AvatarWithLoader = ({
+    name,
+    title,
+    imageUrl,
+    borderColor,
+  }: {
+    name: string;
+    title?: string;
+    imageUrl?: string;
+    borderColor: string;
+  }) => {
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<boolean>(false);
+
+    const firstNameWord = getFirstWord(name || '');
+    const titleWord = getFirstWord(title || '');
+
+    const showFallback = !imageUrl || error;
+
+    return (
+      <View
+        className="-m-1.5 h-10 w-10 items-center justify-center rounded-full border-2 overflow-hidden"
+        style={{ borderColor }}
+      >
+        {!showFallback ? (
+          <>
+            <Image
+              source={{ uri: imageUrl as string }}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="cover"
+              onLoadStart={() => setLoading(true)}
+              onLoadEnd={() => setLoading(false)}
+              onError={() => {
+                setLoading(false);
+                setError(true);
+              }}
+            />
+            {loading && (
+              <View style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.1)' }}>
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              </View>
+            )}
+          </>
+        ) : (
+          <View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+            <Text
+              className="text-black"
+              style={{ fontFamily: 'LatoBold', fontSize: 9 }}
+              numberOfLines={1}
+            >
+              {firstNameWord}
+            </Text>
+            <Text
+              className="text-black"
+              style={{ fontFamily: 'Lato-Thin', fontSize: 8, opacity: 0.9 }}
+              numberOfLines={1}
+            >
+              {titleWord}
+            </Text>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return (
     <>
       <View className="flex items-start ">
@@ -58,18 +132,12 @@ const TaskCard: React.FC<TaskCardProps> = ({
               .slice(0, 2)
               .map((task, index) => (
                 <View key={task._id} className="relative flex flex-row">
-                  <View
-                    className="-m-1.5 flex h-10 w-10 items-center justify-center rounded-full border-2"
-                    style={{
-                      borderColor,
-                      backgroundColor: colors[index % colors.length],
-                    }}>
-                    <Text className="text-center text-sm text-black"
-                    style={{ fontFamily: 'Lato-Thin' }}
-                    >
-                      {task?.assignedUser ? getInitials(task?.assignedUser) : '0'}
-                    </Text>
-                  </View>
+                  <AvatarWithLoader
+                    name={`${(task?.assignedUser?.firstName || '')} ${(task?.assignedUser?.lastName || '')}`.trim()}
+                    title={task?.title}
+                    imageUrl={task?.assignedUser?.profilePic}
+                    borderColor={borderColor}
+                  />
                 </View>
               ))}
             {tasks.filter((task) => task.status === status).length > 2 && (

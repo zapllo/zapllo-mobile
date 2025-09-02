@@ -192,7 +192,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({
           {!isKeyboardVisible &&
             <TouchableOpacity
               onPress={uploadDocuments}
-              className="mb-10 flex h-[4rem] items-center justify-center rounded-full bg-[#37384B] p-5">
+              className="mb-10 flex h-[4rem] items-center justify-center rounded-full bg-[#815BF5] p-5">
               <Text
                 className="text-center font-semibold text-white"
                 style={{ fontFamily: 'Lato-Bold' }}>

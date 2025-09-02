@@ -23,7 +23,7 @@ import Checkbox from '~/components/Checkbox'
 import CustomAlert from '~/components/CustomAlert/CustomAlert'
 import InputContainer from '~/components/InputContainer'
 import { GradientText } from '~/components/GradientText'
-import * as SecureStore from 'expo-secure-store'
+import TokenStorage from '~/utils/tokenStorage'
 
 export default function Loginscreen() {
   const dispatch = useDispatch()
@@ -38,6 +38,10 @@ export default function Loginscreen() {
   const [alertType, setAlertType] = useState<'success' | 'error'>('success')
 
   const theme = useTheme()
+
+  // Button color changes only when: checkbox checked, valid email, and password filled
+  const isValidEmail = (email: string) => /^(?:[A-Z0-9._%+-]+)@(?:[A-Z0-9.-]+)\.(?:[A-Z]{2,})$/i.test(email.trim());
+  const isFormReady = isChecked && isValidEmail(userInfo.email) && userInfo.password.trim().length > 0;
 
   const handleLogin = async () => {
     if (!userInfo.email || !userInfo.password || !isChecked) return
@@ -62,17 +66,17 @@ export default function Loginscreen() {
         // Dispatch login action with token and complete user data
         dispatch(logIn({ token: token, userData: userData }));
         
-        // Store token in SecureStore for persistence
-        await SecureStore.setItemAsync('authToken', token);
-        
-        // Also store user data in SecureStore as a backup
-        await SecureStore.setItemAsync('userData', JSON.stringify(userData));
+        // Store auth data using TokenStorage utility for consistent storage
+        await TokenStorage.setAuthData(token, userData);
         
         // Set login and onboarding flags
-        await SecureStore.setItemAsync('hasCompletedLogin', 'true');
-        await SecureStore.setItemAsync('hasCompletedOnboarding', 'true');
+        await TokenStorage.setLoginCompleted(true);
+        await TokenStorage.setOnboardingCompleted(true);
         
         console.log('Login successful, user data stored:', userData);
+        
+        // Debug: Print stored auth data
+        await TokenStorage.debugPrintAuthData();
         
         // Navigate to home screen
         router.push('/(routes)/home')
@@ -171,7 +175,7 @@ export default function Loginscreen() {
           marginBottom={4}
           marginTop={12}
           size={20}
-          backgroundColor={isChecked ? '$primary' : '$border'}
+          backgroundColor={isFormReady ? '$primary' : '$border'}
           pressStyle={{ opacity: 0.8 }}
           onPress={handleLogin}
           borderRadius="$lg"

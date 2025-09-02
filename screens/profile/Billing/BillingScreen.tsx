@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, SafeAreaView, ScrollView, TouchableOpacity, Image, Platform, Linking, Alert } from "react-native";
+import { StyleSheet, Text, View, SafeAreaView, ScrollView, TouchableOpacity, Image, Platform, Linking, Alert, Modal } from "react-native";
 import React, { useState, useEffect } from "react";
 import NavbarTwo from "~/components/navbarTwo";
 import { router, useNavigation } from "expo-router";
@@ -6,7 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { KeyboardAvoidingView } from "react-native";
 import InputContainer from "~/components/InputContainer";
-import Modal from 'react-native-modal';
+
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
@@ -348,31 +348,32 @@ export default function BillingScreen() {
         />
 
           <Modal
-            isVisible={paymentBack}
-            onBackdropPress={() => setpaymentBack(false)}
-            style={{ margin: 0, justifyContent: 'flex-end' }}
-            animationIn="slideInUp"
-            animationOut="slideOutDown">
-            <View className="mb-10 mt-2 flex w-full flex-col items-center justify-center">
-              <View className=" mb-2 w-[95%]  items-center rounded-2xl bg-[#14173b] p-4 ">
-                <TouchableOpacity
-                onPress={() => setpaymentBack(false)}
+            visible={paymentBack}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={() => setpaymentBack(false)}>
+            <View className="flex-1 bg-black/50 justify-end">
+              <View className="mb-10 mt-2 flex w-full flex-col items-center justify-center">
+                <View className=" mb-2 w-[95%]  items-center rounded-2xl bg-[#14173b] p-4 ">
+                  <TouchableOpacity
+                  onPress={() => setpaymentBack(false)}
+                    
+                    className="w-full items-center rounded-2xl  ">
+                    <Text className="text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
+                      Stay here
+                    </Text>
+                  </TouchableOpacity>
                   
-                  className="w-full items-center rounded-2xl  ">
+                </View>
+
+                <TouchableOpacity
+                  className=" mt-3 w-[95%] items-center rounded-2xl bg-[#14173b] p-3 "
+                  onPress={() => router.back()}>
                   <Text className="text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
-                    Stay here
+                    Back to Zapllo
                   </Text>
                 </TouchableOpacity>
-                
               </View>
-
-              <TouchableOpacity
-                className=" mt-3 w-[95%] items-center rounded-2xl bg-[#14173b] p-3 "
-                onPress={() => router.back()}>
-                <Text className="text-lg text-white" style={{ fontFamily: 'LatoBold' }}>
-                  Back to Zapllo
-                </Text>
-              </TouchableOpacity>
             </View>
           </Modal>        
       </SafeAreaView>
@@ -421,16 +422,16 @@ export default function BillingScreen() {
             </View>
             {/* Modal for  recharge */}
             <Modal
-              animationIn="slideInUp"
-              animationOut="slideOutDown"
-              isVisible={modalVisible}
-              onBackdropPress={() => setModalVisible(false)}
-              style={{ margin: 0, justifyContent: 'flex-end' }}
+              visible={modalVisible}
+              animationType="slide"
+              transparent={true}
+              onRequestClose={() => setModalVisible(false)}
             >
-              <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1, justifyContent: 'flex-end' }}>
-                <View className="rounded-t-3xl bg-[#0A0D28] p-5">
+              <View className="flex-1 bg-black/50 justify-end">
+                <KeyboardAvoidingView
+                  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                  style={{ flex: 1, justifyContent: 'flex-end' }}>
+                  <View className="rounded-t-3xl bg-[#0A0D28] p-5">
                   <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
                     <Text className="text-xl font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>Recharge Wallet</Text>
                     <TouchableOpacity onPress={() => setModalVisible(false)}>
@@ -447,25 +448,26 @@ export default function BillingScreen() {
                     backgroundColor="#0A0D28"
                   />
                   <Text className="text-white text-xs ml-5 mb-5" style={{ fontFamily: 'LatoLight' }}>Recharge Amount (minimum ₹5000)</Text>
-                  <TouchableOpacity className="w-full items-center bg-[#017A5B] p-4 rounded-full mb-4" onPress={handleNextPress}>
+                  <TouchableOpacity className="w-full items-center bg-[#815BF5] p-4 rounded-full mb-4" onPress={handleNextPress}>
                     <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>Next</Text>
                   </TouchableOpacity>
-                </View>
-              </KeyboardAvoidingView>
+                  </View>
+                </KeyboardAvoidingView>
+              </View>
             </Modal>
 
             {/* Modal for Payment Details for recharge */}
             <Modal
-              animationIn="slideInUp"
-              animationOut="slideOutDown"
-              isVisible={paymentDetailsVisible}
-              onBackdropPress={() => setPaymentDetailsVisible(false)}
-              style={{ margin: 0, justifyContent: 'flex-end' }}
+              visible={paymentDetailsVisible}
+              animationType="slide"
+              transparent={true}
+              onRequestClose={() => setPaymentDetailsVisible(false)}
             >
-              <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1, justifyContent: 'flex-end' }}>
-                <View className="rounded-t-3xl bg-[#0A0D28] p-5">
+              <View className="flex-1 bg-black/50 justify-end">
+                <KeyboardAvoidingView
+                  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                  style={{ flex: 1, justifyContent: 'flex-end' }}>
+                  <View className="rounded-t-3xl bg-[#0A0D28] p-5">
                   <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
                     <Text className="text-xl font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>Payment Details</Text>
                   </View>
@@ -484,31 +486,33 @@ export default function BillingScreen() {
                   />
                   <View className="flex items-center gap-5 flex-row justify-center mt-8 mb-4">
                     <TouchableOpacity
-                      className="bg-[#6b7280] p-4 w-1/3 rounded-md items-center"
+                      className="bg-[#37384B] p-4 w-1/3 rounded-md items-center"
                       onPress={handleBackPress}
                     >
                       <Text className="text-white text-sm" style={{ fontFamily: 'LatoBold' }}>Back</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      className="bg-[#017A5B] p-4 rounded-md items-center w-1/2"
+                      className="bg-[#815BF5] p-4 rounded-md items-center w-1/2"
                       onPress={handlePayment}
                     >
                       <Text className="text-white text-sm" style={{ fontFamily: 'LatoBold' }}>Proceed to Payment</Text>
                     </TouchableOpacity>
                   </View>
-                </View>
-              </KeyboardAvoidingView>
+                  </View>
+                </KeyboardAvoidingView>
+              </View>
             </Modal>
 
             <Modal
-              isVisible={messageVisible}
-              animationIn="fadeIn"
-              animationOut="fadeOut"
-              backdropOpacity={0.3}
-              style={{ justifyContent: 'flex-start', margin: 0 }}
+              visible={messageVisible}
+              animationType="fade"
+              transparent={true}
+              onRequestClose={() => setMessageVisible(false)}
             >
-              <View style={styles.messageModal}>
-                <Text style={styles.messageText}>Recharge amount must be at least: ₹5000</Text>
+              <View className="flex-1 bg-black/30 justify-start">
+                <View style={styles.messageModal}>
+                  <Text style={styles.messageText}>Recharge amount must be at least: ₹5000</Text>
+                </View>
               </View>
             </Modal>
 
@@ -565,7 +569,7 @@ export default function BillingScreen() {
                           width: '100%',
                           padding: 24,
                           borderRadius: 21,
-                          backgroundColor: subscribedPlan === planName ? "#000000" : "#0A0D28"
+                          backgroundColor: subscribedPlan === planName ? "#0A0D28" : "#0A0D28"
                         }}
                       >
                         <Text className="text-white text-lg font-bold mb-7">{planName}</Text>
@@ -591,16 +595,17 @@ export default function BillingScreen() {
                             <Text className="text-white mt-4">Subscribed Users: {subscribedUserCount}</Text>
                             <Text className="text-white mt-2">Renews On: {formatDate(renewsOn)}</Text>
                             <TouchableOpacity
-                              className="w-full my-9 rounded-full py-4 items-center border border-[#A485FF]"
-                              onPress={handleAddUsers} // Add users to existing subscription
+                              className="w-full my-9 rounded-full py-4 items-center justify-center flex-row border border-[#A485FF]"
+                              onPress={handleAddUsers}
                             >
+                              <AntDesign name="adduser" size={16} color="white" style={{ marginRight: 8 }} />
                               <Text className="text-white">Add Users</Text>
                             </TouchableOpacity>
                           </View>
                         ) : (
                           <TouchableOpacity
                             className="w-full my-9 rounded-full py-4 items-center border border-[#A485FF]"
-                            onPress={() => handleSubscribe(planName)} // Subscribe to a new plan
+                            onPress={() => handleSubscribe(planName)}
                           >
                             <Text className="text-white">Subscribe</Text>
                           </TouchableOpacity>
@@ -623,12 +628,56 @@ export default function BillingScreen() {
 
                       {/* Feature List */}
                       <View className="w-full flex flex-col gap-4 mt-4">
-                        {planFeatures[planName].map((feature: string, index: number) => (
-                          <View key={index} className="flex flex-row items-center gap-2">
-                            <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")} />
-                            <Text className="text-white">{feature}</Text>
+                        {planName === "Money Saver Bundle" ? (
+                          <View>
+                            <Text className="text-[#815BF5] text-base mb-3" style={{ fontFamily: 'LatoBold' }}>Zapllo Payroll (Leave & Attendance App)</Text>
+                            {[
+                              "Easy Attendance Marking using Geo location & Face recognition",
+                              "Easy Leave application", 
+                              "Attendance & Leave Tracking",
+                              "Reports / Dashboards",
+                              "WhatsApp & Email Notifications",
+                              "Automatic WhatsApp Reminders",
+                              "Approval Process",
+                              "Regularization Process",
+                              "Multiple login & Logouts",
+                              "Custom Leave Types"
+                            ].map((feature: string, index: number) => (
+                              <View key={index} className="flex flex-row items-center gap-2 mb-2">
+                                <Image className="w-4 h-4" source={require("../../../assets/Billing/right.png")} />
+                                <Text className="text-white text-xs" style={{ fontFamily: 'LatoRegular' }}>{feature}</Text>
+                              </View>
+                            ))}
+                            
+                            <Text className="text-[#815BF5] text-base mb-3 mt-4" style={{ fontFamily: 'LatoBold' }}>Zapllo Payslip & Salary Tracking</Text>
+                            {[
+                              "Update Salary Details",
+                              "Dynamic Payslip Generation", 
+                              "Custom Letterhead",
+                              "Employee Information Updates",
+                              "Shareable & Downloadable Payslips",
+                              "Automated Email & WhatsApp Delivery"
+                            ].map((feature: string, index: number) => (
+                              <View key={index} className="flex flex-row items-center gap-2 mb-2">
+                                <Image className="w-4 h-4" source={require("../../../assets/Billing/right.png")} />
+                                <Text className="text-white text-xs" style={{ fontFamily: 'LatoRegular' }}>{feature}</Text>
+                              </View>
+                            ))}
+                            
+                            <Text className="text-[#815BF5] text-base mb-3 mt-4" style={{ fontFamily: 'LatoBold' }}>Task Delegation App</Text>
+                            <View className="flex flex-row items-center gap-2 mb-2">
+                              <Image className="w-4 h-4" source={require("../../../assets/Billing/right.png")} />
+                              <Text className="text-white text-xs" style={{ fontFamily: 'LatoRegular' }}>Every feature from task delegation app included</Text>
+                            </View>
                           </View>
-                        ))}
+                        ) : (
+                          planFeatures[planName].map((feature: string, index: number) => (
+                            <View key={index} className="flex flex-row items-center gap-2">
+                              <Image className="w-6 h-6" source={require("../../../assets/Billing/right.png")} />
+                              <Text className="text-white">{feature}</Text>
+                            </View>
+                          ))
+                        )}
                       </View>
 
                       {subscribedPlan === planName ? (
@@ -636,16 +685,17 @@ export default function BillingScreen() {
                           <Text className="text-white mt-4">Subscribed Users: {subscribedUserCount}</Text>
                           <Text className="text-white mt-2">Renews On: {formatDate(renewsOn)}</Text>
                           <TouchableOpacity
-                            className="w-full my-9 rounded-full py-4 items-center border border-[#A485FF]"
-                            onPress={handleAddUsers} // Add users to existing subscription
+                            className="w-full my-9 rounded-full py-4 items-center justify-center flex-row border border-[#A485FF]"
+                            onPress={handleAddUsers}
                           >
+                            <AntDesign name="adduser" size={16} color="white" style={{ marginRight: 8 }} />
                             <Text className="text-white">Add Users</Text>
                           </TouchableOpacity>
                         </View>
                       ) : (
                         <TouchableOpacity
                           className="w-full my-9 rounded-full py-4 items-center border border-[#A485FF]"
-                          onPress={() => handleSubscribe(planName)} // Subscribe to a new plan
+                          onPress={() => handleSubscribe(planName)}
                         >
                           <Text className="text-white">Subscribe</Text>
                         </TouchableOpacity>
@@ -674,18 +724,17 @@ export default function BillingScreen() {
 
       {/* Modal for MONEY SAVER 2999*/}
       <Modal
-              isVisible={addUsersModalVisible}
-              onBackdropPress={() => setAddUsersModalVisible(false)}
-              animationIn="fadeIn"
-              animationOut="fadeOut"
-              backdropOpacity={0.3}
-              style={{ justifyContent: "flex-start", margin: 0 }}
+              visible={addUsersModalVisible}
+              animationType="slide"
+              transparent={true}
+              onRequestClose={() => setAddUsersModalVisible(false)}
             >
-              <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, justifyContent: "flex-end" }}>
-                <View className="rounded-t-3xl bg-[#0A0D28] p-5">
+              <View className="flex-1 bg-black/50 justify-end">
+                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, justifyContent: "flex-end" }}>
+                  <View className="rounded-t-3xl bg-[#0A0D28] p-5">
                   <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
                     <Text className="text-xl font-semibold text-white">
-                      Add Users to {selectedPlanForUsers}
+                       {selectedPlanForUsers}
                     </Text>
                     <TouchableOpacity onPress={() => setAddUsersModalVisible(false)}>
                       <Image source={require('../../../assets/commonAssets/cross.png')} className="h-8 w-8" />
@@ -710,25 +759,25 @@ export default function BillingScreen() {
                     onSelect={(value) => setAdditionalUsers(value)}
                   />
 
-                  <TouchableOpacity className="w-full items-center bg-[#017A5B] p-4 rounded-full mt-5 mb-5" onPress={handleUserModal}>
+                  <TouchableOpacity className="w-full items-center bg-[#815BF5] p-4 rounded-full mt-5 mb-5" onPress={handleUserModal}>
                     <Text className="text-white">Next</Text>
                   </TouchableOpacity>
-                </View>
-              </KeyboardAvoidingView>
+                  </View>
+                </KeyboardAvoidingView>
+              </View>
       </Modal>
       {/* 2999 subscicpction details */}
       <Modal
-        isVisible={paymentDetailsAddUsersModalVisible}
-        onBackdropPress={() => setPaymentDetailsAddUsersModalVisible(false)}
-        animationIn="fadeIn"
-        animationOut="fadeOut"
-        backdropOpacity={0.3}
-        style={{ justifyContent: 'flex-start', margin: 0 }}
+        visible={paymentDetailsAddUsersModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setPaymentDetailsAddUsersModalVisible(false)}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1, justifyContent: 'flex-end' }}>
-          <View className="rounded-t-3xl bg-[#0A0D28] p-5">
+        <View className="flex-1 bg-black/50 justify-end">
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1, justifyContent: 'flex-end' }}>
+            <View className="rounded-t-3xl bg-[#0A0D28] p-5">
             <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
               <Text className="text-xl font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
                 Payment Details
@@ -770,34 +819,34 @@ export default function BillingScreen() {
             />
             <View className="flex items-center gap-5 flex-row justify-center mt-8 mb-4">
               <TouchableOpacity
-                className="bg-[#6b7280] p-4 w-1/3 rounded-md items-center"
+                className="bg-[#37384B] p-4 w-1/3 rounded-md items-center"
                 onPress={handleBackPressAddUsersModalSubscription}
               >
                 <Text className="text-white text-sm" style={{ fontFamily: 'LatoBold' }}>Back</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="bg-[#017A5B] p-4 rounded-md items-center w-1/2"
+                className="bg-[#815BF5] p-4 rounded-md items-center w-1/2"
                 onPress={handlePaymentForAddUserSubscription}
               >
                 <Text className="text-white text-sm" style={{ fontFamily: 'LatoBold' }}>Proceed to Payment</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </KeyboardAvoidingView>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
       </Modal>
       {/* Modal for 1999 subscicpction*/}
       <Modal
-        isVisible={subscribeModalVisible}
-        onBackdropPress={() => setSubscribeModalVisible(false)}
-        animationIn="fadeIn"
-        animationOut="fadeOut"
-        backdropOpacity={0.3}
-        style={{ justifyContent: 'flex-start', margin: 0 }}
+        visible={subscribeModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setSubscribeModalVisible(false)}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1, justifyContent: 'flex-end' }}>
-          <View className="rounded-t-3xl bg-[#0A0D28] p-5">
+        <View className="flex-1 bg-black/50 justify-end">
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1, justifyContent: 'flex-end' }}>
+            <View className="rounded-t-3xl bg-[#0A0D28] p-5">
             <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
               <Text className="text-xl font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
                 Zapllo Tasks Plan
@@ -820,25 +869,25 @@ export default function BillingScreen() {
             <Text className="text-white text-xs ml-5 mb-5" style={{ fontFamily: 'LatoLight' }}>
               Total Subscribed Users = {totalUsers} (Adding {totalUsers} users)
             </Text>
-            <TouchableOpacity className="w-full items-center bg-[#017A5B] p-4 rounded-full mb-4" onPress={handleSubscribedNext}>
+            <TouchableOpacity className="w-full items-center bg-[#815BF5] p-4 rounded-full mb-4" onPress={handleSubscribedNext}>
               <Text className="text-white" style={{ fontFamily: 'LatoBold' }}>Next</Text>
             </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
       </Modal>
       {/* 1999 subscicpction details */}
       <Modal
-        isVisible={paymentDetailedSubscriptionModalVisible}
-        onBackdropPress={() => setPaymentDetailedSubscriptionModalVisible(false)}
-        animationIn="fadeIn"
-        animationOut="fadeOut"
-        backdropOpacity={0.3}
-        style={{ justifyContent: 'flex-start', margin: 0 }}
+        visible={paymentDetailedSubscriptionModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setPaymentDetailedSubscriptionModalVisible(false)}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1, justifyContent: 'flex-end' }}>
-          <View className="rounded-t-3xl bg-[#0A0D28] p-5">
+        <View className="flex-1 bg-black/50 justify-end">
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1, justifyContent: 'flex-end' }}>
+            <View className="rounded-t-3xl bg-[#0A0D28] p-5">
             <View className="mb-4 mt-2 flex w-full flex-row items-center justify-between">
               <Text className="text-xl font-semibold text-white" style={{ fontFamily: 'LatoBold' }}>
                 Payment Details
@@ -880,20 +929,21 @@ export default function BillingScreen() {
             />
             <View className="flex items-center gap-5 flex-row justify-center mt-8 mb-4">
               <TouchableOpacity
-                className="bg-[#6b7280] p-4 w-1/3 rounded-md items-center"
+                className="bg-[#37384B] p-4 w-1/3 rounded-md items-center"
                 onPress={handleBackPressForSubscription}
               >
                 <Text className="text-white text-sm" style={{ fontFamily: 'LatoBold' }}>Back</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="bg-[#017A5B] p-4 rounded-md items-center w-1/2"
+                className="bg-[#815BF5] p-4 rounded-md items-center w-1/2"
                 onPress={handlePaymentForSubscription}
               >
                 <Text className="text-white text-sm" style={{ fontFamily: 'LatoBold' }}>Proceed to Payment</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </KeyboardAvoidingView>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
       </Modal>
     </SafeAreaView>
   );

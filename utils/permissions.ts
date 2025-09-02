@@ -1,6 +1,6 @@
 import { Camera } from 'expo-camera';
 import * as Location from 'expo-location';
-import { Alert, Platform } from 'react-native';
+import { Alert, Platform, Linking } from 'react-native';
 
 export interface PermissionStatus {
   camera: boolean;
@@ -11,18 +11,61 @@ export interface PermissionStatus {
 export class PermissionManager {
   static async requestCameraPermission(): Promise<boolean> {
     try {
+      // First check current permission status
+      const { status: currentStatus } = await Camera.getCameraPermissionsAsync();
+      
+      if (currentStatus === 'granted') {
+        return true;
+      }
+      
+      // If permission was previously denied, guide user to settings
+      if (currentStatus === 'denied') {
+        return new Promise((resolve) => {
+          Alert.alert(
+            'Camera Permission Required',
+            'Camera access was previously denied. Please enable camera permission in Settings to use this feature.',
+            [
+              { 
+                text: 'Cancel', 
+                style: 'cancel',
+                onPress: () => resolve(false)
+              },
+              { 
+                text: 'Open Settings', 
+                onPress: () => {
+                  this.openAppSettings();
+                  resolve(false);
+                }
+              }
+            ]
+          );
+        });
+      }
+      
+      // If not granted, request permission
       const { status } = await Camera.requestCameraPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert(
-          'Camera Permission Required',
-          'This app needs camera access to capture attendance photos. Please enable camera permission in your device settings.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Open Settings', onPress: () => this.openAppSettings() }
-          ]
-        );
-        return false;
+        return new Promise((resolve) => {
+          Alert.alert(
+            'Camera Permission Required',
+            'This app needs camera access to capture attendance photos. Please enable camera permission in your device settings.',
+            [
+              { 
+                text: 'Cancel', 
+                style: 'cancel',
+                onPress: () => resolve(false)
+              },
+              { 
+                text: 'Open Settings', 
+                onPress: () => {
+                  this.openAppSettings();
+                  resolve(false);
+                }
+              }
+            ]
+          );
+        });
       }
       
       return true;
@@ -34,19 +77,86 @@ export class PermissionManager {
 
   static async requestLocationPermission(): Promise<boolean> {
     try {
+      // First check if location services are enabled
+      const isLocationEnabled = await Location.hasServicesEnabledAsync();
+      if (!isLocationEnabled) {
+        return new Promise((resolve) => {
+          Alert.alert(
+            'Location Services Disabled',
+            'Location services are disabled on your device. Please enable location services in Settings to use this feature.',
+            [
+              { 
+                text: 'Cancel', 
+                style: 'cancel',
+                onPress: () => resolve(false)
+              },
+              { 
+                text: 'Open Settings', 
+                onPress: () => {
+                  this.openLocationSettings();
+                  resolve(false);
+                }
+              }
+            ]
+          );
+        });
+      }
+
+      // Check current permission status
+      const { status: currentStatus } = await Location.getForegroundPermissionsAsync();
+      
+      if (currentStatus === 'granted') {
+        return true;
+      }
+
+      // If permission was previously denied, guide user to settings
+      if (currentStatus === 'denied') {
+        return new Promise((resolve) => {
+          Alert.alert(
+            'Location Permission Required',
+            'Location access was previously denied. Please enable location permission in Settings to use this feature.',
+            [
+              { 
+                text: 'Cancel', 
+                style: 'cancel',
+                onPress: () => resolve(false)
+              },
+              { 
+                text: 'Open Settings', 
+                onPress: () => {
+                  this.openAppSettings();
+                  resolve(false);
+                }
+              }
+            ]
+          );
+        });
+      }
+      
       // Request foreground location permission
       const { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
       
       if (foregroundStatus !== 'granted') {
-        Alert.alert(
-          'Location Permission Required',
-          'This app needs location access to verify your attendance location. Please enable location permission in your device settings.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Open Settings', onPress: () => this.openAppSettings() }
-          ]
-        );
-        return false;
+        return new Promise((resolve) => {
+          Alert.alert(
+            'Location Permission Required',
+            'This app needs location access to verify your attendance location. Please enable location permission in your device settings.',
+            [
+              { 
+                text: 'Cancel', 
+                style: 'cancel',
+                onPress: () => resolve(false)
+              },
+              { 
+                text: 'Open Settings', 
+                onPress: () => {
+                  this.openAppSettings();
+                  resolve(false);
+                }
+              }
+            ]
+          );
+        });
       }
 
       return true;
@@ -157,17 +267,42 @@ export class PermissionManager {
 
   private static openAppSettings() {
     if (Platform.OS === 'ios') {
-      // For iOS, we can't directly open app settings, but we can guide the user
-      Alert.alert(
-        'Open Settings',
-        'Go to Settings > Privacy & Security > Camera/Location Services to enable permissions for this app.'
-      );
+      // For iOS, try to open app settings directly
+      Linking.openURL('app-settings:').catch(() => {
+        // Fallback to general settings if app-settings doesn't work
+        Alert.alert(
+          'Open Settings',
+          'Go to Settings > Privacy & Security > Camera/Location Services to enable permissions for this app.'
+        );
+      });
     } else {
-      // For Android, you might want to use a library like react-native-android-open-settings
-      Alert.alert(
-        'Open Settings',
-        'Go to Settings > Apps > Zapllo > Permissions to enable camera and location permissions.'
-      );
+      // For Android, try to open app settings
+      Linking.openSettings().catch(() => {
+        Alert.alert(
+          'Open Settings',
+          'Go to Settings > Apps > Zapllo > Permissions to enable camera and location permissions.'
+        );
+      });
+    }
+  }
+
+  private static openLocationSettings() {
+    if (Platform.OS === 'ios') {
+      // For iOS, try to open location settings
+      Linking.openURL('App-Prefs:Privacy&path=LOCATION').catch(() => {
+        Alert.alert(
+          'Open Settings',
+          'Go to Settings > Privacy & Security > Location Services to enable location services.'
+        );
+      });
+    } else {
+      // For Android, try to open location settings
+      Linking.sendIntent('android.settings.LOCATION_SOURCE_SETTINGS').catch(() => {
+        Alert.alert(
+          'Open Settings',
+          'Go to Settings > Location to enable location services.'
+        );
+      });
     }
   }
 

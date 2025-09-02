@@ -14,6 +14,7 @@ import NavbarTwo from "~/components/navbarTwo";
 import { router, useNavigation } from "expo-router";
 import CustomDropdown from "~/components/customDropDown";
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TutorialsScreen() {
   const navigation = useNavigation();
@@ -68,13 +69,42 @@ export default function TutorialsScreen() {
         <NavbarTwo title="Tutorials" onBackPress={() => navigation.goBack()} />
         <View style={styles.content}>
           <View style={styles.searchContainer}>
-            <TextInput
-              style={styles.input}
-              value={searchTutorials}
-              onChangeText={handleSearch}
-              placeholder="Search Tutorial"
-              placeholderTextColor="#787CA5"
-            />
+            <LinearGradient
+              colors={['rgba(55, 56, 75, 0.8)', 'rgba(46, 46, 70, 0.6)']}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                borderRadius: 16,
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              <Ionicons name="search" size={20} color="#787CA5" />
+              <TextInput
+                placeholder="Search Tutorial"
+                placeholderTextColor="#787CA5"
+                value={searchTutorials}
+                onChangeText={handleSearch}
+                style={{
+                  flex: 1,
+                  marginLeft: 12,
+                  color: 'white',
+                  fontSize: 16,
+                  fontWeight: '500',
+                  fontFamily: 'LatoRegular'
+                }}
+              />
+              {searchTutorials.length > 0 && (
+                <TouchableOpacity onPress={() => {
+                  setSearchTutorials("");
+                  setFilteredTutorials(tutorials);
+                }}>
+                  <Ionicons name="close-circle" size={20} color="#787CA5" />
+                </TouchableOpacity>
+              )}
+            </LinearGradient>
           </View>
           <View style={styles.dropdownContainer}>
             <CustomDropdown

@@ -647,7 +647,7 @@ export default function HolidaysScreen() {
                   <LinearGradient
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    colors={['#c3efc3', '#008800']}
+                    colors={['#ccc9eb', '#340088']}
                     style={styles.gradientBorders}
                   >
                     <View className='bg-primary rounded-full p-4 px-7 flex items-center flex-row gap-3'>

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Zapllo",
     "slug": "zapplo-mobile",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "newArchEnabled": true,
     "scheme": "zapllo",
     "web": {

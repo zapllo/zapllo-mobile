@@ -326,7 +326,11 @@ export default function TaskDirectoryScreen() {
         <TouchableOpacity
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            router.back();
+            if (isViewingCategory) {
+              handleBackToCategories();
+            } else {
+              router.back();
+            }
           }}
           className="p-2"
         >
@@ -334,7 +338,7 @@ export default function TaskDirectoryScreen() {
         </TouchableOpacity>
         
         <Text className="text-xl text-white" style={{ fontFamily: 'LatoBold' }}>
-          Task Directory
+          {isViewingCategory ? selectedCategory : "Task Directory"}
         </Text>
         
         <View className="w-8" />
@@ -343,30 +347,6 @@ export default function TaskDirectoryScreen() {
       {isViewingCategory ? (
         // Category Templates View
         <View className="flex-1">
-          {/* Category Header */}
-          <View className="px-4 py-3 border-b border-[#2A2D47]">
-            <TouchableOpacity
-              onPress={handleBackToCategories}
-              className="flex-row items-center mb-3"
-            >
-              <Ionicons name="chevron-back" size={20} color="#815BF5" />
-              <Text className="text-[#815BF5] ml-1" style={{ fontFamily: 'LatoBold' }}>
-                Back to Categories
-              </Text>
-            </TouchableOpacity>
-            
-            <View className="flex-row items-center justify-between">
-              <Text className="text-white text-lg" style={{ fontFamily: 'LatoBold' }}>
-                {selectedCategory}
-              </Text>
-              <View className="bg-[#815BF5] px-3 py-1 rounded-full">
-                <Text className="text-white text-xs" style={{ fontFamily: 'LatoRegular' }}>
-                  {filteredTemplates.length} templates
-                </Text>
-              </View>
-            </View>
-          </View>
-
           {/* Subcategory Tabs */}
           <View className="py-3">
             <FlatList
@@ -381,22 +361,39 @@ export default function TaskDirectoryScreen() {
 
           {/* Search Bar */}
           <View className="px-4 mb-4">
-            <View className="flex-row items-center bg-[#2A2D47] rounded-xl px-4 py-3">
-              <Ionicons name="search" size={20} color="#676B93" />
+            <LinearGradient
+              colors={['rgba(55, 56, 75, 0.8)', 'rgba(46, 46, 70, 0.6)']}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                borderRadius: 16,
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              <Ionicons name="search" size={20} color="#787CA5" />
               <TextInput
                 placeholder="Search templates..."
-                placeholderTextColor="#676B93"
+                placeholderTextColor="#787CA5"
                 value={searchText}
                 onChangeText={setSearchText}
-                className="flex-1 ml-3 text-white"
-                style={{ fontFamily: 'LatoRegular' }}
+                style={{
+                  flex: 1,
+                  marginLeft: 12,
+                  color: 'white',
+                  fontSize: 16,
+                  fontWeight: '500',
+                  fontFamily: 'LatoRegular'
+                }}
               />
               {searchText.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchText("")}>
-                  <Ionicons name="close-circle" size={20} color="#676B93" />
+                  <Ionicons name="close-circle" size={20} color="#787CA5" />
                 </TouchableOpacity>
               )}
-            </View>
+            </LinearGradient>
           </View>
 
           {/* Templates List */}

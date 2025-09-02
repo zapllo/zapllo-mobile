@@ -946,12 +946,12 @@ const styles = StyleSheet.create({
     fontFamily: 'lato',
   },
   statusFilters: {
-  paddingHorizontal: 16,
-  marginBottom: 36,
+
+  marginBottom: 30,
 },
 statusFiltersRow: {
   flexDirection: 'row',
-  paddingHorizontal: 20,
+  paddingHorizontal: 10,
   gap: 8,
 },
 statusBadge: {

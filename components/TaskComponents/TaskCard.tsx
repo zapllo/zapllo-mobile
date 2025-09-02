@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/core';
 import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
+import UserAvatar from '../profile/UserAvatar';
 
 // Define the TaskStatus type
 // Define the TaskStatus type
@@ -12,9 +13,12 @@ type TaskStatus = 'Pending' | 'InProgress' | 'Completed'; // Add other statuses 
 interface Task {
   _id: string; // Assuming tasks have an ID
   status: TaskStatus;
+  title?: string;
   assignedUser: {
     firstName?: string;
     lastName?: string;
+    profilePic?: string;
+    _id?: string;
   };
   // Add other properties of a task as needed
 }
@@ -51,6 +55,12 @@ const TaskCard: React.FC<TaskCardProps> = ({
     return firstInitial + lastInitial;
   };
 
+  const getFirstWord = (text?: string): string => {
+    if (!text) return '';
+    const word = text.trim().split(/\s+/)[0] || '';
+    return word.length > 12 ? word.slice(0, 12) : word;
+  };
+
   console.log(">>>>>>>>>>>>>>>",tasks)
 
   return (
@@ -79,17 +89,14 @@ const TaskCard: React.FC<TaskCardProps> = ({
               .slice(0, 2)
               .map((task, index) => (
                 <View key={task._id} className="relative flex flex-row">
-                  <View
-                    className="-m-1.5 flex h-10 w-10 items-center justify-center rounded-full border-2"
-                    style={{
-                      borderColor,
-                      backgroundColor: colors[index % colors.length],
-                    }}>
-                    <Text
-                      className=" text-center text-sm text-black"
-                      style={{ fontFamily: 'Lato-Thin' }}>
-                      {getInitials(task?.assignedUser)}
-                    </Text>
+                  <View className="-m-1.5">
+                    <UserAvatar
+                      size={35}
+                      borderColor={borderColor}
+                      userId={task?.assignedUser?._id}
+                      name={`${(task?.assignedUser?.firstName || '')} ${(task?.assignedUser?.lastName || '')}`.trim()}
+                      imageUrl={task?.assignedUser?.profilePic}
+                    />
                   </View>
                 </View>
               ))}
@@ -101,7 +108,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     borderColor,
                     backgroundColor: colors[2 % colors.length],
                   }}>
-                  <Text className="text-center text-black">
+                  <Text className="text-center text-black" style={{ fontSize: 10, fontFamily: 'LatoBold' }}>
                     +{tasks.filter((task) => task.status === status).length - 2}
                   </Text>
                 </View>

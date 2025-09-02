@@ -20,13 +20,16 @@ import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import * as Haptics from 'expo-haptics'; // Import Haptics
 import LoadingZapllo from '~/components/LoadingZapllo';
+import VoiceTaskModal from '~/components/voiceTaskModal/VoiceTaskModal';
 
 const Tab = createBottomTabNavigator();
 
 export default function TasksScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
+  const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [currentTab, setCurrentTab] = useState('Dashboard'); // Track current active tab
   const [showDataLoading, setShowDataLoading] = useState(true); // Show loading only when data is being fetched
+  const voiceModalTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // Removed isAiModalVisible since we'll navigate to it instead of using as modal
 
   const navigation = useNavigation<StackNavigationProp<any>>();
@@ -104,6 +107,14 @@ export default function TasksScreen() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (voiceModalTimeoutRef.current) {
+        clearTimeout(voiceModalTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Function to trigger haptic feedback
   const triggerHapticFeedback = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -162,7 +173,7 @@ export default function TasksScreen() {
             } else if (route.name === 'Delegated Task') {
               icon = require('~/assets/tabBarImages/Frame.png');
               zName = "Delegated";
-            } else if (route.name === 'All Task' && isAdmin) {
+            } else if (route.name === 'All Task') {
               icon = require('~/assets/tabBarImages/alltask.png');
               zName = "More";
             }
@@ -226,19 +237,17 @@ export default function TasksScreen() {
             },
           }}
         />
-        {isAdmin && (
-          <Tab.Screen
-            name="All Task"
-            component={AllTaskScreen}
-            listeners={{
-              tabPress: (e) => {
-                e.preventDefault(); // Prevent default action
-                triggerHapticFeedback(); // Add haptic feedback
-                setModalVisible(true); // Show modal
-              },
-            }}
-          />
-        )}
+        <Tab.Screen
+          name="All Task"
+          component={AllTaskScreen}
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault(); // Prevent default action
+              triggerHapticFeedback(); // Add haptic feedback
+              setModalVisible(true); // Show modal
+            },
+          }}
+        />
       </Tab.Navigator>
 
       {/* Hide AllTaskModalScreen when on My Apps tab */}
@@ -246,13 +255,42 @@ export default function TasksScreen() {
         <AllTaskModalScreen
           isVisible={isModalVisible}
           onClose={() => setModalVisible(false)}
+          isAdmin={isAdmin}
+          onVoiceTask={() => {
+            console.log('Voice task clicked');
+            setModalVisible(false);
+            
+            if (voiceModalTimeoutRef.current) {
+              clearTimeout(voiceModalTimeoutRef.current);
+            }
+            
+            voiceModalTimeoutRef.current = setTimeout(() => {
+              setShowVoiceModal(true);
+              console.log('Voice modal opened after timeout');
+              voiceModalTimeoutRef.current = null;
+            }, 400);
+          }}
         />
       )}
 
+      {/* Voice Task Modal - Always available */}
+      <VoiceTaskModal
+        isVisible={showVoiceModal}
+        onClose={() => {
+          console.log('Closing voice modal');
+          setShowVoiceModal(false);
+        }}
+        onTaskCreated={(taskData) => {
+          console.log('Task created from voice:', taskData);
+          // You can navigate to task creation screen or show success message
+          setShowVoiceModal(false);
+        }}
+      />
+
       {/* Removed AiSuggestionScreen modal since we now navigate to it as a proper screen */}
 
-       {/* Ai suggestion button - Only visible to admin users and hidden on My Apps tab */}
-      {isAdmin && currentTab !== 'Home Screen' && (
+       {/* Ai suggestion button - Visible for all users and hidden on My Apps tab */}
+      {currentTab !== 'Home Screen' && (
         <View style={styles.fabContainerAi}>
             <TouchableOpacity
               style={styles.fab}
@@ -274,8 +312,8 @@ export default function TasksScreen() {
         </View>
       )}
 
-      {/* Assign task button */}
-      {isAdmin && currentTab !== 'Home Screen' && (      
+      {/* Assign task button - Visible for all users */}
+      {currentTab !== 'Home Screen' && (      
         <View style={styles.fabContainer}>
           {showFabLabel && (
             <Animated.View 

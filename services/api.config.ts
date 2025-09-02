@@ -27,14 +27,54 @@ const refreshToken = async (): Promise<string | null> => {
       refreshToken
     });
     
-    const { accessToken } = response.data;
+    const { accessToken, refreshToken: newRefreshToken } = response.data;
+    
+    // Store both tokens persistently until manual logout
     await AsyncStorage.setItem('authToken', accessToken);
+    if (newRefreshToken) {
+      await AsyncStorage.setItem('refreshToken', newRefreshToken);
+    }
+    
     return accessToken;
   } catch (error) {
     console.error('Error refreshing token:', error);
-    // Clear tokens and redirect to login
+    // Only clear tokens if refresh fails (server-side token invalidation)
     await AsyncStorage.multiRemove(['authToken', 'refreshToken']);
     return null;
+  }
+};
+
+// Function to store tokens after login
+export const storeTokens = async (accessToken: string, refreshToken: string): Promise<void> => {
+  try {
+    await AsyncStorage.multiSet([
+      ['authToken', accessToken],
+      ['refreshToken', refreshToken],
+    ]);
+    console.log('Tokens stored successfully');
+  } catch (error) {
+    console.error('Error storing tokens:', error);
+  }
+};
+
+// Function to clear tokens on logout
+export const clearTokens = async (): Promise<void> => {
+  try {
+    await AsyncStorage.multiRemove(['authToken', 'refreshToken']);
+    console.log('Tokens cleared successfully');
+  } catch (error) {
+    console.error('Error clearing tokens:', error);
+  }
+};
+
+// Function to check if user is logged in
+export const isUserLoggedIn = async (): Promise<boolean> => {
+  try {
+    const token = await AsyncStorage.getItem('authToken');
+    return token !== null;
+  } catch (error) {
+    console.error('Error checking login status:', error);
+    return false;
   }
 };
 

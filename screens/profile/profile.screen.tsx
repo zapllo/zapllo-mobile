@@ -38,6 +38,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import * as SecureStore from 'expo-secure-store';
 import { logOut } from '~/redux/slices/authSlice';
+import TokenStorage from '~/utils/tokenStorage';
 
 // Define the type for your navigation
 type RootStackParamList = {
@@ -74,6 +75,7 @@ const ProfileScreen: React.FC = () => {
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [showSuccessSplash, setShowSuccessSplash] = useState(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const appLink = "https://zapllo.com/download"; 
 
   const handleSplashComplete = () => {
@@ -135,10 +137,8 @@ const ProfileScreen: React.FC = () => {
         }
       );
       
-      // Clear all auth-related data from SecureStore
-      await SecureStore.deleteItemAsync('authToken');
-      await SecureStore.deleteItemAsync('userData');
-      await SecureStore.deleteItemAsync('hasCompletedLogin');
+      // Clear all auth-related data using TokenStorage utility
+      await TokenStorage.clearAllData();
       
       // Dispatch logout action to clear Redux state
       dispatch(logOut());
@@ -155,17 +155,48 @@ const ProfileScreen: React.FC = () => {
       
       // Even if API fails, clear local storage for security
       try {
-        await SecureStore.deleteItemAsync('authToken');
-        await SecureStore.deleteItemAsync('userData');
-        await SecureStore.deleteItemAsync('hasCompletedLogin');
+        await TokenStorage.clearAllData();
         dispatch(logOut());
         router.push('/(routes)/login');
       } catch (storageErr) {
-        console.error('Error clearing secure storage:', storageErr);
+        console.error('Error clearing storage:', storageErr);
       }
       
       setCustomAlertVisible(true);
       setCustomAlertMessage('Failed to log out. Please try again.');
+      setCustomAlertType('error');
+    } finally {
+      setButtonSpinner(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setButtonSpinner(true);
+    setIsDeleteModalVisible(false);
+
+    try {
+      const response = await axios.delete(
+        `${backend_Host}/users/delete-account`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      await TokenStorage.clearAllData();
+      dispatch(logOut());
+      
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Account deleted successfully!');
+      setCustomAlertType('success');
+      
+      router.push('/(routes)/login');
+    } catch (err: any) {
+      console.error('Delete Account Error:', err.response || err.message);
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Failed to delete account. Please try again.');
       setCustomAlertType('error');
     } finally {
       setButtonSpinner(false);
@@ -350,10 +381,24 @@ const ProfileScreen: React.FC = () => {
               </TouchableOpacity>
 
               <View className=" flex flex-col items-start gap-1">
-                <Text className="text-xl font-medium text-white" style={{ fontFamily: 'LatoBold' }}>
-                  {userData?.user?.firstName || userData?.data?.firstName}{' '}
-                  {userData?.user?.lastName || userData?.data?.lastName}
-                </Text>
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-xl font-medium text-white" style={{ fontFamily: 'LatoBold' }}>
+                    {userData?.user?.firstName || userData?.data?.firstName}{' '}
+                    {userData?.user?.lastName || userData?.data?.lastName}
+                  </Text>
+                  {(userData?.user?.subscription === 'pro' || userData?.data?.subscription === 'pro') && (
+                    <LinearGradient
+                      colors={['#FFD700', '#FFA500']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      className="px-2 py-0.5 rounded-full flex-row items-center">
+                      <MaterialIcons name="workspace-premium" size={10} color="#000" />
+                      <Text className="text-[#000] text-[8px] font-bold ml-1" style={{ fontFamily: 'LatoBold' }}>
+                        PRO
+                      </Text>
+                    </LinearGradient>
+                  )}
+                </View>
                 <Text
                   className=" w-16 rounded-full border border-[#865ffa] p-1 text-center text-[10px] font-light text-white"
                   style={{ fontFamily: 'Lato-thin' ,backgroundColor:"rgba(127, 71, 192, 0.3)"}}>
@@ -462,6 +507,36 @@ const ProfileScreen: React.FC = () => {
               }
 
 
+                {/* AI Credits */}
+                <TouchableOpacity
+                  onPress={() => router.push('/(routes)/profile/ai-credits' as any)}
+                  className="flex-row items-center px-4 py-3.5 border-b border-[#1E2142]">
+                  <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
+                    <MaterialIcons name="psychology" color="#815BF5" size={18} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+                      AI Credits
+                    </Text>
+                  </View>
+                  <AntDesign name="right" color="#787CA5" size={16} />
+                </TouchableOpacity>
+
+                {/* Categories */}
+                <TouchableOpacity
+                  onPress={() => router.push('/(routes)/categories' as any)}
+                  className="flex-row items-center px-4 py-3.5 border-b border-[#1E2142]">
+                  <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
+                    <MaterialIcons name="category" color="#815BF5" size={18} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+                      Categories
+                    </Text>
+                  </View>
+                  <AntDesign name="right" color="#787CA5" size={16} />
+                </TouchableOpacity>
+
                 {/* Tutorials */}
                 <TouchableOpacity
                   onPress={() => router.push('/(routes)/profile/tutorials' as any)}
@@ -472,6 +547,21 @@ const ProfileScreen: React.FC = () => {
                   <View className="flex-1">
                     <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
                       Tutorials
+                    </Text>
+                  </View>
+                  <AntDesign name="right" color="#787CA5" size={16} />
+                </TouchableOpacity>
+
+                {/* Events */}
+                <TouchableOpacity
+                  onPress={() => router.push('/(routes)/profile/events' as any)}
+                  className="flex-row items-center px-4 py-3.5 border-b border-[#1E2142]">
+                  <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
+                    <AntDesign name="calendar" color="#815BF5" size={18} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+                      Events
                     </Text>
                   </View>
                   <AntDesign name="right" color="#787CA5" size={16} />
@@ -539,12 +629,12 @@ const ProfileScreen: React.FC = () => {
               </View>
             </View>
 
-            {/* LOGOUT */}
+            {/* LOGOUT & DELETE ACCOUNT */}
             <View className="w-full px-5 mt-8 mb-10">
-              <TouchableOpacity
-                onPress={handleLogoutClick}
-                className="bg-[#1E2142] rounded-xl overflow-hidden shadow-md shadow-[#000]/20">
-                <View className="flex-row items-center px-4 py-3.5">
+              <View className="bg-[#1E2142] rounded-xl overflow-hidden shadow-md shadow-[#000]/20 mb-4">
+                <TouchableOpacity
+                  onPress={handleLogoutClick}
+                  className="flex-row items-center px-4 py-3.5 border-b border-[#2A0A0A]">
                   <View className="h-9 w-9 rounded-full bg-[#2A0A0A] items-center justify-center mr-3">
                     <AntDesign name="logout" color="#EF4444" size={18} />
                   </View>
@@ -556,8 +646,21 @@ const ProfileScreen: React.FC = () => {
                   {buttonSpinner && (
                     <ActivityIndicator size="small" color="#EF4444" />
                   )}
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setIsDeleteModalVisible(true)}
+                  className="flex-row items-center px-4 py-3.5">
+                  <View className="h-9 w-9 rounded-full bg-[#2A0A0A] items-center justify-center mr-3">
+                    <AntDesign name="deleteuser" color="#EF4444" size={18} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-[#EF4444] text-base font-medium" style={{ fontFamily: 'LatoBold' }}>
+                      Delete Account
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 
@@ -710,6 +813,84 @@ const ProfileScreen: React.FC = () => {
                       <>
                         <MaterialIcons name="logout" size={18} color="#fff" className="mr-2" />
                         <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>Logout</Text>
+                      </>
+                    )}
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </LinearGradient>
+        </Animated.View>
+      </Modal>
+
+      {/* Delete Account Confirmation Modal */}
+      <Modal
+        isVisible={isDeleteModalVisible}
+        onBackdropPress={() => setIsDeleteModalVisible(false)}
+        backdropOpacity={0.6}
+        animationIn="fadeIn"
+        animationOut="fadeOut"
+        style={{ margin: 20, justifyContent: 'center' }}
+        customBackdrop={
+          <BlurView intensity={Platform.OS === 'ios' ? 40 : 80} tint="dark" style={StyleSheet.absoluteFill} />
+        }
+      >
+        <Animated.View className="bg-[#1F2235] rounded-2xl overflow-hidden">
+          <LinearGradient
+            colors={['#1F2235', '#141625']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="p-6"
+          >
+            <View className="items-center mb-4 mt-5">
+              <LinearGradient
+                colors={['rgba(255, 71, 87, 0.2)', 'rgba(255, 71, 87, 0.1)']}
+                style={{ width: 50, height: 50, borderRadius: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Image
+                  style={{ width: 30, height: 30 }}
+                  source={require('../../assets/Tickit/delIcon.png')}
+                />
+              </LinearGradient>
+            </View>
+            
+            <Text className="text-white text-xl font-bold text-center mb-2" style={{ fontFamily: 'LatoBold' }}>
+              Account Deletion
+            </Text>
+            <Text className="text-[#787CA5] text-base text-center mb-6" style={{ fontFamily: 'LatoRegular' }}>
+              Permanently delete your account and all associated data. This action cannot be undone.
+            </Text>
+            
+            <View className="flex-row justify-between space-x-4">
+              <TouchableOpacity
+                onPress={() => setIsDeleteModalVisible(false)}
+                className="flex-1"
+              >
+                <BlurView intensity={20} tint="dark" className="rounded-xl overflow-hidden">
+                  <View className="px-4 py-3 items-center">
+                    <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>Cancel</Text>
+                  </View>
+                </BlurView>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={handleDeleteAccount}
+                className="flex-1"
+                disabled={buttonSpinner}
+              >
+                <LinearGradient
+                  colors={['#FF6B6B', '#FF4757']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  className="rounded-xl"
+                >
+                  <View className="px-4 py-3 items-center flex-row justify-center">
+                    {buttonSpinner ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <>
+                        <MaterialIcons name="delete" size={18} color="#fff" className="mr-2" />
+                        <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>Delete</Text>
                       </>
                     )}
                   </View>

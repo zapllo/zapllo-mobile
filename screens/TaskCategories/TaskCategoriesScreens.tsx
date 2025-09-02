@@ -23,7 +23,8 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import Navbar from '~/components/navbar';
+import { Ionicons } from '@expo/vector-icons';
+import NavbarTwo from '~/components/navbarTwo';
 import GradientButton from '~/components/GradientButton';
 import CategoryComponent from '../../components/Dashboard/CategoryComponent';
 import InputContainer from '~/components/InputContainer';
@@ -403,40 +404,48 @@ export default function TaskCategories() {
       <KeyboardAvoidingView
         className="w-full"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <Navbar title="Task Categories" />
+        <NavbarTwo title="Task Categories" />
 
         <ScrollView
           className="h-full mt-6 w-full flex-grow "
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
           <View className="h-full w-full items-center pb-44">
-            <View className='flex items-center mb-12 flex-row gap-2'>
-       
-
-              <View
-                style={[
-                  styles.input,
-                  {
-                    height:50,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingHorizontal: 2,
-                    width: '90%',
-          
-
-                  },
-                ]}>
+            <View className='flex items-center mb-8 flex-row gap-2'>
+              <LinearGradient
+                colors={['rgba(55, 56, 75, 0.8)', 'rgba(46, 46, 70, 0.6)']}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  borderRadius: 16,
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
+                  width: '90%',
+                }}
+              >
+                <Ionicons name="search" size={20} color="#787CA5" />
                 <TextInput
-                  
-                  style={[
-                    styles.inputSome,
-                    { textAlignVertical: 'top', width: '100%' },
-                  ]}
+                  placeholder="Search Category"
+                  placeholderTextColor="#787CA5"
                   value={taskDescription}
                   onChangeText={setTaskDescription}
-                  placeholder="Search Category"
-                  placeholderTextColor="#787CA5"></TextInput>
-              </View>
+                  style={{
+                    flex: 1,
+                    marginLeft: 12,
+                    color: 'white',
+                    fontSize: 16,
+                    fontWeight: '500',
+                    fontFamily: 'LatoRegular'
+                  }}
+                />
+                {taskDescription.length > 0 && (
+                  <TouchableOpacity onPress={() => setTaskDescription("")}>
+                    <Ionicons name="close-circle" size={20} color="#787CA5" />
+                  </TouchableOpacity>
+                )}
+              </LinearGradient>
             </View>
             {(userData?.data?.role === 'orgAdmin' || userData?.user?.role === 'orgAdmin') && (
               <>

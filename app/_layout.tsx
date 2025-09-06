@@ -14,10 +14,17 @@ import { useDispatch } from 'react-redux';
 import { Easing, useColorScheme } from 'react-native';
 import { TamaguiProvider } from 'tamagui';
 import tamaguiConfig from '~/tamagui.config';
+import { tokenRefreshManager } from '~/utils/tokenRefresh';
+import { setupAxiosInterceptor } from '~/utils/axiosInterceptor';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  // Setup axios interceptor for token expiration handling
+  useEffect(() => {
+    setupAxiosInterceptor();
+  }, []);
+
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     PathwayExtreme: require('../assets/fonts/PathwayExtreme-VariableFont_opsz,wdth,wght.ttf'),
@@ -55,6 +62,22 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { token } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    if (token) {
+      // Start auto-refresh when user is logged in
+      tokenRefreshManager.startAutoRefresh();
+      // Check token validity on app start
+      tokenRefreshManager.checkAndRefreshIfNeeded();
+    } else {
+      // Stop auto-refresh when user is logged out
+      tokenRefreshManager.stopAutoRefresh();
+    }
+
+    return () => {
+      tokenRefreshManager.stopAutoRefresh();
+    };
+  }, [token]);
 
   return (
     <TamaguiProvider config={tamaguiConfig} defaultTheme={token ? "dark" : colorScheme!}>

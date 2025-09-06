@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert, Platform } from 'react-native';
 import Modal from 'react-native-modal';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
@@ -56,6 +56,8 @@ const LoginLogoutTimeModal: React.FC<LoginLogoutTimeModalProps> = ({
   // Time picker states
   const [isLoginTimePickerVisible, setLoginTimePickerVisible] = useState(false);
   const [isLogoutTimePickerVisible, setLogoutTimePickerVisible] = useState(false);
+  const [tempLoginTime, setTempLoginTime] = useState(new Date());
+  const [tempLogoutTime, setTempLogoutTime] = useState(new Date());
 
   // Fetch organization data when modal opens
   useEffect(() => {
@@ -110,6 +112,10 @@ const LoginLogoutTimeModal: React.FC<LoginLogoutTimeModalProps> = ({
   };
 
   const showLoginTimePicker = () => {
+    const [hours, minutes] = loginTime.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hours), parseInt(minutes));
+    setTempLoginTime(date);
     setLoginTimePickerVisible(true);
   };
 
@@ -118,6 +124,10 @@ const LoginLogoutTimeModal: React.FC<LoginLogoutTimeModalProps> = ({
   };
 
   const showLogoutTimePicker = () => {
+    const [hours, minutes] = logoutTime.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hours), parseInt(minutes));
+    setTempLogoutTime(date);
     setLogoutTimePickerVisible(true);
   };
 
@@ -125,20 +135,18 @@ const LoginLogoutTimeModal: React.FC<LoginLogoutTimeModalProps> = ({
     setLogoutTimePickerVisible(false);
   };
 
-  const handleLoginTimeConfirm = (date: Date) => {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
+  const confirmLoginTime = () => {
+    const hours = tempLoginTime.getHours().toString().padStart(2, '0');
+    const minutes = tempLoginTime.getMinutes().toString().padStart(2, '0');
     const formattedTime = `${hours}:${minutes}`;
-    
     setLoginTime(formattedTime);
     hideLoginTimePicker();
   };
 
-  const handleLogoutTimeConfirm = (date: Date) => {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
+  const confirmLogoutTime = () => {
+    const hours = tempLogoutTime.getHours().toString().padStart(2, '0');
+    const minutes = tempLogoutTime.getMinutes().toString().padStart(2, '0');
     const formattedTime = `${hours}:${minutes}`;
-    
     setLogoutTime(formattedTime);
     hideLogoutTimePicker();
   };
@@ -244,38 +252,117 @@ const LoginLogoutTimeModal: React.FC<LoginLogoutTimeModalProps> = ({
               <Text className="text-white" style={{fontFamily:"Lato"}}>{logoutTime}</Text>
             </TouchableOpacity>
 
-            {/* Time Picker Modals */}
-            <DateTimePickerModal
-              isVisible={isLoginTimePickerVisible}
-              mode="time"
-              onConfirm={handleLoginTimeConfirm}
-              onCancel={hideLoginTimePicker}
-              is24Hour={true}
-              themeVariant="dark"
-              buttonTextColorIOS="#4A65FF"
-              cancelButtonColorIOS="#787CA5"
-              confirmButtonColorIOS="#4A65FF"
-              backgroundColor="#1d1d1d"
-              textColor="#FFFFFF"
-              pickerContainerStyleIOS={{backgroundColor: '#1d1d1d'}}
-              pickerComponentStyleIOS={{backgroundColor: '#1d1d1d'}}
-            />
+            {/* Login Time Picker Modal */}
+            {Platform.OS === 'ios' ? (
+              <Modal
+                isVisible={isLoginTimePickerVisible}
+                onBackdropPress={hideLoginTimePicker}
+                style={{ justifyContent: 'flex-end', margin: 0 }}
+              >
+                <View style={{
+                  backgroundColor: '#191B3A',
+                  borderTopLeftRadius: 20,
+                  borderTopRightRadius: 20,
+                  paddingBottom: 40,
+                }}>
+                  <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    padding: 15,
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#37384B',
+                  }}>
+                    <TouchableOpacity onPress={hideLoginTimePicker}>
+                      <Text style={{ color: '#787CA5', fontSize: 16, fontWeight: '500' }}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={confirmLoginTime}>
+                      <Text style={{ color: '#815BF5', fontSize: 16, fontWeight: '600' }}>Done</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <DateTimePicker
+                    value={tempLoginTime}
+                    mode="time"
+                    display="spinner"
+                    onChange={(event, time) => time && setTempLoginTime(time)}
+                    style={{ backgroundColor: '#191B3A', height: 200 }}
+                    textColor="#FFFFFF"
+                  />
+                </View>
+              </Modal>
+            ) : (
+              isLoginTimePickerVisible && (
+                <DateTimePicker
+                  value={tempLoginTime}
+                  mode="time"
+                  display="default"
+                  onChange={(event, selectedTime) => {
+                    if (selectedTime) {
+                      const hours = selectedTime.getHours().toString().padStart(2, '0');
+                      const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
+                      setLoginTime(`${hours}:${minutes}`);
+                    }
+                    hideLoginTimePicker();
+                  }}
+                  textColor="#FFFFFF"
+                />
+              )
+            )}
 
-            <DateTimePickerModal
-              isVisible={isLogoutTimePickerVisible}
-              mode="time"
-              onConfirm={handleLogoutTimeConfirm}
-              onCancel={hideLogoutTimePicker}
-              is24Hour={true}
-              themeVariant="dark"
-              buttonTextColorIOS="#4A65FF"
-              cancelButtonColorIOS="#787CA5"
-              confirmButtonColorIOS="#4A65FF"
-              backgroundColor="#1d1d1d"
-              textColor="#FFFFFF"
-              pickerContainerStyleIOS={{backgroundColor: '#1d1d1d'}}
-              pickerComponentStyleIOS={{backgroundColor: '#1d1d1d'}}
-            />
+            {/* Logout Time Picker Modal */}
+            {Platform.OS === 'ios' ? (
+              <Modal
+                isVisible={isLogoutTimePickerVisible}
+                onBackdropPress={hideLogoutTimePicker}
+                style={{ justifyContent: 'flex-end', margin: 0 }}
+              >
+                <View style={{
+                  backgroundColor: '#191B3A',
+                  borderTopLeftRadius: 20,
+                  borderTopRightRadius: 20,
+                  paddingBottom: 40,
+                }}>
+                  <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    padding: 15,
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#37384B',
+                  }}>
+                    <TouchableOpacity onPress={hideLogoutTimePicker}>
+                      <Text style={{ color: '#787CA5', fontSize: 16, fontWeight: '500' }}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={confirmLogoutTime}>
+                      <Text style={{ color: '#815BF5', fontSize: 16, fontWeight: '600' }}>Done</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <DateTimePicker
+                    value={tempLogoutTime}
+                    mode="time"
+                    display="spinner"
+                    onChange={(event, time) => time && setTempLogoutTime(time)}
+                    style={{ backgroundColor: '#191B3A', height: 200 }}
+                    textColor="#FFFFFF"
+                  />
+                </View>
+              </Modal>
+            ) : (
+              isLogoutTimePickerVisible && (
+                <DateTimePicker
+                  value={tempLogoutTime}
+                  mode="time"
+                  display="default"
+                  onChange={(event, selectedTime) => {
+                    if (selectedTime) {
+                      const hours = selectedTime.getHours().toString().padStart(2, '0');
+                      const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
+                      setLogoutTime(`${hours}:${minutes}`);
+                    }
+                    hideLogoutTimePicker();
+                  }}
+                  textColor="#FFFFFF"
+                />
+              )
+            )}
 
             <TouchableOpacity 
               onPress={handleSave}

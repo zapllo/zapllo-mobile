@@ -980,6 +980,7 @@ export default function LeaveApplyModal({
                       display="spinner"
                       onChange={(event, date) => date && setTempFromDate(date)}
                       style={styles.datePicker}
+                      textColor="#FFFFFF"
                       minimumDate={new Date()}
                     />
                   </View>
@@ -1040,6 +1041,7 @@ export default function LeaveApplyModal({
                       display="spinner"
                       onChange={(event, date) => date && setTempToDate(date)}
                       style={styles.datePicker}
+                      textColor="#FFFFFF"
                       minimumDate={applyLeaveForm.fromDate ? new Date(applyLeaveForm.fromDate) : new Date()}
                     />
                   </View>
@@ -1454,32 +1456,30 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   datePickerContainer: {
-    backgroundColor: '#0B0D29',
+    backgroundColor: '#191B3A',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
   },
   datePickerHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
+    padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#272945',
+    borderBottomColor: '#37384B',
   },
   datePickerCancel: {
-    color: '#FC8929',
+    color: '#787CA5',
     fontSize: 16,
-    fontFamily: 'LatoRegular',
-    padding: 4,
+    fontWeight: '500',
   },
   datePickerDone: {
     color: '#815BF5',
     fontSize: 16,
-    fontFamily: 'LatoBold',
-    padding: 4,
+    fontWeight: '600',
   },
   datePicker: {
-    backgroundColor: '#0B0D29',
+    backgroundColor: '#191B3A',
     height: 200,
   },
   androidCancelButton: {

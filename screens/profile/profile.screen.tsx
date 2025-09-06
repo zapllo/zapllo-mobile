@@ -39,6 +39,7 @@ import * as Haptics from 'expo-haptics';
 import * as SecureStore from 'expo-secure-store';
 import { logOut } from '~/redux/slices/authSlice';
 import TokenStorage from '~/utils/tokenStorage';
+import DeleteAccountModal from '~/components/profile/DeleteAccountModal';
 
 // Define the type for your navigation
 type RootStackParamList = {
@@ -75,7 +76,7 @@ const ProfileScreen: React.FC = () => {
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [showSuccessSplash, setShowSuccessSplash] = useState(false);
-  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isDeleteAccountModalVisible, setIsDeleteAccountModalVisible] = useState(false);
   const appLink = "https://zapllo.com/download"; 
 
   const handleSplashComplete = () => {
@@ -170,36 +171,21 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    setButtonSpinner(true);
-    setIsDeleteModalVisible(false);
-
+  const handleDeleteAccountSuccess = async () => {
     try {
-      const response = await axios.delete(
-        `${backend_Host}/users/delete-account`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
       await TokenStorage.clearAllData();
       dispatch(logOut());
       
       setCustomAlertVisible(true);
-      setCustomAlertMessage('Account deleted successfully!');
+      setCustomAlertMessage('Account deletion request submitted successfully!');
       setCustomAlertType('success');
       
-      router.push('/(routes)/login');
+      setTimeout(() => {
+        router.push('/(routes)/login');
+      }, 2000);
     } catch (err: any) {
-      console.error('Delete Account Error:', err.response || err.message);
-      setCustomAlertVisible(true);
-      setCustomAlertMessage('Failed to delete account. Please try again.');
-      setCustomAlertType('error');
-    } finally {
-      setButtonSpinner(false);
+      console.error('Logout Error:', err);
+      router.push('/(routes)/login');
     }
   };
 
@@ -348,15 +334,15 @@ const ProfileScreen: React.FC = () => {
   
   return (
     <SafeAreaView className="h-full w-full flex-1 bg-[#05071E]">
+      {/* Navbar */}
+      <NavbarTwo title="Profile"  />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="w-full">
+        className="w-full flex-1">
         <ScrollView
           className="h-full w-full flex-grow"
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
-          {/* Navbar */}
-          <NavbarTwo title="Profile"  />
 
           {/* container */}
           <View className="mb-12 mt-3 flex h-full   w-full items-center">
@@ -554,7 +540,7 @@ const ProfileScreen: React.FC = () => {
 
                 {/* Events */}
                 <TouchableOpacity
-                  onPress={() => router.push('/(routes)/profile/events' as any)}
+                  onPress={() => router.push('/(routes)/HomeComponent/Events' as any)}
                   className="flex-row items-center px-4 py-3.5 border-b border-[#1E2142]">
                   <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
                     <AntDesign name="calendar" color="#815BF5" size={18} />
@@ -649,7 +635,7 @@ const ProfileScreen: React.FC = () => {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  onPress={() => setIsDeleteModalVisible(true)}
+                  onPress={() => setIsDeleteAccountModalVisible(true)}
                   className="flex-row items-center px-4 py-3.5">
                   <View className="h-9 w-9 rounded-full bg-[#2A0A0A] items-center justify-center mr-3">
                     <AntDesign name="deleteuser" color="#EF4444" size={18} />
@@ -823,83 +809,14 @@ const ProfileScreen: React.FC = () => {
         </Animated.View>
       </Modal>
 
-      {/* Delete Account Confirmation Modal */}
-      <Modal
-        isVisible={isDeleteModalVisible}
-        onBackdropPress={() => setIsDeleteModalVisible(false)}
-        backdropOpacity={0.6}
-        animationIn="fadeIn"
-        animationOut="fadeOut"
-        style={{ margin: 20, justifyContent: 'center' }}
-        customBackdrop={
-          <BlurView intensity={Platform.OS === 'ios' ? 40 : 80} tint="dark" style={StyleSheet.absoluteFill} />
-        }
-      >
-        <Animated.View className="bg-[#1F2235] rounded-2xl overflow-hidden">
-          <LinearGradient
-            colors={['#1F2235', '#141625']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            className="p-6"
-          >
-            <View className="items-center mb-4 mt-5">
-              <LinearGradient
-                colors={['rgba(255, 71, 87, 0.2)', 'rgba(255, 71, 87, 0.1)']}
-                style={{ width: 50, height: 50, borderRadius: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              >
-                <Image
-                  style={{ width: 30, height: 30 }}
-                  source={require('../../assets/Tickit/delIcon.png')}
-                />
-              </LinearGradient>
-            </View>
-            
-            <Text className="text-white text-xl font-bold text-center mb-2" style={{ fontFamily: 'LatoBold' }}>
-              Account Deletion
-            </Text>
-            <Text className="text-[#787CA5] text-base text-center mb-6" style={{ fontFamily: 'LatoRegular' }}>
-              Permanently delete your account and all associated data. This action cannot be undone.
-            </Text>
-            
-            <View className="flex-row justify-between space-x-4">
-              <TouchableOpacity
-                onPress={() => setIsDeleteModalVisible(false)}
-                className="flex-1"
-              >
-                <BlurView intensity={20} tint="dark" className="rounded-xl overflow-hidden">
-                  <View className="px-4 py-3 items-center">
-                    <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>Cancel</Text>
-                  </View>
-                </BlurView>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                onPress={handleDeleteAccount}
-                className="flex-1"
-                disabled={buttonSpinner}
-              >
-                <LinearGradient
-                  colors={['#FF6B6B', '#FF4757']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  className="rounded-xl"
-                >
-                  <View className="px-4 py-3 items-center flex-row justify-center">
-                    {buttonSpinner ? (
-                      <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                      <>
-                        <MaterialIcons name="delete" size={18} color="#fff" className="mr-2" />
-                        <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>Delete</Text>
-                      </>
-                    )}
-                  </View>
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-          </LinearGradient>
-        </Animated.View>
-      </Modal>
+      {/* Delete Account Modal */}
+      <DeleteAccountModal
+        isVisible={isDeleteAccountModalVisible}
+        onClose={() => setIsDeleteAccountModalVisible(false)}
+        onSuccess={handleDeleteAccountSuccess}
+        token={token}
+        userEmail={userData?.user?.email || userData?.data?.email || ''}
+      />
         </ScrollView>
       </KeyboardAvoidingView>
       

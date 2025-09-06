@@ -53,33 +53,27 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
     <Modal
       isVisible={visible}
       onBackdropPress={onCancel}
-      style={{ justifyContent: 'center', alignItems: 'center' }}>
+      style={{ justifyContent: 'flex-end', margin: 0 }}
+      animationIn="slideInUp"
+      animationOut="slideOutDown"
+      backdropOpacity={0.5}>
       <View style={styles.modalContainer}>
-        <Text style={styles.modalTitle}>{currentMode === 'date' ? 'Select Date' : 'Select Time'}</Text>
+        <View style={styles.modalHeader}>
+          <TouchableOpacity onPress={handleCancel}>
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleConfirm}>
+            <Text style={styles.doneText}>Done</Text>
+          </TouchableOpacity>
+        </View>
         <DateTimePicker
           value={selectedDate}
           mode={currentMode}
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleDateChange}
-          textColor="white"
-          style={{ backgroundColor: '#191B3A' }}
+          textColor="#FFFFFF"
+          style={styles.datePicker}
         />
-        <View style={styles.actionsContainer}>
-          <TouchableOpacity
-            onPress={handleCancel}
-            style={[styles.actionButton, styles.cancelButton]}
-            accessible={true}
-            accessibilityLabel="Cancel date selection">
-            <Text style={styles.actionText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleConfirm}
-            style={[styles.actionButton, styles.confirmButton]}
-            accessible={true}
-            accessibilityLabel="Confirm selected date or time">
-            <Text style={[styles.actionText, { color: 'white' }]}>Confirm</Text>
-          </TouchableOpacity>
-        </View>
       </View>
     </Modal>
   );
@@ -87,40 +81,31 @@ const SelectDateModal: React.FC<SelectDateModalProps> = ({
 
 const styles = StyleSheet.create({
   modalContainer: {
-    backgroundColor: 'black',
-    padding: 20,
-    borderRadius: 10,
-    color:'white',
-    alignItems: 'center',
+    backgroundColor: '#191B3A',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
   },
-  modalTitle: {
-    fontSize: 18,
-    color: 'gray',
-    marginBottom: 10,
-  },
-  actionsContainer: {
+  modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 15,
-    gap:6,
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#37384B',
   },
-  actionButton: {
-    paddingVertical: 7,
-    paddingHorizontal: 20,
-    borderRadius: 5,
+  cancelText: {
+    color: '#787CA5',
+    fontSize: 16,
+    fontWeight: '500',
   },
-  cancelButton: {
-    backgroundColor: '#1A1D3D',
-  },
-  confirmButton: {
-    marginLeft: 15,
-    backgroundColor:"#5367CB"
-  },
-  actionText: {
-    color: 'white',
-    fontSize: 15,
-    textAlign: 'center',
+  doneText: {
+    color: '#815BF5',
+    fontSize: 16,
     fontWeight: '600',
+  },
+  datePicker: {
+    backgroundColor: '#191B3A',
+    height: 200,
   },
 });
 

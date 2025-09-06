@@ -375,6 +375,7 @@ const RegularizationModal: React.FC<RegularizationModalProps> = ({ isVisible, on
                     display="spinner"
                     onChange={(event, date) => date && setTempSelectedDate(date)}
                     style={styles.datePicker}
+                    textColor="#FFFFFF"
                     maximumDate={new Date()}
                   />
                 </View>
@@ -387,7 +388,7 @@ const RegularizationModal: React.FC<RegularizationModalProps> = ({ isVisible, on
                 backdropOpacity={0.5}
               >
                 <View style={[styles.datePickerContainer, { padding: 20, alignItems: 'center', borderRadius: 12 }]}>
-                  <Text style={{ color: 'white', fontSize: 18, marginBottom: 20, fontFamily: 'LatoBold' }}>Select Date</Text>
+                  <Text style={{ color: '#FFFFFF', fontSize: 18, marginBottom: 20, fontFamily: 'LatoBold' }}>Select Date</Text>
                   <DateTimePicker
                     value={tempSelectedDate}
                     mode="date"
@@ -398,7 +399,7 @@ const RegularizationModal: React.FC<RegularizationModalProps> = ({ isVisible, on
                         setDatePickerVisible(false);
                       }
                     }}
-                    textColor="white"
+                    textColor="#FFFFFF"
                     maximumDate={new Date()}
                   />
                   <TouchableOpacity 
@@ -436,6 +437,7 @@ const RegularizationModal: React.FC<RegularizationModalProps> = ({ isVisible, on
                     display="spinner"
                     onChange={(event, time) => time && setTempLoginTime(time)}
                     style={styles.datePicker}
+                    textColor="#FFFFFF"
                   />
                 </View>
               </Modal>
@@ -447,7 +449,7 @@ const RegularizationModal: React.FC<RegularizationModalProps> = ({ isVisible, on
                 backdropOpacity={0.5}
               >
                 <View style={[styles.datePickerContainer, { padding: 20, alignItems: 'center', borderRadius: 12 }]}>
-                  <Text style={{ color: 'white', fontSize: 18, marginBottom: 20, fontFamily: 'LatoBold' }}>Select Login Time</Text>
+                  <Text style={{ color: '#FFFFFF', fontSize: 18, marginBottom: 20, fontFamily: 'LatoBold' }}>Select Login Time</Text>
                   <DateTimePicker
                     value={tempLoginTime}
                     mode="time"
@@ -458,7 +460,7 @@ const RegularizationModal: React.FC<RegularizationModalProps> = ({ isVisible, on
                         setLoginTimePickerVisible(false);
                       }
                     }}
-                    textColor="white"
+                    textColor="#FFFFFF"
                   />
                   <TouchableOpacity 
                     onPress={cancelLoginTimeSelection}
@@ -495,6 +497,7 @@ const RegularizationModal: React.FC<RegularizationModalProps> = ({ isVisible, on
                     display="spinner"
                     onChange={(event, time) => time && setTempLogoutTime(time)}
                     style={styles.datePicker}
+                    textColor="#FFFFFF"
                   />
                 </View>
               </Modal>
@@ -506,7 +509,7 @@ const RegularizationModal: React.FC<RegularizationModalProps> = ({ isVisible, on
                 backdropOpacity={0.5}
               >
                 <View style={[styles.datePickerContainer, { padding: 20, alignItems: 'center', borderRadius: 12 }]}>
-                  <Text style={{ color: 'white', fontSize: 18, marginBottom: 20, fontFamily: 'LatoBold' }}>Select Logout Time</Text>
+                  <Text style={{ color: '#FFFFFF', fontSize: 18, marginBottom: 20, fontFamily: 'LatoBold' }}>Select Logout Time</Text>
                   <DateTimePicker
                     value={tempLogoutTime}
                     mode="time"
@@ -517,7 +520,7 @@ const RegularizationModal: React.FC<RegularizationModalProps> = ({ isVisible, on
                         setLogoutTimePickerVisible(false);
                       }
                     }}
-                    textColor="white"
+                    textColor="#FFFFFF"
                   />
                   <TouchableOpacity 
                     onPress={cancelLogoutTimeSelection}
@@ -682,32 +685,30 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   datePickerContainer: {
-    backgroundColor: '#0B0D29',
+    backgroundColor: '#191B3A',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
   },
   datePickerHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
+    padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#272945',
+    borderBottomColor: '#37384B',
   },
   datePickerCancel: {
-    color: '#FC8929',
+    color: '#787CA5',
     fontSize: 16,
-    fontFamily: 'LatoRegular',
-    padding: 4,
+    fontWeight: '500',
   },
   datePickerDone: {
     color: '#815BF5',
     fontSize: 16,
-    fontFamily: 'LatoBold',
-    padding: 4,
+    fontWeight: '600',
   },
   datePicker: {
-    backgroundColor: '#0B0D29',
+    backgroundColor: '#191B3A',
     height: 200,
   },
   doneButton: {
@@ -733,7 +734,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
   },
   androidCancelText: {
-    color: 'white', 
+    color: '#FFFFFF', 
     fontFamily: 'LatoBold',
     fontSize: 15
   }

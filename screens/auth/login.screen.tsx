@@ -24,6 +24,7 @@ import CustomAlert from '~/components/CustomAlert/CustomAlert'
 import InputContainer from '~/components/InputContainer'
 import { GradientText } from '~/components/GradientText'
 import TokenStorage from '~/utils/tokenStorage'
+import { PermissionManager } from '~/utils/permissions'
 
 export default function Loginscreen() {
   const dispatch = useDispatch()
@@ -62,6 +63,22 @@ export default function Loginscreen() {
         // IMPORTANT: Make sure we're storing the complete user data
         // This ensures the home screen can access firstName and other user details
         const userData = response.data;
+        
+        // Check if this is first time login
+        const hasCompletedLogin = await TokenStorage.hasCompletedLogin();
+        
+        if (!hasCompletedLogin) {
+          // First time login - request permissions
+          const permissions = await PermissionManager.requestAllPermissions();
+          
+          if (!permissions.camera || !permissions.location) {
+            setAlertMessage('Camera and location permissions are required for attendance features. Please grant permissions and try again.')
+            setAlertType('error')
+            setShowAlert(true)
+            setButtonSpinner(false)
+            return
+          }
+        }
         
         // Dispatch login action with token and complete user data
         dispatch(logIn({ token: token, userData: userData }));

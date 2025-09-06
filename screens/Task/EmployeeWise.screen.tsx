@@ -20,6 +20,7 @@ import { RouteProp, useRoute } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
+import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
 
 // Define the type for your navigation
 type Props = StackScreenProps<DashboardStackParamList, 'EmployeeWise'>;
@@ -43,6 +44,7 @@ const EmployeeWiseScreen: React.FC<Props> = ({ navigation }) => {
   const { employeeWiseData } = route.params;
   const [selectedTeamSize, setSelectedTeamSize] = useState("This Week");
   const [search, setSearch] = useState('');
+  const [isCustomDateModalOpen, setIsCustomDateModalOpen] = useState(false);
 
   // Filter employees based on search input
   const filteredEmployees = employeeWiseData.filter((employee) => {
@@ -72,16 +74,6 @@ const EmployeeWiseScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Controls Section */}
           <View style={styles.controlsSection}>
-            {/* Filter Dropdown */}
-            <View style={styles.dropdownContainer}>
-              <CustomDropdown
-                data={daysData}
-                placeholder="Select Filters"
-                selectedValue={selectedTeamSize}
-                onSelect={(value) => setSelectedTeamSize(value)}
-              />
-            </View>
-
             {/* Search Bar */}
             <View style={styles.searchContainer}>
               <LinearGradient
@@ -102,6 +94,22 @@ const EmployeeWiseScreen: React.FC<Props> = ({ navigation }) => {
                   </TouchableWithoutFeedback>
                 )}
               </LinearGradient>
+            </View>
+
+            {/* Filter Dropdown */}
+            <View style={styles.dropdownContainer}>
+              <CustomDropdown
+                data={daysData}
+                placeholder="Select Filters"
+                selectedValue={selectedTeamSize}
+                onSelect={(value) => {
+                  if (value === 'Custom') {
+                    setIsCustomDateModalOpen(true);
+                  } else {
+                    setSelectedTeamSize(value);
+                  }
+                }}
+              />
             </View>
           </View>
 
@@ -139,6 +147,18 @@ const EmployeeWiseScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
+      
+      {/* Custom Date Range Modal */}
+      <CustomDateRangeModal
+        isVisible={isCustomDateModalOpen}
+        onClose={() => setIsCustomDateModalOpen(false)}
+        onApply={(startDate: Date, endDate: Date) => {
+          setSelectedTeamSize('Custom');
+          setIsCustomDateModalOpen(false);
+        }}
+        initialStartDate={new Date()}
+        initialEndDate={new Date()}
+      />
     </SafeAreaView>
   );
 };

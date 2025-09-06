@@ -21,6 +21,7 @@ import { RouteProp, useRoute } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
+import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
 
 // Define the type for your navigation
 type Props = StackScreenProps<DashboardStackParamList, 'Delegated'>;
@@ -57,6 +58,7 @@ const DelegatedScreen: React.FC<Props> = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const [groupedByEmployee, setGroupedByEmployee] = useState<Record<string, Task[]>>({});
   const [filteredEmployees, setFilteredEmployees] = useState<string[]>([]);
+  const [isCustomDateModalOpen, setIsCustomDateModalOpen] = useState(false);
 
   // Group tasks by employee
   useEffect(() => {
@@ -125,16 +127,6 @@ const DelegatedScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Controls Section */}
           <View style={styles.controlsSection}>
-            {/* Filter Dropdown */}
-            <View style={styles.dropdownContainer}>
-              <CustomDropdown
-                data={daysData}
-                placeholder="Select Filters"
-                selectedValue={selectedTeamSize}
-                onSelect={(value) => setSelectedTeamSize(value)}
-              />
-            </View>
-
             {/* Search Bar */}
             <View style={styles.searchContainer}>
               <LinearGradient
@@ -155,6 +147,22 @@ const DelegatedScreen: React.FC<Props> = ({ navigation }) => {
                   </TouchableWithoutFeedback>
                 )}
               </LinearGradient>
+            </View>
+
+            {/* Filter Dropdown */}
+            <View style={styles.dropdownContainer}>
+              <CustomDropdown
+                data={daysData}
+                placeholder="Select Filters"
+                selectedValue={selectedTeamSize}
+                onSelect={(value) => {
+                  if (value === 'Custom') {
+                    setIsCustomDateModalOpen(true);
+                  } else {
+                    setSelectedTeamSize(value);
+                  }
+                }}
+              />
             </View>
           </View>
 
@@ -199,6 +207,18 @@ const DelegatedScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
+      
+      {/* Custom Date Range Modal */}
+      <CustomDateRangeModal
+        isVisible={isCustomDateModalOpen}
+        onClose={() => setIsCustomDateModalOpen(false)}
+        onApply={(startDate: Date, endDate: Date) => {
+          setSelectedTeamSize('Custom');
+          setIsCustomDateModalOpen(false);
+        }}
+        initialStartDate={new Date()}
+        initialEndDate={new Date()}
+      />
     </SafeAreaView>
   );
 };

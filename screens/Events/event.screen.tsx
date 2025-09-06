@@ -247,6 +247,8 @@ const EventsScreen: React.FC = () => {
             >
               <LinearGradient
                 colors={activeTab === 'upcoming' ? ['#815BF5', '#FC8929'] : ['#05071E', '#05071E']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 style={styles.tab}
               >
                 <Text style={[styles.tabText, activeTab === 'upcoming' && styles.activeTabText]}>
@@ -264,6 +266,8 @@ const EventsScreen: React.FC = () => {
             >
               <LinearGradient
                 colors={activeTab === 'past' ? ['#815BF5', '#FC8929'] : ['#05071E', '#05071E']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 style={styles.tab}
               >
                 <Text style={[styles.tabText, activeTab === 'past' && styles.activeTabText]}>
@@ -455,8 +459,8 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
   },
   lottieAnimation: {
-    width: 120,
-    height: 120,
+    width: 200,
+    height: 200,
   },
   emptyTitle: {
     fontSize: 20,

@@ -14,6 +14,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons, Ionicons, AntDesign } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
+import LottieView from 'lottie-react-native';
 import { useSelector } from 'react-redux';
 import * as Haptics from 'expo-haptics';
 import axios from 'axios';
@@ -469,9 +470,17 @@ export default function AiCreditsScreen() {
                   </View>
                 ))
               ) : (
-                <Text className="text-[#787CA5] text-center py-8" style={{ fontFamily: 'LatoRegular' }}>
-                  No usage history found
-                </Text>
+                <View className="items-center py-8">
+                  <LottieView
+                    source={require('../../../assets/Animation/no-data.json')}
+                    autoPlay
+                    loop
+                    style={{ width: 200, height: 200 }}
+                  />
+                  <Text className="text-[#787CA5] text-center" style={{ fontFamily: 'LatoRegular' }}>
+                    No usage history found
+                  </Text>
+                </View>
               )}
             </View>
           ) : (
@@ -503,9 +512,17 @@ export default function AiCreditsScreen() {
                   </View>
                 ))
               ) : (
-                <Text className="text-[#787CA5] text-center py-8" style={{ fontFamily: 'LatoRegular' }}>
-                  No transaction history found
-                </Text>
+                <View className="items-center py-8">
+                  <LottieView
+                    source={require('../../../assets/Animation/no-data.json')}
+                    autoPlay
+                    loop
+                    style={{ width: 200, height: 200 }}
+                  />
+                  <Text className="text-[#787CA5] text-center" style={{ fontFamily: 'LatoRegular' }}>
+                    No transaction history found
+                  </Text>
+                </View>
               )}
             </View>
           )}

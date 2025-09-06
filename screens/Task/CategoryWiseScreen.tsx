@@ -20,6 +20,7 @@ import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dash
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
+import CustomDateRangeModal from '~/components/Dashboard/CustomDateRangeModal';
 
 // Define navigation types
 type Props = StackScreenProps<DashboardStackParamList, 'CategoryWise'>;
@@ -47,6 +48,7 @@ const CategoryWiseScreen: React.FC<Props> = ({ navigation }) => {
   const [selectedFilter, setSelectedFilter] = useState("This Week");
   const [search, setSearch] = useState('');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<'all' | 'pending' | 'overdue' | 'completed'>('all');
+  const [isCustomDateModalOpen, setIsCustomDateModalOpen] = useState(false);
 
   console.log(employeeWiseData, 'Category Data');
 
@@ -103,16 +105,6 @@ const CategoryWiseScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Controls Section */}
           <View style={styles.controlsSection}>
-            {/* Filter Dropdown */}
-            <View style={styles.dropdownContainer}>
-              <CustomDropdown
-                data={daysData}
-                placeholder="Select Filters"
-                selectedValue={selectedFilter}
-                onSelect={(value) => setSelectedFilter(value)}
-              />
-            </View>
-
             {/* Search Bar */}
             <View style={styles.searchContainer}>
               <LinearGradient
@@ -135,7 +127,21 @@ const CategoryWiseScreen: React.FC<Props> = ({ navigation }) => {
               </LinearGradient>
             </View>
 
-
+            {/* Filter Dropdown */}
+            <View style={styles.dropdownContainer}>
+              <CustomDropdown
+                data={daysData}
+                placeholder="Select Filters"
+                selectedValue={selectedFilter}
+                onSelect={(value) => {
+                  if (value === 'Custom') {
+                    setIsCustomDateModalOpen(true);
+                  } else {
+                    setSelectedFilter(value);
+                  }
+                }}
+              />
+            </View>
           </View>
 
           {/* Category List */}
@@ -171,6 +177,18 @@ const CategoryWiseScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
+      
+      {/* Custom Date Range Modal */}
+      <CustomDateRangeModal
+        isVisible={isCustomDateModalOpen}
+        onClose={() => setIsCustomDateModalOpen(false)}
+        onApply={(startDate: Date, endDate: Date) => {
+          setSelectedFilter('Custom');
+          setIsCustomDateModalOpen(false);
+        }}
+        initialStartDate={new Date()}
+        initialEndDate={new Date()}
+      />
     </SafeAreaView>
   );
 };

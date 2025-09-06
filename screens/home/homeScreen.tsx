@@ -1049,7 +1049,7 @@ const HomeScreen: React.FC = () => {
   const handleAppPress = useCallback((item: HomeScreenComponents) => {
     // Always check if trying to access restricted routes when trial is expired
     if (isTrialExpired && 
-        (item.screen.includes('/Tasks') || item.screen.includes('/Attendance'))) {
+        (item.screen.includes('/Tasks') || item.screen.includes('/Attendance') || item.screen.includes('/Intranet') || item.screen.includes('/Events'))) {
       setShowTrialModal(true);
       return;
     }

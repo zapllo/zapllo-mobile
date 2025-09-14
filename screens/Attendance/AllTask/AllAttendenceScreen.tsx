@@ -189,7 +189,10 @@ const AllAttendenceScreen: React.FC<AllAttendenceScreen> = ({ isVisible, onClose
 
             {/* Close Button */}
             <View className="flex flex-row items-center gap-2 mb-1">
-              <TouchableOpacity onPress={onClose} className="bg-gray-600 rounded-full p-3 mr-1">
+              <TouchableOpacity onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onClose();
+              }} className="bg-gray-600 rounded-full p-3 mr-1">
                 <AntDesign name="close" size={20} color="white" />
               </TouchableOpacity>
             </View>

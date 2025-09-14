@@ -2,14 +2,17 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
+import UserAvatar from '../profile/UserAvatar';
 
 interface Task {
   _id: string;
   status: string;
+  title?: string;
   assignedUser: {
     firstName?: string;
     lastName?: string;
     _id?: string;
+    profilePic?: string;
   };
 }
 
@@ -45,6 +48,12 @@ const DashboardCard: React.FC<TaskCardProps> = ({
     return firstInitial + lastInitial;
   };
 
+  const getFirstWord = (text?: string): string => {
+    if (!text) return '';
+    const word = text.trim().split(/\s+/)[0] || '';
+    return word.length > 12 ? word.slice(0, 12) : word;
+  };
+
   // Ensure tasks is an array and filter out any invalid tasks
   const validTasks = Array.isArray(tasks) 
     ? tasks.filter(task => task && task._id) 
@@ -73,17 +82,14 @@ const DashboardCard: React.FC<TaskCardProps> = ({
           <View className="flex w-full flex-row">
             {validTasks.slice(0, 2).map((task, index) => (
               <View key={task._id} className="relative flex flex-row">
-                <View
-                  className="-m-1.5 flex h-10 w-10 items-center justify-center rounded-full border-2"
-                  style={{
-                    borderColor,
-                    backgroundColor: colors[index % colors.length],
-                  }}>
-                  <Text
-                    className="text-center text-sm text-black"
-                    style={{ fontFamily: 'Lato-Thin' }}>
-                    {getInitials(task.assignedUser)}
-                  </Text>
+                <View className="-m-1.5">
+                  <UserAvatar
+                    size={35}
+                    borderColor={borderColor}
+                    userId={task?.assignedUser?._id}
+                    name={`${(task?.assignedUser?.firstName || '')} ${(task?.assignedUser?.lastName || '')}`.trim()}
+                    imageUrl={task?.assignedUser?.profilePic}
+                  />
                 </View>
               </View>
             ))}
@@ -95,7 +101,7 @@ const DashboardCard: React.FC<TaskCardProps> = ({
                     borderColor,
                     backgroundColor: colors[2 % colors.length],
                   }}>
-                  <Text className="text-center text-black">+{validTasks.length - 2}</Text>
+                  <Text className="text-center text-black text-xs">+{validTasks.length - 2}</Text>
                 </View>
               </View>
             )}

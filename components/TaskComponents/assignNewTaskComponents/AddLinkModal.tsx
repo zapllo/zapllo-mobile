@@ -53,6 +53,9 @@ const AddLinkModal: React.FC<LinkModalProps> = ({
     setLinkModalVisible(false);
   };
 
+  // Check if there are any valid links to enable button color change
+  const hasValidLinks = linkInputs.some(link => link.trim().length > 0);
+
   const deleteLink = (index: number) => {
     const updatedLinks = [...links];
     updatedLinks.splice(index, 1);
@@ -144,7 +147,9 @@ const AddLinkModal: React.FC<LinkModalProps> = ({
           {!isKeyboardVisible && (
             <View className="mt-10 w-full">
               <TouchableOpacity
-                className="mb-10 flex h-[4rem] items-center justify-center rounded-full bg-[#37384B] p-5"
+                className={`mb-10 flex h-[4rem] items-center justify-center rounded-full p-5 ${
+                  hasValidLinks ? 'bg-[#815BF5]' : 'bg-[#37384B]'
+                }`}
                 onPress={addLink}>
                 <Text
                   className="text-center font-semibold text-white"

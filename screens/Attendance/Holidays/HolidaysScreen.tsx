@@ -647,7 +647,7 @@ export default function HolidaysScreen() {
                   <LinearGradient
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    colors={['#c3efc3', '#008800']}
+                    colors={['#ccc9eb', '#340088']}
                     style={styles.gradientBorders}
                   >
                     <View className='bg-primary rounded-full p-4 px-7 flex items-center flex-row gap-3'>
@@ -719,7 +719,7 @@ export default function HolidaysScreen() {
             {holidays.length === 0 && !isLoading ? (
               <View className="flex-1 justify-center items-center mb-36">
                <LottieView
-                 source={require('../../../assets/Animation/holiday.json')}
+                 source={require('../../../assets/Animation/no-data.json')}
                  autoPlay
                  loop
                  style={{ width: 200, height: 200 }}
@@ -892,6 +892,7 @@ export default function HolidaysScreen() {
               display="spinner"
               onChange={(event, date) => date && setTempSelectedDate(date)}
               style={styles.datePicker}
+              textColor="#FFFFFF"
             />
           </View>
         </Modal>

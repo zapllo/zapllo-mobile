@@ -2,11 +2,13 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { DashboardStackParamList } from '~/app/(routes)/HomeComponent/Tasks/Dashboard/DashboardStack';
+import UserAvatar from '../profile/UserAvatar';
 
 interface Employee {
   _id: string;
   firstName?: string;
   lastName?: string;
+  profilePic?: string;
 }
 
 interface TaskCardProps {
@@ -52,7 +54,7 @@ const DashboardThree: React.FC<TaskCardProps> = ({
           {title}
         </Text>
         <Text
-          className="text-white text-5xl mt-1"
+          className="text-white mt-1 text-5xl"
           style={{ fontFamily: 'LatoBold' }}>
           {count}
         </Text>
@@ -69,16 +71,16 @@ const DashboardThree: React.FC<TaskCardProps> = ({
             {validEmployees.slice(0, 2).map((employee, index) => (
               <View key={employee._id} className="relative flex flex-row">
                 <View
-                  className="-m-1.5 flex h-10 w-10 items-center justify-center rounded-full border-2"
-                  style={{
-                    borderColor,
-                    backgroundColor: colors[index % colors.length],
-                  }}>
-                  <Text
-                    className="text-center text-sm text-black"
-                    style={{ fontFamily: 'Lato-Thin' }}>
-                    {getInitials(employee)}
-                  </Text>
+                  className="-m-1.5 h-10 w-10 items-center justify-center rounded-full border-2 overflow-hidden"
+                  style={{ borderColor }}
+                >
+                  <UserAvatar
+                    size={38}
+                    borderColor="transparent"
+                    userId={employee._id}
+                    name={`${employee.firstName || ''} ${employee.lastName || ''}`.trim()}
+                    imageUrl={employee.profilePic}
+                  />
                 </View>
               </View>
             ))}
@@ -90,7 +92,7 @@ const DashboardThree: React.FC<TaskCardProps> = ({
                     borderColor,
                     backgroundColor: colors[2 % colors.length],
                   }}>
-                  <Text className="text-center text-black">+{validEmployees.length - 2}</Text>
+                  <Text className="text-center text-black" style={{ fontSize: 10, fontFamily: 'LatoBold' }}>+{validEmployees.length - 2}</Text>
                 </View>
               </View>
             )}

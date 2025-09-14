@@ -1161,14 +1161,14 @@ export default function MyLeavesScreen() {
               style={{
                 alignItems: 'center',
                 width: 250,
-                backgroundColor: 'rgba(27, 23, 57, 0.6)', 
+                backgroundColor: '#0A0D28', 
                 // Properly nest shadowOffset in the style object
                 shadowColor: 'rgba(0, 0, 0, 0.8)',
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.9,
                 shadowRadius: 15,
                 borderWidth: 1,
-                borderColor: 'rgba(48, 41, 86, 0.7)',
+                borderColor: '#1E2142',
                 borderStyle: 'solid',
                 position: 'relative',
                 overflow: 'hidden',
@@ -1773,6 +1773,7 @@ return (
             display="spinner"
             onChange={(event, date) => date && setTempFromDate(date)}
             style={styles.datePicker}
+            textColor="#FFFFFF"
           />
         </View>
       </Modal>
@@ -1841,6 +1842,7 @@ return (
             display="spinner"
             onChange={(event, date) => date && setTempToDate(date)}
             style={styles.datePicker}
+            textColor="#FFFFFF"
             minimumDate={applyLeaveForm.fromDate ? new Date(applyLeaveForm.fromDate) : undefined}
           />
         </View>
@@ -2216,11 +2218,11 @@ const styles = StyleSheet.create({
  
     paddingVertical: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#37384B',
+    
   },
   quickStatsContainer: {
     flexDirection: 'row',
-    backgroundColor: '#37384B',
+    backgroundColor: '#0A0D28',
     marginHorizontal: 20,
     marginBottom: 20,
     borderRadius: 12,
@@ -2389,7 +2391,7 @@ const styles = StyleSheet.create({
   // Leave Applications Section
   leaveApplicationsSection: {
     padding: 20,
-    paddingBottom: 100, // Add extra bottom padding to ensure full scroll
+    paddingBottom: 100,
   },
   sectionTitle: {
     fontSize: 18,
@@ -2505,10 +2507,10 @@ const styles = StyleSheet.create({
   emptyStateContainer: {
     alignItems: 'center',
     padding: 40,
-    backgroundColor: '#37384B',
+    backgroundColor: '#0A0D28',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#37384B',
+
   },
   emptyStateTitle: {
     fontSize: 18,
@@ -2968,32 +2970,30 @@ const styles = StyleSheet.create({
 
   // Date Picker Modal Styles
   datePickerContainer: {
-    backgroundColor: '#0B0D29',
+    backgroundColor: '#191B3A',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
   },
   datePickerHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
+    padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#272945',
+    borderBottomColor: '#37384B',
   },
   datePickerCancel: {
-    color: '#FC8929',
+    color: '#787CA5',
     fontSize: 16,
-    fontFamily: 'LatoRegular',
-    padding: 4,
+    fontWeight: '500',
   },
   datePickerDone: {
     color: '#815BF5',
     fontSize: 16,
-    fontFamily: 'LatoBold',
-    padding: 4,
+    fontWeight: '600',
   },
   datePicker: {
-    backgroundColor: '#0B0D29',
+    backgroundColor: '#191B3A',
     height: 200,
   },
   androidCancelButton: {

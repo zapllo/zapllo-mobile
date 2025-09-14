@@ -125,7 +125,7 @@ export default function ForgotPasswordScreen() {
                 backgroundColor={email ? '$primary' : '$border'}
                 pressStyle={{ opacity: 0.8 }}
                 onPress={handleResetPassword}
-                borderRadius="$lg"
+                borderRadius={10}
               >
                 {loading ? <ActivityIndicator size="small" color="white" /> : 'Reset Password'}
               </Button>
@@ -134,10 +134,10 @@ export default function ForgotPasswordScreen() {
 
           {/* Back to Login */}
           <XStack alignItems="center" marginTop="$4">
-            <Feather name="home" size={16} color={'white'} />
+            <Feather name="chevron-left" size={16} color={'#787CA5'} />
             <Button chromeless onPress={() => router.back()} marginLeft="$2">
-              <Paragraph size={16} color="white">
-                Back to Login
+              <Paragraph size={16} color="#787CA5" fontFamily="LatoBold">
+                Back
               </Paragraph>
             </Button>
           </XStack>

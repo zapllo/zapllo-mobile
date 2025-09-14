@@ -37,7 +37,9 @@ import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import * as SecureStore from 'expo-secure-store';
-import { logOut } from '~/redux/slices/authSlice';
+import { logoutWithStorage } from '~/redux/slices/authSlice';
+import TokenStorage from '~/utils/tokenStorage';
+import DeleteAccountModal from '~/components/profile/DeleteAccountModal';
 
 // Define the type for your navigation
 type RootStackParamList = {
@@ -74,6 +76,7 @@ const ProfileScreen: React.FC = () => {
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [showSuccessSplash, setShowSuccessSplash] = useState(false);
+  const [isDeleteAccountModalVisible, setIsDeleteAccountModalVisible] = useState(false);
   const appLink = "https://zapllo.com/download"; 
 
   const handleSplashComplete = () => {
@@ -135,13 +138,8 @@ const ProfileScreen: React.FC = () => {
         }
       );
       
-      // Clear all auth-related data from SecureStore
-      await SecureStore.deleteItemAsync('authToken');
-      await SecureStore.deleteItemAsync('userData');
-      await SecureStore.deleteItemAsync('hasCompletedLogin');
-      
-      // Dispatch logout action to clear Redux state
-      dispatch(logOut());
+      // Dispatch logout action with AsyncStorage cleanup
+      await dispatch(logoutWithStorage());
       
       // Show success message
       setCustomAlertVisible(true);
@@ -154,21 +152,31 @@ const ProfileScreen: React.FC = () => {
       console.error('API Error:', err.response || err.message);
       
       // Even if API fails, clear local storage for security
-      try {
-        await SecureStore.deleteItemAsync('authToken');
-        await SecureStore.deleteItemAsync('userData');
-        await SecureStore.deleteItemAsync('hasCompletedLogin');
-        dispatch(logOut());
-        router.push('/(routes)/login');
-      } catch (storageErr) {
-        console.error('Error clearing secure storage:', storageErr);
-      }
+      await dispatch(logoutWithStorage());
+      router.push('/(routes)/login');
       
       setCustomAlertVisible(true);
       setCustomAlertMessage('Failed to log out. Please try again.');
       setCustomAlertType('error');
     } finally {
       setButtonSpinner(false);
+    }
+  };
+
+  const handleDeleteAccountSuccess = async () => {
+    try {
+      await dispatch(logoutWithStorage());
+      
+      setCustomAlertVisible(true);
+      setCustomAlertMessage('Account deletion request submitted successfully!');
+      setCustomAlertType('success');
+      
+      setTimeout(() => {
+        router.push('/(routes)/login');
+      }, 2000);
+    } catch (err: any) {
+      console.error('Logout Error:', err);
+      router.push('/(routes)/login');
     }
   };
 
@@ -317,15 +325,15 @@ const ProfileScreen: React.FC = () => {
   
   return (
     <SafeAreaView className="h-full w-full flex-1 bg-[#05071E]">
+      {/* Navbar */}
+      <NavbarTwo title="Profile"  />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="w-full">
+        className="w-full flex-1">
         <ScrollView
           className="h-full w-full flex-grow"
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
-          {/* Navbar */}
-          <NavbarTwo title="Profile"  />
 
           {/* container */}
           <View className="mb-12 mt-3 flex h-full   w-full items-center">
@@ -350,10 +358,24 @@ const ProfileScreen: React.FC = () => {
               </TouchableOpacity>
 
               <View className=" flex flex-col items-start gap-1">
-                <Text className="text-xl font-medium text-white" style={{ fontFamily: 'LatoBold' }}>
-                  {userData?.user?.firstName || userData?.data?.firstName}{' '}
-                  {userData?.user?.lastName || userData?.data?.lastName}
-                </Text>
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-xl font-medium text-white" style={{ fontFamily: 'LatoBold' }}>
+                    {userData?.user?.firstName || userData?.data?.firstName}{' '}
+                    {userData?.user?.lastName || userData?.data?.lastName}
+                  </Text>
+                  {(userData?.user?.subscription === 'pro' || userData?.data?.subscription === 'pro') && (
+                    <LinearGradient
+                      colors={['#FFD700', '#FFA500']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      className="px-2 py-0.5 rounded-full flex-row items-center">
+                      <MaterialIcons name="workspace-premium" size={10} color="#000" />
+                      <Text className="text-[#000] text-[8px] font-bold ml-1" style={{ fontFamily: 'LatoBold' }}>
+                        PRO
+                      </Text>
+                    </LinearGradient>
+                  )}
+                </View>
                 <Text
                   className=" w-16 rounded-full border border-[#865ffa] p-1 text-center text-[10px] font-light text-white"
                   style={{ fontFamily: 'Lato-thin' ,backgroundColor:"rgba(127, 71, 192, 0.3)"}}>
@@ -462,6 +484,36 @@ const ProfileScreen: React.FC = () => {
               }
 
 
+                {/* AI Credits */}
+                <TouchableOpacity
+                  onPress={() => router.push('/(routes)/profile/ai-credits' as any)}
+                  className="flex-row items-center px-4 py-3.5 border-b border-[#1E2142]">
+                  <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
+                    <MaterialIcons name="psychology" color="#815BF5" size={18} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+                      AI Credits
+                    </Text>
+                  </View>
+                  <AntDesign name="right" color="#787CA5" size={16} />
+                </TouchableOpacity>
+
+                {/* Categories */}
+                <TouchableOpacity
+                  onPress={() => router.push('/(routes)/categories' as any)}
+                  className="flex-row items-center px-4 py-3.5 border-b border-[#1E2142]">
+                  <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
+                    <MaterialIcons name="category" color="#815BF5" size={18} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+                      Categories
+                    </Text>
+                  </View>
+                  <AntDesign name="right" color="#787CA5" size={16} />
+                </TouchableOpacity>
+
                 {/* Tutorials */}
                 <TouchableOpacity
                   onPress={() => router.push('/(routes)/profile/tutorials' as any)}
@@ -472,6 +524,21 @@ const ProfileScreen: React.FC = () => {
                   <View className="flex-1">
                     <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
                       Tutorials
+                    </Text>
+                  </View>
+                  <AntDesign name="right" color="#787CA5" size={16} />
+                </TouchableOpacity>
+
+                {/* Events */}
+                <TouchableOpacity
+                  onPress={() => router.push('/(routes)/HomeComponent/Events' as any)}
+                  className="flex-row items-center px-4 py-3.5 border-b border-[#1E2142]">
+                  <View className="h-9 w-9 rounded-full bg-[#1E2142] items-center justify-center mr-3">
+                    <AntDesign name="calendar" color="#815BF5" size={18} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-white text-base" style={{ fontFamily: 'LatoBold' }}>
+                      Events
                     </Text>
                   </View>
                   <AntDesign name="right" color="#787CA5" size={16} />
@@ -539,12 +606,12 @@ const ProfileScreen: React.FC = () => {
               </View>
             </View>
 
-            {/* LOGOUT */}
+            {/* LOGOUT & DELETE ACCOUNT */}
             <View className="w-full px-5 mt-8 mb-10">
-              <TouchableOpacity
-                onPress={handleLogoutClick}
-                className="bg-[#1E2142] rounded-xl overflow-hidden shadow-md shadow-[#000]/20">
-                <View className="flex-row items-center px-4 py-3.5">
+              <View className="bg-[#1E2142] rounded-xl overflow-hidden shadow-md shadow-[#000]/20 mb-4">
+                <TouchableOpacity
+                  onPress={handleLogoutClick}
+                  className="flex-row items-center px-4 py-3.5 border-b border-[#2A0A0A]">
                   <View className="h-9 w-9 rounded-full bg-[#2A0A0A] items-center justify-center mr-3">
                     <AntDesign name="logout" color="#EF4444" size={18} />
                   </View>
@@ -556,8 +623,21 @@ const ProfileScreen: React.FC = () => {
                   {buttonSpinner && (
                     <ActivityIndicator size="small" color="#EF4444" />
                   )}
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setIsDeleteAccountModalVisible(true)}
+                  className="flex-row items-center px-4 py-3.5">
+                  <View className="h-9 w-9 rounded-full bg-[#2A0A0A] items-center justify-center mr-3">
+                    <AntDesign name="deleteuser" color="#EF4444" size={18} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-[#EF4444] text-base font-medium" style={{ fontFamily: 'LatoBold' }}>
+                      Delete Account
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 
@@ -719,6 +799,15 @@ const ProfileScreen: React.FC = () => {
           </LinearGradient>
         </Animated.View>
       </Modal>
+
+      {/* Delete Account Modal */}
+      <DeleteAccountModal
+        isVisible={isDeleteAccountModalVisible}
+        onClose={() => setIsDeleteAccountModalVisible(false)}
+        onSuccess={handleDeleteAccountSuccess}
+        token={token}
+        userEmail={userData?.user?.email || userData?.data?.email || ''}
+      />
         </ScrollView>
       </KeyboardAvoidingView>
       

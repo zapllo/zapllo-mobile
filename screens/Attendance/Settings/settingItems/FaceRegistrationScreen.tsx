@@ -27,7 +27,7 @@ import { backend_Host } from '~/config';
 import { LinearGradient } from 'expo-linear-gradient';
 import CheckRound from '~/components/CheckRound';
 import * as ImagePicker from 'expo-image-picker';
-import { AntDesign, Entypo, FontAwesome, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, Entypo, FontAwesome, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import LottieView from 'lottie-react-native';
 import * as Haptics from 'expo-haptics';
@@ -812,29 +812,40 @@ return (
               </TouchableOpacity>
             </View>
 
-            <View
-              style={[
-                styles.input,
-                {
-                  height: 57,
-                  justifyContent: 'flex-start',
-                  alignItems: 'flex-start',
-                  width: '100%',
-                },
-              ]}
+            <LinearGradient
+              colors={['rgba(55, 56, 75, 0.8)', 'rgba(46, 46, 70, 0.6)']}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                borderRadius: 16,
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                marginBottom: 20,
+              }}
             >
+              <Ionicons name="search" size={20} color="#787CA5" />
               <TextInput
-                multiline
-                style={[
-                  styles.inputSome,
-                  { textAlignVertical: 'top', paddingTop: 10, width: '100%' },
-                ]}
-                value={searchUser}
-                onChangeText={(value) => setSearchUser(value)}
                 placeholder="Search by employee name"
                 placeholderTextColor="#787CA5"
+                value={searchUser}
+                onChangeText={setSearchUser}
+                style={{
+                  flex: 1,
+                  marginLeft: 12,
+                  color: 'white',
+                  fontSize: 16,
+                  fontWeight: '500',
+                  fontFamily: 'LatoRegular'
+                }}
               />
-            </View>
+              {searchUser.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchUser("")}>
+                  <Ionicons name="close-circle" size={20} color="#787CA5" />
+                </TouchableOpacity>
+              )}
+            </LinearGradient>
 
             {renderRegisteredFaces()}
           </View>

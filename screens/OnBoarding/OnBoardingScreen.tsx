@@ -21,7 +21,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import Svg, { Path } from 'react-native-svg'
 import { LinearGradient } from 'expo-linear-gradient'
-import * as SecureStore from 'expo-secure-store'
+import { TokenStorage } from '~/utils/tokenStorage'
 
 const { width, height } = Dimensions.get('window')
 
@@ -454,8 +454,8 @@ export default function OnBoardingScreen() {
         animated: true,
       })
     } else {
-      // Mark onboarding as completed and navigate to login
-      SecureStore.setItemAsync('hasCompletedOnboarding', 'true')
+      // Mark onboarding as completed and navigate to login using TokenStorage
+      TokenStorage.setOnboardingCompleted(true)
         .then(() => {
           router.replace('/(routes)/login')
         })
@@ -467,8 +467,8 @@ export default function OnBoardingScreen() {
   }
   
   const handleSkip = () => {
-    // Mark onboarding as completed when skipped
-    SecureStore.setItemAsync('hasCompletedOnboarding', 'true')
+    // Mark onboarding as completed when skipped using TokenStorage
+    TokenStorage.setOnboardingCompleted(true)
       .then(() => {
         router.replace('/(routes)/login')
       })

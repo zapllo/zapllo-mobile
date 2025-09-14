@@ -61,6 +61,7 @@ export default function HomeScreen() {
   const [cameraPermission, requestPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<CameraType>('front'); // Default to front camera
   const [modalVisible, setModalVisible] = useState(false);
+  const [isModalOpening, setIsModalOpening] = useState(false);
   const [selectedOption, setSelectedOption] = useState('Office');
   const [flash, setFlash] = useState<FlashMode>("off");
   const [cameraTorch, setCameraTorch] = React.useState<boolean>(false);
@@ -108,6 +109,8 @@ export default function HomeScreen() {
   const [isLocationLoading, setIsLocationLoading] = useState(false);
   const [showFaceNotMatchedModal, setShowFaceNotMatchedModal] = useState(false);
   const [showWfhPermissionAlert, setShowWfhPermissionAlert] = useState(false);
+  const [hasRequestedPermissions, setHasRequestedPermissions] = useState(false);
+  const [isCameraReady, setIsCameraReady] = useState(false);
   
 
   
@@ -319,11 +322,38 @@ export default function HomeScreen() {
     }
   };
 
+  // Check and request permissions on first attendance screen visit
+  const checkAndRequestPermissions = async () => {
+    try {
+      const permissionsRequested = await AsyncStorage.getItem(`attendancePermissionsRequested_${userId}`);
+      
+      if (!permissionsRequested) {
+        // First time opening attendance screen - silently check permissions
+        const currentPermissions = await PermissionManager.checkAllPermissions();
+        
+        if (currentPermissions.camera && currentPermissions.location) {
+          // Permissions already granted, mark as requested
+          await AsyncStorage.setItem(`attendancePermissionsRequested_${userId}`, 'true');
+        }
+        setHasRequestedPermissions(true);
+      } else {
+        setHasRequestedPermissions(true);
+      }
+    } catch (error) {
+      console.error('Error checking permissions:', error);
+    }
+  };
+
+
+
   // Update the useEffect that loads data
   useEffect(() => {
     const loadData = async () => {
       try {
-        // First check login status which will also fetch login entries
+        // First check and request permissions if needed
+        await checkAndRequestPermissions();
+        
+        // Then check login status which will also fetch login entries
         await checkLoginStatus();
         
         // Then load break data
@@ -357,7 +387,7 @@ export default function HomeScreen() {
     };
     
     loadData();
-  }, []);
+  }, [userId]);
 
   // Update geofence status whenever location or orgData changes
   useEffect(() => {
@@ -708,70 +738,60 @@ useEffect(() => {
   };
 
   // Load timeline events on component mount
-  const fetchLocationWithHighAccuracy = async () => {
+const fetchLocationWithHighAccuracy = async (): Promise<{ lat: number; lng: number } | null> => {
     try {
-      // Set loading state to true when starting to fetch location
       setIsLocationLoading(true);
-      
+
       console.log('Getting current location with high accuracy...');
       const locationData = await PermissionManager.getCurrentLocation({
         accuracy: Location.Accuracy.Highest,
-        maximumAge: 0 // Get a fresh location
+        maximumAge: 0
       });
-      
+
       console.log('Location fetched with high accuracy:', locationData);
       setLocation(locationData);
-      
-      // Check geofence status with the new location
+
+      // Optionally update geofence immediately
       if (orgData && orgData.allowGeofencing) {
         setTimeout(() => {
           checkGeofenceStatus();
-        }, 100); // Small delay to ensure state is updated
+        }, 100);
       }
+
+      return locationData;
     } catch (error) {
       console.error('Error fetching location:', error);
-      Alert.alert('Error', 'Failed to get your location. Please check your location settings and ensure location permissions are granted.');
+      Alert.alert(
+        'Error',
+        'Failed to get your location. Please check your location settings and ensure location permissions are granted.'
+      );
+      return null;
     } finally {
-      // Set loading state to false when location fetch completes (success or failure)
       setIsLocationLoading(false);
     }
   };
+  // Reset camera state when modal closes
+  const resetCameraState = useCallback(() => {
+    setIsScanning(false);
+    setScanComplete(false);
+    setErrorMessage(null);
+    setFlash("off");
+    setIsFlashOn(false);
+    setCameraTorch(false);
+    setIsModalOpening(false);
+    setIsCameraReady(false);
+  }, []);
+
 // Add this useEffect to check camera initialization when the modal opens
   useEffect(() => {
     if (modalVisible) {
-      // Check if camera is available and initialized
-      const checkCameraInitialization = async () => {
-        try {
-          // Check if camera permissions are granted
-          if (!cameraPermission?.granted) {
-            const { status } = await Camera.requestCameraPermissionsAsync();
-            if (status !== 'granted') {
-              throw new Error('Camera permission not granted');
-            }
-          }
-          
-          // Additional check for camera availability if needed
-          // This is a simple timeout to detect if camera fails to initialize
-          const cameraInitTimeout = setTimeout(() => {
-            // If cameraRef is still null after timeout, camera failed to initialize
-            if (!cameraRef.current) {
-              console.error('Camera failed to initialize');
-              setModalVisible(false);
-              setShowGeofencingSplashModal(true);
-            }
-          }, 2000); // 2 seconds timeout
-          
-          return () => clearTimeout(cameraInitTimeout);
-        } catch (error) {
-          console.error('Error initializing camera:', error);
-          setModalVisible(false);
-          setShowGeofencingSplashModal(true);
-        }
-      };
-      
-      checkCameraInitialization();
+      // Reset camera state first
+      resetCameraState();
+    } else {
+      // Reset camera state when modal closes
+      resetCameraState();
     }
-  }, [modalVisible, cameraPermission]);
+  }, [modalVisible, resetCameraState]);
   
   // Update the useEffect that handles modal visibility to use the new function
   useEffect(() => {
@@ -807,10 +827,6 @@ useEffect(() => {
           }
         })();
       }
-      // Reset scanning states when modal closes
-      setIsScanning(false);
-      setScanComplete(false);
-      setErrorMessage(null);
     }
   }, [modalVisible]);
 
@@ -892,7 +908,8 @@ const handleLoginPress = async () => {
 };
   
 const proceedWithLoginLogout = async () => {
-  // Check if user has registered faces and if registration is approved
+  if (isModalOpening || modalVisible) return;
+  
   if (!hasRegisteredFaces) {
     toast.show("Please register your face first", {
       type: "warning",
@@ -903,7 +920,6 @@ const proceedWithLoginLogout = async () => {
     return;
   }
   
-  // Check if face registration is approved
   if (!isFaceRegistrationApproved) {
     toast.show("Your face registration is pending admin approval", {
       type: "warning",
@@ -913,33 +929,58 @@ const proceedWithLoginLogout = async () => {
     return;
   }
   
-  // Fetch fresh location data before proceeding
-  await fetchLocationWithHighAccuracy();
+  // Check permissions before proceeding
+  const currentPermissions = await PermissionManager.checkAllPermissions();
+  let isFirstTimePermission = false;
   
-  // Set the action type based on current login state
-  setActionType(isLoggedIn ? 'logout' : 'login');
-  
-  // Check camera permissions using PermissionManager
-  const cameraPermissionGranted = await PermissionManager.requestCameraPermission();
-  if (!cameraPermissionGranted) {
-    // Show splash screen for camera permission denied
-    setShowGeofencingSplashModal(true);
-    return;
+  if (!currentPermissions.camera || !currentPermissions.location) {
+    const firstTimeRequested = await AsyncStorage.getItem(`attendancePermissionsRequested_${userId}`);
+    if (!firstTimeRequested) {
+      isFirstTimePermission = true;
+      // First time - directly request permissions
+      const permissions = await PermissionManager.requestAllPermissions();
+      await AsyncStorage.setItem(`attendancePermissionsRequested_${userId}`, 'true');
+      if (!permissions.camera || !permissions.location) {
+        toast.show("Camera and location permissions are required for attendance features.", {
+          type: "warning",
+          placement: "bottom",
+          duration: 3000,
+        });
+        return;
+      }
+    } else {
+      // Not first time - directly request again
+      const permissions = await PermissionManager.requestAllPermissions();
+      if (!permissions.camera || !permissions.location) {
+        toast.show("Camera and location permissions are required for attendance features.", {
+          type: "warning",
+          placement: "bottom",
+          duration: 3000,
+        });
+        return;
+      }
+    }
   }
   
+  setIsModalOpening(true);
+  resetCameraState();
+  
   try {
-    // Try to open the camera modal
+    await fetchLocationWithHighAccuracy();
+    setActionType(isLoggedIn ? 'logout' : 'login');
+    
+    // For first time permission, wait longer before opening camera
+    if (isFirstTimePermission) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
     setModalVisible(true);
     
-    // Force geofence check after modal is open
-    setTimeout(() => {
-      checkGeofenceStatus();
-    }, 300);
   } catch (error) {
     console.error('Error opening camera:', error);
-    // If camera fails to open, show the splash screen
-    setModalVisible(false);
     setShowGeofencingSplashModal(true);
+  } finally {
+    setTimeout(() => setIsModalOpening(false), 300);
   }
 };
 
@@ -1024,6 +1065,39 @@ const proceedWithLoginLogout = async () => {
       return;
     }
     
+    // Check permissions before proceeding
+    const currentPermissions = await PermissionManager.checkAllPermissions();
+    let isFirstTimePermission = false;
+    
+    if (!currentPermissions.camera || !currentPermissions.location) {
+      const firstTimeRequested = await AsyncStorage.getItem(`attendancePermissionsRequested_${userId}`);
+      if (!firstTimeRequested) {
+        isFirstTimePermission = true;
+        // First time - directly request permissions
+        const permissions = await PermissionManager.requestAllPermissions();
+        await AsyncStorage.setItem(`attendancePermissionsRequested_${userId}`, 'true');
+        if (!permissions.camera || !permissions.location) {
+          toast.show("Camera and location permissions are required for break features.", {
+            type: "warning",
+            placement: "bottom",
+            duration: 3000,
+          });
+          return;
+        }
+      } else {
+        // Not first time - directly request again
+        const permissions = await PermissionManager.requestAllPermissions();
+        if (!permissions.camera || !permissions.location) {
+          toast.show("Camera and location permissions are required for attendance features.", {
+            type: "warning",
+            placement: "bottom",
+            duration: 3000,
+          });
+          return;
+        }
+      }
+    }
+    
     // Fetch fresh location data before proceeding
     await fetchLocationWithHighAccuracy();
     
@@ -1037,25 +1111,24 @@ const proceedWithLoginLogout = async () => {
       return;
     }
     
-    // Set the action type based on current break state
+    if (isModalOpening || modalVisible) return;
+    
     setActionType(isBreakOpen ? 'break_ended' : 'break_started');
-  
-    // Check camera permissions using PermissionManager
-    const cameraPermissionGranted = await PermissionManager.requestCameraPermission();
-    if (!cameraPermissionGranted) {
-      // Show splash screen with custom message for camera permission denied
-      setShowGeofencingSplashModal(true);
-      return;
-    }
+    setIsModalOpening(true);
+    resetCameraState();
   
     try {
-      // Try to open the camera modal
+      // For first time permission, wait longer before opening camera
+      if (isFirstTimePermission) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
       setModalVisible(true);
     } catch (error) {
       console.error('Error opening camera for break:', error);
-      // If camera fails to open, show the splash screen
-      setModalVisible(false);
       setShowGeofencingSplashModal(true);
+    } finally {
+      setTimeout(() => setIsModalOpening(false), 300);
     }
   };
     
@@ -1382,8 +1455,7 @@ const capturePhoto = async () => {
         
         setTimeout(() => {
           setModalVisible(false);
-          setIsScanning(false);
-          setScanComplete(false);
+          resetCameraState();
         }, 1500);
         
         // Refresh login entries after successful action
@@ -1912,20 +1984,29 @@ const capturePhoto = async () => {
                   animationIn="slideInUp"
                   animationOut="slideOutDown"
                   onBackdropPress={() => {
-                    if (!isScanning) {
+                    if (!isScanning && !isModalOpening) {
                       setModalVisible(false);
                     }
                   }}
                 >
                   <View className="rounded-t-3xl bg-[#060924] h-[95%]">
-                    {cameraPermission?.granted && (
+                    {cameraPermission?.granted && modalVisible && (
                       <View style={styles.cameraContainer}>
+                        {!isCameraReady && (
+                          <View style={[styles.camera, { backgroundColor: '#060924', justifyContent: 'center', alignItems: 'center' }]}>
+                            <Text style={{ color: 'white', fontSize: 16 }}>Initializing camera...</Text>
+                          </View>
+                        )}
                         <CameraView 
                           ref={cameraRef}
-                          style={styles.camera} 
+                          style={[styles.camera, { opacity: isCameraReady ? 1 : 0 }]} 
                           facing={facing}
                           flash={facing === 'back' ? flash : 'off'}
                           enableTorch={facing === 'back' ? cameraTorch : false}
+                          onCameraReady={() => {
+                            console.log('Camera is ready');
+                            setTimeout(() => setIsCameraReady(true), 500);
+                          }}
                         >
                           <View className="absolute p-5 flex w-full flex-row items-center justify-between">
                             <Image 
@@ -1934,11 +2015,11 @@ const capturePhoto = async () => {
                             />
                             <TouchableOpacity 
                               onPress={() => {
-                                if (!isScanning) {
+                                if (!isScanning && !isModalOpening) {
                                   setModalVisible(false);
                                 }
                               }}
-                              disabled={isScanning}
+                              disabled={isScanning || isModalOpening}
                             >
                               <Image 
                                 source={require('../../../assets/commonAssets/cross.png')} 
@@ -2273,7 +2354,7 @@ const capturePhoto = async () => {
 
 </View>
 
-              <View className="flex flex-col items-start w-[90%] mt-11 mb-9 ">
+              <View className="flex flex-col items-start w-[90%]  mb-9 ">
               {filteredTimelineEvents.length > 0 ? (
                 filteredTimelineEvents.map((event, index) => (
                   <React.Fragment key={index}>
@@ -2324,11 +2405,10 @@ const capturePhoto = async () => {
                 ))
               ) : (
                 <View className="flex items-center justify-center w-full">
-                  <LottieView
-                    source={require('../../../assets/Animation/no-activity.json')}
-                    autoPlay
-                    loop
+                  <Image
+                    source={require('../../../assets/Animation/not found.gif')}
                     style={{ width: 200, height: 200 }}
+                    resizeMode="contain"
                   />
                   <Text className="text-[#787CA5] text-center w-full">
                     No activity logged for {timelineFilter.toLowerCase()}
@@ -2420,6 +2500,7 @@ const capturePhoto = async () => {
 />
 
    
+
       
     </SafeAreaView>
     </View>
@@ -2713,3 +2794,5 @@ const styles = StyleSheet.create({
   
 
 });
+
+  

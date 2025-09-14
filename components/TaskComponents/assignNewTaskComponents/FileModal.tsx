@@ -56,6 +56,9 @@ const FileModal: React.FC<FileModalProps> = ({ isFileModalVisible, setFileModalV
     }
   };
 
+  // Check if there are any files uploaded to enable button color change
+  const hasUploadedFiles = attachments.length > 0;
+
   console.log('Attachments State: ', attachments);
   console.log('File Names State: ', fileNames);
 
@@ -111,7 +114,9 @@ const FileModal: React.FC<FileModalProps> = ({ isFileModalVisible, setFileModalV
         <View className="mt-16 w-full">
           <TouchableOpacity
             onPress={handleSaveAttachments}
-            className="mb-10 flex h-[4rem] items-center justify-center rounded-full bg-[#37384B] p-5">
+            className={`mb-10 flex h-[4rem] items-center justify-center rounded-full p-5 ${
+              hasUploadedFiles ? 'bg-[#815BF5]' : 'bg-[#37384B]'
+            }`}>
             <Text
               className="text-center font-semibold text-white"
               style={{ fontFamily: 'LatoBold' }}>

@@ -53,8 +53,8 @@ const DashboardCardTwo: React.FC<TaskCardProps> = ({
           {title}
         </Text>
         <Text
-          className="text-white text-5xl mt-1"
-          style={{ fontFamily: 'LatoBold' }}>
+          className="text-white mt-1 text-5xl"
+          style={{ fontFamily: 'LatoBold'}}>
           {count}
         </Text>
         <Text className="w-[40vw] pt-2 text-[10px] text-white" style={{ fontFamily: 'LatoBold' }}>
@@ -70,14 +70,15 @@ const DashboardCardTwo: React.FC<TaskCardProps> = ({
             {validTasks.slice(0, 2).map((task, index) => (
               <View key={task._id} className="relative flex flex-row">
                 <View
-                  className="-m-1.5 flex h-10 w-10 items-center justify-center rounded-full border-2"
+                  className="-m-1.5 h-10 w-10 items-center justify-center rounded-full border-2"
                   style={{
                     borderColor,
                     backgroundColor: colors[index % colors.length],
                   }}>
                   <Text
                     className="text-center text-sm text-black"
-                    style={{ fontFamily: 'Lato-Thin' }}>
+                    style={{ fontFamily: 'LatoBold' }}
+                  >
                     {getInitials(task.category)}
                   </Text>
                 </View>
@@ -91,7 +92,7 @@ const DashboardCardTwo: React.FC<TaskCardProps> = ({
                     borderColor,
                     backgroundColor: colors[2 % colors.length],
                   }}>
-                  <Text className="text-center text-black">+{validTasks.length - 2}</Text>
+                  <Text className="text-center text-black" style={{ fontSize: 10, fontFamily: 'LatoBold' }}>+{validTasks.length - 2}</Text>
                 </View>
               </View>
             )}

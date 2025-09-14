@@ -511,19 +511,6 @@ const handleSliderChange = async (value: number) => {
   const reminder = task?.reminders?.[0];
   const reminderText = formatReminder(task?.dueDate, reminder);
 
-  // Normalize potential relative URLs to absolute by prefixing with backend host
-  const normalizeUrl = (url?: string) => {
-    if (!url) return undefined;
-    if (/^https?:\/\//i.test(url)) return url;
-    try {
-      const base = (backend_Host || '').replace(/\/+$/, '');
-      const path = url.replace(/^\/+/, '');
-      return base ? `${base}/${path}` : url;
-    } catch (e) {
-      return url;
-    }
-  };
-
   const renderStatusModal = () => (
     <Modal
       isVisible={showMainModal}
@@ -646,23 +633,19 @@ const handleSliderChange = async (value: number) => {
 
       
           </View>
-          <View className='w-full h-0.5 mb-3'style={{backgroundColor:"#11153d"}}></View>
 
-          <View className='flex items-center flex-row justify-between'>
-          {/* Priority Section */}
-          <View style={styles.prioritySection}>
-            <Text style={styles.priorityLabel}>Priority:</Text>
-            <Text style={[styles.priorityValue, {
-              color: task?.priority === 'High' 
-                ? '#EF4444' 
-                : task?.priority === 'Medium' 
-                  ? '#FDB314' 
-                  : '#007B5B'
-            }]}>
-              {task?.priority || 'Low'}
-            </Text>
+          {/* Due date prominent display */}
+          <View style={styles.dueDateContainer}>
+           
+            
           </View>
-                    {/* Action button with ripple effect */}
+         
+
+    
+
+          {/* Task Card Info - Hidden initially, only shown in modal */}
+          
+          {/* Action button with ripple effect */}
           <TouchableOpacity 
             style={styles.actionButton}
             activeOpacity={0.7}
@@ -671,13 +654,6 @@ const handleSliderChange = async (value: number) => {
             
             <MaterialIcons name="arrow-forward-ios" size={20} color="#FFFFFF" />
           </TouchableOpacity>
-          </View>
-
-
-
-          {/* Task Card Info - Hidden initially, only shown in modal */}
-          
-
 
         </LinearGradient>
       </TouchableOpacity>
@@ -718,30 +694,12 @@ const handleSliderChange = async (value: number) => {
             <View style={styles.detailSection}>
               <View style={styles.assignmentColumn}>
                 <Text style={styles.sectionLabel}>Assigned by</Text>
-                <View style={styles.assignmentRow}>
-                  <UserAvatar
-                    size={32}
-                    borderColor="#37384B"
-                    userId={task?.user?._id}
-                    name={`${task?.user?.firstName || ''} ${task?.user?.lastName || ''}`.trim()}
-                    imageUrl={task?.user?.profilePic}
-                  />
-                  <Text style={styles.assignedByText}>{assignedBy}</Text>
-                </View>
+                <Text style={styles.assignedByText}>{assignedBy}</Text>
               </View>
 
               <View style={styles.assignmentColumn}>
                 <Text style={styles.sectionLabel}>Assigned to</Text>
-                <View style={styles.assignmentRow}>
-                  <UserAvatar
-                    size={32}
-                    borderColor="#37384B"
-                    userId={task?.assignedUser?._id}
-                    name={`${task?.assignedUser?.firstName || ''} ${task?.assignedUser?.lastName || ''}`.trim()}
-                    imageUrl={task?.assignedUser?.profilePic}
-                  />
-                  <Text style={styles.assignedToText}>{assignedTo}</Text>
-                </View>
+                <Text style={styles.assignedToText}>{assignedTo}</Text>
               </View>
             </View>
 
@@ -1066,11 +1024,11 @@ const handleSliderChange = async (value: number) => {
                         <View style={styles.commentHeader}>
                           <View style={styles.commentUser}>
                             <UserAvatar
-                              size={36}
+                              imageUrl={com?.profilePic || com?.userImage} 
+                              name={com?.userName || "User"} 
+                              size={36} 
                               borderColor="#37384B"
-                              userId={com?.userId || com?.user?._id || com?.createdBy?._id}
-                              name={(com?.userName || `${com?.user?.firstName || ''} ${com?.user?.lastName || ''}` || 'User').trim()}
-                              imageUrl={normalizeUrl(com?.userImage || com?.profilePic || com?.user?.profilePic)}
+                              userId={com?.userId} // Pass the userId to UserAvatar for profile pic fetch
                             />
                             <View style={styles.commentUserInfo}>
                               <Text style={styles.commentUserName}>{com?.userName}</Text>
@@ -1234,7 +1192,7 @@ const handleSliderChange = async (value: number) => {
                 style={styles.updateButton}
                 activeOpacity={0.75}>
                 <LinearGradient
-                  colors={['#815BF5', '#9977ff']}
+                  colors={['rgba(129, 91, 245, 0.1)', 'rgba(129, 91, 245, 0.3)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.updateButtonGradient}>
@@ -1403,7 +1361,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginHorizontal: 8,
     marginTop: 16,
-    marginBottom: 3,
+    marginBottom: 8,
     borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: {
@@ -1417,13 +1375,12 @@ const styles = StyleSheet.create({
   },
   cardGradient: {
     width: '100%',
-    maxWidth: '93%',
+    maxWidth: '100%',
     padding: 16,
     paddingTop: 10,
     paddingBottom: 16,
     borderRadius: 16,
     position: 'relative',
-    marginLeft:"3%",
     flexShrink: 1,
   },
   priorityIndicator: {
@@ -1573,8 +1530,8 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     backgroundColor: 'rgba(129, 91, 245, 0.15)',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
     borderRadius: 1000,
     flexDirection: 'row',
     alignItems: 'center',
@@ -1588,26 +1545,6 @@ const styles = StyleSheet.create({
     fontFamily: 'LatoBold',
     fontSize: 10,
     marginRight: 6,
-  },
-  
-  /* Priority Section Styles */
-  prioritySection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  priorityLabel: {
-    fontSize: 12,
-    color: '#787CA5',
-    marginRight: 8,
-    letterSpacing: 0.3,
-  },
-  priorityValue: {
-    fontSize: 12,
-    fontFamily: 'LatoBold',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
   },
   
   /* Modal Styles */
@@ -1684,12 +1621,6 @@ const styles = StyleSheet.create({
   },
   assignmentColumn: {
     width: '48%',
-  },
-  assignmentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: 4,
   },
   sectionLabel: {
     fontSize: 11,

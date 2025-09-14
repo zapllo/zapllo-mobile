@@ -105,14 +105,18 @@ export default function ChangePassWordScreen() {
 
             <View className="h-full w-full items-center">
               <View className="m-4 w-full ">
-                <TouchableOpacity
-                  onPress={() => navigation.goBack()}
-                  className="ml-4 flex h-9 w-10 items-start justify-start">
-                  <Image
-                    resizeMode="contain"
-                    className="h-full w-full"
-                    source={require('~/assets/sign-in/back.png')}
-                  />
+                <TouchableOpacity 
+                  onPress={() => navigation.goBack()} 
+                  className="ml-4 flex flex-row items-center"
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Ionicons name="chevron-back-sharp" size={20} color="#787CA5" />
+                  <Text 
+                    className="text-[#787CA5] text-sm" 
+                    style={{ fontFamily: "LatoBold" }}
+                  >
+                    Back
+                  </Text>
                 </TouchableOpacity>
               </View>
               <Image
@@ -169,7 +173,7 @@ export default function ChangePassWordScreen() {
                 <TouchableOpacity
                   disabled={loading}
                   onPress={handelChangePassword}
-                  className={`my-7 w-full items-center rounded-full p-4 ${currentPassword === newPassword && !error && currentPassword !== "" && newPassword !== "" ? 'bg-[#815BF5]' : 'bg-[#2B2F3A]'}`}>
+                  className={`my-7 w-full items-center rounded-xl p-4 ${currentPassword === newPassword && !error && currentPassword !== "" && newPassword !== "" ? 'bg-[#815BF5]' : 'bg-[#2B2F3A]'}`}>
                   {loading ? (
                     <ActivityIndicator size={'small'} color={'#fff'} />
                   ) : (

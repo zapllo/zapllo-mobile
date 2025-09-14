@@ -1,5 +1,7 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import UserAvatar from '../profile/UserAvatar';
 
 interface EmployeesDetaildComponentProps {
   overdue: number;
@@ -8,7 +10,10 @@ interface EmployeesDetaildComponentProps {
   completed: number;
   name: string;
   profilePic?: string;
+  userId?: string;
 }
+
+const { width: screenWidth } = Dimensions.get('window');
 
 const EmployeesDetaildComponent: React.FC<EmployeesDetaildComponentProps> = ({
   overdue,
@@ -17,64 +22,103 @@ const EmployeesDetaildComponent: React.FC<EmployeesDetaildComponentProps> = ({
   completed,
   profilePic,
   name,
+  userId,
 }) => {
   // Calculate the completion percentage
   const totalTasks = overdue + pending + inProgress + completed;
   const completionPercentage = totalTasks > 0 ? Math.round((completed / totalTasks) * 100) : 0;
 
-  console.log('Profile Pic URL:', profilePic);
-
-  // Encode profile picture URL in case it has spaces
-  const encodedProfilePic = profilePic ? profilePic.replace(/ /g, '%20') : null;
-
-  // Extract initials from name
-  const getInitials = (fullName: string) => {
-    const nameParts = fullName.split(' ');
-    const initials = nameParts
-      .map((part) => part.charAt(0))
-      .join('')
-      .toUpperCase();
-    return initials.length > 2 ? initials.slice(0, 2) : initials;
+  // Get status color based on completion percentage
+  const getStatusColor = () => {
+    if (completionPercentage >= 80) return '#00C48C';
+    if (completionPercentage >= 60) return '#FFC107';
+    if (completionPercentage >= 40) return '#FF9500';
+    return '#EF4444';
   };
 
   return (
-    <View style={styles.card}>
-      {/* Profile + Name */}
-      <View style={styles.header}>
-        {encodedProfilePic ? (
-          <Image source={{ uri: encodedProfilePic }} style={styles.profileImage} />
-        ) : (
-          <View style={styles.initialsContainer}>
-            <Text style={styles.initialsText}>{getInitials(name)}</Text>
+    <View style={styles.cardContainer}>
+      <LinearGradient
+        colors={['rgba(55, 56, 75, 0.8)', 'rgba(46, 46, 70, 0.6)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.card}
+      >
+        {/* Header Section */}
+        <View style={styles.header}>
+          <View style={styles.profileSection}>
+            <UserAvatar
+              size={56}
+              borderColor="rgba(255, 255, 255, 0.2)"
+              userId={userId}
+              name={name}
+              imageUrl={profilePic}
+            />
+            
+            <View style={styles.nameSection}>
+              <Text style={styles.name}>{name}</Text>
+              <Text style={styles.progressText}>{completionPercentage}% completed</Text>
+            </View>
           </View>
-        )}
+        </View>
 
-        <View>
-          <Text style={styles.name}>{name}</Text>
-          <Text style={styles.progressText}>{completionPercentage}% completed</Text>
+        {/* Progress Bar Section */}
+        <View style={styles.progressSection}>
+          <View style={styles.progressBarContainer}>
+            <LinearGradient
+              colors={[getStatusColor(), `${getStatusColor()}80`]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.progressBar, { width: `${completionPercentage}%` }]}
+            />
+          </View>
         </View>
-      </View>
 
-      {/* Progress Bar */}
-      <View style={styles.progressBarContainer}>
-        <View style={[styles.progressBar, { width: `${completionPercentage}%` }]} />
-      </View>
+        {/* Status Grid */}
+        <View style={styles.statusGrid}>
+          <View style={styles.statusRow}>
+            <View style={[styles.statusItem, styles.overdueStatus]}>
+              <View style={styles.statusIconContainer}>
+                <View style={[ { backgroundColor: '#EF4444' }]} />
+              </View>
+              <View style={styles.statusContent}>
+                <Text style={styles.statusNumber}>{overdue}</Text>
+                <Text style={styles.statusLabel} numberOfLines={1} adjustsFontSizeToFit>Overdue</Text>
+              </View>
+            </View>
+            
+            <View style={[styles.statusItem, styles.pendingStatus]}>
+              <View style={styles.statusIconContainer}>
+                <View style={[ { backgroundColor: '#FFC107' }]} />
+              </View>
+              <View style={styles.statusContent}>
+                <Text style={styles.statusNumber}>{pending}</Text>
+                <Text style={styles.statusLabel} numberOfLines={1} adjustsFontSizeToFit>Pending</Text>
+              </View>
+            </View>
 
-      {/* Status Labels */}
-      <View style={styles.statusContainer}>
-        <View style={[styles.statusBox, styles.overdue]}>
-          <Text style={styles.statusText}>Overdue {overdue}</Text>
+            <View style={[styles.statusItem, styles.inProgressStatus]}>
+              <View style={styles.statusIconContainer}>
+                <View style={[ { backgroundColor: '#A914DD' }]} />
+              </View>
+              <View style={styles.statusContent}>
+                <Text style={styles.statusNumber}>{inProgress}</Text>
+                <Text style={styles.statusLabel} numberOfLines={1} adjustsFontSizeToFit>In Progress</Text>
+              </View>
+            </View>
+            
+            <View style={[styles.statusItem, styles.completedStatus]}>
+              <View style={styles.statusIconContainer}>
+                <View style={[ { backgroundColor: '#00C48C' }]} />
+              </View>
+              <View style={styles.statusContent}>
+                <Text style={styles.statusNumber}>{completed}</Text>
+                <Text style={styles.statusLabel} numberOfLines={1} adjustsFontSizeToFit>Completed</Text>
+              </View>
+            </View>
+          </View>
         </View>
-        <View style={[styles.statusBox, styles.pending]}>
-          <Text style={styles.statusText}>Pending {pending}</Text>
-        </View>
-        <View style={[styles.statusBox, styles.inProgress]}>
-          <Text style={styles.statusText}>In Progress {inProgress}</Text>
-        </View>
-        <View style={[styles.statusBox, styles.completed]}>
-          <Text style={styles.statusText}>Completed {completed}</Text>
-        </View>
-      </View>
+      </LinearGradient>
     </View>
   );
 };
@@ -82,96 +126,161 @@ const EmployeesDetaildComponent: React.FC<EmployeesDetaildComponentProps> = ({
 export default EmployeesDetaildComponent;
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 15,
-    padding: 16,
-    marginVertical: 8,
-    width: '90%',
+  cardContainer: {
+    width: screenWidth - 32,
     alignSelf: 'center',
-    borderColor: '#37384B',
+    marginVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  card: {
+    borderRadius: 20,
+    padding: 20,
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   header: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 16,
   },
-  profileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
-  },
-  initialsContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor:'#2E2E46',
-    backgroundColor: 'transparent', // Blue background
-    justifyContent: 'center',
+  profileSection: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 10,
+    flex: 1,
   },
-  initialsText: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
+    nameSection: {
+    marginLeft: 12,
+    flex: 1,
   },
   name: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
+  completionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
   progressText: {
     color: '#A0A5C3',
     fontSize: 12,
   },
+  totalTasksContainer: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  totalTasksNumber: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: '700',
+    fontFamily: 'System',
+  },
+  totalTasksLabel: {
+    color: '#A0A5C3',
+    fontSize: 11,
+    fontWeight: '500',
+    fontFamily: 'System',
+    marginTop: 2,
+  },
+  progressSection: {
+    marginBottom: 20,
+  },
   progressBarContainer: {
     width: '100%',
-    height: 6,
-    backgroundColor: '#2E2E46',
-    borderRadius: 3,
+    height: 8,
+    backgroundColor: 'rgba(46, 46, 70, 0.8)',
+    borderRadius: 4,
     overflow: 'hidden',
-    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#00C48C',
+    borderRadius: 4,
   },
-  statusContainer: {
+  statusGrid: {
+    marginTop: 4,
+  },
+  statusRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 8,
+    gap: 6,
   },
-  statusBox: {
-    paddingVertical: 5,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-  },
-  overdue: {
-    borderColor: '#EF4444',
+  statusItem: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
     borderWidth: 1,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    minHeight: 60,
+    justifyContent: 'center',
   },
-  pending: {
-    borderColor: '#FFC107',
-    borderWidth: 1,
-    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+  overdueStatus: {
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    borderColor: 'rgba(239, 68, 68, 0.3)',
   },
-  inProgress: {
-    borderColor: '#A914DD',
-    borderWidth: 1,
-    backgroundColor: 'rgba(169, 20, 221, 0.1)',
+  pendingStatus: {
+    backgroundColor: 'rgba(255, 193, 7, 0.12)',
+    borderColor: 'rgba(255, 193, 7, 0.3)',
   },
-  completed: {
-    borderColor: '#00C48C',
-    borderWidth: 1,
-    backgroundColor: 'rgba(0, 196, 140, 0.1)',
+  inProgressStatus: {
+    backgroundColor: 'rgba(169, 20, 221, 0.12)',
+    borderColor: 'rgba(169, 20, 221, 0.3)',
   },
-  statusText: {
+  completedStatus: {
+    backgroundColor: 'rgba(0, 196, 140, 0.12)',
+    borderColor: 'rgba(0, 196, 140, 0.3)',
+  },
+  statusIconContainer: {
+    marginBottom: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statusIcon: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  statusContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statusNumber: {
     color: 'white',
-    fontSize: 8,
+    fontSize: 14,
+    fontWeight: '700',
+    fontFamily: 'System',
+    marginBottom: 2,
+  },
+  statusLabel: {
+    color: '#A0A5C3',
+    fontSize: 9,
     fontWeight: '500',
+    fontFamily: 'System',
+    textAlign: 'center',
+    lineHeight: 11,
   },
 });

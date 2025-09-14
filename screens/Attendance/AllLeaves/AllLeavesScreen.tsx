@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import UserAvatar from '~/components/profile/UserAvatar';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/redux/store';
 import { router } from 'expo-router';
@@ -558,7 +559,6 @@ export default function AllLeavesScreen() {
     };
 
     const statusColor = statusColors[leave.status as keyof typeof statusColors] || statusColors["Pending"];
-    const userInitials = getInitials(leave.user.firstName, leave.user.lastName);
 
     return (
       <TouchableOpacity
@@ -567,9 +567,12 @@ export default function AllLeavesScreen() {
       >
         <View style={styles.cardHeader}>
           <View style={styles.userInfo}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{userInitials}</Text>
-            </View>
+            <UserAvatar
+              size={38}
+              borderColor="transparent"
+              userId={leave.user._id}
+              name={`${leave.user.firstName} ${leave.user.lastName}`}
+            />
             <View style={styles.userDetails}>
               <Text style={styles.userName}>
                 {leave.user.firstName} {leave.user.lastName}
@@ -668,11 +671,12 @@ export default function AllLeavesScreen() {
     <View style={styles.userBalanceCard}>
       <View style={styles.userBalanceHeader}>
         <View style={styles.userInfo}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {user.firstName[0]}{user.lastName[0]}
-            </Text>
-          </View>
+          <UserAvatar
+            size={48}
+            borderColor="transparent"
+            userId={user.userId}
+            name={`${user.firstName} ${user.lastName}`}
+          />
           <Text style={styles.userName}>
             {user.firstName} {user.lastName}
           </Text>
@@ -970,16 +974,6 @@ export default function AllLeavesScreen() {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollViewContent}
-        refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
-            onRefresh={onRefresh}
-            colors={['#815BF5']}
-            tintColor="#815BF5"
-            title="Pull to refresh"
-            titleColor="#787CA5"
-          />
-        }
         showsVerticalScrollIndicator={false}
       >
 
@@ -1043,14 +1037,40 @@ export default function AllLeavesScreen() {
           <View style={styles.balancesTab}>
             {/* Search Bar */}
             <View style={styles.searchContainer}>
-              <TextInput
-                style={[styles.searchInput, { color:"white"}]}
-                placeholder="Search users"
-                placeholderTextColor={"white"}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-              <Text style={styles.userCount}>{filteredUsers.length} Users</Text>
+              <LinearGradient
+                colors={['rgba(55, 56, 75, 0.8)', 'rgba(46, 46, 70, 0.6)']}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  borderRadius: 16,
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
+                  flex: 1,
+                }}
+              >
+                <Ionicons name="search" size={20} color="#787CA5" />
+                <TextInput
+                  placeholder="Search users"
+                  placeholderTextColor="#787CA5"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  style={{
+                    flex: 1,
+                    marginLeft: 12,
+                    color: 'white',
+                    fontSize: 16,
+                    fontWeight: '500',
+                    fontFamily: 'LatoRegular'
+                  }}
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity onPress={() => setSearchQuery("")}>
+                    <Ionicons name="close-circle" size={20} color="#787CA5" />
+                  </TouchableOpacity>
+                )}
+              </LinearGradient>
             </View>
 
             {/* User Balances List */}
@@ -1373,15 +1393,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#815BF5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
+    gap: 12,
   },
   avatarText: {
     color: '#ffffff',
@@ -1395,6 +1407,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontFamily: 'LatoBold',
     marginBottom: 4,
+    marginLeft:1
   },
   editButton: {
    

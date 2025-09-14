@@ -17,13 +17,13 @@ import {
   Text,
 } from 'tamagui'
 
-import { logIn } from '~/redux/slices/authSlice'
+import { loginWithStorage } from '~/redux/slices/authSlice'
 import { backend_Host } from '~/config'
 import Checkbox from '~/components/Checkbox'
 import CustomAlert from '~/components/CustomAlert/CustomAlert'
 import InputContainer from '~/components/InputContainer'
 import { GradientText } from '~/components/GradientText'
-import * as SecureStore from 'expo-secure-store'
+import TokenStorage from '~/utils/tokenStorage'
 
 export default function Loginscreen() {
   const dispatch = useDispatch()
@@ -38,6 +38,10 @@ export default function Loginscreen() {
   const [alertType, setAlertType] = useState<'success' | 'error'>('success')
 
   const theme = useTheme()
+
+  // Button color changes only when: checkbox checked, valid email, and password filled
+  const isValidEmail = (email: string) => /^(?:[A-Z0-9._%+-]+)@(?:[A-Z0-9.-]+)\.(?:[A-Z]{2,})$/i.test(email.trim());
+  const isFormReady = isChecked && isValidEmail(userInfo.email) && userInfo.password.trim().length > 0;
 
   const handleLogin = async () => {
     if (!userInfo.email || !userInfo.password || !isChecked) return
@@ -59,20 +63,16 @@ export default function Loginscreen() {
         // This ensures the home screen can access firstName and other user details
         const userData = response.data;
         
-        // Dispatch login action with token and complete user data
-        dispatch(logIn({ token: token, userData: userData }));
+        // Dispatch login action with AsyncStorage integration
+        await dispatch(loginWithStorage({ token: token, userData: userData }));
         
-        // Store token in SecureStore for persistence
-        await SecureStore.setItemAsync('authToken', token);
-        
-        // Also store user data in SecureStore as a backup
-        await SecureStore.setItemAsync('userData', JSON.stringify(userData));
-        
-        // Set login and onboarding flags
-        await SecureStore.setItemAsync('hasCompletedLogin', 'true');
-        await SecureStore.setItemAsync('hasCompletedOnboarding', 'true');
+        // Set onboarding flag
+        await TokenStorage.setOnboardingCompleted(true);
         
         console.log('Login successful, user data stored:', userData);
+        
+        // Debug: Print stored auth data
+        await TokenStorage.debugPrintAuthData();
         
         // Navigate to home screen
         router.push('/(routes)/home')
@@ -171,7 +171,7 @@ export default function Loginscreen() {
           marginBottom={4}
           marginTop={12}
           size={20}
-          backgroundColor={isChecked ? '$primary' : '$border'}
+          backgroundColor={isFormReady ? '$primary' : '$border'}
           pressStyle={{ opacity: 0.8 }}
           onPress={handleLogin}
           borderRadius="$lg"
@@ -186,7 +186,7 @@ export default function Loginscreen() {
         </Button>
 
         {/* Register Section */}
-        <View className="flex-row items-center justify-center  py-2">
+        {/* <View className="flex-row items-center justify-center  py-2">
           <View className="flex-row">
             <Text className="text-base text-white" style={{ fontFamily: 'Lato-Light' }}>
               Not a{' '}
@@ -199,7 +199,7 @@ export default function Loginscreen() {
           <TouchableOpacity onPress={() => router.push('/(routes)/signup/pageOne' as any)}>
             <Text className="text-base font-extrabold text-white">? Register Here</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
         {/* Custom Alert */}
         <CustomAlert
           visible={showAlert}

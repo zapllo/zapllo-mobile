@@ -22,7 +22,7 @@ import axios from 'axios';
 import moment from 'moment';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 // Components
@@ -274,31 +274,48 @@ export default function TickitScreen() {
         {/* Search Bar */}
         <Animated.View 
           style={[
-            styles.searchContainer,
             {
+              marginHorizontal: 20,
+              marginTop: 16,
+              marginBottom: 8,
               opacity: fadeAnim,
               transform: [{ translateY: translateYAnim }]
             }
           ]}
         >
-          <View style={styles.searchIconContainer}>
-            <MaterialIcons name="search" size={22} color="#787CA5" />
-          </View>
-          <TextInput
-            style={styles.searchInput}
-            value={searchTickit}
-            onChangeText={(value) => setSearchTickit(value)}
-            placeholder="Search tickets..."
-            placeholderTextColor="#787CA5"
-          />
-          {searchTickit.length > 0 && (
-            <TouchableOpacity 
-              style={styles.clearButton}
-              onPress={() => setSearchTickit('')}
-            >
-              <MaterialIcons name="close" size={18} color="#787CA5" />
-            </TouchableOpacity>
-          )}
+          <LinearGradient
+            colors={['rgba(55, 56, 75, 0.8)', 'rgba(46, 46, 70, 0.6)']}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              borderRadius: 16,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              borderWidth: 1,
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <Ionicons name="search" size={20} color="#787CA5" />
+            <TextInput
+              placeholder="Search tickets..."
+              placeholderTextColor="#787CA5"
+              value={searchTickit}
+              onChangeText={setSearchTickit}
+              style={{
+                flex: 1,
+                marginLeft: 12,
+                color: 'white',
+                fontSize: 16,
+                fontWeight: '500',
+                fontFamily: 'LatoRegular'
+              }}
+            />
+            {searchTickit.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchTickit("")}>
+                <Ionicons name="close-circle" size={20} color="#787CA5" />
+              </TouchableOpacity>
+            )}
+          </LinearGradient>
         </Animated.View>
 
         {/* Tickets List */}

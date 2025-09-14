@@ -402,26 +402,43 @@ export default function TaskTemplatesScreen() {
 
       {/* Category View Header */}
       {isViewingCategory && (
-        <View className="px-4 py-3 border-b border-[#2A2D47]">
+        <View className="px-4 py-3">
 
           
           {/* Search Bar */}
-          <View className="flex-row items-center bg-[#2A2D47] rounded-xl px-4 py-3">
-            <Ionicons name="search" size={20} color="#676B93" />
+          <LinearGradient
+            colors={['rgba(55, 56, 75, 0.8)', 'rgba(46, 46, 70, 0.6)']}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              borderRadius: 16,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              borderWidth: 1,
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <Ionicons name="search" size={20} color="#787CA5" />
             <TextInput
               placeholder="Search templates..."
-              placeholderTextColor="#676B93"
+              placeholderTextColor="#787CA5"
               value={searchText}
               onChangeText={setSearchText}
-              className="flex-1 ml-3 text-white"
-              style={{ fontFamily: 'LatoRegular' }}
+              style={{
+                flex: 1,
+                marginLeft: 12,
+                color: 'white',
+                fontSize: 16,
+                fontWeight: '500',
+                fontFamily: 'LatoRegular'
+              }}
             />
             {searchText.length > 0 && (
               <TouchableOpacity onPress={() => setSearchText("")}>
-                <Ionicons name="close-circle" size={20} color="#676B93" />
+                <Ionicons name="close-circle" size={20} color="#787CA5" />
               </TouchableOpacity>
             )}
-          </View>
+          </LinearGradient>
         </View>
       )}
 
@@ -861,7 +878,7 @@ function TemplateCard({
             onPress={onEdit}
             className="bg-[#2A2D47] p-2 rounded-lg"
           >
-            <MaterialIcons name="edit" size={16} color="#FFFFFF" />
+            <Image source={require('../../../assets/Tasks/addto.png')} style={{ width: 16, height: 16 }} />
           </TouchableOpacity>
           
           <TouchableOpacity
